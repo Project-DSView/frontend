@@ -1,19 +1,10 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
+import { ReactQueryProvider } from '@/providers';
+import { Toaster } from '@/components/ui/sonner';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://openhouse.it.kmitl.ac.th/'),
+  metadataBase: new URL('https://dsview.it.kmitl.ac.th/'),
   title: {
     default: 'DSView',
     template: '%s | DSView',
@@ -22,7 +13,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'DSView',
     description: 'DSView Webapplication for learn data structure',
-    url: 'https://openhouse.it.kmitl.ac.th',
+    url: 'https://dsview.it.kmitl.ac.th',
     siteName: 'dsview.it.kmitl.ac.th',
     images: ['/opengraph.webp'],
     locale: 'en-US',
@@ -51,7 +42,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+      <body className={`font-sans antialiased`}>
+        <main>
+          <ReactQueryProvider>{children}</ReactQueryProvider>
+          <Toaster position="top-center" />
+        </main>
+      </body>
     </html>
   );
 }

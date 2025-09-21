@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react';
+import Navbar from '@/components/navbar';
 
 function layout({
   children,
@@ -7,10 +8,10 @@ function layout({
 }>) {
   return (
     <div>
+      <Navbar />
       {children}
     </div>
-
   );
 }
 
-export default layout
+export default layout;
