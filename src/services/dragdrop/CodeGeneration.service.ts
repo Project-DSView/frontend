@@ -1,5 +1,9 @@
-import { SinglyLinkedListOperation, DoublyLinkedListOperation } from '@/types';
-import { singlyLinkedListCodeTemplate, doublyLinkedListCodeTemplate } from '@/data';
+import { SinglyLinkedListOperation, DoublyLinkedListOperation, StackOperation } from '@/types';
+import {
+  singlyLinkedListCodeTemplate,
+  doublyLinkedListCodeTemplate,
+  stackCodeTemplate,
+} from '@/data';
 
 class CodeGenerationService {
   static generateSinglyLinkedListCode(operations: SinglyLinkedListOperation[]): string {
@@ -76,18 +80,44 @@ class CodeGenerationService {
     return code;
   }
 
+  static generateStackCode(operations: StackOperation[]): string {
+    let code = stackCodeTemplate;
+
+    operations.forEach((op) => {
+      if (op.type === 'push' && op.value !== '') {
+        code += `stack.push(${op.value})  # Push ${op.value} to stack\n`;
+      } else if (op.type === 'pop') {
+        code += `popped = stack.pop()  # Pop from stack\n`;
+        code += `print("Popped:", popped)\n`;
+      } else if (op.type === 'peek') {
+        code += `print("Top element:", stack.peek())  # Peek at top element\n`;
+      } else if (op.type === 'is_empty') {
+        code += `print("Is empty:", stack.is_empty())  # Check if stack is empty\n`;
+      } else if (op.type === 'size') {
+        code += `print("Size:", stack.size())  # Get stack size\n`;
+      }
+    });
+
+    // Add display at the end
+    if (operations.length > 0) {
+      code += `\n# Display final stack\n`;
+      code += `stack.display()\n`;
+    }
+
+    return code;
+  }
+
   static generateCodeForDataStructure(
     dataStructureType: string,
-    operations: SinglyLinkedListOperation[],
+    operations: SinglyLinkedListOperation[] | DoublyLinkedListOperation[] | StackOperation[],
   ): string {
     switch (dataStructureType) {
       case 'singly-linked-list':
-        return this.generateSinglyLinkedListCode(operations);
+        return this.generateSinglyLinkedListCode(operations as SinglyLinkedListOperation[]);
       case 'doubly-linked-list':
         return this.generateDoublyLinkedListCode(operations as DoublyLinkedListOperation[]);
       case 'stack':
-        // TODO: Implement for stack
-        return '// Stack code generation not implemented yet';
+        return this.generateStackCode(operations as StackOperation[]);
       case 'binary-search-tree':
         // TODO: Implement for binary search tree
         return '// Binary Search Tree code generation not implemented yet';
@@ -106,8 +136,7 @@ class CodeGenerationService {
       case 'doubly-linked-list':
         return doublyLinkedListCodeTemplate;
       case 'stack':
-        // TODO: Return stack template
-        return '// Stack template not implemented yet';
+        return stackCodeTemplate;
       case 'binary-search-tree':
         // TODO: Return binary search tree template
         return '// Binary Search Tree template not implemented yet';

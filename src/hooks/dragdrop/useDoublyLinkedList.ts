@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { DoublyLinkedListState, DoublyLinkedListOperation } from '@/types';
 import { DoublyLinkedListService } from '@/services';
 
@@ -22,6 +22,25 @@ const useDoublyLinkedList = (initialState?: Partial<DoublyLinkedListState>) => {
   const [currentOperation, setCurrentOperation] = useState<string | undefined>(undefined);
   const [currentPosition, setCurrentPosition] = useState(0);
   const operationsRef = useRef<DoublyLinkedListOperation[]>([]);
+
+  // Cleanup effect for memory management
+  useEffect(() => {
+    return () => {
+      // Cleanup operations ref
+      operationsRef.current = [];
+      // Reset state to prevent memory leaks
+      setState({
+        nodes: [],
+        operations: [],
+        stats: {
+          length: 0,
+          headValue: null,
+          tailValue: null,
+          isEmpty: true,
+        },
+      });
+    };
+  }, []);
 
   const addOperation = useCallback((operation: Omit<DoublyLinkedListOperation, 'id'>) => {
     const newOperation: DoublyLinkedListOperation = {
@@ -113,7 +132,10 @@ const useDoublyLinkedList = (initialState?: Partial<DoublyLinkedListState>) => {
             break;
           case 'insert_before_position':
             if (operation.value && operation.position) {
-              steps = await service.insertBeforePosition(operation.value, parseInt(operation.position));
+              steps = await service.insertBeforePosition(
+                operation.value,
+                parseInt(operation.position),
+              );
             }
             break;
           case 'delete_beginning':
@@ -160,7 +182,10 @@ const useDoublyLinkedList = (initialState?: Partial<DoublyLinkedListState>) => {
             break;
           case 'update_position':
             if (operation.position && operation.newValue) {
-              steps = await service.updateByPosition(parseInt(operation.position), operation.newValue);
+              steps = await service.updateByPosition(
+                parseInt(operation.position),
+                operation.newValue,
+              );
             }
             break;
           default:

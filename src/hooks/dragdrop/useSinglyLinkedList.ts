@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { SinglyLinkedListState, SinglyLinkedListOperation } from '@/types';
 import { SinglyLinkedListService } from '@/services';
 
@@ -22,6 +22,25 @@ const useSinglyLinkedList = (initialState?: Partial<SinglyLinkedListState>) => {
   const [currentOperation, setCurrentOperation] = useState<string | undefined>(undefined);
   const [currentPosition, setCurrentPosition] = useState(0);
   const operationsRef = useRef<SinglyLinkedListOperation[]>([]);
+
+  // Cleanup effect for memory management
+  useEffect(() => {
+    return () => {
+      // Cleanup operations ref
+      operationsRef.current = [];
+      // Reset state to prevent memory leaks
+      setState({
+        nodes: [],
+        operations: [],
+        stats: {
+          length: 0,
+          headValue: null,
+          tailValue: null,
+          isEmpty: true,
+        },
+      });
+    };
+  }, []);
 
   const addOperation = useCallback((operation: Omit<SinglyLinkedListOperation, 'id'>) => {
     const newOperation: SinglyLinkedListOperation = {

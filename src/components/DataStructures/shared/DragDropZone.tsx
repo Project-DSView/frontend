@@ -1,18 +1,5 @@
 import React from 'react';
-import { Operation } from '@/types';
-
-interface DragDropZoneProps {
-  operations: Operation[];
-  onDragOver: (e: React.DragEvent) => void;
-  onDragEnter: (e: React.DragEvent) => void;
-  onDragLeave: (e: React.DragEvent) => void;
-  onDrop: (e: React.DragEvent) => void;
-  onRemoveOperation: (id: number) => void;
-  onUpdateOperationValue: (id: number, value: string) => void;
-  onUpdateOperationPosition: (id: number, position: string) => void;
-  onUpdateOperationNewValue: (id: number, newValue: string) => void;
-  children?: React.ReactNode;
-}
+import { DragDropZoneProps } from '@/types';
 
 const DragDropZone: React.FC<DragDropZoneProps> = ({
   operations,
@@ -63,6 +50,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                   'delete_value',
                   'search_value',
                   'update_value',
+                  'push',
                 ].includes(op.type) && (
                   <input
                     type="text"

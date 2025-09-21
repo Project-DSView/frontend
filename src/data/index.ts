@@ -8,3 +8,4 @@ export {
   doublyLinkedListDragComponents,
   doublyLinkedListCodeTemplate,
 } from './DataStructures/doubly-linked-list.data';
+export { stackDragComponents, stackCodeTemplate } from './DataStructures/stack.data';

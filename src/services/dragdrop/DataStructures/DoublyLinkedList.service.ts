@@ -113,7 +113,10 @@ class DoublyLinkedListService {
   }
 
   // Insert at Position
-  async insertAtPosition(value: string, position: number): Promise<DoublyLinkedListExecutionStep[]> {
+  async insertAtPosition(
+    value: string,
+    position: number,
+  ): Promise<DoublyLinkedListExecutionStep[]> {
     const steps: DoublyLinkedListExecutionStep[] = [];
 
     steps.push(
@@ -168,11 +171,7 @@ class DoublyLinkedListService {
     );
 
     steps.push(
-      createExecutionStep(
-        `เชื่อม new_node.prev = current`,
-        `new_node.prev = current`,
-        800,
-      ),
+      createExecutionStep(`เชื่อม new_node.prev = current`, `new_node.prev = current`, 800),
     );
 
     steps.push(
@@ -184,11 +183,7 @@ class DoublyLinkedListService {
     );
 
     steps.push(
-      createExecutionStep(
-        `เชื่อม current.next = new_node`,
-        `current.next = new_node`,
-        800,
-      ),
+      createExecutionStep(`เชื่อม current.next = new_node`, `current.next = new_node`, 800),
     );
 
     // Update state
@@ -210,7 +205,10 @@ class DoublyLinkedListService {
   }
 
   // Insert Before Position
-  async insertBeforePosition(value: string, position: number): Promise<DoublyLinkedListExecutionStep[]> {
+  async insertBeforePosition(
+    value: string,
+    position: number,
+  ): Promise<DoublyLinkedListExecutionStep[]> {
     return this.insertAtPosition(value, position);
   }
 
@@ -219,11 +217,7 @@ class DoublyLinkedListService {
     const steps: DoublyLinkedListExecutionStep[] = [];
 
     steps.push(
-      createExecutionStep(
-        `กำลัง Delete จากหัวลิสต์`,
-        `เรียกใช้ dll.delete_from_beginning()`,
-        1000,
-      ),
+      createExecutionStep(`กำลัง Delete จากหัวลิสต์`, `เรียกใช้ dll.delete_from_beginning()`, 1000),
     );
 
     if (this.state.nodes.length === 0) {
@@ -239,27 +233,11 @@ class DoublyLinkedListService {
 
     if (this.state.nodes.length === 1) {
       steps.push(
-        createExecutionStep(
-          `มี node เดียว กำหนด head = tail = None`,
-          `head = tail = None`,
-          800,
-        ),
+        createExecutionStep(`มี node เดียว กำหนด head = tail = None`, `head = tail = None`, 800),
       );
     } else {
-      steps.push(
-        createExecutionStep(
-          `กำหนด head = head.next`,
-          `head = head.next`,
-          800,
-        ),
-      );
-      steps.push(
-        createExecutionStep(
-          `กำหนด head.prev = None`,
-          `head.prev = None`,
-          800,
-        ),
-      );
+      steps.push(createExecutionStep(`กำหนด head = head.next`, `head = head.next`, 800));
+      steps.push(createExecutionStep(`กำหนด head.prev = None`, `head.prev = None`, 800));
     }
 
     const deletedValue = this.state.nodes[0];
@@ -287,11 +265,7 @@ class DoublyLinkedListService {
     const steps: DoublyLinkedListExecutionStep[] = [];
 
     steps.push(
-      createExecutionStep(
-        `กำลัง Delete จากท้ายลิสต์`,
-        `เรียกใช้ dll.delete_from_end()`,
-        1000,
-      ),
+      createExecutionStep(`กำลัง Delete จากท้ายลิสต์`, `เรียกใช้ dll.delete_from_end()`, 1000),
     );
 
     if (this.state.nodes.length === 0) {
@@ -307,27 +281,11 @@ class DoublyLinkedListService {
 
     if (this.state.nodes.length === 1) {
       steps.push(
-        createExecutionStep(
-          `มี node เดียว กำหนด head = tail = None`,
-          `head = tail = None`,
-          800,
-        ),
+        createExecutionStep(`มี node เดียว กำหนด head = tail = None`, `head = tail = None`, 800),
       );
     } else {
-      steps.push(
-        createExecutionStep(
-          `กำหนด tail = tail.prev`,
-          `tail = tail.prev`,
-          800,
-        ),
-      );
-      steps.push(
-        createExecutionStep(
-          `กำหนด tail.next = None`,
-          `tail.next = None`,
-          800,
-        ),
-      );
+      steps.push(createExecutionStep(`กำหนด tail = tail.prev`, `tail = tail.prev`, 800));
+      steps.push(createExecutionStep(`กำหนด tail.next = None`, `tail.next = None`, 800));
     }
 
     const deletedValue = this.state.nodes[this.state.nodes.length - 1];
@@ -364,13 +322,7 @@ class DoublyLinkedListService {
 
     const index = this.state.nodes.indexOf(value);
     if (index === -1) {
-      steps.push(
-        createExecutionStep(
-          `ไม่พบค่า ${value} ในลิสต์`,
-          `ไม่พบค่า ${value}`,
-          1000,
-        ),
-      );
+      steps.push(createExecutionStep(`ไม่พบค่า ${value} ในลิสต์`, `ไม่พบค่า ${value}`, 1000));
       return steps;
     }
 
@@ -520,21 +472,11 @@ class DoublyLinkedListService {
     const steps: DoublyLinkedListExecutionStep[] = [];
 
     steps.push(
-      createExecutionStep(
-        `กำลัง Traverse Forward`,
-        `เรียกใช้ dll.traverse_forward()`,
-        1000,
-      ),
+      createExecutionStep(`กำลัง Traverse Forward`, `เรียกใช้ dll.traverse_forward()`, 1000),
     );
 
     if (this.state.nodes.length === 0) {
-      steps.push(
-        createExecutionStep(
-          `DoublyLinkedList ว่าง`,
-          `DoublyLinkedList ว่าง`,
-          1000,
-        ),
-      );
+      steps.push(createExecutionStep(`DoublyLinkedList ว่าง`, `DoublyLinkedList ว่าง`, 1000));
       return steps;
     }
 
@@ -550,11 +492,7 @@ class DoublyLinkedListService {
     }
 
     steps.push(
-      createExecutionStep(
-        `Traverse Forward เสร็จสิ้น`,
-        `Traverse Forward เสร็จสิ้น`,
-        1000,
-      ),
+      createExecutionStep(`Traverse Forward เสร็จสิ้น`, `Traverse Forward เสร็จสิ้น`, 1000),
     );
 
     return steps;
@@ -565,21 +503,11 @@ class DoublyLinkedListService {
     const steps: DoublyLinkedListExecutionStep[] = [];
 
     steps.push(
-      createExecutionStep(
-        `กำลัง Traverse Backward`,
-        `เรียกใช้ dll.traverse_backward()`,
-        1000,
-      ),
+      createExecutionStep(`กำลัง Traverse Backward`, `เรียกใช้ dll.traverse_backward()`, 1000),
     );
 
     if (this.state.nodes.length === 0) {
-      steps.push(
-        createExecutionStep(
-          `DoublyLinkedList ว่าง`,
-          `DoublyLinkedList ว่าง`,
-          1000,
-        ),
-      );
+      steps.push(createExecutionStep(`DoublyLinkedList ว่าง`, `DoublyLinkedList ว่าง`, 1000));
       return steps;
     }
 
@@ -595,11 +523,7 @@ class DoublyLinkedListService {
     }
 
     steps.push(
-      createExecutionStep(
-        `Traverse Backward เสร็จสิ้น`,
-        `Traverse Backward เสร็จสิ้น`,
-        1000,
-      ),
+      createExecutionStep(`Traverse Backward เสร็จสิ้น`, `Traverse Backward เสร็จสิ้น`, 1000),
     );
 
     return steps;
@@ -619,13 +543,7 @@ class DoublyLinkedListService {
 
     const index = this.state.nodes.indexOf(value);
     if (index === -1) {
-      steps.push(
-        createExecutionStep(
-          `ไม่พบค่า ${value} ในลิสต์`,
-          `ไม่พบค่า ${value}`,
-          1000,
-        ),
-      );
+      steps.push(createExecutionStep(`ไม่พบค่า ${value} ในลิสต์`, `ไม่พบค่า ${value}`, 1000));
     } else {
       steps.push(
         createExecutionStep(
@@ -674,7 +592,10 @@ class DoublyLinkedListService {
   }
 
   // Update by Value
-  async updateByValue(oldValue: string, newValue: string): Promise<DoublyLinkedListExecutionStep[]> {
+  async updateByValue(
+    oldValue: string,
+    newValue: string,
+  ): Promise<DoublyLinkedListExecutionStep[]> {
     const steps: DoublyLinkedListExecutionStep[] = [];
 
     steps.push(
@@ -687,13 +608,7 @@ class DoublyLinkedListService {
 
     const index = this.state.nodes.indexOf(oldValue);
     if (index === -1) {
-      steps.push(
-        createExecutionStep(
-          `ไม่พบค่า ${oldValue} ในลิสต์`,
-          `ไม่พบค่า ${oldValue}`,
-          1000,
-        ),
-      );
+      steps.push(createExecutionStep(`ไม่พบค่า ${oldValue} ในลิสต์`, `ไม่พบค่า ${oldValue}`, 1000));
       return steps;
     }
 
@@ -706,11 +621,7 @@ class DoublyLinkedListService {
     );
 
     steps.push(
-      createExecutionStep(
-        `อัปเดต current.data = ${newValue}`,
-        `current.data = ${newValue}`,
-        800,
-      ),
+      createExecutionStep(`อัปเดต current.data = ${newValue}`, `current.data = ${newValue}`, 800),
     );
 
     // Update state
@@ -730,7 +641,10 @@ class DoublyLinkedListService {
   }
 
   // Update by Position
-  async updateByPosition(position: number, newValue: string): Promise<DoublyLinkedListExecutionStep[]> {
+  async updateByPosition(
+    position: number,
+    newValue: string,
+  ): Promise<DoublyLinkedListExecutionStep[]> {
     const steps: DoublyLinkedListExecutionStep[] = [];
 
     steps.push(
@@ -763,11 +677,7 @@ class DoublyLinkedListService {
     );
 
     steps.push(
-      createExecutionStep(
-        `อัปเดต current.data = ${newValue}`,
-        `current.data = ${newValue}`,
-        800,
-      ),
+      createExecutionStep(`อัปเดต current.data = ${newValue}`, `current.data = ${newValue}`, 800),
     );
 
     // Update state

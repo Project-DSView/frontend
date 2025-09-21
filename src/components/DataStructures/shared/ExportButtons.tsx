@@ -7,10 +7,7 @@ interface ExportButtonsProps {
   pythonCode: string;
 }
 
-const ExportButtons: React.FC<ExportButtonsProps> = ({
-  visualizationRef,
-  pythonCode,
-}) => {
+const ExportButtons: React.FC<ExportButtonsProps> = ({ visualizationRef, pythonCode }) => {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExportPNG = async () => {
@@ -22,12 +19,12 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
     try {
       setIsExporting(true);
       toast.loading('กำลัง export PNG...', { id: 'export-png' });
-      
+
       await ExportUtils.exportAsPNG(visualizationRef, {
         filename: 'doubly-linked-list-visualization',
         quality: 1,
       });
-      
+
       toast.success('Export PNG สำเร็จ!', { id: 'export-png' });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to export PNG';
@@ -40,11 +37,11 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
   const handleExportPython = () => {
     try {
       toast.loading('กำลัง export Python code...', { id: 'export-python' });
-      
+
       ExportUtils.exportAsPython(pythonCode, {
         filename: 'doubly-linked-list-code',
       });
-      
+
       toast.success('Export Python code สำเร็จ!', { id: 'export-python' });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to export Python code';
@@ -70,7 +67,7 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
       <button
         onClick={handleExportPNG}
         disabled={isExporting}
-        className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white transition-colors hover:bg-primary/50 disabled:bg-primary/50"
+        className="bg-primary hover:bg-primary/50 disabled:bg-primary/50 flex items-center gap-2 rounded-lg px-4 py-2 text-white transition-colors"
       >
         <svg
           className="h-4 w-4"
@@ -92,7 +89,7 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
       <button
         onClick={handleExportPython}
         disabled={isExporting}
-        className="flex items-center gap-2 rounded-lg bg-secondary px-4 py-2 text-white transition-colors hover:bg-secondary/50 disabled:bg-secondary/50"
+        className="bg-secondary hover:bg-secondary/50 disabled:bg-secondary/50 flex items-center gap-2 rounded-lg px-4 py-2 text-white transition-colors"
       >
         <svg
           className="h-4 w-4"
@@ -114,7 +111,7 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
       <button
         onClick={handleCopyCode}
         disabled={isExporting}
-        className="flex items-center gap-2 rounded-lg bg-neutral px-4 py-2 text-white transition-colors hover:bg-neutral/50 disabled:bg-neutral/50"
+        className="bg-neutral hover:bg-neutral/50 disabled:bg-neutral/50 flex items-center gap-2 rounded-lg px-4 py-2 text-white transition-colors"
       >
         <svg
           className="h-4 w-4"

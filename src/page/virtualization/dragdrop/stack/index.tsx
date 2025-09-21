@@ -1,23 +1,21 @@
 'use client';
 
 import React, { useState, useRef, lazy, Suspense } from 'react';
-import { SinglyLinkedListOperation, SinglyLinkedListDragComponent } from '@/types';
-import { useSinglyLinkedList } from '@/hooks';
-import { singlyLinkedListDragComponents } from '@/data';
+import { StackOperation, StackDragComponent } from '@/types';
+import { useStack } from '@/hooks';
+import { stackDragComponents } from '@/data';
 import { CodeGenerationService } from '@/services';
 import DragDropZone from '@/components/DataStructures/shared/DragDropZone';
 
 // Lazy load heavy components
-const SinglyLinkedListOperations = lazy(
-  () => import('@/components/DataStructures/singly-linked-list/SinglyLinkedListOperations'),
-);
-const SinglyLinkedListVisualization = lazy(
-  () => import('@/components/DataStructures/singly-linked-list/SinglyLinkedListVisualization'),
+const StackOperations = lazy(() => import('@/components/DataStructures/stack/StackOperations'));
+const StackVisualization = lazy(
+  () => import('@/components/DataStructures/stack/StackVisualization'),
 );
 const CodeMirrorEditor = lazy(() => import('@/components/DataStructures/shared/CodeMirrorEditor'));
 const ExportButtons = lazy(() => import('@/components/DataStructures/shared/ExportButtons'));
 
-const DragDropSinglyLinkList = () => {
+const DragDropStack = () => {
   const {
     state,
     isRunning,
@@ -25,25 +23,24 @@ const DragDropSinglyLinkList = () => {
     currentStep,
     executionHistory,
     currentOperation,
-    currentPosition,
     addOperation,
     updateOperation,
     removeOperation,
     clearAll,
     executeAllOperations,
-  } = useSinglyLinkedList();
+  } = useStack();
 
-  const [draggedItem, setDraggedItem] = useState<SinglyLinkedListDragComponent | null>(null);
-  const [code, setCode] = useState(CodeGenerationService.getCodeTemplate('singly-linked-list'));
+  const [draggedItem, setDraggedItem] = useState<StackDragComponent | null>(null);
+  const [code, setCode] = useState(CodeGenerationService.getCodeTemplate('stack'));
   const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
 
-  const handleDragStart = (e: React.DragEvent, component: SinglyLinkedListDragComponent) => {
+  const handleDragStart = (e: React.DragEvent, component: StackDragComponent) => {
     setDraggedItem(component);
     e.dataTransfer.effectAllowed = 'copy';
   };
 
-  const handleTouchStart = (e: React.TouchEvent, component: SinglyLinkedListDragComponent) => {
+  const handleTouchStart = (e: React.TouchEvent, component: StackDragComponent) => {
     e.preventDefault();
     setDraggedItem(component);
     // Simulate drop immediately for touch devices
@@ -73,18 +70,9 @@ const DragDropSinglyLinkList = () => {
       const newOperation = {
         type: draggedItem.type,
         name: draggedItem.name,
-        value: ['traverse', 'delete_beginning', 'delete_end'].includes(draggedItem.type)
-          ? null
-          : '',
-        position: [
-          'insert_position',
-          'delete_position',
-          'search_position',
-          'update_position',
-        ].includes(draggedItem.type)
-          ? ''
-          : null,
-        newValue: ['update_value', 'update_position'].includes(draggedItem.type) ? '' : null,
+        value: ['pop', 'peek', 'is_empty', 'size'].includes(draggedItem.type) ? null : '',
+        position: null,
+        newValue: null,
         color: draggedItem.color,
         category: draggedItem.category,
       };
@@ -108,15 +96,15 @@ const DragDropSinglyLinkList = () => {
 
   const handleExecuteOperations = async () => {
     await executeAllOperations();
-    const generatedCode = CodeGenerationService.generateSinglyLinkedListCode(
-      state.operations as SinglyLinkedListOperation[],
+    const generatedCode = CodeGenerationService.generateStackCode(
+      state.operations as StackOperation[],
     );
     setCode(generatedCode);
   };
 
   const handleClearAll = () => {
     clearAll();
-    setCode(CodeGenerationService.getCodeTemplate('singly-linked-list'));
+    setCode(CodeGenerationService.getCodeTemplate('stack'));
   };
 
   return (
@@ -124,7 +112,7 @@ const DragDropSinglyLinkList = () => {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="mb-2 text-2xl font-bold text-gray-800">Drag & Drop Singly Linked List</h1>
+          <h1 className="mb-2 text-2xl font-bold text-gray-800">Drag & Drop Stack</h1>
           <p className="text-gray-600">
             เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
           </p>
@@ -145,8 +133,8 @@ const DragDropSinglyLinkList = () => {
             </div>
           }
         >
-          <SinglyLinkedListOperations
-            dragComponents={singlyLinkedListDragComponents}
+          <StackOperations
+            dragComponents={stackDragComponents}
             onDragStart={handleDragStart}
             onTouchStart={handleTouchStart}
           />
@@ -219,14 +207,13 @@ const DragDropSinglyLinkList = () => {
           </div>
         }
       >
-        <SinglyLinkedListVisualization
+        <StackVisualization
           ref={visualizationRef}
-          nodes={state.nodes}
+          elements={state.elements}
           stats={state.stats}
           isRunning={isRunning}
           currentOperation={currentOperation}
           currentStep={currentStep}
-          currentPosition={currentPosition}
         />
       </Suspense>
 
@@ -244,4 +231,4 @@ const DragDropSinglyLinkList = () => {
   );
 };
 
-export default DragDropSinglyLinkList;
+export default DragDropStack;
