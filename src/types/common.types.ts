@@ -37,7 +37,13 @@ type DataStructureType =
   | 'binary-search-tree'
   | 'graph';
 
-type OperationCategory = 'insertion' | 'deletion' | 'traversal' | 'searching' | 'update';
+type OperationCategory =
+  | 'insertion'
+  | 'deletion'
+  | 'traversal'
+  | 'searching'
+  | 'update'
+  | 'utility';
 
 export type {
   Operation,

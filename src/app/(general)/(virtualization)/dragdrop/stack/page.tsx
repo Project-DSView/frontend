@@ -1,7 +1,9 @@
+import DragDropStack from '@/page/virtualization/dragdrop/stack';
+
 const Page = () => {
   return (
     <>
-      <h1>test</h1>
+      <DragDropStack />
     </>
   );
 };

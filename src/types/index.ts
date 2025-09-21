@@ -31,6 +31,9 @@ export type {
   SinglyLinkedListVisualizationProps,
   DoublyLinkedListOperationsProps,
   DoublyLinkedListVisualizationProps,
+  StackOperationsProps,
+  StackVisualizationProps,
+  DragDropZoneProps,
 } from './components/DragDrop.types';
 export type {
   CookieOptions,
@@ -48,3 +51,11 @@ export type {
   DoublyLinkedListExecutionStep,
   DoublyLinkedListCodeTemplate,
 } from './DataStructures/DoublyLinkedList.types';
+export type {
+  StackElement,
+  StackState,
+  StackOperation,
+  StackDragComponent,
+  StackExecutionStep,
+  StackCodeTemplate,
+} from './DataStructures/Stack.types';
