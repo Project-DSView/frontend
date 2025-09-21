@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { DataStructureType } from '@/types';
@@ -38,4 +38,4 @@ const useDataStructureContext = () => {
   return context;
 };
 
-export { DataStructureProvider, useDataStructureContext  }
+export { DataStructureProvider, useDataStructureContext };

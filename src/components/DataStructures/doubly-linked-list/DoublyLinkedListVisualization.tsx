@@ -86,20 +86,18 @@ const DoublyLinkedListVisualization: React.FC<DoublyLinkedListVisualizationProps
       <div className="flex items-center">
         {/* Node Container - 3 Section Layout like in the image */}
         <div
-          className={`flex h-16 w-40 rounded-lg border-2 border-black bg-white transition-all duration-500 ${isAnimated ? 'border-accent animate-pulse bg-yellow-100' : 'hover:bg-gray-50'
-            }`}
+          className={`flex h-16 w-40 rounded-lg border-2 border-black bg-white transition-all duration-500 ${
+            isAnimated ? 'border-accent animate-pulse bg-yellow-100' : 'hover:bg-gray-50'
+          }`}
         >
           {/* Pre Section - Left */}
           <div className="flex w-1/3 items-center justify-center rounded-l-lg bg-gray-100">
             <span className="text-xs font-bold text-black">Pre</span>
           </div>
- 
+
           {/* Data Section - Center */}
-          <div className="flex w-1/3 items-center justify-center border-x border-black border-x-2  bg-gray-100">
-            <span
-              className={`font-bold text-black ${value.length > 6 ? 'text-sm' : 'text-lg'
-                }`}
-            >
+          <div className="flex w-1/3 items-center justify-center border-x border-x-2 border-black bg-gray-100">
+            <span className={`font-bold text-black ${value.length > 6 ? 'text-sm' : 'text-lg'}`}>
               {value}
             </span>
           </div>
@@ -108,7 +106,6 @@ const DoublyLinkedListVisualization: React.FC<DoublyLinkedListVisualizationProps
           <div className="flex w-1/3 items-center justify-center rounded-r-lg bg-gray-100">
             <span className="text-xs font-bold text-black">Next</span>
           </div>
-
         </div>
       </div>
     );
@@ -127,8 +124,8 @@ const DoublyLinkedListVisualization: React.FC<DoublyLinkedListVisualizationProps
             {/* HEAD Pointer */}
             <div className="flex flex-col items-center">
               <div className="text-sm font-bold text-black">HEAD</div>
-              <div className="w-0.5 h-6 bg-black"></div>
-              <div className="h-0 w-0 border-l-[4px] border-r-[4px] border-t-[6px] border-l-transparent border-r-transparent border-t-black"></div>
+              <div className="h-6 w-0.5 bg-black"></div>
+              <div className="h-0 w-0 border-t-[6px] border-r-[4px] border-l-[4px] border-t-black border-r-transparent border-l-transparent"></div>
             </div>
 
             {/* Nodes with Connections */}
@@ -140,23 +137,47 @@ const DoublyLinkedListVisualization: React.FC<DoublyLinkedListVisualizationProps
 
                   {/* Head Label */}
                   {index === headPosition && (
-                    <div className={`absolute -top-12 left-1/2 transform -translate-x-1/2 ${isRunning && (currentOperation === 'traverse_forward' ||
-                        currentOperation === 'search_value' ||
-                        currentOperation === 'search_position') ? 'animate-pulse' : ''
-                      }`}>
-                      <div className={`text-xs font-bold ${isRunning && (currentOperation === 'traverse_forward' ||
+                    <div
+                      className={`absolute -top-12 left-1/2 -translate-x-1/2 transform ${
+                        isRunning &&
+                        (currentOperation === 'traverse_forward' ||
                           currentOperation === 'search_value' ||
-                          currentOperation === 'search_position') ? 'text-blue-600' : 'text-gray-600'
-                        }`}>HEAD</div>
+                          currentOperation === 'search_position')
+                          ? 'animate-pulse'
+                          : ''
+                      }`}
+                    >
+                      <div
+                        className={`text-xs font-bold ${
+                          isRunning &&
+                          (currentOperation === 'traverse_forward' ||
+                            currentOperation === 'search_value' ||
+                            currentOperation === 'search_position')
+                            ? 'text-blue-600'
+                            : 'text-gray-600'
+                        }`}
+                      >
+                        HEAD
+                      </div>
                     </div>
                   )}
 
                   {/* Tail Label */}
                   {index === tailPosition && (
-                    <div className={`absolute -top-12 left-1/2 transform -translate-x-1/2 ${isRunning && currentOperation === 'traverse_backward' ? 'animate-pulse' : ''
-                      }`}>
-                      <div className={`text-xs font-bold ${isRunning && currentOperation === 'traverse_backward' ? 'text-green-600' : 'text-gray-600'
-                        }`}>TAIL</div>
+                    <div
+                      className={`absolute -top-12 left-1/2 -translate-x-1/2 transform ${
+                        isRunning && currentOperation === 'traverse_backward' ? 'animate-pulse' : ''
+                      }`}
+                    >
+                      <div
+                        className={`text-xs font-bold ${
+                          isRunning && currentOperation === 'traverse_backward'
+                            ? 'text-green-600'
+                            : 'text-gray-600'
+                        }`}
+                      >
+                        TAIL
+                      </div>
                     </div>
                   )}
                 </div>
@@ -171,7 +192,7 @@ const DoublyLinkedListVisualization: React.FC<DoublyLinkedListVisualizationProps
                     </div>
                     {/* Backward connection (Pre -> Next) */}
                     <div className="flex items-center">
-                      <div className="h-0 w-0 border-t-[3px] border-b-[3px] border-r-[6px] border-t-transparent border-b-transparent border-r-black"></div>
+                      <div className="h-0 w-0 border-t-[3px] border-r-[6px] border-b-[3px] border-t-transparent border-r-black border-b-transparent"></div>
                       <div className="h-0.5 w-12 bg-black"></div>
                     </div>
                   </div>
@@ -189,7 +210,7 @@ const DoublyLinkedListVisualization: React.FC<DoublyLinkedListVisualizationProps
               </div>
               {/* Backward NULL */}
               <div className="flex items-center">
-                <div className="h-0 w-0 border-t-[3px] border-b-[3px] border-r-[6px] border-t-transparent border-b-transparent border-r-black"></div>
+                <div className="h-0 w-0 border-t-[3px] border-r-[6px] border-b-[3px] border-t-transparent border-r-black border-b-transparent"></div>
                 <div className="h-0.5 w-12 bg-black"></div>
                 <div className="ml-2 text-sm font-bold text-black">NULL</div>
               </div>
@@ -214,7 +235,9 @@ const DoublyLinkedListVisualization: React.FC<DoublyLinkedListVisualizationProps
       {/* Operation Status */}
       {isRunning && currentStep && (
         <div className="mt-4 rounded-lg bg-blue-50 p-3">
-          <div className="text-sm font-medium text-blue-800">Current Operation: {currentOperation}</div>
+          <div className="text-sm font-medium text-blue-800">
+            Current Operation: {currentOperation}
+          </div>
           <div className="text-sm text-blue-700">{currentStep}</div>
         </div>
       )}

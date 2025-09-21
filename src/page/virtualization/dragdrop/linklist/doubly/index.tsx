@@ -65,12 +65,9 @@ const DragDropDoublyLinkList = () => {
       const newOperation = {
         type: draggedItem.type,
         name: draggedItem.name,
-        value: [
-          'traverse_forward',
-          'traverse_backward',
-          'delete_beginning',
-          'delete_end',
-        ].includes(draggedItem.type)
+        value: ['traverse_forward', 'traverse_backward', 'delete_beginning', 'delete_end'].includes(
+          draggedItem.type,
+        )
           ? null
           : '',
         position: [

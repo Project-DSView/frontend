@@ -22,7 +22,7 @@ interface OperationCardProps {
 }
 
 interface OperationCategoryDropdownProps {
-  categories: { key: OperationCategory; title: string; color: string; }[];
+  categories: { key: OperationCategory; title: string; color: string }[];
   selectedCategory: OperationCategory | null;
   onCategorySelect: (category: OperationCategory | null) => void;
 }

@@ -24,7 +24,6 @@ interface JWTPayload {
   [key: string]: unknown;
 }
 
-
 interface RateLimitConfig {
   maxAttempts: number;
   windowMs: number;
@@ -42,4 +41,11 @@ interface SecureSessionData {
   expiresAt: number;
 }
 
-export type { CookieOptions, CORSConfig, JWTPayload, RateLimitConfig, RateLimitEntry, SecureSessionData }
+export type {
+  CookieOptions,
+  CORSConfig,
+  JWTPayload,
+  RateLimitConfig,
+  RateLimitEntry,
+  SecureSessionData,
+};

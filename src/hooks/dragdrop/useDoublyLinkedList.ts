@@ -1,8 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import {
-  DoublyLinkedListState,
-  DoublyLinkedListOperation,
-} from '@/types';
+import { DoublyLinkedListState, DoublyLinkedListOperation } from '@/types';
 import { DoublyLinkedListService } from '@/services';
 
 const useDoublyLinkedList = (initialState?: Partial<DoublyLinkedListState>) => {
@@ -86,7 +83,10 @@ const useDoublyLinkedList = (initialState?: Partial<DoublyLinkedListState>) => {
   }, []);
 
   const executeOperation = useCallback(
-    async (operation: DoublyLinkedListOperation, currentState: DoublyLinkedListState): Promise<DoublyLinkedListState> => {
+    async (
+      operation: DoublyLinkedListOperation,
+      currentState: DoublyLinkedListState,
+    ): Promise<DoublyLinkedListState> => {
       const service = new DoublyLinkedListService(currentState);
       let steps: Array<{ step: string; description: string; duration: number }> = [];
 
@@ -151,14 +151,20 @@ const useDoublyLinkedList = (initialState?: Partial<DoublyLinkedListState>) => {
       for (let i = 0; i < operationsRef.current.length; i++) {
         const operation = operationsRef.current[i];
         setCurrentLine(i + 1);
-        
+
         // Skip operations without required values
         if (
-          (operation.type.includes('insert') || operation.type.includes('delete') || operation.type.includes('search') || operation.type.includes('update')) &&
+          (operation.type.includes('insert') ||
+            operation.type.includes('delete') ||
+            operation.type.includes('search') ||
+            operation.type.includes('update')) &&
           !operation.value &&
           !operation.position
         ) {
-          setExecutionHistory((prev) => [...prev, `ข้าม operation: ${operation.name} - ไม่มีค่าที่จำเป็น`]);
+          setExecutionHistory((prev) => [
+            ...prev,
+            `ข้าม operation: ${operation.name} - ไม่มีค่าที่จำเป็น`,
+          ]);
           continue;
         }
 

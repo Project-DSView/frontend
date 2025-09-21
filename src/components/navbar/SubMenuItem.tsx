@@ -33,4 +33,4 @@ const SubMenuItem = ({ title, description, items }: SubMenuItemProps) => (
   </DropdownMenuSub>
 );
 
-export default SubMenuItem
+export default SubMenuItem;

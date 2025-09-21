@@ -1,4 +1,4 @@
-import { CORSConfig } from "@/types";
+import { CORSConfig } from '@/types';
 
 /**
  * Default CORS configuration
@@ -10,14 +10,7 @@ export const DEFAULT_CORS_CONFIG: CORSConfig = {
     'http://localhost:3001',
     'https://localhost:3001',
   ],
-  allowedMethods: [
-    'GET',
-    'POST',
-    'PUT',
-    'DELETE',
-    'OPTIONS',
-    'PATCH'
-  ],
+  allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
     'Content-Type',
     'Authorization',
@@ -25,9 +18,9 @@ export const DEFAULT_CORS_CONFIG: CORSConfig = {
     'Accept',
     'Origin',
     'Access-Control-Request-Method',
-    'Access-Control-Request-Headers'
+    'Access-Control-Request-Headers',
   ],
-  credentials: true
+  credentials: true,
 };
 
 /**
@@ -35,11 +28,11 @@ export const DEFAULT_CORS_CONFIG: CORSConfig = {
  */
 export const getSafeHeaders = (): Record<string, string> => {
   const isDevelopment = process.env.NODE_ENV === 'development';
-  
+
   const baseHeaders = {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest'
+    Accept: 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
   };
 
   // In development, only include basic headers to avoid CORS issues
@@ -51,7 +44,7 @@ export const getSafeHeaders = (): Record<string, string> => {
   return {
     ...baseHeaders,
     'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache'
+    Pragma: 'no-cache',
   };
 };
 
@@ -91,7 +84,7 @@ export const generateCORSHeaders = (origin?: string): Record<string, string> => 
     'Access-Control-Allow-Methods': DEFAULT_CORS_CONFIG.allowedMethods.join(', '),
     'Access-Control-Allow-Headers': DEFAULT_CORS_CONFIG.allowedHeaders.join(', '),
     'Access-Control-Allow-Credentials': DEFAULT_CORS_CONFIG.credentials.toString(),
-    'Access-Control-Max-Age': '86400' // 24 hours
+    'Access-Control-Max-Age': '86400', // 24 hours
   };
 
   if (origin && isOriginAllowed(origin)) {
@@ -106,9 +99,11 @@ export const generateCORSHeaders = (origin?: string): Record<string, string> => 
 /**
  * Handle CORS preflight request
  */
-export const handleCORSPreflight = (origin?: string): { statusCode: number; headers: Record<string, string> } => {
+export const handleCORSPreflight = (
+  origin?: string,
+): { statusCode: number; headers: Record<string, string> } => {
   return {
     statusCode: 200,
-    headers: generateCORSHeaders(origin)
+    headers: generateCORSHeaders(origin),
   };
 };

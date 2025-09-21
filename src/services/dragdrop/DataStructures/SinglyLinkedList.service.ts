@@ -147,11 +147,7 @@ class SinglyLinkedListService {
       this.state.nodes.unshift(value);
     } else if (position === this.state.nodes.length) {
       steps.push(
-        createExecutionStep(
-          `ตำแหน่ง ${position} = Insert at End`,
-          `เรียกใช้ insert_at_end`,
-          1000,
-        ),
+        createExecutionStep(`ตำแหน่ง ${position} = Insert at End`, `เรียกใช้ insert_at_end`, 1000),
       );
       this.state.nodes.push(value);
     } else {
@@ -209,11 +205,7 @@ class SinglyLinkedListService {
     const steps: SinglyLinkedListExecutionStep[] = [];
 
     steps.push(
-      createExecutionStep(
-        `กำลัง Delete จากหัวลิสต์`,
-        `เรียกใช้ ll.delete_from_beginning()`,
-        1000,
-      ),
+      createExecutionStep(`กำลัง Delete จากหัวลิสต์`, `เรียกใช้ ll.delete_from_beginning()`, 1000),
     );
 
     if (this.state.nodes.length === 0) {
@@ -229,11 +221,7 @@ class SinglyLinkedListService {
 
     const deletedValue = this.state.nodes[0];
     steps.push(
-      createExecutionStep(
-        `ลบ head node (${deletedValue})`,
-        `ลบ head node (${deletedValue})`,
-        800,
-      ),
+      createExecutionStep(`ลบ head node (${deletedValue})`, `ลบ head node (${deletedValue})`, 800),
     );
 
     steps.push(createExecutionStep(`กำหนด head = head.next`, `head = head.next`, 800));
@@ -524,11 +512,7 @@ class SinglyLinkedListService {
     const steps: SinglyLinkedListExecutionStep[] = [];
 
     steps.push(
-      createExecutionStep(
-        `กำลังค้นหาค่า ${value}`,
-        `เรียกใช้ ll.search_by_value(${value})`,
-        1000,
-      ),
+      createExecutionStep(`กำลังค้นหาค่า ${value}`, `เรียกใช้ ll.search_by_value(${value})`, 1000),
     );
 
     steps.push(createExecutionStep(`เริ่มจาก head node`, `current = head, position = 0`, 800));
@@ -775,7 +759,6 @@ class SinglyLinkedListService {
 
     return steps;
   }
-
 
   // Get current state
   getState(): SinglyLinkedListState {

@@ -47,7 +47,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                 <span className="text-sm font-medium">{op.name}</span>
                 <button
                   onClick={() => onRemoveOperation(op.id)}
-                  className="ml-auto font-bold text-error hover:text-error/50"
+                  className="text-error hover:text-error/50 ml-auto font-bold"
                 >
                   ✕
                 </button>
@@ -119,4 +119,4 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
   );
 };
 
-export default DragDropZone
+export default DragDropZone;

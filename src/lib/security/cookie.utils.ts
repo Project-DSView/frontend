@@ -1,13 +1,9 @@
-import { CookieOptions } from "@/types";
+import { CookieOptions } from '@/types';
 
 /**
  * Set a cookie with security options
  */
-export const setCookie = (
-  name: string,
-  value: string,
-  options: CookieOptions = {}
-): void => {
+export const setCookie = (name: string, value: string, options: CookieOptions = {}): void => {
   const {
     expires,
     maxAge,
@@ -15,7 +11,7 @@ export const setCookie = (
     domain,
     secure = true, // Default to secure in production
     sameSite = 'strict', // Default to strict for security
-    httpOnly = false // Cannot be set to true from client-side
+    httpOnly = false, // Cannot be set to true from client-side
   } = options;
 
   let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
@@ -72,7 +68,7 @@ export const deleteCookie = (name: string, path: string = '/'): void => {
     expires: new Date(0),
     path,
     secure: true,
-    sameSite: 'strict'
+    sameSite: 'strict',
   });
 };
 
@@ -82,7 +78,7 @@ export const deleteCookie = (name: string, path: string = '/'): void => {
 export const clearAllCookies = (): void => {
   const cookies = document.cookie.split(';');
 
-  cookies.forEach(cookie => {
+  cookies.forEach((cookie) => {
     const eqPos = cookie.indexOf('=');
     const name = eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
     if (name) {
@@ -112,7 +108,7 @@ export const getAllCookies = (): Record<string, string> => {
   const cookies: Record<string, string> = {};
   const cookieArray = document.cookie.split(';');
 
-  cookieArray.forEach(cookie => {
+  cookieArray.forEach((cookie) => {
     const [name, value] = cookie.trim().split('=');
     if (name && value) {
       cookies[decodeURIComponent(name)] = decodeURIComponent(value);

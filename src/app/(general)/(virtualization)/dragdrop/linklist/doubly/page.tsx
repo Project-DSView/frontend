@@ -1,4 +1,4 @@
-import DragDropDoublyLinkList from "@/page/virtualization/dragdrop/linklist/doubly";
+import DragDropDoublyLinkList from '@/page/virtualization/dragdrop/linklist/doubly';
 
 const Page = () => {
   return (
