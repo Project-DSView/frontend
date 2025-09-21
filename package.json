@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "NODE_ENV=development bun run next dev --turbopack --experimental-https",
-    "build": "bun run next build --turbopack",
+    "build": "bun run next build",
     "start": "bun run next start",
     "lint": "bun run eslint",
     "format": "bun run prettier --write .",
