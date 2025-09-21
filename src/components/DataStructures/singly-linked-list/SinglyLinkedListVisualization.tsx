@@ -83,7 +83,7 @@ const SinglyLinkedListVisualization: React.FC<SinglyLinkedListVisualizationProps
         {/* Node Container - Horizontal Layout */}
         <div
           className={`max-w-[250px] min-w-[160px] rounded-lg border-2 border-black bg-white p-3 text-center font-bold transition-all duration-500 ${
-            isAnimated ? 'border-accent animate-pulse bg-yellow-100' : 'hover:bg-gray-50'
+            isAnimated ? 'border-accent animate-pulse bg-gray-50' : 'hover:bg-gray-50'
           }`}
         >
           {/* Data Section - Left */}

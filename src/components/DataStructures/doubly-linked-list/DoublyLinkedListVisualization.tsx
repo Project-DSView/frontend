@@ -87,7 +87,7 @@ const DoublyLinkedListVisualization: React.FC<DoublyLinkedListVisualizationProps
         {/* Node Container - 3 Section Layout like in the image */}
         <div
           className={`flex h-16 w-40 rounded-lg border-2 border-black bg-white transition-all duration-500 ${
-            isAnimated ? 'border-accent animate-pulse bg-yellow-100' : 'hover:bg-gray-50'
+            isAnimated ? 'border-accent animate-pulse bg-gray-50' : 'hover:bg-gray-50'
           }`}
         >
           {/* Pre Section - Left */}
@@ -116,29 +116,20 @@ const DoublyLinkedListVisualization: React.FC<DoublyLinkedListVisualizationProps
       <h2 className="mb-4 text-lg font-semibold text-gray-800">Doubly Linked List Visualization</h2>
 
       {/* Linked List Visualization */}
-      <div className="relative min-h-[200px] overflow-x-auto rounded-lg bg-gray-50 p-6 pt-16">
-        {nodes.length === 0 ? (
+      <div className="relative min-h-[220px] overflow-x-auto rounded-lg bg-gray-50 p-6 pt-20">
+        {nodes.length === 0 && !isRunning && !currentStep ? (
           <div className="text-gray-400 italic">Empty doubly linked list</div>
         ) : (
-          <div className="flex items-center justify-start space-x-6">
-            {/* HEAD Pointer */}
-            <div className="flex flex-col items-center">
-              <div className="text-sm font-bold text-black">HEAD</div>
-              <div className="h-6 w-0.5 bg-black"></div>
-              <div className="h-0 w-0 border-t-[6px] border-r-[4px] border-l-[4px] border-t-black border-r-transparent border-l-transparent"></div>
-            </div>
-
-            {/* Nodes with Connections */}
+          <div className="flex items-center justify-start space-x-2">
+            {/* Nodes with Head/Tail Pointers */}
             {nodes.map((value: string, index: number) => (
               <React.Fragment key={index}>
-                {/* Node */}
                 <div className="relative">
-                  {renderDoublyLinkedListNode(value, index)}
-
-                  {/* Head Label */}
-                  {index === headPosition && (
+                  {/* Head Label - Show on current position for traverse, first node for others */}
+                  {((currentOperation === 'traverse_forward' && index === headPosition) ||
+                    (currentOperation !== 'traverse_forward' && index === 0)) && (
                     <div
-                      className={`absolute -top-12 left-1/2 -translate-x-1/2 transform ${
+                      className={`absolute -top-16 left-1/2 z-10 -translate-x-1/2 transform transition-all duration-500 ${
                         isRunning &&
                         (currentOperation === 'traverse_forward' ||
                           currentOperation === 'search_value' ||
@@ -146,9 +137,12 @@ const DoublyLinkedListVisualization: React.FC<DoublyLinkedListVisualizationProps
                           ? 'animate-pulse'
                           : ''
                       }`}
+                      style={{
+                        left: (nodes.length === 1 || (currentOperation === 'traverse_forward' && headPosition === tailPosition)) ? '25%' : '50%',
+                      }}
                     >
                       <div
-                        className={`text-xs font-bold ${
+                        className={`px-2 py-1 text-lg font-semibold ${
                           isRunning &&
                           (currentOperation === 'traverse_forward' ||
                             currentOperation === 'search_value' ||
@@ -157,63 +151,61 @@ const DoublyLinkedListVisualization: React.FC<DoublyLinkedListVisualizationProps
                             : 'text-gray-600'
                         }`}
                       >
-                        HEAD
+                        head
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <div className="h-4 w-0.5 bg-black"></div>
+                        <div className="h-0 w-0 border-t-[6px] border-r-[4px] border-l-[4px] border-t-black border-r-transparent border-l-transparent"></div>
                       </div>
                     </div>
                   )}
 
-                  {/* Tail Label */}
-                  {index === tailPosition && (
+                  {/* Tail Label - Show on last node for traverse_backward, last node for others */}
+                  {((currentOperation === 'traverse_backward' && index === tailPosition) ||
+                    (currentOperation !== 'traverse_backward' && index === nodes.length - 1)) && (
                     <div
-                      className={`absolute -top-12 left-1/2 -translate-x-1/2 transform ${
+                      className={`absolute -top-16 left-1/2 z-10 -translate-x-1/2 transform transition-all duration-500 ${
                         isRunning && currentOperation === 'traverse_backward' ? 'animate-pulse' : ''
                       }`}
+                      style={{
+                        left: (nodes.length === 1 || (currentOperation === 'traverse_backward' && headPosition === tailPosition)) ? '75%' : '50%',
+                      }}
                     >
                       <div
-                        className={`text-xs font-bold ${
+                        className={`px-2 py-1 text-lg font-semibold ${
                           isRunning && currentOperation === 'traverse_backward'
                             ? 'text-green-600'
                             : 'text-gray-600'
                         }`}
                       >
-                        TAIL
+                        tail
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <div className="h-4 w-0.5 bg-black"></div>
+                        <div className="h-0 w-0 border-t-[6px] border-r-[4px] border-l-[4px] border-t-black border-r-transparent border-l-transparent"></div>
                       </div>
                     </div>
                   )}
+
+                  {/* Node */}
+                  {renderDoublyLinkedListNode(value, index)}
                 </div>
 
                 {/* Connections to next node */}
                 {index < nodes.length - 1 && (
-                  <div className="flex flex-col items-center space-y-3">
-                    {/* Forward connection (Next -> Pre) */}
-                    <div className="flex items-center">
-                      <div className="h-0.5 w-12 bg-black"></div>
-                      <div className="h-0 w-0 border-t-[3px] border-b-[3px] border-l-[6px] border-t-transparent border-b-transparent border-l-black"></div>
-                    </div>
-                    {/* Backward connection (Pre -> Next) */}
-                    <div className="flex items-center">
-                      <div className="h-0 w-0 border-t-[3px] border-r-[6px] border-b-[3px] border-t-transparent border-r-black border-b-transparent"></div>
-                      <div className="h-0.5 w-12 bg-black"></div>
-                    </div>
+                  <div className="mx-2 flex items-center">
+                    <div className="h-0.5 w-6 bg-black"></div>
+                    <div className="h-0 w-0 border-t-[4px] border-b-[4px] border-l-[8px] border-t-transparent border-b-transparent border-l-black"></div>
                   </div>
                 )}
               </React.Fragment>
             ))}
 
-            {/* NULL Pointers at the end */}
-            <div className="flex flex-col items-center space-y-3">
-              {/* Forward NULL */}
-              <div className="flex items-center">
-                <div className="h-0.5 w-12 bg-black"></div>
-                <div className="h-0 w-0 border-t-[3px] border-b-[3px] border-l-[6px] border-t-transparent border-b-transparent border-l-black"></div>
-                <div className="ml-2 text-sm font-bold text-black">NULL</div>
-              </div>
-              {/* Backward NULL */}
-              <div className="flex items-center">
-                <div className="h-0 w-0 border-t-[3px] border-r-[6px] border-b-[3px] border-t-transparent border-r-black border-b-transparent"></div>
-                <div className="h-0.5 w-12 bg-black"></div>
-                <div className="ml-2 text-sm font-bold text-black">NULL</div>
-              </div>
+            {/* NULL Pointer */}
+            <div className="ml-3 flex items-center">
+              <div className="h-0.5 w-6 bg-black"></div>
+              <div className="h-0 w-0 border-t-[4px] border-b-[4px] border-l-[8px] border-t-transparent border-b-transparent border-l-black"></div>
+              <div className="ml-2 text-lg font-bold text-black">NULL</div>
             </div>
           </div>
         )}
@@ -232,15 +224,7 @@ const DoublyLinkedListVisualization: React.FC<DoublyLinkedListVisualizationProps
         </div>
       </div>
 
-      {/* Operation Status */}
-      {isRunning && currentStep && (
-        <div className="mt-4 rounded-lg bg-blue-50 p-3">
-          <div className="text-sm font-medium text-blue-800">
-            Current Operation: {currentOperation}
-          </div>
-          <div className="text-sm text-blue-700">{currentStep}</div>
-        </div>
-      )}
+    
     </div>
   );
 };

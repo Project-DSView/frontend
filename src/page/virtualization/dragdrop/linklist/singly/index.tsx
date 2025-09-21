@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { SinglyLinkedListOperation, SinglyLinkedListDragComponent } from '@/types';
-import { useDataStructure } from '@/hooks';
+import { useSinglyLinkedList } from '@/hooks';
 import { singlyLinkedListDragComponents } from '@/data';
 import { CodeGenerationService } from '@/services';
 import SinglyLinkedListOperations from '@/components/DataStructures/singly-linked-list/SinglyLinkedListOperations';
@@ -24,7 +24,7 @@ const DragDropSinglyLinkList = () => {
     removeOperation,
     clearAll,
     executeAllOperations,
-  } = useDataStructure();
+  } = useSinglyLinkedList();
 
   const [draggedItem, setDraggedItem] = useState<SinglyLinkedListDragComponent | null>(null);
   const [code, setCode] = useState(CodeGenerationService.getCodeTemplate('singly-linked-list'));

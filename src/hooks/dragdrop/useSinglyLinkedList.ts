@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { SinglyLinkedListState, SinglyLinkedListOperation } from '@/types';
 import { SinglyLinkedListService } from '@/services';
 
-const useDataStructure = (initialState?: Partial<SinglyLinkedListState>) => {
+const useSinglyLinkedList = (initialState?: Partial<SinglyLinkedListState>) => {
   const [state, setState] = useState<SinglyLinkedListState>({
     nodes: [],
     operations: [],
@@ -300,4 +300,4 @@ const useDataStructure = (initialState?: Partial<SinglyLinkedListState>) => {
   };
 };
 
-export default useDataStructure;
+export default useSinglyLinkedList;
