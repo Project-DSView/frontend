@@ -4,12 +4,6 @@
   "outputDirectory": ".next",
   "installCommand": "bun install",
   "framework": "nextjs",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
   "env": {
     "NODE_ENV": "development"
   },
