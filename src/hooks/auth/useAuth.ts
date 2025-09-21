@@ -1,15 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { UserProfile, UseAuthReturn } from '@/types';
 import { ProfileService, AuthService } from '@/services';
-import { 
-  secureSessionUtils, 
-  logError, 
-  isTokenExpired, 
+import {
+  secureSessionUtils,
+  logError,
+  isTokenExpired,
   RATE_LIMIT_CONFIGS,
   isRateLimited,
-  initializeCSRFProtection 
+  initializeCSRFProtection,
 } from '@/lib';
-
 
 const useAuth = (): UseAuthReturn => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -58,7 +57,7 @@ const useAuth = (): UseAuthReturn => {
       }
 
       const newToken = await AuthService.refreshToken();
-      
+
       // Validate new token
       if (!newToken || isTokenExpired(newToken)) {
         throw new Error('Invalid token received from server');
@@ -89,7 +88,7 @@ const useAuth = (): UseAuthReturn => {
       }
 
       const profileData = await ProfileService.fetchProfile(token);
-      
+
       // Validate profile data
       if (!profileData || !profileData.user_id) {
         throw new Error('Invalid profile data received');

@@ -65,11 +65,7 @@ const DragDropSinglyLinkList = () => {
       const newOperation = {
         type: draggedItem.type,
         name: draggedItem.name,
-        value: [
-          'traverse',
-          'delete_beginning',
-          'delete_end',
-        ].includes(draggedItem.type)
+        value: ['traverse', 'delete_beginning', 'delete_end'].includes(draggedItem.type)
           ? null
           : '',
         position: [

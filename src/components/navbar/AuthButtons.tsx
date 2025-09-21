@@ -8,16 +8,16 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useGoogleAuth, useAuth } from '@/hooks';
 import { useLogout } from '@/query';
-import { 
-  clearAllCookies, 
-  removeQueryParams, 
-  getErrorMessage, 
+import {
+  clearAllCookies,
+  removeQueryParams,
+  getErrorMessage,
   logError,
   RATE_LIMIT_CONFIGS,
   isRateLimited,
   isTokenExpired,
   isValidJWTFormat,
-  getTokenExpirationTime
+  getTokenExpirationTime,
 } from '@/lib';
 import { User, ChevronDown } from 'lucide-react';
 import {
@@ -67,7 +67,9 @@ const AuthButtons: React.FC = () => {
       if (!isInitialized || !tokenFromUrl) return;
 
       // SECURITY WARNING: Token in URL is a security risk
-      console.warn('SECURITY WARNING: Token received via URL parameter. This should be avoided in production.');
+      console.warn(
+        'SECURITY WARNING: Token received via URL parameter. This should be avoided in production.',
+      );
 
       try {
         // Validate token format first
@@ -105,12 +107,12 @@ const AuthButtons: React.FC = () => {
         const tokenExpiry = getTokenExpirationTime(accessToken);
         const now = Date.now();
         const fiveMinutes = 5 * 60 * 1000;
-        
-        if (tokenExpiry && (tokenExpiry - now) > fiveMinutes) {
+
+        if (tokenExpiry && tokenExpiry - now > fiveMinutes) {
           // Token is still valid for more than 5 minutes, skip validation
           return;
         }
-        
+
         await fetchUserProfile(accessToken);
       } catch (error) {
         logError('Session validation failed:', error);

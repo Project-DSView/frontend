@@ -28,7 +28,7 @@ const ReactQueryProvider = ({ children }: { children: ReactNode }) => {
             retry: false,
           },
         },
-      })
+      }),
   );
 
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;

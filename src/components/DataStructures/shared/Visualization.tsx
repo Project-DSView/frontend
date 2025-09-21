@@ -11,15 +11,17 @@ const Visualization: React.FC<VisualizationProps> = ({
   const defaultRenderNode = (value: string, index: number) => (
     <div className="flex items-center">
       <div
-        className={`min-w-[120px] max-w-[200px] rounded-lg border-2 border-black bg-white p-3 text-center font-bold transition-all duration-500 ${
+        className={`max-w-[200px] min-w-[120px] rounded-lg border-2 border-black bg-white p-3 text-center font-bold transition-all duration-500 ${
           isRunning ? 'animate-bounce' : 'hover:bg-gray-50'
         }`}
       >
-        <div className={`text-black break-words ${
-          value.length > 15 ? 'text-xs' : 
-          value.length > 8 ? 'text-sm' : 
-          'text-base'
-        }`}>{value}</div>
+        <div
+          className={`break-words text-black ${
+            value.length > 15 ? 'text-xs' : value.length > 8 ? 'text-sm' : 'text-base'
+          }`}
+        >
+          {value}
+        </div>
         <div className="text-xs text-gray-500">Node {index + 1}</div>
       </div>
     </div>
@@ -63,4 +65,4 @@ const Visualization: React.FC<VisualizationProps> = ({
   );
 };
 
-export default Visualization
+export default Visualization;

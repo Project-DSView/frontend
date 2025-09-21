@@ -82,16 +82,19 @@ const SinglyLinkedListVisualization: React.FC<SinglyLinkedListVisualizationProps
       <div className="flex items-center">
         {/* Node Container - Horizontal Layout */}
         <div
-          className={`min-w-[160px] max-w-[250px] rounded-lg border-2 border-black bg-white p-3 text-center font-bold transition-all duration-500 ${isAnimated ? 'border-accent animate-pulse bg-yellow-100' : 'hover:bg-gray-50'
-            }`}
+          className={`max-w-[250px] min-w-[160px] rounded-lg border-2 border-black bg-white p-3 text-center font-bold transition-all duration-500 ${
+            isAnimated ? 'border-accent animate-pulse bg-yellow-100' : 'hover:bg-gray-50'
+          }`}
         >
           {/* Data Section - Left */}
           <div className="inline-block w-1/2 border-r-2 border-black pr-2">
-            <div className={`font-bold text-black break-words ${
-              value.length > 15 ? 'text-xs' : 
-              value.length > 8 ? 'text-sm' : 
-              'text-base'
-            }`}>{value}</div>
+            <div
+              className={`font-bold break-words text-black ${
+                value.length > 15 ? 'text-xs' : value.length > 8 ? 'text-sm' : 'text-base'
+              }`}
+            >
+              {value}
+            </div>
           </div>
           {/* Pointer Section - Right */}
           <div className="inline-block w-1/2 pl-2">
@@ -119,37 +122,34 @@ const SinglyLinkedListVisualization: React.FC<SinglyLinkedListVisualizationProps
                   {/* Head Label - Show on current position for traverse, first node for others */}
                   {((currentOperation === 'traverse' && index === headPosition) ||
                     (currentOperation !== 'traverse' && index === 0)) && (
-                       <div
-                         className={`absolute -top-16 left-1/2 transform -translate-x-1/2 transition-all duration-500 z-10 ${isRunning &&
-                           (currentOperation === 'traverse' ||
-                             currentOperation === 'search_value' ||
-                             currentOperation === 'search_position')
-                           ? 'animate-pulse'
-                           : ''
-                           }`}
-                       >
-                        <div
-                          className={`text-lg font-semibold px-2 py-1 ${isRunning &&
-                            (currentOperation === 'traverse' ||
-                              currentOperation === 'search_value' ||
-                              currentOperation === 'search_position')
+                    <div
+                      className={`absolute -top-16 left-1/2 z-10 -translate-x-1/2 transform transition-all duration-500 ${
+                        isRunning &&
+                        (currentOperation === 'traverse' ||
+                          currentOperation === 'search_value' ||
+                          currentOperation === 'search_position')
+                          ? 'animate-pulse'
+                          : ''
+                      }`}
+                    >
+                      <div
+                        className={`px-2 py-1 text-lg font-semibold ${
+                          isRunning &&
+                          (currentOperation === 'traverse' ||
+                            currentOperation === 'search_value' ||
+                            currentOperation === 'search_position')
                             ? 'text-blue-600'
                             : 'text-gray-600'
-                            }`}
-                        >
-                          head
-                        </div>
-                         <div className="flex flex-col items-center">
-                           <div className="w-0.5 h-4 bg-black"></div>
-                           <div className="h-0 w-0 
-     border-l-[4px] border-r-[4px] border-t-[6px]
-     border-l-transparent border-r-transparent border-t-black">
-                           </div>
-                         </div>
-
-
+                        }`}
+                      >
+                        head
                       </div>
-                    )}
+                      <div className="flex flex-col items-center">
+                        <div className="h-4 w-0.5 bg-black"></div>
+                        <div className="h-0 w-0 border-t-[6px] border-r-[4px] border-l-[4px] border-t-black border-r-transparent border-l-transparent"></div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Node */}
                   {renderSinglyLinkedListNode(value, index)}

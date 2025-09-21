@@ -33,4 +33,4 @@ const playgroundItems: PlaygroundItem[] = [
   },
 ];
 
-export { getSubmenuItemsWithNested, playgroundItems }
+export { getSubmenuItemsWithNested, playgroundItems };

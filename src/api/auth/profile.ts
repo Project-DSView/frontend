@@ -1,4 +1,4 @@
-import { UserProfile } from "@/types";
+import { UserProfile } from '@/types';
 import { api } from '../index';
 
 export const fetchProfile = async (token: string): Promise<UserProfile> => {

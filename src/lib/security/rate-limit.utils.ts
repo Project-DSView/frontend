@@ -1,4 +1,4 @@
-import { RateLimitConfig, RateLimitEntry } from "@/types";
+import { RateLimitConfig, RateLimitEntry } from '@/types';
 
 /**
  * In-memory rate limiting store
@@ -18,7 +18,7 @@ const isRateLimited = (config: RateLimitConfig): boolean => {
     // First attempt
     rateLimitStore.set(key, {
       attempts: 1,
-      resetTime: now + config.windowMs
+      resetTime: now + config.windowMs,
     });
     return false;
   }
@@ -28,7 +28,7 @@ const isRateLimited = (config: RateLimitConfig): boolean => {
     // Reset the counter
     rateLimitStore.set(key, {
       attempts: 1,
-      resetTime: now + config.windowMs
+      resetTime: now + config.windowMs,
     });
     return false;
   }
@@ -96,29 +96,29 @@ const RATE_LIMIT_CONFIGS = {
   LOGIN: {
     maxAttempts: 5,
     windowMs: 15 * 60 * 1000, // 15 minutes
-    key: 'login'
+    key: 'login',
   },
-  
+
   // API calls: 100 requests per minute
   API_CALLS: {
     maxAttempts: 100,
     windowMs: 60 * 1000, // 1 minute
-    key: 'api_calls'
+    key: 'api_calls',
   },
-  
+
   // Password reset: 3 attempts per hour
   PASSWORD_RESET: {
     maxAttempts: 3,
     windowMs: 60 * 60 * 1000, // 1 hour
-    key: 'password_reset'
+    key: 'password_reset',
   },
-  
+
   // Token refresh: 10 attempts per 5 minutes
   TOKEN_REFRESH: {
     maxAttempts: 10,
     windowMs: 5 * 60 * 1000, // 5 minutes
-    key: 'token_refresh'
-  }
+    key: 'token_refresh',
+  },
 } as const;
 
 /**
@@ -126,16 +126,16 @@ const RATE_LIMIT_CONFIGS = {
  */
 const withRateLimit = <T extends (...args: unknown[]) => unknown>(
   fn: T,
-  config: RateLimitConfig
+  config: RateLimitConfig,
 ): T => {
   return ((...args: unknown[]) => {
     if (isRateLimited(config)) {
       const remainingTime = getTimeUntilReset(config);
       throw new Error(
-        `Rate limit exceeded. Try again in ${Math.ceil(remainingTime / 1000)} seconds.`
+        `Rate limit exceeded. Try again in ${Math.ceil(remainingTime / 1000)} seconds.`,
       );
     }
-    
+
     return fn(...args);
   }) as T;
 };
@@ -155,4 +155,12 @@ const cleanupExpiredEntries = (): void => {
 // Clean up expired entries every 5 minutes
 setInterval(cleanupExpiredEntries, 5 * 60 * 1000);
 
-export { isRateLimited, getRemainingAttempts, cleanupExpiredEntries, withRateLimit, RATE_LIMIT_CONFIGS, clearAllRateLimits, getTimeUntilReset}
+export {
+  isRateLimited,
+  getRemainingAttempts,
+  cleanupExpiredEntries,
+  withRateLimit,
+  RATE_LIMIT_CONFIGS,
+  clearAllRateLimits,
+  getTimeUntilReset,
+};

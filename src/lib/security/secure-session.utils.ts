@@ -1,15 +1,15 @@
-import { 
-  setCookie, 
-  getCookie, 
-  deleteCookie, 
+import {
+  setCookie,
+  getCookie,
+  deleteCookie,
   clearAllCookies,
-  areCookiesEnabled 
+  areCookiesEnabled,
 } from './cookie.utils';
-import { 
-  isTokenExpired, 
-  isTokenExpiringSoon, 
+import {
+  isTokenExpired,
+  isTokenExpiringSoon,
   isValidJWTFormat,
-  getTimeUntilExpiration 
+  getTimeUntilExpiration,
 } from './jwt.utils';
 import { UserProfile, SecureSessionData } from '@/types';
 
@@ -36,24 +36,24 @@ const secureSessionUtils = {
       // Store profile in secure cookie with short expiration (1 hour)
       const profileData = {
         ...userProfile,
-        savedAt: Date.now()
+        savedAt: Date.now(),
       };
 
       setCookie('userProfile', JSON.stringify(profileData), {
         maxAge: 3600, // 1 hour
         secure: true,
         sameSite: 'strict',
-        path: '/'
+        path: '/',
       });
 
       // Store token expiration time for client-side checks
       const expirationTime = getTimeUntilExpiration(token);
       if (expirationTime !== null) {
-        setCookie('tokenExpiresAt', (Date.now() + (expirationTime * 60 * 1000)).toString(), {
+        setCookie('tokenExpiresAt', (Date.now() + expirationTime * 60 * 1000).toString(), {
           maxAge: 3600,
           secure: true,
           sameSite: 'strict',
-          path: '/'
+          path: '/',
         });
       }
 
@@ -61,7 +61,6 @@ const secureSessionUtils = {
       sessionStorage.setItem('isAuthenticated', 'true');
       sessionStorage.setItem('userId', userProfile.user_id || '');
       sessionStorage.setItem('userRole', String(userProfile.is_teacher || false));
-
     } catch (error) {
       console.error('Failed to save session securely:', error);
       // Clear any partial data
@@ -88,7 +87,7 @@ const secureSessionUtils = {
       }
 
       const profileData = JSON.parse(profileStr);
-      
+
       // Check if profile data is not too old (max 1 hour)
       const maxAge = 60 * 60 * 1000; // 1 hour in milliseconds
       if (Date.now() - profileData.savedAt > maxAge) {
@@ -115,9 +114,8 @@ const secureSessionUtils = {
       return {
         token,
         profile: profileData,
-        expiresAt
+        expiresAt,
       };
-
     } catch (error) {
       console.error('Failed to load session:', error);
       secureSessionUtils.clearSession();
@@ -133,15 +131,14 @@ const secureSessionUtils = {
       // Clear secure cookies
       deleteCookie('userProfile');
       deleteCookie('tokenExpiresAt');
-      
+
       // Clear sessionStorage
       sessionStorage.removeItem('isAuthenticated');
       sessionStorage.removeItem('userId');
       sessionStorage.removeItem('userRole');
-      
+
       // Clear all other cookies (for logout)
       clearAllCookies();
-
     } catch (error) {
       console.error('Failed to clear session:', error);
     }
@@ -200,13 +197,14 @@ const secureSessionUtils = {
    */
   isAuthenticated: (): boolean => {
     try {
-      return sessionStorage.getItem('isAuthenticated') === 'true' && 
-             secureSessionUtils.isSessionValid();
+      return (
+        sessionStorage.getItem('isAuthenticated') === 'true' && secureSessionUtils.isSessionValid()
+      );
     } catch (error) {
       console.error('Failed to check authentication status:', error);
       return false;
     }
-  }
+  },
 };
 
 export { secureSessionUtils };

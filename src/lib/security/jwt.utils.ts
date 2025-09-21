@@ -1,5 +1,4 @@
-import { JWTPayload } from "@/types";
-
+import { JWTPayload } from '@/types';
 
 /**
  * Decode JWT token without verification (client-side only)
@@ -44,7 +43,7 @@ export const isTokenExpiringSoon = (token: string, minutesThreshold: number = 5)
   }
 
   const currentTime = Math.floor(Date.now() / 1000);
-  const thresholdTime = currentTime + (minutesThreshold * 60);
+  const thresholdTime = currentTime + minutesThreshold * 60;
   return payload.exp < thresholdTime;
 };
 
@@ -71,7 +70,7 @@ export const getTimeUntilExpiration = (token: string): number | null => {
 
   const currentTime = Date.now();
   const timeUntilExpiration = expirationTime - currentTime;
-  
+
   if (timeUntilExpiration <= 0) {
     return 0;
   }
@@ -94,7 +93,7 @@ export const isValidJWTFormat = (token: string): boolean => {
 
   // Check if all parts are base64 encoded
   try {
-    parts.forEach(part => {
+    parts.forEach((part) => {
       atob(part.replace(/-/g, '+').replace(/_/g, '/'));
     });
     return true;

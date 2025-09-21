@@ -54,17 +54,21 @@ const CodeMirrorEditor: React.FC<CodeEditorProps> = ({
   }
 
   // Dynamic import for CodeMirror
-  const CodeMirror = React.lazy(() => import('@uiw/react-codemirror').then(module => ({ default: module.default })));
+  const CodeMirror = React.lazy(() =>
+    import('@uiw/react-codemirror').then((module) => ({ default: module.default })),
+  );
 
   return (
     <div className="rounded-lg bg-white p-6 shadow">
       <h2 className="mb-4 text-lg font-semibold text-gray-800">{title}</h2>
       <div className="overflow-hidden rounded-lg border">
-        <React.Suspense fallback={
-          <div className="h-64 flex items-center justify-center bg-gray-50">
-            <div className="text-gray-500">Loading code editor...</div>
-          </div>
-        }>
+        <React.Suspense
+          fallback={
+            <div className="flex h-64 items-center justify-center bg-gray-50">
+              <div className="text-gray-500">Loading code editor...</div>
+            </div>
+          }
+        >
           <CodeMirror
             value={code}
             height="400px"
@@ -95,4 +99,4 @@ const CodeMirrorEditor: React.FC<CodeEditorProps> = ({
   );
 };
 
-export default CodeMirrorEditor
+export default CodeMirrorEditor;

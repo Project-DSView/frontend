@@ -4,7 +4,7 @@
 export const generateCSRFToken = (): string => {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
 };
 
 /**
@@ -50,7 +50,7 @@ export const validateCSRFToken = (token: string): boolean => {
   if (!storedToken || !token) {
     return false;
   }
-  
+
   // Use constant-time comparison to prevent timing attacks
   return constantTimeCompare(storedToken, token);
 };
@@ -87,24 +87,24 @@ export const initializeCSRFProtection = (): string => {
 export const getCSRFHeaders = (): Record<string, string> => {
   const token = getCSRFToken();
   const isDevelopment = process.env.NODE_ENV === 'development';
-  
+
   // In development, only include basic headers to avoid CORS issues
   if (isDevelopment) {
     return {
-      'X-Requested-With': 'XMLHttpRequest'
+      'X-Requested-With': 'XMLHttpRequest',
     };
   }
 
   // In production, include CSRF token if available
   if (!token) {
     return {
-      'X-Requested-With': 'XMLHttpRequest'
+      'X-Requested-With': 'XMLHttpRequest',
     };
   }
 
   return {
     'X-CSRF-Token': token,
-    'X-Requested-With': 'XMLHttpRequest'
+    'X-Requested-With': 'XMLHttpRequest',
   };
 };
 
@@ -113,6 +113,6 @@ export const getCSRFHeaders = (): Record<string, string> => {
  */
 export const getMinimalHeaders = (): Record<string, string> => {
   return {
-    'X-Requested-With': 'XMLHttpRequest'
+    'X-Requested-With': 'XMLHttpRequest',
   };
 };

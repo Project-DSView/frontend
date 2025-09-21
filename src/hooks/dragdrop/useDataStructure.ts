@@ -1,8 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import {
-  SinglyLinkedListState,
-  SinglyLinkedListOperation,
-} from '@/types';
+import { SinglyLinkedListState, SinglyLinkedListOperation } from '@/types';
 import { SinglyLinkedListService } from '@/services';
 
 const useDataStructure = (initialState?: Partial<SinglyLinkedListState>) => {
@@ -95,7 +92,10 @@ const useDataStructure = (initialState?: Partial<SinglyLinkedListState>) => {
   }, []);
 
   const executeOperation = useCallback(
-    async (operation: SinglyLinkedListOperation, currentState: SinglyLinkedListState): Promise<SinglyLinkedListState> => {
+    async (
+      operation: SinglyLinkedListOperation,
+      currentState: SinglyLinkedListState,
+    ): Promise<SinglyLinkedListState> => {
       const service = new SinglyLinkedListService(currentState);
       let steps: Array<{ step: string; description: string; duration: number }> = [];
 
@@ -116,10 +116,7 @@ const useDataStructure = (initialState?: Partial<SinglyLinkedListState>) => {
             break;
           case 'insert_position':
             if (operation.value && operation.position) {
-              steps = await service.insertAtPosition(
-                operation.value,
-                parseInt(operation.position),
-              );
+              steps = await service.insertAtPosition(operation.value, parseInt(operation.position));
             }
             break;
           case 'delete_beginning':
@@ -153,10 +150,7 @@ const useDataStructure = (initialState?: Partial<SinglyLinkedListState>) => {
             break;
           case 'update_value':
             if (operation.value && operation.newValue) {
-              steps = await service.updateByValue(
-                operation.value,
-                operation.newValue,
-              );
+              steps = await service.updateByValue(operation.value, operation.newValue);
             }
             break;
           case 'update_position':
@@ -176,7 +170,7 @@ const useDataStructure = (initialState?: Partial<SinglyLinkedListState>) => {
         for (const step of steps) {
           setCurrentStep(step.step);
           setExecutionHistory((prev) => [...prev, step.description]);
-          
+
           // Update current position for traversal operations
           if (operation.type === 'traverse' && step.step.includes('อ่านค่า')) {
             const match = step.step.match(/ค่า (.+)/);
@@ -188,7 +182,7 @@ const useDataStructure = (initialState?: Partial<SinglyLinkedListState>) => {
               }
             }
           }
-          
+
           // Update state after each step to show visualization
           const currentServiceState = service.getState();
           setState((prev) => ({
@@ -196,7 +190,7 @@ const useDataStructure = (initialState?: Partial<SinglyLinkedListState>) => {
             nodes: currentServiceState.nodes,
             stats: currentServiceState.stats,
           }));
-          
+
           await new Promise((resolve) => setTimeout(resolve, step.duration));
         }
 

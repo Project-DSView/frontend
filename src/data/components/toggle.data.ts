@@ -12,4 +12,4 @@ const structures: Record<string, string> = {
   graph: 'Graph',
 };
 
-export { modes, structures }
+export { modes, structures };
