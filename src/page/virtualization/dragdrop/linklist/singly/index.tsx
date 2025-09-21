@@ -9,6 +9,7 @@ import SinglyLinkedListOperations from '@/components/DataStructures/singly-linke
 import SinglyLinkedListVisualization from '@/components/DataStructures/singly-linked-list/SinglyLinkedListVisualization';
 import DragDropZone from '@/components/DataStructures/shared/DragDropZone';
 import CodeMirrorEditor from '@/components/DataStructures/shared/CodeMirrorEditor';
+import ExportButtons from '@/components/DataStructures/shared/ExportButtons';
 
 const DragDropSinglyLinkList = () => {
   const {
@@ -29,6 +30,7 @@ const DragDropSinglyLinkList = () => {
   const [draggedItem, setDraggedItem] = useState<SinglyLinkedListDragComponent | null>(null);
   const [code, setCode] = useState(CodeGenerationService.getCodeTemplate('singly-linked-list'));
   const dragCounter = useRef(0);
+  const visualizationRef = useRef<HTMLDivElement>(null);
 
   const handleDragStart = (e: React.DragEvent, component: SinglyLinkedListDragComponent) => {
     setDraggedItem(component);
@@ -114,11 +116,19 @@ const DragDropSinglyLinkList = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="mb-2 text-2xl font-bold text-gray-800">Drag & Drop Singly Linked List</h1>
-        <p className="text-gray-600">
-          เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="mb-2 text-2xl font-bold text-gray-800">Drag & Drop Singly Linked List</h1>
+          <p className="text-gray-600">
+            เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <ExportButtons
+            visualizationRef={visualizationRef}
+            pythonCode={code}
+          />
+        </div>
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -188,8 +198,10 @@ const DragDropSinglyLinkList = () => {
         </div>
       )}
 
+
       {/* Visualization */}
       <SinglyLinkedListVisualization
+        ref={visualizationRef}
         nodes={state.nodes}
         stats={state.stats}
         isRunning={isRunning}

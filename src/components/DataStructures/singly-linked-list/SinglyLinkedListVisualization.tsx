@@ -1,14 +1,14 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { SinglyLinkedListVisualizationProps } from '@/types';
 
-const SinglyLinkedListVisualization: React.FC<SinglyLinkedListVisualizationProps> = ({
+const SinglyLinkedListVisualization = forwardRef<HTMLDivElement, SinglyLinkedListVisualizationProps>(({
   nodes,
   stats,
   isRunning = false,
   currentOperation,
   currentStep,
   currentPosition = 0,
-}) => {
+}, ref) => {
   // Determine which node should be animated based on current operation
   const getAnimatedNodeIndex = () => {
     if (!isRunning || !currentStep) return -1;
@@ -106,7 +106,7 @@ const SinglyLinkedListVisualization: React.FC<SinglyLinkedListVisualizationProps
   };
 
   return (
-    <div className="mb-6 rounded-lg bg-white p-6 shadow">
+    <div ref={ref} className="mb-6 rounded-lg bg-white p-6 shadow">
       <h2 className="mb-4 text-lg font-semibold text-gray-800">Singly Linked List Visualization</h2>
 
       {/* Linked List Visualization */}
@@ -188,6 +188,8 @@ const SinglyLinkedListVisualization: React.FC<SinglyLinkedListVisualizationProps
       </div>
     </div>
   );
-};
+});
+
+SinglyLinkedListVisualization.displayName = 'SinglyLinkedListVisualization';
 
 export default SinglyLinkedListVisualization;
