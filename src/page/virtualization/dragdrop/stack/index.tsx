@@ -23,7 +23,6 @@ const DragDropStack = () => {
     currentStep,
     executionHistory,
     currentOperation,
-    currentPosition,
     addOperation,
     updateOperation,
     removeOperation,
