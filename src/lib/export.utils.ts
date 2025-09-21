@@ -11,7 +11,7 @@ export class ExportUtils {
    */
   static async exportAsPNG(
     elementRef: React.RefObject<HTMLElement | null>,
-    options: ExportOptions = {}
+    options: ExportOptions = {},
   ): Promise<void> {
     if (!elementRef.current) {
       throw new Error('Element reference is not available');
@@ -52,14 +52,14 @@ export class ExportUtils {
             .border-accent { border-color: rgb(59, 130, 246) !important; }
           `;
           clonedDoc.head.appendChild(style);
-        }
+        },
       });
 
       // Create download link
       const link = document.createElement('a');
       link.download = `${filename}.png`;
       link.href = canvas.toDataURL('image/png', quality);
-      
+
       // Trigger download
       document.body.appendChild(link);
       link.click();
@@ -73,26 +73,23 @@ export class ExportUtils {
   /**
    * Export Python code as .py file
    */
-  static exportAsPython(
-    code: string,
-    options: ExportOptions = {}
-  ): void {
+  static exportAsPython(code: string, options: ExportOptions = {}): void {
     const { filename = 'doubly-linked-list-code' } = options;
 
     try {
       // Create blob with Python code
       const blob = new Blob([code], { type: 'text/python' });
-      
+
       // Create download link
       const link = document.createElement('a');
       link.download = `${filename}.py`;
       link.href = URL.createObjectURL(blob);
-      
+
       // Trigger download
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       // Clean up URL object
       URL.revokeObjectURL(link.href);
     } catch (error) {

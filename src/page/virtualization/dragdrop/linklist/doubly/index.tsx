@@ -1,15 +1,21 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, lazy, Suspense } from 'react';
 import { DoublyLinkedListOperation, DoublyLinkedListDragComponent } from '@/types';
 import { useDoublyLinkedList } from '@/hooks';
 import { doublyLinkedListDragComponents } from '@/data';
 import { CodeGenerationService } from '@/services';
-import DoublyLinkedListOperations from '@/components/DataStructures/doubly-linked-list/DoublyLinkedListOperations';
-import DoublyLinkedListVisualization from '@/components/DataStructures/doubly-linked-list/DoublyLinkedListVisualization';
 import DragDropZone from '@/components/DataStructures/shared/DragDropZone';
-import CodeMirrorEditor from '@/components/DataStructures/shared/CodeMirrorEditor';
-import ExportButtons from '@/components/DataStructures/shared/ExportButtons';
+
+// Lazy load heavy components
+const DoublyLinkedListOperations = lazy(
+  () => import('@/components/DataStructures/doubly-linked-list/DoublyLinkedListOperations'),
+);
+const DoublyLinkedListVisualization = lazy(
+  () => import('@/components/DataStructures/doubly-linked-list/DoublyLinkedListVisualization'),
+);
+const CodeMirrorEditor = lazy(() => import('@/components/DataStructures/shared/CodeMirrorEditor'));
+const ExportButtons = lazy(() => import('@/components/DataStructures/shared/ExportButtons'));
 
 const DragDropDoublyLinkList = () => {
   const {
@@ -41,7 +47,7 @@ const DragDropDoublyLinkList = () => {
     e.preventDefault();
     setDraggedItem(component);
     // Simulate drop immediately for touch devices
-    handleDrop({ preventDefault: () => { } } as React.DragEvent);
+    handleDrop({ preventDefault: () => {} } as React.DragEvent);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -128,20 +134,27 @@ const DragDropDoublyLinkList = () => {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <ExportButtons
-            visualizationRef={visualizationRef}
-            pythonCode={code}
-          />
+          <Suspense fallback={<div className="h-10 w-32 animate-pulse rounded bg-gray-200"></div>}>
+            <ExportButtons visualizationRef={visualizationRef} pythonCode={code} />
+          </Suspense>
         </div>
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Left Side - Drag Components */}
-        <DoublyLinkedListOperations
-          dragComponents={doublyLinkedListDragComponents}
-          onDragStart={handleDragStart}
-          onTouchStart={handleTouchStart}
-        />
+        <Suspense
+          fallback={
+            <div className="flex h-64 items-center justify-center rounded-lg border bg-gray-50">
+              Loading operations...
+            </div>
+          }
+        >
+          <DoublyLinkedListOperations
+            dragComponents={doublyLinkedListDragComponents}
+            onDragStart={handleDragStart}
+            onTouchStart={handleTouchStart}
+          />
+        </Suspense>
 
         {/* Right Side - Drop Zone */}
         <div className="rounded-lg bg-white p-6 shadow">
@@ -202,20 +215,35 @@ const DragDropDoublyLinkList = () => {
         </div>
       )}
 
-
       {/* Visualization */}
-      <DoublyLinkedListVisualization
-        ref={visualizationRef}
-        nodes={state.nodes}
-        stats={state.stats}
-        isRunning={isRunning}
-        currentOperation={currentOperation}
-        currentStep={currentStep}
-        currentPosition={currentPosition}
-      />
+      <Suspense
+        fallback={
+          <div className="flex h-64 items-center justify-center rounded-lg border bg-gray-50">
+            Loading visualization...
+          </div>
+        }
+      >
+        <DoublyLinkedListVisualization
+          ref={visualizationRef}
+          nodes={state.nodes}
+          stats={state.stats}
+          isRunning={isRunning}
+          currentOperation={currentOperation}
+          currentStep={currentStep}
+          currentPosition={currentPosition}
+        />
+      </Suspense>
 
       {/* Code Editor */}
-      <CodeMirrorEditor code={code} currentLine={currentLine} title="Generated Python Code" />
+      <Suspense
+        fallback={
+          <div className="flex h-64 items-center justify-center rounded-lg border bg-gray-50">
+            Loading code editor...
+          </div>
+        }
+      >
+        <CodeMirrorEditor code={code} currentLine={currentLine} title="Generated Python Code" />
+      </Suspense>
     </div>
   );
 };
