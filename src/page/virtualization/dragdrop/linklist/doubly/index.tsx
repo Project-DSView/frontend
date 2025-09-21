@@ -9,6 +9,7 @@ import DoublyLinkedListOperations from '@/components/DataStructures/doubly-linke
 import DoublyLinkedListVisualization from '@/components/DataStructures/doubly-linked-list/DoublyLinkedListVisualization';
 import DragDropZone from '@/components/DataStructures/shared/DragDropZone';
 import CodeMirrorEditor from '@/components/DataStructures/shared/CodeMirrorEditor';
+import ExportButtons from '@/components/DataStructures/shared/ExportButtons';
 
 const DragDropDoublyLinkList = () => {
   const {
@@ -29,6 +30,7 @@ const DragDropDoublyLinkList = () => {
   const [draggedItem, setDraggedItem] = useState<DoublyLinkedListDragComponent | null>(null);
   const [code, setCode] = useState(CodeGenerationService.getCodeTemplate('doubly-linked-list'));
   const dragCounter = useRef(0);
+  const visualizationRef = useRef<HTMLDivElement>(null);
 
   const handleDragStart = (e: React.DragEvent, component: DoublyLinkedListDragComponent) => {
     setDraggedItem(component);
@@ -39,7 +41,7 @@ const DragDropDoublyLinkList = () => {
     e.preventDefault();
     setDraggedItem(component);
     // Simulate drop immediately for touch devices
-    handleDrop({ preventDefault: () => {} } as React.DragEvent);
+    handleDrop({ preventDefault: () => { } } as React.DragEvent);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -118,11 +120,19 @@ const DragDropDoublyLinkList = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="mb-2 text-2xl font-bold text-gray-800">Drag & Drop Doubly Linked List</h1>
-        <p className="text-gray-600">
-          เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="mb-2 text-2xl font-bold text-gray-800">Drag & Drop Doubly Linked List</h1>
+          <p className="text-gray-600">
+            เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <ExportButtons
+            visualizationRef={visualizationRef}
+            pythonCode={code}
+          />
+        </div>
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -192,8 +202,10 @@ const DragDropDoublyLinkList = () => {
         </div>
       )}
 
+
       {/* Visualization */}
       <DoublyLinkedListVisualization
+        ref={visualizationRef}
         nodes={state.nodes}
         stats={state.stats}
         isRunning={isRunning}
