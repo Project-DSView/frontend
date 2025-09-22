@@ -224,11 +224,11 @@ const DragDropBST = () => {
     updateBSTState(currentRoot, newStats);
   }, [state.operations, updateBSTState, insertNode, deleteNode]);
 
-  const updateOperationPosition = (_id: number, _position: string) => {
+  const updateOperationPosition = () => {
     // BST doesn't use position, but keeping for compatibility
   };
 
-  const updateOperationNewValue = (_id: number, _newValue: string) => {
+  const updateOperationNewValue = () => {
     // BST doesn't use newValue, but keeping for compatibility
   };
 

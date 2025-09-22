@@ -399,7 +399,7 @@ export class BSTService {
       step: `พบค่าที่น้อยที่สุด: ${minValue}`,
       description: `ค่าที่น้อยที่สุดใน BST คือ ${minValue}`,
       duration: 1500,
-      nodeValue: minValue,
+      nodeValue: minValue ?? undefined,
       path: path,
     });
 
@@ -438,7 +438,7 @@ export class BSTService {
       step: `พบค่าที่มากที่สุด: ${maxValue}`,
       description: `ค่าที่มากที่สุดใน BST คือ ${maxValue}`,
       duration: 1500,
-      nodeValue: maxValue,
+      nodeValue: maxValue ?? undefined,
       path: path,
     });
 
