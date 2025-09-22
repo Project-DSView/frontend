@@ -1,7 +1,9 @@
+import DragDropBST from '@/page/virtualization/dragdrop/bst';
+
 const Page = () => {
   return (
     <>
-      <h1>test</h1>
+      <DragDropBST />
     </>
   );
 };

@@ -59,3 +59,15 @@ export type {
   StackExecutionStep,
   StackCodeTemplate,
 } from './DataStructures/Stack.types';
+export type {
+  BSTNode,
+  BSTStats,
+  BSTOperation,
+  BSTDragComponent,
+  BSTState,
+  BSTExecutionStep,
+  BSTCodeTemplate,
+  BSTOperationsProps,
+  BSTVisualizationProps,
+  PositionedNode,
+} from './DataStructures/BST.types';

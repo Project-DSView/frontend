@@ -46,15 +46,7 @@ const StackVisualization = forwardRef<HTMLDivElement, StackVisualizationProps>(
 
           {/* Stack Element */}
           <div
-            className={`flex h-16 w-16 items-center justify-center border-r-2 border-b-2 border-l-2 border-black bg-white shadow-lg transition-all duration-500 ${
-              isAnimated ? 'border-accent scale-105 bg-blue-50' : 'hover:bg-gray-50'
-            } ${isTop ? 'ring-2 ring-blue-300' : ''}`}
-            style={{
-              borderTop: isTop ? '2px solid #3b82f6' : 'none',
-              margin: 0,
-              padding: 0,
-              marginBottom: 0,
-            }}
+            className={`bg-neutral/20 flex h-16 w-16 items-center justify-center shadow-lg transition-all duration-500 ${isAnimated ? 'border-accent scale-105 bg-blue-50' : 'hover:bg-gray-50'} ${isTop ? 'border-2 border-blue-500' : 'border-t-0'} ${isTop ? 'ring-2 ring-blue-300' : ''}`}
           >
             <span className={`font-bold text-black ${value.length > 6 ? 'text-sm' : 'text-lg'}`}>
               {value}

@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState, useEffect } from 'react';
 import { DoublyLinkedListVisualizationProps } from '@/types';
 
 const DoublyLinkedListVisualization = forwardRef<
@@ -6,9 +6,70 @@ const DoublyLinkedListVisualization = forwardRef<
   DoublyLinkedListVisualizationProps
 >(
   (
-    { nodes, stats, isRunning = false, currentOperation, currentStep, currentPosition = 0 },
+    {
+      nodes,
+      stats,
+      isRunning = false,
+      currentOperation,
+      currentStep,
+      currentPosition = 0,
+      selectedStep,
+    },
     ref,
   ) => {
+    const [traverseIndex, setTraverseIndex] = useState(0);
+    const [isTraversing, setIsTraversing] = useState(false);
+
+    // Handle traverse animation
+    useEffect(() => {
+      if (
+        selectedStep !== null &&
+        selectedStep !== undefined &&
+        (currentOperation === 'traverse_forward' || currentOperation === 'traverse_backward')
+      ) {
+        setIsTraversing(true);
+
+        if (currentOperation === 'traverse_forward') {
+          // Forward: start from head (index 0)
+          setTraverseIndex(0);
+        } else {
+          // Backward: start from tail (last index)
+          setTraverseIndex(nodes.length - 1);
+        }
+
+        const interval = setInterval(() => {
+          setTraverseIndex((prev) => {
+            if (currentOperation === 'traverse_forward') {
+              // Forward: move to next node
+              const nextIndex = prev + 1;
+              if (nextIndex >= nodes.length) {
+                // Animation finished, stop traversing
+                setIsTraversing(false);
+                clearInterval(interval);
+                return prev; // Keep at last node
+              }
+              return nextIndex;
+            } else {
+              // Backward: move to previous node
+              const prevIndex = prev - 1;
+              if (prevIndex < 0) {
+                // Animation finished, stop traversing
+                setIsTraversing(false);
+                clearInterval(interval);
+                return prev; // Keep at first node
+              }
+              return prevIndex;
+            }
+          });
+        }, 1000); // Move to next/previous node every 1 second
+
+        return () => clearInterval(interval);
+      } else {
+        // Reset when not traversing
+        setIsTraversing(false);
+        setTraverseIndex(0);
+      }
+    }, [selectedStep, currentOperation, nodes.length]);
     // Determine which node should be animated based on current operation
     const getAnimatedNodeIndex = () => {
       if (!isRunning || !currentStep) return -1;
@@ -76,23 +137,103 @@ const DoublyLinkedListVisualization = forwardRef<
       return { head: 0, tail: nodes.length - 1 }; // Default positions
     };
 
+    // Get current head position for traverse animation
+    const getCurrentHeadPosition = () => {
+      // If running, use the current position from execution
+      if (isRunning && currentStep) {
+        return getCurrentPosition().head;
+      }
+
+      // If traverse step is selected, show animation
+      if (
+        selectedStep !== null &&
+        selectedStep !== undefined &&
+        (currentOperation === 'traverse_forward' || currentOperation === 'traverse_backward')
+      ) {
+        // For traverse, we want to show the pointer moving through each node
+        if (nodes.length === 0) return 0;
+
+        // Use traverseIndex for animation only when traversing
+        if (isTraversing) {
+          return traverseIndex;
+        }
+
+        // If not traversing (animation finished)
+        if (currentOperation === 'traverse_forward') {
+          return 0; // Show at first node
+        } else {
+          return nodes.length - 1; // Show at last node
+        }
+      }
+
+      return 0; // Default to first position
+    };
+
+    // Get current tail position for traverse animation
+    const getCurrentTailPosition = () => {
+      // If running, use the current position from execution
+      if (isRunning && currentStep) {
+        return getCurrentPosition().tail;
+      }
+
+      // If traverse backward step is selected, show animation
+      if (
+        selectedStep !== null &&
+        selectedStep !== undefined &&
+        currentOperation === 'traverse_backward'
+      ) {
+        // For traverse backward, we want to show the tail moving through each node
+        if (nodes.length === 0) return 0;
+
+        // Use traverseIndex for animation only when traversing
+        if (isTraversing) {
+          return traverseIndex;
+        }
+
+        // If not traversing (animation finished), show at last node
+        return nodes.length - 1;
+      }
+
+      return nodes.length - 1; // Default to last position
+    };
+
     const animatedNodeIndex = getAnimatedNodeIndex();
-    const { head: headPosition, tail: tailPosition } = getCurrentPosition();
+    const headPosition = getCurrentHeadPosition();
+    const tailPosition = getCurrentTailPosition();
 
     const renderDoublyLinkedListNode = (value: string, index: number): React.ReactNode => {
       const isAnimated = animatedNodeIndex === index;
+      const isTraverseSelected =
+        selectedStep !== null &&
+        selectedStep !== undefined &&
+        (currentOperation === 'traverse_forward' || currentOperation === 'traverse_backward') &&
+        index === headPosition;
+      const isCurrentlyTraversing = isTraversing && index === traverseIndex;
+      const isFirstNode = index === 0;
+      const isLastNode = index === nodes.length - 1;
 
       return (
         <div className="flex items-center">
           {/* Node Container - 3 Section Layout like in the image */}
           <div
             className={`flex h-16 w-40 rounded-lg border-2 border-black bg-white transition-all duration-500 ${
-              isAnimated ? 'border-accent animate-pulse bg-gray-50' : 'hover:bg-gray-50'
+              (isAnimated || isTraverseSelected || isCurrentlyTraversing) && isTraversing
+                ? 'animate-pulse bg-blue-50 shadow-lg'
+                : 'hover:bg-gray-50'
             }`}
           >
             {/* Pre Section - Left */}
             <div className="flex w-1/3 items-center justify-center rounded-l-lg bg-gray-100">
-              <span className="text-xs font-bold text-black">Pre</span>
+              {isFirstNode ? (
+                <div className="relative flex h-full w-full items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="h-0.5 w-8 rotate-45 transform bg-black"></div>
+                    <div className="absolute h-0.5 w-8 -rotate-45 transform bg-black"></div>
+                  </div>
+                </div>
+              ) : (
+                <span className="text-xs font-bold text-black">Pre</span>
+              )}
             </div>
 
             {/* Data Section - Center */}
@@ -104,7 +245,16 @@ const DoublyLinkedListVisualization = forwardRef<
 
             {/* Next Section - Right */}
             <div className="flex w-1/3 items-center justify-center rounded-r-lg bg-gray-100">
-              <span className="text-xs font-bold text-black">Next</span>
+              {isLastNode ? (
+                <div className="relative flex h-full w-full items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="h-0.5 w-8 rotate-45 transform bg-black"></div>
+                    <div className="absolute h-0.5 w-8 -rotate-45 transform bg-black"></div>
+                  </div>
+                </div>
+              ) : (
+                <span className="text-xs font-bold text-black">Next</span>
+              )}
             </div>
           </div>
         </div>
@@ -127,15 +277,24 @@ const DoublyLinkedListVisualization = forwardRef<
               {nodes.map((value: string, index: number) => (
                 <React.Fragment key={index}>
                   <div className="relative">
-                    {/* Head Label - Show on current position for traverse, first node for others */}
-                    {((currentOperation === 'traverse_forward' && index === headPosition) ||
-                      (currentOperation !== 'traverse_forward' && index === 0)) && (
+                    {/* Head Label - Show on current position for traverse_forward, first node for others */}
+                    {((currentOperation === 'traverse_forward' &&
+                      index === headPosition &&
+                      headPosition >= 0) ||
+                      (currentOperation === 'traverse_backward' && index === 0) ||
+                      (currentOperation !== 'traverse_forward' &&
+                        currentOperation !== 'traverse_backward' &&
+                        index === 0)) && (
                       <div
                         className={`absolute -top-16 left-1/2 z-10 -translate-x-1/2 transform transition-all duration-500 ${
-                          isRunning &&
-                          (currentOperation === 'traverse_forward' ||
-                            currentOperation === 'search_value' ||
-                            currentOperation === 'search_position')
+                          (isRunning &&
+                            (currentOperation === 'traverse_forward' ||
+                              currentOperation === 'search_value' ||
+                              currentOperation === 'search_position')) ||
+                          (selectedStep !== null &&
+                            selectedStep !== undefined &&
+                            currentOperation === 'traverse_forward' &&
+                            isTraversing)
                             ? 'animate-pulse'
                             : ''
                         }`}
@@ -150,29 +309,57 @@ const DoublyLinkedListVisualization = forwardRef<
                       >
                         <div
                           className={`px-2 py-1 text-lg font-semibold ${
-                            isRunning &&
-                            (currentOperation === 'traverse_forward' ||
-                              currentOperation === 'search_value' ||
-                              currentOperation === 'search_position')
-                              ? 'text-blue-600'
+                            (isRunning &&
+                              (currentOperation === 'traverse_forward' ||
+                                currentOperation === 'search_value' ||
+                                currentOperation === 'search_position')) ||
+                            (selectedStep !== null &&
+                              selectedStep !== undefined &&
+                              currentOperation === 'traverse_forward' &&
+                              isTraversing)
+                              ? 'animate-bounce text-blue-600'
                               : 'text-gray-600'
                           }`}
                         >
                           head
                         </div>
                         <div className="flex flex-col items-center">
-                          <div className="h-4 w-0.5 bg-black"></div>
-                          <div className="h-0 w-0 border-t-[6px] border-r-[4px] border-l-[4px] border-t-black border-r-transparent border-l-transparent"></div>
+                          <div
+                            className={`h-4 w-0.5 ${
+                              selectedStep !== null &&
+                              selectedStep !== undefined &&
+                              currentOperation === 'traverse_forward' &&
+                              isTraversing
+                                ? 'animate-pulse bg-blue-500'
+                                : 'bg-black'
+                            }`}
+                          ></div>
+                          <div
+                            className={`h-0 w-0 border-t-[6px] border-r-[4px] border-l-[4px] ${
+                              selectedStep !== null &&
+                              selectedStep !== undefined &&
+                              currentOperation === 'traverse_forward' &&
+                              isTraversing
+                                ? 'animate-pulse border-t-blue-500'
+                                : 'border-t-black'
+                            } border-r-transparent border-l-transparent`}
+                          ></div>
                         </div>
                       </div>
                     )}
 
-                    {/* Tail Label - Show on last node for traverse_backward, last node for others */}
-                    {((currentOperation === 'traverse_backward' && index === tailPosition) ||
+                    {/* Tail Label - Show on current position for traverse_backward, last node for others */}
+                    {((currentOperation === 'traverse_backward' &&
+                      index === tailPosition &&
+                      tailPosition >= 0) ||
                       (currentOperation !== 'traverse_backward' && index === nodes.length - 1)) && (
                       <div
                         className={`absolute -top-16 left-1/2 z-10 -translate-x-1/2 transform transition-all duration-500 ${
-                          isRunning && currentOperation === 'traverse_backward'
+                          (isRunning && currentOperation === 'traverse_backward') ||
+                          (selectedStep !== null &&
+                            selectedStep !== undefined &&
+                            currentOperation === 'traverse_backward' &&
+                            isTraversing)
                             ? 'animate-pulse'
                             : ''
                         }`}
@@ -187,16 +374,38 @@ const DoublyLinkedListVisualization = forwardRef<
                       >
                         <div
                           className={`px-2 py-1 text-lg font-semibold ${
-                            isRunning && currentOperation === 'traverse_backward'
-                              ? 'text-green-600'
+                            (isRunning && currentOperation === 'traverse_backward') ||
+                            (selectedStep !== null &&
+                              selectedStep !== undefined &&
+                              currentOperation === 'traverse_backward' &&
+                              isTraversing)
+                              ? 'animate-bounce text-blue-600'
                               : 'text-gray-600'
                           }`}
                         >
                           tail
                         </div>
                         <div className="flex flex-col items-center">
-                          <div className="h-4 w-0.5 bg-black"></div>
-                          <div className="h-0 w-0 border-t-[6px] border-r-[4px] border-l-[4px] border-t-black border-r-transparent border-l-transparent"></div>
+                          <div
+                            className={`h-4 w-0.5 ${
+                              selectedStep !== null &&
+                              selectedStep !== undefined &&
+                              currentOperation === 'traverse_backward' &&
+                              isTraversing
+                                ? 'animate-pulse bg-blue-500'
+                                : 'bg-black'
+                            }`}
+                          ></div>
+                          <div
+                            className={`h-0 w-0 border-t-[6px] border-r-[4px] border-l-[4px] ${
+                              selectedStep !== null &&
+                              selectedStep !== undefined &&
+                              currentOperation === 'traverse_backward' &&
+                              isTraversing
+                                ? 'animate-pulse border-t-blue-500'
+                                : 'border-t-black'
+                            } border-r-transparent border-l-transparent`}
+                          ></div>
                         </div>
                       </div>
                     )}
@@ -214,13 +423,6 @@ const DoublyLinkedListVisualization = forwardRef<
                   )}
                 </React.Fragment>
               ))}
-
-              {/* NULL Pointer */}
-              <div className="ml-3 flex items-center">
-                <div className="h-0.5 w-6 bg-black"></div>
-                <div className="h-0 w-0 border-t-[4px] border-b-[4px] border-l-[8px] border-t-transparent border-b-transparent border-l-black"></div>
-                <div className="ml-2 text-lg font-bold text-black">NULL</div>
-              </div>
             </div>
           )}
         </div>
