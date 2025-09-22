@@ -18,7 +18,15 @@ interface BSTStats {
 }
 
 interface BSTOperation extends Operation {
-  type: 'insert' | 'delete' | 'search' | 'traverse_inorder' | 'traverse_preorder' | 'traverse_postorder' | 'find_min' | 'find_max';
+  type:
+    | 'insert'
+    | 'delete'
+    | 'search'
+    | 'traverse_inorder'
+    | 'traverse_preorder'
+    | 'traverse_postorder'
+    | 'find_min'
+    | 'find_max';
   category: 'insertion' | 'deletion' | 'searching' | 'traversal' | 'utility';
   position: string | null;
   newValue: string | null;
@@ -29,7 +37,15 @@ interface BSTDragComponent {
   name: string;
   color: string;
   category: 'insertion' | 'deletion' | 'searching' | 'traversal' | 'utility';
-  type: 'insert' | 'delete' | 'search' | 'traverse_inorder' | 'traverse_preorder' | 'traverse_postorder' | 'find_min' | 'find_max';
+  type:
+    | 'insert'
+    | 'delete'
+    | 'search'
+    | 'traverse_inorder'
+    | 'traverse_preorder'
+    | 'traverse_postorder'
+    | 'find_min'
+    | 'find_max';
   description: string;
 }
 
@@ -90,4 +106,4 @@ export type {
   BSTOperationsProps,
   BSTVisualizationProps,
   PositionedNode,
-} 
+};

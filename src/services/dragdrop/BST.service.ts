@@ -63,7 +63,7 @@ export class BSTService {
 
   async insert(value: string): Promise<BSTExecutionStep[]> {
     const steps: BSTExecutionStep[] = [];
-    
+
     steps.push({
       step: `เริ่มการเพิ่มค่า ${value} ใน BST`,
       description: `กำลังเพิ่มค่า ${value} ใน Binary Search Tree`,
@@ -133,7 +133,7 @@ export class BSTService {
 
   async delete(value: string): Promise<BSTExecutionStep[]> {
     const steps: BSTExecutionStep[] = [];
-    
+
     steps.push({
       step: `เริ่มการลบค่า ${value} จาก BST`,
       description: `กำลังค้นหาและลบค่า ${value} จาก Binary Search Tree`,
@@ -181,7 +181,7 @@ export class BSTService {
 
   private findNodePath(node: BSTNode | null, value: string, path: string[]): string[] {
     if (!node) return [];
-    
+
     if (value === node.value) {
       return [...path, node.value];
     } else if (value < node.value) {
@@ -221,7 +221,7 @@ export class BSTService {
 
   async search(value: string): Promise<BSTExecutionStep[]> {
     const steps: BSTExecutionStep[] = [];
-    
+
     steps.push({
       step: `เริ่มการค้นหาค่า ${value} ใน BST`,
       description: `กำลังค้นหาค่า ${value} ใน Binary Search Tree`,
@@ -260,7 +260,7 @@ export class BSTService {
   async traverseInorder(): Promise<BSTExecutionStep[]> {
     const steps: BSTExecutionStep[] = [];
     const result: string[] = [];
-    
+
     steps.push({
       step: `เริ่ม Inorder Traversal (Left → Root → Right)`,
       description: `เดินทางผ่าน BST แบบ Inorder`,
@@ -268,7 +268,7 @@ export class BSTService {
     });
 
     this.inorderRecursive(this.state.root, result, steps);
-    
+
     steps.push({
       step: `Inorder Traversal เสร็จสิ้น: [${result.join(', ')}]`,
       description: `ผลลัพธ์การเดินทางแบบ Inorder`,
@@ -278,7 +278,11 @@ export class BSTService {
     return steps;
   }
 
-  private inorderRecursive(node: BSTNode | null, result: string[], steps: BSTExecutionStep[]): void {
+  private inorderRecursive(
+    node: BSTNode | null,
+    result: string[],
+    steps: BSTExecutionStep[],
+  ): void {
     if (node) {
       this.inorderRecursive(node.left, result, steps);
       result.push(node.value);
@@ -295,7 +299,7 @@ export class BSTService {
   async traversePreorder(): Promise<BSTExecutionStep[]> {
     const steps: BSTExecutionStep[] = [];
     const result: string[] = [];
-    
+
     steps.push({
       step: `เริ่ม Preorder Traversal (Root → Left → Right)`,
       description: `เดินทางผ่าน BST แบบ Preorder`,
@@ -303,7 +307,7 @@ export class BSTService {
     });
 
     this.preorderRecursive(this.state.root, result, steps);
-    
+
     steps.push({
       step: `Preorder Traversal เสร็จสิ้น: [${result.join(', ')}]`,
       description: `ผลลัพธ์การเดินทางแบบ Preorder`,
@@ -313,7 +317,11 @@ export class BSTService {
     return steps;
   }
 
-  private preorderRecursive(node: BSTNode | null, result: string[], steps: BSTExecutionStep[]): void {
+  private preorderRecursive(
+    node: BSTNode | null,
+    result: string[],
+    steps: BSTExecutionStep[],
+  ): void {
     if (node) {
       result.push(node.value);
       steps.push({
@@ -330,7 +338,7 @@ export class BSTService {
   async traversePostorder(): Promise<BSTExecutionStep[]> {
     const steps: BSTExecutionStep[] = [];
     const result: string[] = [];
-    
+
     steps.push({
       step: `เริ่ม Postorder Traversal (Left → Right → Root)`,
       description: `เดินทางผ่าน BST แบบ Postorder`,
@@ -338,7 +346,7 @@ export class BSTService {
     });
 
     this.postorderRecursive(this.state.root, result, steps);
-    
+
     steps.push({
       step: `Postorder Traversal เสร็จสิ้น: [${result.join(', ')}]`,
       description: `ผลลัพธ์การเดินทางแบบ Postorder`,
@@ -348,7 +356,11 @@ export class BSTService {
     return steps;
   }
 
-  private postorderRecursive(node: BSTNode | null, result: string[], steps: BSTExecutionStep[]): void {
+  private postorderRecursive(
+    node: BSTNode | null,
+    result: string[],
+    steps: BSTExecutionStep[],
+  ): void {
     if (node) {
       this.postorderRecursive(node.left, result, steps);
       this.postorderRecursive(node.right, result, steps);
@@ -364,7 +376,7 @@ export class BSTService {
 
   async findMin(): Promise<BSTExecutionStep[]> {
     const steps: BSTExecutionStep[] = [];
-    
+
     steps.push({
       step: `เริ่มการหาค่าที่น้อยที่สุด`,
       description: `กำลังหาค่าที่น้อยที่สุดใน BST`,
@@ -382,7 +394,7 @@ export class BSTService {
 
     const minValue = this.findMinValue(this.state.root);
     const path = this.findMinPath(this.state.root, []);
-    
+
     steps.push({
       step: `พบค่าที่น้อยที่สุด: ${minValue}`,
       description: `ค่าที่น้อยที่สุดใน BST คือ ${minValue}`,
@@ -403,7 +415,7 @@ export class BSTService {
 
   async findMax(): Promise<BSTExecutionStep[]> {
     const steps: BSTExecutionStep[] = [];
-    
+
     steps.push({
       step: `เริ่มการหาค่าที่มากที่สุด`,
       description: `กำลังหาค่าที่มากที่สุดใน BST`,
@@ -421,7 +433,7 @@ export class BSTService {
 
     const maxValue = this.findMaxValue(this.state.root);
     const path = this.findMaxPath(this.state.root, []);
-    
+
     steps.push({
       step: `พบค่าที่มากที่สุด: ${maxValue}`,
       description: `ค่าที่มากที่สุดใน BST คือ ${maxValue}`,
@@ -440,4 +452,3 @@ export class BSTService {
     return [...path, node.value];
   }
 }
-

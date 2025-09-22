@@ -123,12 +123,15 @@ const useBST = (initialState?: Partial<BSTState>) => {
   }, []);
 
   const executeOperation = useCallback(
-    async (
-      operation: BSTOperation,
-      currentState: BSTState,
-    ): Promise<BSTState> => {
+    async (operation: BSTOperation, currentState: BSTState): Promise<BSTState> => {
       const service = new BSTService(currentState);
-      let steps: Array<{ step: string; description: string; duration: number; nodeValue?: string; path?: string[] }> = [];
+      let steps: Array<{
+        step: string;
+        description: string;
+        duration: number;
+        nodeValue?: string;
+        path?: string[];
+      }> = [];
 
       setCurrentOperation(operation.type);
 

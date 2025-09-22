@@ -12,7 +12,8 @@ const BSTOperations = lazy(() => import('@/components/DataStructures/bst/BSTOper
 const BSTVisualization = lazy(() => import('@/components/DataStructures/bst/BSTVisualization'));
 
 const DragDropBST = () => {
-  const { state, addOperation, updateOperation, removeOperation, clearAll, updateBSTState } = useBST();
+  const { state, addOperation, updateOperation, removeOperation, clearAll, updateBSTState } =
+    useBST();
 
   const [draggedItem, setDraggedItem] = useState<BSTDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
@@ -57,7 +58,13 @@ const DragDropBST = () => {
       const newOperation = {
         type: draggedItem.type,
         name: draggedItem.name,
-        value: ['traverse_inorder', 'traverse_preorder', 'traverse_postorder', 'find_min', 'find_max'].includes(draggedItem.type)
+        value: [
+          'traverse_inorder',
+          'traverse_preorder',
+          'traverse_postorder',
+          'find_min',
+          'find_max',
+        ].includes(draggedItem.type)
           ? null
           : '',
         color: draggedItem.color,
@@ -67,22 +74,21 @@ const DragDropBST = () => {
       };
 
       addOperation(newOperation);
-      
+
       // If it's an insert operation, set a placeholder value
       if (draggedItem.type === 'insert') {
         // Set a placeholder value that will trigger the input field
         setTimeout(() => {
-          const operation = state.operations.find(op => op.type === 'insert' && !op.value);
+          const operation = state.operations.find((op) => op.type === 'insert' && !op.value);
           if (operation) {
             updateOperation(operation.id, { value: '' });
           }
         }, 100);
       }
-      
+
       setDraggedItem(null);
     }
   };
-
 
   // Simple BST insert function
   const insertNode = React.useCallback((root: BSTNode | null, value: string): BSTNode => {
@@ -94,27 +100,27 @@ const DragDropBST = () => {
         id: Math.random().toString(36).substr(2, 9),
       };
     }
-    
+
     // Convert to numbers for comparison
     const numValue = parseFloat(value);
     const numRootValue = parseFloat(root.value);
-    
+
     if (numValue < numRootValue) {
       root.left = insertNode(root.left, value);
     } else if (numValue > numRootValue) {
       root.right = insertNode(root.right, value);
     }
-    
+
     return root;
   }, []);
 
   // BST delete function
   const deleteNode = React.useCallback((root: BSTNode | null, value: string): BSTNode | null => {
     if (!root) return null;
-    
+
     const numValue = parseFloat(value);
     const numRootValue = parseFloat(root.value);
-    
+
     if (numValue < numRootValue) {
       root.left = deleteNode(root.left, value);
     } else if (numValue > numRootValue) {
@@ -123,20 +129,20 @@ const DragDropBST = () => {
       // Node to be deleted found
       if (!root.left) return root.right;
       if (!root.right) return root.left;
-      
+
       // Node with two children: get the inorder successor
       let temp = root.right;
       while (temp.left) {
         temp = temp.left;
       }
-      
+
       // Copy the inorder successor's content to this node
       root.value = temp.value;
-      
+
       // Delete the inorder successor
       root.right = deleteNode(root.right, temp.value);
     }
-    
+
     return root;
   }, []);
 
@@ -179,7 +185,7 @@ const DragDropBST = () => {
 
   const updateOperationValue = async (id: number, value: string) => {
     // Validate that value is a number for insert operations
-    const operation = state.operations.find(op => op.id === id);
+    const operation = state.operations.find((op) => op.id === id);
     if (operation && operation.type === 'insert' && value) {
       const numValue = parseFloat(value);
       if (isNaN(numValue)) {
@@ -187,11 +193,11 @@ const DragDropBST = () => {
         setTimeout(() => setErrorMessage(''), 3000);
         return;
       }
-      
+
       // Clear error message
       setErrorMessage('');
     }
-    
+
     // Update the operation value
     updateOperation(id, { value });
   };
@@ -199,9 +205,9 @@ const DragDropBST = () => {
   // Function to execute all operations and rebuild the BST
   const executeAllOperations = React.useCallback(() => {
     let currentRoot: BSTNode | null = null;
-    
+
     // Execute all operations in order
-    state.operations.forEach(op => {
+    state.operations.forEach((op) => {
       if (op.value) {
         const numValue = parseFloat(op.value);
         if (!isNaN(numValue)) {
@@ -213,7 +219,7 @@ const DragDropBST = () => {
         }
       }
     });
-    
+
     const newStats = calculateStats(currentRoot);
     updateBSTState(currentRoot, newStats);
   }, [state.operations, updateBSTState, insertNode, deleteNode]);
@@ -296,11 +302,7 @@ const DragDropBST = () => {
     executeAllOperations();
   }, [executeAllOperations]);
 
-  const getStepDescription = (operation: {
-    type: string;
-    value?: string | null;
-    name: string;
-  }) => {
+  const getStepDescription = (operation: { type: string; value?: string | null; name: string }) => {
     const descriptions: { [key: string]: string } = {
       insert: `เพิ่มข้อมูล ${operation.value} ใน Binary Search Tree`,
       delete: `ลบข้อมูล ${operation.value} จาก Binary Search Tree`,
@@ -332,7 +334,7 @@ const DragDropBST = () => {
 
     // Build BST up to the selected step
     let stepRoot: BSTNode | null = null;
-    
+
     for (let i = 0; i <= stepIndex; i++) {
       const operation = state.operations[i];
       if (operation.value) {
@@ -346,7 +348,7 @@ const DragDropBST = () => {
         }
       }
     }
-    
+
     const stepStats = calculateStats(stepRoot);
     return {
       root: stepRoot,
@@ -378,12 +380,16 @@ const DragDropBST = () => {
 
       {/* Error Message */}
       {errorMessage && (
-        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3">
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
           <div className="flex items-center">
-            <svg className="h-5 w-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            <svg className="mr-2 h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
             </svg>
-            <span className="text-red-700 text-sm">{errorMessage}</span>
+            <span className="text-sm text-red-700">{errorMessage}</span>
           </div>
         </div>
       )}

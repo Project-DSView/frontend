@@ -96,14 +96,8 @@ const BSTOperations: React.FC<BSTOperationsProps> = ({
         <div className="py-12 text-center text-gray-500">
           <h3 className="mb-2 text-lg font-semibold">เลือกประเภท Operation</h3>
           <p className="text-sm">กรุณาเลือกประเภท operation จาก dropdown ด้านบน</p>
-          <div className="mt-4 rounded-lg bg-blue-50 p-3">
-            <p className="text-xs text-blue-700">
-              💡 <strong>หมายเหตุ:</strong> BST operations รับเฉพาะตัวเลขเท่านั้น
-            </p>
-          </div>
         </div>
       )}
-
     </div>
   );
 };
