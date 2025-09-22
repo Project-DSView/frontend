@@ -3,12 +3,13 @@
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { LogIn } from 'lucide-react';
 
 const features = [
   {
     icon: (
       <Image
-        src="/Easytouse.png"
+        src="/landing/Easytouse.png"
         alt="ใช้งานง่าย"
         width={80}
         height={80}
@@ -21,7 +22,7 @@ const features = [
   {
     icon: (
       <Image
-        src="/Picture2.png"
+        src="/landing/Picture2.png"
         alt="ตรวจสอบโค้ด"
         width={80}
         height={80}
@@ -34,7 +35,7 @@ const features = [
   {
     icon: (
       <Image
-        src="/Picture3.png"
+        src="/landing/Picture3.png"
         alt="ฟีเจอร์ครบครัน"
         width={80}
         height={80}
@@ -47,7 +48,7 @@ const features = [
   {
     icon: (
       <Image
-        src="/Picture4.png"
+        src="/landing/Picture4.png"
         alt="เพิ่มประสิทธิภาพ"
         width={80}
         height={80}
@@ -77,15 +78,16 @@ const Landing = () => {
           </p>
           <div className="mt-6 flex gap-6 justify-center">
             <Button className="bg-secondary hover:bg-orange-600 text-white px-8 py-4 text-lg shadow-lg rounded-xl">
-              Exercise
+              เข้าคอร์สเรียน
+              <LogIn size={24} />
             </Button>
             <Button
               variant="outline"
-            className="px-8 py-4 text-lg border-2 border-primary text-primary hover:bg-primary hover:text-white rounded-xl"
+              className="px-8 py-4 text-lg border-2 border-primary text-primary hover:bg-primary hover:text-white rounded-xl"
             >
-            Playground
-          </Button>
-        </div>
+              Playground
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -119,7 +121,7 @@ const Landing = () => {
             {/* Image */}
             <div className="w-full lg:w-1/2">
               <Image
-                src="/LearnPicture.png"
+                src="/landing/LearnPicture.png"
                 alt="เรียนรู้โครงสร้างข้อมูลด้วยภาพ"
                 width={600}
                 height={400}
@@ -143,7 +145,7 @@ const Landing = () => {
             {/* Image */}
             <div className="w-full lg:w-1/2">
               <Image
-                src="/Understand.png"
+                src="/landing/Understand.png"
                 alt="ฝึกซ้ำและตรวจสอบความเข้าใจ"
                 width={600}
                 height={400}

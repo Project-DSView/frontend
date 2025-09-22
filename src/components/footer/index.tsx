@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="bg-base-100 border-t py-8 px-6">
+    <footer className="bg-neutral/10 border-t py-8 px-6">
       <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         {/* โลโก้ + ข้อความ */}
         <div className="flex items-center gap-3">
