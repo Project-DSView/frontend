@@ -61,6 +61,19 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                   />
                 )}
 
+                {/* Number input for BST operations */}
+                {['insert', 'delete', 'search'].includes(op.type) && (
+                  <input
+                    type="number"
+                    placeholder="Number"
+                    value={op.value || ''}
+                    onChange={(e) => onUpdateOperationValue(op.id, e.target.value)}
+                    className="w-24 rounded border px-2 py-1 text-center text-sm"
+                    min="0"
+                    step="1"
+                  />
+                )}
+
                 {/* Position input for operations that need it */}
                 {[
                   'insert_position',

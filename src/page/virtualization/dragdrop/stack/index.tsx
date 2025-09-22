@@ -1,39 +1,27 @@
 'use client';
 
 import React, { useState, useRef, lazy, Suspense } from 'react';
-import { StackOperation, StackDragComponent } from '@/types';
+import { StackDragComponent } from '@/types';
 import { useStack } from '@/hooks';
 import { stackDragComponents } from '@/data';
-import { CodeGenerationService } from '@/services';
 import DragDropZone from '@/components/DataStructures/shared/DragDropZone';
+import StepSelector from '@/components/DataStructures/shared/StepSelector';
 
 // Lazy load heavy components
 const StackOperations = lazy(() => import('@/components/DataStructures/stack/StackOperations'));
 const StackVisualization = lazy(
   () => import('@/components/DataStructures/stack/StackVisualization'),
 );
-const CodeMirrorEditor = lazy(() => import('@/components/DataStructures/shared/CodeMirrorEditor'));
-const ExportButtons = lazy(() => import('@/components/DataStructures/shared/ExportButtons'));
 
 const DragDropStack = () => {
-  const {
-    state,
-    isRunning,
-    currentLine,
-    currentStep,
-    executionHistory,
-    currentOperation,
-    addOperation,
-    updateOperation,
-    removeOperation,
-    clearAll,
-    executeAllOperations,
-  } = useStack();
+  const { state, addOperation, updateOperation, removeOperation, clearAll } = useStack();
 
   const [draggedItem, setDraggedItem] = useState<StackDragComponent | null>(null);
-  const [code, setCode] = useState(CodeGenerationService.getCodeTemplate('stack'));
+  const [selectedStep, setSelectedStep] = useState<number | null>(null);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
+  const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleDragStart = (e: React.DragEvent, component: StackDragComponent) => {
     setDraggedItem(component);
@@ -94,18 +82,155 @@ const DragDropStack = () => {
     updateOperation(id, { newValue });
   };
 
-  const handleExecuteOperations = async () => {
-    await executeAllOperations();
-    const generatedCode = CodeGenerationService.generateStackCode(
-      state.operations as StackOperation[],
-    );
-    setCode(generatedCode);
-  };
-
   const handleClearAll = () => {
     clearAll();
-    setCode(CodeGenerationService.getCodeTemplate('stack'));
+    setSelectedStep(null);
   };
+
+  const handleStepSelect = (stepIndex: number) => {
+    setSelectedStep(stepIndex);
+    // Stop auto play when manually selecting a step
+    if (isAutoPlaying) {
+      handleAutoPlay();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (selectedStep !== null && selectedStep > 0) {
+      setSelectedStep(selectedStep - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (selectedStep !== null && selectedStep < state.operations.length - 1) {
+      setSelectedStep(selectedStep + 1);
+    }
+  };
+
+  const handleAutoPlay = () => {
+    if (isAutoPlaying) {
+      // Stop auto play
+      setIsAutoPlaying(false);
+      if (autoPlayIntervalRef.current) {
+        clearInterval(autoPlayIntervalRef.current);
+        autoPlayIntervalRef.current = null;
+      }
+    } else {
+      // Start auto play
+      setIsAutoPlaying(true);
+      if (state.operations.length > 0) {
+        setSelectedStep(0);
+        autoPlayIntervalRef.current = setInterval(() => {
+          setSelectedStep((prev) => {
+            if (prev === null || prev >= state.operations.length - 1) {
+              // Auto play finished
+              setIsAutoPlaying(false);
+              if (autoPlayIntervalRef.current) {
+                clearInterval(autoPlayIntervalRef.current);
+                autoPlayIntervalRef.current = null;
+              }
+              return prev;
+            }
+            return prev + 1;
+          });
+        }, 2000); // Change step every 2 seconds
+      }
+    }
+  };
+
+  // Cleanup auto play interval on unmount
+  React.useEffect(() => {
+    return () => {
+      if (autoPlayIntervalRef.current) {
+        clearInterval(autoPlayIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const getStepDescription = (operation: {
+    type: string;
+    value?: string | null;
+    position?: string | null;
+    newValue?: string | null;
+    name: string;
+  }) => {
+    const descriptions: { [key: string]: string } = {
+      push: `เพิ่มข้อมูล ${operation.value} ลงใน stack (LIFO - Last In First Out)`,
+      pop: 'ลบข้อมูลออกจาก stack ที่ตำแหน่งบนสุด',
+      peek: 'ดูข้อมูลที่ตำแหน่งบนสุดของ stack โดยไม่ลบออก',
+      is_empty: 'ตรวจสอบว่า stack ว่างเปล่าหรือไม่',
+      size: 'นับจำนวนข้อมูลใน stack',
+    };
+
+    return descriptions[operation.type] || `ดำเนินการ ${operation.name}`;
+  };
+
+  // Calculate state for selected step
+  const getStepState = (stepIndex: number) => {
+    if (stepIndex < 0 || stepIndex >= state.operations.length) {
+      return {
+        elements: [],
+        stats: {
+          length: 0,
+          headValue: null as string | null,
+          tailValue: null as string | null,
+          isEmpty: true,
+        },
+      };
+    }
+
+    let currentElements: string[] = [];
+    let currentStats = {
+      length: 0,
+      headValue: null as string | null,
+      tailValue: null as string | null,
+      isEmpty: true,
+    };
+
+    // Execute operations up to the selected step
+    for (let i = 0; i <= stepIndex; i++) {
+      const operation = state.operations[i];
+      if (!operation) continue;
+
+      switch (operation.type) {
+        case 'push':
+          if (operation.value) {
+            currentElements = [...currentElements, operation.value];
+          }
+          break;
+        case 'pop':
+          if (currentElements.length > 0) {
+            currentElements = currentElements.slice(0, -1);
+          }
+          break;
+        case 'peek':
+        case 'is_empty':
+        case 'size':
+          // These operations don't modify the stack
+          break;
+      }
+
+      // Update stats
+      currentStats = {
+        length: currentElements.length,
+        headValue: currentElements.length > 0 ? currentElements[currentElements.length - 1] : null, // Top of stack
+        tailValue: currentElements.length > 0 ? currentElements[0] : null, // Bottom of stack
+        isEmpty: currentElements.length === 0,
+      };
+    }
+
+    return { elements: currentElements, stats: currentStats };
+  };
+
+  // Get current visualization state based on selected step
+  const getCurrentVisualizationState = () => {
+    if (selectedStep !== null) {
+      return getStepState(selectedStep);
+    }
+    return { elements: state.elements, stats: state.stats };
+  };
+
+  const currentVisualizationState = getCurrentVisualizationState();
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -116,11 +241,6 @@ const DragDropStack = () => {
           <p className="text-gray-600">
             เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
           </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <Suspense fallback={<div className="h-10 w-32 animate-pulse rounded bg-gray-200"></div>}>
-            <ExportButtons visualizationRef={visualizationRef} pythonCode={code} />
-          </Suspense>
         </div>
       </div>
 
@@ -146,13 +266,6 @@ const DragDropStack = () => {
             <h2 className="text-lg font-semibold text-gray-800">Drop Zone</h2>
             <div className="space-x-2">
               <button
-                onClick={handleExecuteOperations}
-                disabled={isRunning}
-                className={`px-4 py-2 ${isRunning ? 'bg-gray-400' : 'bg-accent hover:bg-accent/50'} rounded text-white transition-colors`}
-              >
-                {isRunning ? 'Running...' : '▶ Run'}
-              </button>
-              <button
                 onClick={handleClearAll}
                 className="bg-neutral hover:bg-neutral/50 rounded px-4 py-2 text-white transition-colors"
               >
@@ -175,29 +288,17 @@ const DragDropStack = () => {
         </div>
       </div>
 
-      {/* Execution Status */}
-      {(isRunning || currentStep) && (
-        <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
-          <div className="mb-2 flex items-center space-x-3">
-            <div className="h-3 w-3 animate-pulse rounded-full bg-blue-500"></div>
-            <h3 className="font-semibold text-blue-800">Execution Status</h3>
-          </div>
-          <p className="font-medium text-blue-700">{currentStep}</p>
-
-          {/* Execution History */}
-          <div className="mt-4 max-h-32 overflow-y-auto rounded border bg-white p-3">
-            <div className="mb-2 text-xs text-gray-600">Execution Log:</div>
-            {executionHistory.map((step, index) => (
-              <div
-                key={index}
-                className="border-b border-gray-100 py-1 text-sm text-gray-700 last:border-b-0"
-              >
-                {step}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Step Selection */}
+      <StepSelector
+        operations={state.operations}
+        selectedStep={selectedStep}
+        onStepSelect={handleStepSelect}
+        getStepDescription={getStepDescription}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onAutoPlay={handleAutoPlay}
+        isAutoPlaying={isAutoPlaying}
+      />
 
       {/* Visualization */}
       <Suspense
@@ -209,23 +310,9 @@ const DragDropStack = () => {
       >
         <StackVisualization
           ref={visualizationRef}
-          elements={state.elements}
-          stats={state.stats}
-          isRunning={isRunning}
-          currentOperation={currentOperation}
-          currentStep={currentStep}
+          elements={currentVisualizationState.elements}
+          stats={currentVisualizationState.stats}
         />
-      </Suspense>
-
-      {/* Code Editor */}
-      <Suspense
-        fallback={
-          <div className="flex h-64 items-center justify-center rounded-lg border bg-gray-50">
-            Loading code editor...
-          </div>
-        }
-      >
-        <CodeMirrorEditor code={code} currentLine={currentLine} title="Generated Python Code" />
       </Suspense>
     </div>
   );

@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useRef, lazy, Suspense } from 'react';
-import { DoublyLinkedListOperation, DoublyLinkedListDragComponent } from '@/types';
+import { DoublyLinkedListDragComponent } from '@/types';
 import { useDoublyLinkedList } from '@/hooks';
 import { doublyLinkedListDragComponents } from '@/data';
-import { CodeGenerationService } from '@/services';
 import DragDropZone from '@/components/DataStructures/shared/DragDropZone';
+import StepSelector from '@/components/DataStructures/shared/StepSelector';
 
 // Lazy load heavy components
 const DoublyLinkedListOperations = lazy(
@@ -14,29 +14,16 @@ const DoublyLinkedListOperations = lazy(
 const DoublyLinkedListVisualization = lazy(
   () => import('@/components/DataStructures/doubly-linked-list/DoublyLinkedListVisualization'),
 );
-const CodeMirrorEditor = lazy(() => import('@/components/DataStructures/shared/CodeMirrorEditor'));
-const ExportButtons = lazy(() => import('@/components/DataStructures/shared/ExportButtons'));
 
 const DragDropDoublyLinkList = () => {
-  const {
-    state,
-    isRunning,
-    currentLine,
-    currentStep,
-    executionHistory,
-    currentOperation,
-    currentPosition,
-    addOperation,
-    updateOperation,
-    removeOperation,
-    clearAll,
-    executeAllOperations,
-  } = useDoublyLinkedList();
+  const { state, addOperation, updateOperation, removeOperation, clearAll } = useDoublyLinkedList();
 
   const [draggedItem, setDraggedItem] = useState<DoublyLinkedListDragComponent | null>(null);
-  const [code, setCode] = useState(CodeGenerationService.getCodeTemplate('doubly-linked-list'));
+  const [selectedStep, setSelectedStep] = useState<number | null>(null);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
+  const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleDragStart = (e: React.DragEvent, component: DoublyLinkedListDragComponent) => {
     setDraggedItem(component);
@@ -110,18 +97,217 @@ const DragDropDoublyLinkList = () => {
     updateOperation(id, { newValue });
   };
 
-  const handleExecuteOperations = async () => {
-    await executeAllOperations();
-    const generatedCode = CodeGenerationService.generateDoublyLinkedListCode(
-      state.operations as DoublyLinkedListOperation[],
-    );
-    setCode(generatedCode);
-  };
-
   const handleClearAll = () => {
     clearAll();
-    setCode(CodeGenerationService.getCodeTemplate('doubly-linked-list'));
+    setSelectedStep(null);
   };
+
+  const handleStepSelect = (stepIndex: number) => {
+    setSelectedStep(stepIndex);
+    // Stop auto play when manually selecting a step
+    if (isAutoPlaying) {
+      handleAutoPlay();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (selectedStep !== null && selectedStep > 0) {
+      setSelectedStep(selectedStep - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (selectedStep !== null && selectedStep < state.operations.length - 1) {
+      setSelectedStep(selectedStep + 1);
+    }
+  };
+
+  const handleAutoPlay = () => {
+    if (isAutoPlaying) {
+      // Stop auto play
+      setIsAutoPlaying(false);
+      if (autoPlayIntervalRef.current) {
+        clearInterval(autoPlayIntervalRef.current);
+        autoPlayIntervalRef.current = null;
+      }
+    } else {
+      // Start auto play
+      setIsAutoPlaying(true);
+      if (state.operations.length > 0) {
+        setSelectedStep(0);
+        autoPlayIntervalRef.current = setInterval(() => {
+          setSelectedStep((prev) => {
+            if (prev === null || prev >= state.operations.length - 1) {
+              // Auto play finished
+              setIsAutoPlaying(false);
+              if (autoPlayIntervalRef.current) {
+                clearInterval(autoPlayIntervalRef.current);
+                autoPlayIntervalRef.current = null;
+              }
+              return prev;
+            }
+            return prev + 1;
+          });
+        }, 2000); // Change step every 2 seconds
+      }
+    }
+  };
+
+  // Cleanup auto play interval on unmount
+  React.useEffect(() => {
+    return () => {
+      if (autoPlayIntervalRef.current) {
+        clearInterval(autoPlayIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const getStepDescription = (operation: {
+    type: string;
+    value?: string | null;
+    position?: string | null;
+    newValue?: string | null;
+    name: string;
+  }) => {
+    const descriptions: { [key: string]: string } = {
+      insert_beginning: `เพิ่มข้อมูล ${operation.value} ที่ตำแหน่งเริ่มต้นของ doubly linked list`,
+      insert_end: `เพิ่มข้อมูล ${operation.value} ที่ตำแหน่งท้ายของ doubly linked list`,
+      insert_position: `เพิ่มข้อมูล ${operation.value} ที่ตำแหน่ง ${operation.position}`,
+      insert_before_position: `เพิ่มข้อมูล ${operation.value} ก่อนตำแหน่ง ${operation.position}`,
+      delete_beginning: 'ลบข้อมูลที่ตำแหน่งเริ่มต้นของ doubly linked list',
+      delete_end: 'ลบข้อมูลที่ตำแหน่งท้ายของ doubly linked list',
+      delete_position: `ลบข้อมูลที่ตำแหน่ง ${operation.position}`,
+      delete_before_position: `ลบข้อมูลก่อนตำแหน่ง ${operation.position}`,
+      search: `ค้นหาข้อมูล ${operation.value} ใน doubly linked list`,
+      search_position: `ค้นหาข้อมูลที่ตำแหน่ง ${operation.position}`,
+      update_value: `อัปเดตข้อมูลเป็น ${operation.newValue}`,
+      update_position: `อัปเดตข้อมูลที่ตำแหน่ง ${operation.position} เป็น ${operation.newValue}`,
+      traverse_forward: 'เดินทางผ่าน doubly linked list ไปข้างหน้า',
+      traverse_backward: 'เดินทางผ่าน doubly linked list ไปข้างหลัง',
+    };
+
+    return descriptions[operation.type] || `ดำเนินการ ${operation.name}`;
+  };
+
+  // Calculate state for selected step
+  const getStepState = (stepIndex: number) => {
+    if (stepIndex < 0 || stepIndex >= state.operations.length) {
+      return {
+        nodes: [],
+        stats: {
+          length: 0,
+          headValue: null as string | null,
+          tailValue: null as string | null,
+          isEmpty: true,
+        },
+      };
+    }
+
+    let currentNodes: string[] = [];
+    let currentStats = {
+      length: 0,
+      headValue: null as string | null,
+      tailValue: null as string | null,
+      isEmpty: true,
+    };
+
+    // Execute operations up to the selected step
+    for (let i = 0; i <= stepIndex; i++) {
+      const operation = state.operations[i];
+      if (!operation) continue;
+
+      switch (operation.type) {
+        case 'insert_beginning':
+          if (operation.value) {
+            currentNodes = [operation.value, ...currentNodes];
+          }
+          break;
+        case 'insert_end':
+          if (operation.value) {
+            currentNodes = [...currentNodes, operation.value];
+          }
+          break;
+        case 'insert_position':
+          if (operation.value && operation.position) {
+            const pos = parseInt(operation.position);
+            if (pos >= 0 && pos <= currentNodes.length) {
+              currentNodes.splice(pos, 0, operation.value);
+            }
+          }
+          break;
+        case 'insert_before_position':
+          if (operation.value && operation.position) {
+            const pos = parseInt(operation.position);
+            if (pos >= 0 && pos <= currentNodes.length) {
+              currentNodes.splice(pos, 0, operation.value);
+            }
+          }
+          break;
+        case 'delete_beginning':
+          if (currentNodes.length > 0) {
+            currentNodes = currentNodes.slice(1);
+          }
+          break;
+        case 'delete_end':
+          if (currentNodes.length > 0) {
+            currentNodes = currentNodes.slice(0, -1);
+          }
+          break;
+        case 'delete_position':
+          if (operation.position) {
+            const pos = parseInt(operation.position);
+            if (pos >= 0 && pos < currentNodes.length) {
+              currentNodes.splice(pos, 1);
+            }
+          }
+          break;
+        case 'delete_before_position':
+          if (operation.position) {
+            const pos = parseInt(operation.position);
+            if (pos > 0 && pos <= currentNodes.length) {
+              currentNodes.splice(pos - 1, 1);
+            }
+          }
+          break;
+        case 'update_value':
+          if (operation.newValue) {
+            const index = currentNodes.indexOf(operation.value || '');
+            if (index !== -1) {
+              currentNodes[index] = operation.newValue;
+            }
+          }
+          break;
+        case 'update_position':
+          if (operation.position && operation.newValue) {
+            const pos = parseInt(operation.position);
+            if (pos >= 0 && pos < currentNodes.length) {
+              currentNodes[pos] = operation.newValue;
+            }
+          }
+          break;
+      }
+
+      // Update stats
+      currentStats = {
+        length: currentNodes.length,
+        headValue: currentNodes.length > 0 ? currentNodes[0] : null,
+        tailValue: currentNodes.length > 0 ? currentNodes[currentNodes.length - 1] : null,
+        isEmpty: currentNodes.length === 0,
+      };
+    }
+
+    return { nodes: currentNodes, stats: currentStats };
+  };
+
+  // Get current visualization state based on selected step
+  const getCurrentVisualizationState = () => {
+    if (selectedStep !== null) {
+      return getStepState(selectedStep);
+    }
+    return { nodes: state.nodes, stats: state.stats };
+  };
+
+  const currentVisualizationState = getCurrentVisualizationState();
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -132,11 +318,6 @@ const DragDropDoublyLinkList = () => {
           <p className="text-gray-600">
             เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
           </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <Suspense fallback={<div className="h-10 w-32 animate-pulse rounded bg-gray-200"></div>}>
-            <ExportButtons visualizationRef={visualizationRef} pythonCode={code} />
-          </Suspense>
         </div>
       </div>
 
@@ -162,13 +343,6 @@ const DragDropDoublyLinkList = () => {
             <h2 className="text-lg font-semibold text-gray-800">Drop Zone</h2>
             <div className="space-x-2">
               <button
-                onClick={handleExecuteOperations}
-                disabled={isRunning}
-                className={`px-4 py-2 ${isRunning ? 'bg-gray-400' : 'bg-accent hover:bg-accent/50'} rounded text-white transition-colors`}
-              >
-                {isRunning ? 'Running...' : '▶ Run'}
-              </button>
-              <button
                 onClick={handleClearAll}
                 className="bg-neutral hover:bg-neutral/50 rounded px-4 py-2 text-white transition-colors"
               >
@@ -191,29 +365,17 @@ const DragDropDoublyLinkList = () => {
         </div>
       </div>
 
-      {/* Execution Status */}
-      {(isRunning || currentStep) && (
-        <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
-          <div className="mb-2 flex items-center space-x-3">
-            <div className="h-3 w-3 animate-pulse rounded-full bg-blue-500"></div>
-            <h3 className="font-semibold text-blue-800">Execution Status</h3>
-          </div>
-          <p className="font-medium text-blue-700">{currentStep}</p>
-
-          {/* Execution History */}
-          <div className="mt-4 max-h-32 overflow-y-auto rounded border bg-white p-3">
-            <div className="mb-2 text-xs text-gray-600">Execution Log:</div>
-            {executionHistory.map((step, index) => (
-              <div
-                key={index}
-                className="border-b border-gray-100 py-1 text-sm text-gray-700 last:border-b-0"
-              >
-                {step}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Step Selection */}
+      <StepSelector
+        operations={state.operations}
+        selectedStep={selectedStep}
+        onStepSelect={handleStepSelect}
+        getStepDescription={getStepDescription}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onAutoPlay={handleAutoPlay}
+        isAutoPlaying={isAutoPlaying}
+      />
 
       {/* Visualization */}
       <Suspense
@@ -225,24 +387,19 @@ const DragDropDoublyLinkList = () => {
       >
         <DoublyLinkedListVisualization
           ref={visualizationRef}
-          nodes={state.nodes}
-          stats={state.stats}
-          isRunning={isRunning}
-          currentOperation={currentOperation}
-          currentStep={currentStep}
-          currentPosition={currentPosition}
+          nodes={currentVisualizationState.nodes}
+          stats={currentVisualizationState.stats}
+          currentOperation={
+            selectedStep !== null ? state.operations[selectedStep]?.type : undefined
+          }
+          selectedStep={
+            selectedStep !== null &&
+            (state.operations[selectedStep]?.type === 'traverse_forward' ||
+              state.operations[selectedStep]?.type === 'traverse_backward')
+              ? selectedStep
+              : null
+          }
         />
-      </Suspense>
-
-      {/* Code Editor */}
-      <Suspense
-        fallback={
-          <div className="flex h-64 items-center justify-center rounded-lg border bg-gray-50">
-            Loading code editor...
-          </div>
-        }
-      >
-        <CodeMirrorEditor code={code} currentLine={currentLine} title="Generated Python Code" />
       </Suspense>
     </div>
   );
