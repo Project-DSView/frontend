@@ -12,7 +12,15 @@ const getSubmenuItemsWithNested = (basePath: string): MenuItem[] => [
   },
   { href: `${basePath}/stack`, label: 'Stack', hasSubItems: false },
   { href: `${basePath}/bst`, label: 'Binary Search Tree', hasSubItems: false },
-  { href: `${basePath}/graph`, label: 'Graph', hasSubItems: false },
+  {
+    href: null,
+    label: 'Graph',
+    hasSubItems: true,
+    subItems: [
+      { href: `${basePath}/graph/undirected`, label: 'Undirected Graph' },
+      { href: `${basePath}/graph/directed`, label: 'Directed Graph' },
+    ],
+  },
 ];
 
 const playgroundItems: PlaygroundItem[] = [

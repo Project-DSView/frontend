@@ -1,4 +1,5 @@
 import { Operation, DragComponent, DataStructureStats } from '../common.types';
+import { BaseStats, BaseState } from './base.types';
 
 interface DoublyLinkedListNode {
   data: string;
@@ -50,6 +51,21 @@ interface DoublyLinkedListCodeTemplate {
   usage: string;
 }
 
+// DoublyLinkedList-specific types
+interface DoublyLinkedListData {
+  nodes: string[];
+}
+
+interface DoublyLinkedListStatsExtended extends BaseStats {
+  headValue: string | null;
+  tailValue: string | null;
+}
+
+interface DoublyLinkedListStateExtended extends BaseState<DoublyLinkedListData, DoublyLinkedListStatsExtended> {
+  data: DoublyLinkedListData;
+  stats: DoublyLinkedListStatsExtended;
+}
+
 export type {
   DoublyLinkedListNode,
   DoublyLinkedListState,
@@ -57,4 +73,7 @@ export type {
   DoublyLinkedListDragComponent,
   DoublyLinkedListExecutionStep,
   DoublyLinkedListCodeTemplate,
+  DoublyLinkedListData,
+  DoublyLinkedListStatsExtended,
+  DoublyLinkedListStateExtended,
 };

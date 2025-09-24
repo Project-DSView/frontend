@@ -19,14 +19,10 @@ export class BSTService {
   private calculateStats(): BSTStats {
     const size = this.getSize(this.state.root);
     const height = this.getHeight(this.state.root);
-    const minValue = this.findMinValue(this.state.root);
-    const maxValue = this.findMaxValue(this.state.root);
 
     return {
       size,
       height,
-      minValue,
-      maxValue,
       isEmpty: this.state.root === null,
     };
   }
@@ -41,21 +37,6 @@ export class BSTService {
     return 1 + Math.max(this.getHeight(node.left), this.getHeight(node.right));
   }
 
-  private findMinValue(node: BSTNode | null): string | null {
-    if (!node) return null;
-    while (node.left) {
-      node = node.left;
-    }
-    return node.value;
-  }
-
-  private findMaxValue(node: BSTNode | null): string | null {
-    if (!node) return null;
-    while (node.right) {
-      node = node.right;
-    }
-    return node.value;
-  }
 
   private generateId(): string {
     return Math.random().toString(36).substr(2, 9);
@@ -219,44 +200,6 @@ export class BSTService {
     return node;
   }
 
-  async search(value: string): Promise<BSTExecutionStep[]> {
-    const steps: BSTExecutionStep[] = [];
-
-    steps.push({
-      step: `เริ่มการค้นหาค่า ${value} ใน BST`,
-      description: `กำลังค้นหาค่า ${value} ใน Binary Search Tree`,
-      duration: 1000,
-    });
-
-    if (!this.state.root) {
-      steps.push({
-        step: `BST ว่างเปล่า ไม่พบค่า ${value}`,
-        description: `ไม่มีข้อมูลใน BST`,
-        duration: 1000,
-      });
-      return steps;
-    }
-
-    const path = this.findNodePath(this.state.root, value, []);
-    if (path.length === 0) {
-      steps.push({
-        step: `ไม่พบค่า ${value} ใน BST`,
-        description: `ค่า ${value} ไม่มีอยู่ใน BST`,
-        duration: 1500,
-      });
-    } else {
-      steps.push({
-        step: `พบค่า ${value} ตาม path: ${path.join(' → ')}`,
-        description: `ค้นหาค่า ${value} สำเร็จ`,
-        duration: 1500,
-        nodeValue: value,
-        path: path,
-      });
-    }
-
-    return steps;
-  }
-
   async traverseInorder(): Promise<BSTExecutionStep[]> {
     const steps: BSTExecutionStep[] = [];
     const result: string[] = [];
@@ -374,81 +317,4 @@ export class BSTService {
     }
   }
 
-  async findMin(): Promise<BSTExecutionStep[]> {
-    const steps: BSTExecutionStep[] = [];
-
-    steps.push({
-      step: `เริ่มการหาค่าที่น้อยที่สุด`,
-      description: `กำลังหาค่าที่น้อยที่สุดใน BST`,
-      duration: 1000,
-    });
-
-    if (!this.state.root) {
-      steps.push({
-        step: `BST ว่างเปล่า ไม่มีค่าที่น้อยที่สุด`,
-        description: `ไม่มีข้อมูลใน BST`,
-        duration: 1000,
-      });
-      return steps;
-    }
-
-    const minValue = this.findMinValue(this.state.root);
-    const path = this.findMinPath(this.state.root, []);
-
-    steps.push({
-      step: `พบค่าที่น้อยที่สุด: ${minValue}`,
-      description: `ค่าที่น้อยที่สุดใน BST คือ ${minValue}`,
-      duration: 1500,
-      nodeValue: minValue ?? undefined,
-      path: path,
-    });
-
-    return steps;
-  }
-
-  private findMinPath(node: BSTNode, path: string[]): string[] {
-    if (node.left) {
-      return this.findMinPath(node.left, [...path, node.value]);
-    }
-    return [...path, node.value];
-  }
-
-  async findMax(): Promise<BSTExecutionStep[]> {
-    const steps: BSTExecutionStep[] = [];
-
-    steps.push({
-      step: `เริ่มการหาค่าที่มากที่สุด`,
-      description: `กำลังหาค่าที่มากที่สุดใน BST`,
-      duration: 1000,
-    });
-
-    if (!this.state.root) {
-      steps.push({
-        step: `BST ว่างเปล่า ไม่มีค่าที่มากที่สุด`,
-        description: `ไม่มีข้อมูลใน BST`,
-        duration: 1000,
-      });
-      return steps;
-    }
-
-    const maxValue = this.findMaxValue(this.state.root);
-    const path = this.findMaxPath(this.state.root, []);
-
-    steps.push({
-      step: `พบค่าที่มากที่สุด: ${maxValue}`,
-      description: `ค่าที่มากที่สุดใน BST คือ ${maxValue}`,
-      duration: 1500,
-      nodeValue: maxValue ?? undefined,
-      path: path,
-    });
-
-    return steps;
-  }
-
-  private findMaxPath(node: BSTNode, path: string[]): string[] {
-    if (node.right) {
-      return this.findMaxPath(node.right, [...path, node.value]);
-    }
-    return [...path, node.value];
-  }
 }

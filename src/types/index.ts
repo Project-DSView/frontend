@@ -5,6 +5,7 @@ export type {
   SubMenuItemProps,
   NestedSubMenuItemProps,
 } from './components/menu.types';
+export type { Feature, FeatureCardProps } from './components/card.types';
 export type { AuthResponse, UserProfile, UseAuthReturn } from './services/auth.types';
 export type {
   SinglyLinkedListNode,
@@ -13,6 +14,9 @@ export type {
   SinglyLinkedListDragComponent,
   SinglyLinkedListExecutionStep,
   SinglyLinkedListCodeTemplate,
+  SinglyLinkedListData,
+  SinglyLinkedListStatsExtended,
+  SinglyLinkedListStateExtended,
 } from './DataStructures/SinglyLinkedList.types';
 export type {
   DataStructureType,
@@ -50,6 +54,9 @@ export type {
   DoublyLinkedListDragComponent,
   DoublyLinkedListExecutionStep,
   DoublyLinkedListCodeTemplate,
+  DoublyLinkedListData,
+  DoublyLinkedListStatsExtended,
+  DoublyLinkedListStateExtended,
 } from './DataStructures/DoublyLinkedList.types';
 export type {
   StackElement,
@@ -58,6 +65,9 @@ export type {
   StackDragComponent,
   StackExecutionStep,
   StackCodeTemplate,
+  StackData,
+  StackStatsExtended,
+  StackStateExtended,
 } from './DataStructures/Stack.types';
 export type {
   BSTNode,
@@ -70,4 +80,49 @@ export type {
   BSTOperationsProps,
   BSTVisualizationProps,
   PositionedNode,
+  BSTData,
+  BSTStatsExtended,
+  BSTStateExtended,
 } from './DataStructures/BST.types';
+export type {
+  BaseOperation,
+  BaseStats,
+  BaseState,
+  BaseExecutionStep,
+  BaseHookState,
+  BaseHookReturn,
+  BaseDataStructureService,
+} from './DataStructures/base.types';
+export type {
+  UndirectedGraphNode,
+  UndirectedGraphEdge,
+  UndirectedGraphStats,
+  UndirectedGraphOperation,
+  UndirectedGraphDragComponent,
+  UndirectedGraphState,
+  UndirectedGraphExecutionStep,
+  UndirectedGraphCodeTemplate,
+  UndirectedGraphOperationsProps,
+  UndirectedGraphVisualizationProps,
+  PositionedUndirectedGraphNode,
+  UndirectedGraphData,
+  UndirectedGraphStatsExtended,
+  UndirectedGraphStateExtended,
+} from './DataStructures/UndirectedGraph.types';
+export type {
+  DirectedGraphNode,
+  DirectedGraphEdge,
+  DirectedGraphStats,
+  DirectedGraphOperation,
+  DirectedGraphDragComponent,
+  DirectedGraphState,
+  DirectedGraphExecutionStep,
+  DirectedGraphCodeTemplate,
+  DirectedGraphOperationsProps,
+  DirectedGraphVisualizationProps,
+  PositionedDirectedGraphNode,
+  DirectedGraphData,
+  DirectedGraphStatsExtended,
+  DirectedGraphStateExtended,
+} from './DataStructures/DirectedGraph.types';
+

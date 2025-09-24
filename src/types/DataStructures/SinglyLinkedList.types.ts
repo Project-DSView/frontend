@@ -1,4 +1,5 @@
 import { Operation, DragComponent, DataStructureStats } from '../common.types';
+import { BaseStats, BaseState } from './base.types';
 
 interface SinglyLinkedListNode {
   data: string;
@@ -46,6 +47,22 @@ interface SinglyLinkedListCodeTemplate {
   usage: string;
 }
 
+// SinglyLinkedList-specific types
+interface SinglyLinkedListData {
+  nodes: string[];
+}
+
+interface SinglyLinkedListStatsExtended extends BaseStats {
+  headValue: string | null;
+  tailValue: string | null;
+}
+
+interface SinglyLinkedListStateExtended extends BaseState<SinglyLinkedListData, SinglyLinkedListStatsExtended> {
+  data: SinglyLinkedListData;
+  stats: SinglyLinkedListStatsExtended;
+}
+
+
 export type {
   SinglyLinkedListNode,
   SinglyLinkedListState,
@@ -53,4 +70,7 @@ export type {
   SinglyLinkedListDragComponent,
   SinglyLinkedListExecutionStep,
   SinglyLinkedListCodeTemplate,
+  SinglyLinkedListData,
+  SinglyLinkedListStatsExtended,
+  SinglyLinkedListStateExtended,
 };

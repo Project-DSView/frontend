@@ -4,13 +4,13 @@ import React, { useState, useRef, lazy, Suspense } from 'react';
 import { StackDragComponent } from '@/types';
 import { useStack } from '@/hooks';
 import { stackDragComponents } from '@/data';
-import DragDropZone from '@/components/DataStructures/shared/DragDropZone';
-import StepSelector from '@/components/DataStructures/shared/StepSelector';
+import DragDropZone from '@/components/virtualization/shared/DragDropZone';
+import StepSelector from '@/components/virtualization/shared/StepSelector';
 
 // Lazy load heavy components
-const StackOperations = lazy(() => import('@/components/DataStructures/stack/StackOperations'));
+const StackOperations = lazy(() => import('@/components/virtualization/dragdrop/stack/StackOperations'));
 const StackVisualization = lazy(
-  () => import('@/components/DataStructures/stack/StackVisualization'),
+  () => import('@/components/virtualization/dragdrop/stack/StackVisualization'),
 );
 
 const DragDropStack = () => {

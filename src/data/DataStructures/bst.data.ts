@@ -20,17 +20,6 @@ const bstDragComponents: BSTDragComponent[] = [
     type: 'delete',
     description: 'ลบ node จาก Binary Search Tree',
   },
-
-  // Searching Operations
-  {
-    id: 'search',
-    name: 'Search Node',
-    color: 'bg-purple-100 border-purple-300',
-    category: 'searching',
-    type: 'search',
-    description: 'ค้นหา node ใน Binary Search Tree',
-  },
-
   // Traversal Operations
   {
     id: 'traverse_inorder',
@@ -57,23 +46,6 @@ const bstDragComponents: BSTDragComponent[] = [
     description: 'เดินทางผ่าน BST แบบ Postorder (Left → Right → Root)',
   },
 
-  // Utility Operations
-  {
-    id: 'find_min',
-    name: 'Find Minimum',
-    color: 'bg-orange-100 border-orange-300',
-    category: 'utility',
-    type: 'find_min',
-    description: 'หาค่าที่น้อยที่สุดใน BST',
-  },
-  {
-    id: 'find_max',
-    name: 'Find Maximum',
-    color: 'bg-orange-100 border-orange-300',
-    category: 'utility',
-    type: 'find_max',
-    description: 'หาค่าที่มากที่สุดใน BST',
-  },
 ];
 
 const bstCodeTemplate = `# Python code สำหรับ Binary Search Tree
@@ -126,9 +98,11 @@ class BinarySearchTree:
                 return node.left
             
             # Node with two children
-            min_node = self._find_min(node.right)
-            node.value = min_node.value
-            node.right = self._delete_recursive(node.right, min_node.value)
+            temp = node.right
+            while temp.left:
+                temp = temp.left
+            node.value = temp.value
+            node.right = self._delete_recursive(node.right, temp.value)
         
         return node
     
@@ -179,26 +153,6 @@ class BinarySearchTree:
             self._postorder_recursive(node.right, result)
             result.append(node.value)
     
-    # Utility Operations
-    def find_min(self):
-        if not self.root:
-            return None
-        return self._find_min(self.root).value
-    
-    def _find_min(self, node):
-        while node.left:
-            node = node.left
-        return node
-    
-    def find_max(self):
-        if not self.root:
-            return None
-        return self._find_max(self.root).value
-    
-    def _find_max(self, node):
-        while node.right:
-            node = node.right
-        return node
     
     def get_height(self):
         return self._get_height_recursive(self.root)

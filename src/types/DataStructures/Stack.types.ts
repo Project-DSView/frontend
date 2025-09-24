@@ -1,4 +1,5 @@
 import { Operation, DragComponent, DataStructureStats } from '../common.types';
+import { BaseStats, BaseState } from './base.types';
 
 interface StackElement {
   data: string;
@@ -34,6 +35,22 @@ interface StackCodeTemplate {
   usage: string;
 }
 
+
+// Stack-specific types
+interface StackData {
+  elements: string[];
+}
+
+interface StackStatsExtended extends BaseStats {
+  headValue: string | null;
+  tailValue: string | null;
+}
+
+interface StackStateExtended extends BaseState<StackData, StackStatsExtended> {
+  data: StackData;
+  stats: StackStatsExtended;
+}
+
 export type {
   StackElement,
   StackState,
@@ -41,4 +58,7 @@ export type {
   StackDragComponent,
   StackExecutionStep,
   StackCodeTemplate,
+  StackData,
+  StackStatsExtended,
+  StackStateExtended,
 };

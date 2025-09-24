@@ -1,15 +1,90 @@
 'use client';
 
 import React, { useState, useRef, lazy, Suspense } from 'react';
-import { BSTDragComponent, BSTNode } from '@/types';
+import { BSTDragComponent, BSTNode, BSTOperation } from '@/types';
 import { useBST } from '@/hooks';
 import { bstDragComponents } from '@/data';
-import DragDropZone from '@/components/DataStructures/shared/DragDropZone';
-import StepSelector from '@/components/DataStructures/shared/StepSelector';
+import DragDropZone from '@/components/virtualization/shared/DragDropZone';
+import StepSelector from '@/components/virtualization/shared/StepSelector';
 
 // Lazy load heavy components
-const BSTOperations = lazy(() => import('@/components/DataStructures/bst/BSTOperations'));
-const BSTVisualization = lazy(() => import('@/components/DataStructures/bst/BSTVisualization'));
+const BSTOperations = lazy(() => import('@/components/virtualization/dragdrop/bst/BSTOperations'));
+const BSTVisualization = lazy(() => import('@/components/virtualization/dragdrop/bst/BSTVisualization'));
+
+// BST helper functions - moved outside component to prevent recreation
+const insertNode = (root: BSTNode | null, value: string): BSTNode => {
+  if (!root) {
+    return {
+      value,
+      left: null,
+      right: null,
+      id: Math.random().toString(36).substr(2, 9),
+    };
+  }
+
+  // Convert to numbers for comparison
+  const numValue = parseFloat(value);
+  const numRootValue = parseFloat(root.value);
+
+  if (numValue < numRootValue) {
+    root.left = insertNode(root.left, value);
+  } else if (numValue > numRootValue) {
+    root.right = insertNode(root.right, value);
+  }
+
+  return root;
+};
+
+const deleteNode = (root: BSTNode | null, value: string): BSTNode | null => {
+  if (!root) return null;
+
+  const numValue = parseFloat(value);
+  const numRootValue = parseFloat(root.value);
+
+  if (numValue < numRootValue) {
+    root.left = deleteNode(root.left, value);
+  } else if (numValue > numRootValue) {
+    root.right = deleteNode(root.right, value);
+  } else {
+    // Node to be deleted found
+    if (!root.left) return root.right;
+    if (!root.right) return root.left;
+
+    // Node with two children: get the inorder successor
+    let temp = root.right;
+    while (temp.left) {
+      temp = temp.left;
+    }
+
+    // Copy the inorder successor's content to this node
+    root.value = temp.value;
+
+    // Delete the inorder successor
+    root.right = deleteNode(root.right, temp.value);
+  }
+
+  return root;
+};
+
+// Calculate BST stats - moved outside component to prevent recreation
+const calculateStats = (root: BSTNode | null) => {
+  const getSize = (node: BSTNode | null): number => {
+    if (!node) return 0;
+    return 1 + getSize(node.left) + getSize(node.right);
+  };
+
+  const getHeight = (node: BSTNode | null): number => {
+    if (!node) return 0;
+    return 1 + Math.max(getHeight(node.left), getHeight(node.right));
+  };
+
+
+  return {
+    size: getSize(root),
+    height: getHeight(root),
+    isEmpty: !root,
+  };
+};
 
 const DragDropBST = () => {
   const { state, addOperation, updateOperation, removeOperation, clearAll, updateBSTState } =
@@ -22,6 +97,12 @@ const DragDropBST = () => {
   const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const updateBSTStateRef = useRef(updateBSTState);
+
+  // Update ref when updateBSTState changes
+  React.useEffect(() => {
+    updateBSTStateRef.current = updateBSTState;
+  }, [updateBSTState]);
 
   const handleDragStart = (e: React.DragEvent, component: BSTDragComponent) => {
     setDraggedItem(component);
@@ -62,8 +143,6 @@ const DragDropBST = () => {
           'traverse_inorder',
           'traverse_preorder',
           'traverse_postorder',
-          'find_min',
-          'find_max',
         ].includes(draggedItem.type)
           ? null
           : '',
@@ -90,98 +169,7 @@ const DragDropBST = () => {
     }
   };
 
-  // Simple BST insert function
-  const insertNode = React.useCallback((root: BSTNode | null, value: string): BSTNode => {
-    if (!root) {
-      return {
-        value,
-        left: null,
-        right: null,
-        id: Math.random().toString(36).substr(2, 9),
-      };
-    }
 
-    // Convert to numbers for comparison
-    const numValue = parseFloat(value);
-    const numRootValue = parseFloat(root.value);
-
-    if (numValue < numRootValue) {
-      root.left = insertNode(root.left, value);
-    } else if (numValue > numRootValue) {
-      root.right = insertNode(root.right, value);
-    }
-
-    return root;
-  }, []);
-
-  // BST delete function
-  const deleteNode = React.useCallback((root: BSTNode | null, value: string): BSTNode | null => {
-    if (!root) return null;
-
-    const numValue = parseFloat(value);
-    const numRootValue = parseFloat(root.value);
-
-    if (numValue < numRootValue) {
-      root.left = deleteNode(root.left, value);
-    } else if (numValue > numRootValue) {
-      root.right = deleteNode(root.right, value);
-    } else {
-      // Node to be deleted found
-      if (!root.left) return root.right;
-      if (!root.right) return root.left;
-
-      // Node with two children: get the inorder successor
-      let temp = root.right;
-      while (temp.left) {
-        temp = temp.left;
-      }
-
-      // Copy the inorder successor's content to this node
-      root.value = temp.value;
-
-      // Delete the inorder successor
-      root.right = deleteNode(root.right, temp.value);
-    }
-
-    return root;
-  }, []);
-
-  // Calculate BST stats
-  const calculateStats = (root: BSTNode | null) => {
-    const getSize = (node: BSTNode | null): number => {
-      if (!node) return 0;
-      return 1 + getSize(node.left) + getSize(node.right);
-    };
-
-    const getHeight = (node: BSTNode | null): number => {
-      if (!node) return 0;
-      return 1 + Math.max(getHeight(node.left), getHeight(node.right));
-    };
-
-    const findMinValue = (node: BSTNode | null): string | null => {
-      if (!node) return null;
-      while (node.left) {
-        node = node.left;
-      }
-      return node.value;
-    };
-
-    const findMaxValue = (node: BSTNode | null): string | null => {
-      if (!node) return null;
-      while (node.right) {
-        node = node.right;
-      }
-      return node.value;
-    };
-
-    return {
-      size: getSize(root),
-      height: getHeight(root),
-      minValue: findMinValue(root),
-      maxValue: findMaxValue(root),
-      isEmpty: !root,
-    };
-  };
 
   const updateOperationValue = async (id: number, value: string) => {
     // Validate that value is a number for insert operations
@@ -201,28 +189,6 @@ const DragDropBST = () => {
     // Update the operation value
     updateOperation(id, { value });
   };
-
-  // Function to execute all operations and rebuild the BST
-  const executeAllOperations = React.useCallback(() => {
-    let currentRoot: BSTNode | null = null;
-
-    // Execute all operations in order
-    state.operations.forEach((op) => {
-      if (op.value) {
-        const numValue = parseFloat(op.value);
-        if (!isNaN(numValue)) {
-          if (op.type === 'insert') {
-            currentRoot = insertNode(currentRoot, numValue.toString());
-          } else if (op.type === 'delete') {
-            currentRoot = deleteNode(currentRoot, numValue.toString());
-          }
-        }
-      }
-    });
-
-    const newStats = calculateStats(currentRoot);
-    updateBSTState(currentRoot, newStats);
-  }, [state.operations, updateBSTState, insertNode, deleteNode]);
 
   const updateOperationPosition = () => {
     // BST doesn't use position, but keeping for compatibility
@@ -299,8 +265,25 @@ const DragDropBST = () => {
 
   // Execute all operations when operations change
   React.useEffect(() => {
-    executeAllOperations();
-  }, [executeAllOperations]);
+    let currentRoot: BSTNode | null = null;
+
+    // Execute all operations in order
+    state.operations.forEach((op: BSTOperation) => {
+      if (op.value) {
+        const numValue = parseFloat(op.value);
+        if (!isNaN(numValue)) {
+          if (op.type === 'insert') {
+            currentRoot = insertNode(currentRoot, numValue.toString());
+          } else if (op.type === 'delete') {
+            currentRoot = deleteNode(currentRoot, numValue.toString());
+          }
+        }
+      }
+    });
+
+    const newStats = calculateStats(currentRoot);
+    updateBSTStateRef.current(currentRoot, newStats);
+  }, [state.operations]);
 
   const getStepDescription = (operation: { type: string; value?: string | null; name: string }) => {
     const descriptions: { [key: string]: string } = {
@@ -310,8 +293,6 @@ const DragDropBST = () => {
       traverse_inorder: 'เดินทางผ่าน BST แบบ Inorder (Left → Root → Right)',
       traverse_preorder: 'เดินทางผ่าน BST แบบ Preorder (Root → Left → Right)',
       traverse_postorder: 'เดินทางผ่าน BST แบบ Postorder (Left → Right → Root)',
-      find_min: 'หาค่าที่น้อยที่สุดใน BST',
-      find_max: 'หาค่าที่มากที่สุดใน BST',
     };
 
     return descriptions[operation.type] || `ดำเนินการ ${operation.name}`;
@@ -325,8 +306,6 @@ const DragDropBST = () => {
         stats: {
           size: 0,
           height: 0,
-          minValue: null,
-          maxValue: null,
           isEmpty: true,
         },
       };

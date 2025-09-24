@@ -2,65 +2,15 @@
 
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { LogIn } from 'lucide-react';
+import { memo, lazy, Suspense } from 'react';
+import { features } from '@/data';
 
-const features = [
-  {
-    icon: (
-      <Image
-        src="/landing/Easytouse.png"
-        alt="ใช้งานง่าย"
-        width={80}
-        height={80}
-        className="object-contain"
-      />
-    ),
-    title: 'ใช้งานง่าย',
-    desc: 'DSView ออกแบบมาเพื่อให้ผู้เรียนสามารถใช้งานได้ทันที ไม่ซับซ้อน',
-  },
-  {
-    icon: (
-      <Image
-        src="/landing/Picture2.png"
-        alt="ตรวจสอบโค้ด"
-        width={80}
-        height={80}
-        className="object-contain"
-      />
-    ),
-    title: 'ตรวจสอบโค้ด',
-    desc: 'ระบบตรวจโครงสร้างอัตโนมัติ ช่วยลดระยะการตรวจของผู้สอน',
-  },
-  {
-    icon: (
-      <Image
-        src="/landing/Picture3.png"
-        alt="ฟีเจอร์ครบครัน"
-        width={80}
-        height={80}
-        className="object-contain"
-      />
-    ),
-    title: 'ฟีเจอร์ครบครัน',
-    desc: 'ช่วยจัดการผู้เรียนได้ง่าย ตรวจสอบผู้เรียนได้ง่าย และจัดการงานแต่ละงานได้ง่าย',
-  },
-  {
-    icon: (
-      <Image
-        src="/landing/Picture4.png"
-        alt="เพิ่มประสิทธิภาพ"
-        width={80}
-        height={80}
-        className="object-contain"
-      />
-    ),
-    title: 'เพิ่มประสิทธิภาพ',
-    desc: 'เพิ่มประสิทธิภาพให้กับผู้เรียน และช่วยผู้สอนสามารถติดตามได้ทั่วถึง',
-  },
-];
+// Lazy load components
+const FeatureCard = lazy(() => import('@/components/card'));
 
 const Landing = () => {
+
   return (
     <div className="min-h-screen flex flex-col font-sans bg-base-100">
       {/* Hero Section */}
@@ -72,6 +22,7 @@ const Landing = () => {
             width={600}
             height={150}
             className="mb-6 h-auto max-w-[240px] md:max-w-[340px] lg:max-w-[420px] object-contain mx-auto"
+            priority
           />
           <p className="mt-2 text-lg text-neutral md:text-xl">
             Interactive Data Structure Visualization
@@ -94,22 +45,19 @@ const Landing = () => {
       {/* Features Section */}
       <section className="w-full py-16 bg-white">
         <div className="max-w-screen-lg mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-6 items-stretch">
-          {features.map((f, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-              viewport={{ once: true }}
-              className="p-6 bg-base-100 border rounded-2xl shadow-sm hover:shadow-lg flex flex-col items-center text-center h-full"
-            >
-              {f.icon}
-              <h3 className="font-semibold text-lg mt-4 mb-2 text-primary">
-                {f.title}
-              </h3>
-              <p className="text-sm text-neutral">{f.desc}</p>
-            </motion.div>
-          ))}
+          <Suspense fallback={
+            <div className="col-span-full flex justify-center items-center py-8">
+              <div className="flex space-x-2">
+                <div className="w-3 h-3 bg-primary rounded-full animate-bounce"></div>
+                <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              </div>
+            </div>
+          }>
+            {features.map((feature, idx) => (
+              <FeatureCard key={idx} feature={feature} index={idx} />
+            ))}
+          </Suspense>
         </div>
       </section>
 
@@ -126,6 +74,9 @@ const Landing = () => {
                 width={600}
                 height={400}
                 className="rounded-lg object-contain mx-auto max-w-[300px]"
+                loading="lazy"
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
               />
             </div>
             {/* Text */}
@@ -150,6 +101,9 @@ const Landing = () => {
                 width={600}
                 height={400}
                 className="rounded-lg object-contain mx-auto max-w-[300px]"
+                loading="lazy"
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
               />
             </div>
             {/* Text */}
@@ -169,4 +123,4 @@ const Landing = () => {
   );
 };
 
-export default Landing;
+export default memo(Landing);

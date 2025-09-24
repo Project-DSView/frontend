@@ -4,15 +4,15 @@ import React, { useState, useRef, lazy, Suspense } from 'react';
 import { SinglyLinkedListDragComponent } from '@/types';
 import { useSinglyLinkedList } from '@/hooks';
 import { singlyLinkedListDragComponents } from '@/data';
-import DragDropZone from '@/components/DataStructures/shared/DragDropZone';
-import StepSelector from '@/components/DataStructures/shared/StepSelector';
+import DragDropZone from '@/components/virtualization/shared/DragDropZone';
+import StepSelector from '@/components/virtualization/shared/StepSelector';
 
 // Lazy load heavy components
 const SinglyLinkedListOperations = lazy(
-  () => import('@/components/DataStructures/singly-linked-list/SinglyLinkedListOperations'),
+  () => import('@/components/virtualization/dragdrop/link-list/singly-linked-list/SinglyLinkedListOperations'),
 );
 const SinglyLinkedListVisualization = lazy(
-  () => import('@/components/DataStructures/singly-linked-list/SinglyLinkedListVisualization'),
+  () => import('@/components/virtualization/dragdrop/link-list/singly-linked-list/SinglyLinkedListVisualization'),
 );
 
 const DragDropSinglyLinkList = () => {

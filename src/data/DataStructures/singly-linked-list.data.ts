@@ -70,25 +70,6 @@ const singlyLinkedListDragComponents: SinglyLinkedListDragComponent[] = [
     type: 'traverse',
     description: 'เดินจาก head → tail เพื่อดูข้อมูลทุก node',
   },
-
-  // Searching Operations
-  {
-    id: 'search_value',
-    name: 'Search by Value',
-    color: 'bg-purple-100 border-purple-300',
-    category: 'searching',
-    type: 'search_value',
-    description: 'หาค่า (data) ที่ต้องการจากลิสต์',
-  },
-  {
-    id: 'search_position',
-    name: 'Search by Position',
-    color: 'bg-purple-100 border-purple-300',
-    category: 'searching',
-    type: 'search_position',
-    description: 'หาค่าตามตำแหน่ง (index) ที่กำหนด',
-  },
-
   // Update/Modify Operations
   {
     id: 'update_value',
