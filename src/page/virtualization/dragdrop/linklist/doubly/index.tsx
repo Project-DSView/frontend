@@ -4,15 +4,15 @@ import React, { useState, useRef, lazy, Suspense } from 'react';
 import { DoublyLinkedListDragComponent } from '@/types';
 import { useDoublyLinkedList } from '@/hooks';
 import { doublyLinkedListDragComponents } from '@/data';
-import DragDropZone from '@/components/DataStructures/shared/DragDropZone';
-import StepSelector from '@/components/DataStructures/shared/StepSelector';
+import DragDropZone from '@/components/virtualization/shared/DragDropZone';
+import StepSelector from '@/components/virtualization/shared/StepSelector';
 
 // Lazy load heavy components
 const DoublyLinkedListOperations = lazy(
-  () => import('@/components/DataStructures/doubly-linked-list/DoublyLinkedListOperations'),
+  () => import('@/components/virtualization/dragdrop/link-list/doubly-linked-list/DoublyLinkedListOperations'),
 );
 const DoublyLinkedListVisualization = lazy(
-  () => import('@/components/DataStructures/doubly-linked-list/DoublyLinkedListVisualization'),
+  () => import('@/components/virtualization/dragdrop/link-list/doubly-linked-list/DoublyLinkedListVisualization'),
 );
 
 const DragDropDoublyLinkList = () => {

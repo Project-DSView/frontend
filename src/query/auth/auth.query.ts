@@ -13,8 +13,6 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: AuthService.logout,
     onSuccess: () => {
-      // Clear any cached data on logout
-      // This will be handled by the query client
     },
   });
 };

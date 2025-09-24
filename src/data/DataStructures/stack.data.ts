@@ -20,32 +20,6 @@ const stackDragComponents: StackDragComponent[] = [
     type: 'pop',
     description: 'เอาออก element บนสุดของ stack',
   },
-
-  // Utility Operations
-  {
-    id: 'peek',
-    name: 'Peek / Top',
-    color: 'bg-green-100 border-green-300',
-    category: 'utility',
-    type: 'peek',
-    description: 'ดูค่า element บนสุดโดยไม่ลบออก',
-  },
-  {
-    id: 'is_empty',
-    name: 'Is Empty',
-    color: 'bg-purple-100 border-purple-300',
-    category: 'utility',
-    type: 'is_empty',
-    description: 'เช็คว่า stack ว่างหรือไม่',
-  },
-  {
-    id: 'size',
-    name: 'Size',
-    color: 'bg-orange-100 border-orange-300',
-    category: 'utility',
-    type: 'size',
-    description: 'ดูจำนวน elements ใน stack',
-  },
 ];
 
 const stackCodeTemplate = `# Python code สำหรับ Stack

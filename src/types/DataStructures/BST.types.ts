@@ -1,4 +1,5 @@
 import { Operation } from '../common.types';
+import { BaseStats, BaseState } from './base.types';
 
 interface BSTNode {
   value: string;
@@ -12,8 +13,6 @@ interface BSTNode {
 interface BSTStats {
   size: number;
   height: number;
-  minValue: string | null;
-  maxValue: string | null;
   isEmpty: boolean;
 }
 
@@ -24,10 +23,8 @@ interface BSTOperation extends Operation {
     | 'search'
     | 'traverse_inorder'
     | 'traverse_preorder'
-    | 'traverse_postorder'
-    | 'find_min'
-    | 'find_max';
-  category: 'insertion' | 'deletion' | 'searching' | 'traversal' | 'utility';
+    | 'traverse_postorder';
+  category: 'insertion' | 'deletion' | 'searching' | 'traversal';
   position: string | null;
   newValue: string | null;
 }
@@ -36,16 +33,14 @@ interface BSTDragComponent {
   id: string;
   name: string;
   color: string;
-  category: 'insertion' | 'deletion' | 'searching' | 'traversal' | 'utility';
+  category: 'insertion' | 'deletion' | 'searching' | 'traversal';
   type:
     | 'insert'
     | 'delete'
     | 'search'
     | 'traverse_inorder'
     | 'traverse_preorder'
-    | 'traverse_postorder'
-    | 'find_min'
-    | 'find_max';
+    | 'traverse_postorder';
   description: string;
 }
 
@@ -68,8 +63,6 @@ interface BSTCodeTemplate {
   delete: string;
   search: string;
   traverse: string;
-  findMin: string;
-  findMax: string;
 }
 
 interface BSTOperationsProps {
@@ -95,6 +88,20 @@ interface PositionedNode extends BSTNode {
   level: number;
 }
 
+
+interface BSTData {
+  root: BSTNode | null;
+}
+
+interface BSTStatsExtended extends BaseStats {
+  height: number;
+}
+
+interface BSTStateExtended extends BaseState<BSTData, BSTStatsExtended> {
+  data: BSTData;
+  stats: BSTStatsExtended;
+}
+
 export type {
   BSTNode,
   BSTStats,
@@ -106,4 +113,7 @@ export type {
   BSTOperationsProps,
   BSTVisualizationProps,
   PositionedNode,
+  BSTData,
+  BSTStatsExtended,
+  BSTStateExtended,
 };

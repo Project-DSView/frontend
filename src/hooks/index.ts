@@ -4,3 +4,5 @@ export { default as useSinglyLinkedList } from './dragdrop/useSinglyLinkedList';
 export { default as useDoublyLinkedList } from './dragdrop/useDoublyLinkedList';
 export { default as useStack } from './dragdrop/useStack';
 export { default as useBST } from './dragdrop/useBST';
+export { default as useUndirectedGraph } from './dragdrop/useUndirectedGraph';
+export { default as useDirectedGraph } from './dragdrop/useDirectedGraph';

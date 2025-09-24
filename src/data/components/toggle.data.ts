@@ -9,7 +9,8 @@ const structures: Record<string, string> = {
   'linklist/doubly': 'Doubly Linked List',
   stack: 'Stack',
   bst: 'Binary Search Tree',
-  graph: 'Graph',
+  'graph/undirected': 'Undirected Graph',
+  'graph/directed': 'Directed Graph',
 };
 
 export { modes, structures };

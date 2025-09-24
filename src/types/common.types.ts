@@ -7,6 +7,7 @@ interface Operation {
   newValue: string | null;
   color: string;
   category: string;
+  endVertex?: string | null;
 }
 
 interface DragComponent {
