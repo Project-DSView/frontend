@@ -1,6 +1,5 @@
 import { Feature } from '@/types';
 
-
 const features: Feature[] = [
   {
     iconSrc: '/landing/Easytouse.png',

@@ -4,7 +4,7 @@ import { FeatureCardProps } from '@/types';
 
 const FeatureCard = memo(({ feature, index }: FeatureCardProps) => (
   <div
-    className="p-6 bg-base-100 border rounded-2xl shadow-sm hover:shadow-lg flex flex-col items-center text-center h-full animate-fade-in-up"
+    className="bg-base-100 animate-fade-in-up flex h-full flex-col items-center rounded-2xl border p-6 text-center shadow-sm hover:shadow-lg"
     style={{ animationDelay: `${index * 0.1}s` }}
   >
     <Image
@@ -14,14 +14,12 @@ const FeatureCard = memo(({ feature, index }: FeatureCardProps) => (
       height={80}
       className="object-contain"
       priority={feature.priority}
-      loading={feature.priority ? "eager" : "lazy"}
+      loading={feature.priority ? 'eager' : 'lazy'}
       placeholder="blur"
       blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
     />
-    <h3 className="font-semibold text-lg mt-4 mb-2 text-primary">
-      {feature.title}
-    </h3>
-    <p className="text-sm text-neutral">{feature.desc}</p>
+    <h3 className="text-primary mt-4 mb-2 text-lg font-semibold">{feature.title}</h3>
+    <p className="text-neutral text-sm">{feature.desc}</p>
   </div>
 ));
 

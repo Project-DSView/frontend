@@ -21,10 +21,10 @@ interface UseAuthReturn {
   profile: UserProfile | null;
   isInitialized: boolean;
   setIsInitialized: (value: boolean) => void;
-  loadSession: () => { token: string; profile: UserProfile } | null;
+  loadSession: () => Promise<{ token: string; profile: UserProfile } | null>;
   handleRefreshToken: () => Promise<string | null>;
   fetchUserProfile: (token: string) => Promise<UserProfile>;
-  setAuthData: (token: string, userProfile: UserProfile) => void;
+  setAuthData: (token: string, userProfile: UserProfile) => Promise<void>;
   clearAuthData: () => void;
 }
 

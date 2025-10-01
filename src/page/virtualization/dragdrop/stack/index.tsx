@@ -2,23 +2,27 @@
 
 import React, { useState, useRef, lazy, Suspense } from 'react';
 import { StackDragComponent } from '@/types';
-import { useStack } from '@/hooks';
+import { useStackDragDrop } from '@/hooks';
 import { stackDragComponents } from '@/data';
 import DragDropZone from '@/components/virtualization/shared/DragDropZone';
 import StepSelector from '@/components/virtualization/shared/StepSelector';
+import ExportPNGButton from '@/components/virtualization/shared/ExportPNGButton';
 
 // Lazy load heavy components
-const StackOperations = lazy(() => import('@/components/virtualization/dragdrop/stack/StackOperations'));
-const StackVisualization = lazy(
+const StackDragDropOperations = lazy(
+  () => import('@/components/virtualization/dragdrop/stack/StackOperations'),
+);
+const StackDragDropVisualization = lazy(
   () => import('@/components/virtualization/dragdrop/stack/StackVisualization'),
 );
 
 const DragDropStack = () => {
-  const { state, addOperation, updateOperation, removeOperation, clearAll } = useStack();
+  const { state, addOperation, updateOperation, removeOperation, clearAll } = useStackDragDrop();
 
   const [draggedItem, setDraggedItem] = useState<StackDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [isLoading] = useState(false);
   const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -242,6 +246,7 @@ const DragDropStack = () => {
             เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
           </p>
         </div>
+        <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -253,7 +258,7 @@ const DragDropStack = () => {
             </div>
           }
         >
-          <StackOperations
+          <StackDragDropOperations
             dragComponents={stackDragComponents}
             onDragStart={handleDragStart}
             onTouchStart={handleTouchStart}
@@ -308,7 +313,7 @@ const DragDropStack = () => {
           </div>
         }
       >
-        <StackVisualization
+        <StackDragDropVisualization
           ref={visualizationRef}
           elements={currentVisualizationState.elements}
           stats={currentVisualizationState.stats}

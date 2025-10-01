@@ -12,8 +12,7 @@ export const useGoogleAuthUrl = () => {
 export const useLogout = () => {
   return useMutation({
     mutationFn: AuthService.logout,
-    onSuccess: () => {
-    },
+    onSuccess: () => {},
   });
 };
 

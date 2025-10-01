@@ -2,26 +2,35 @@
 
 import React, { useState, useRef, lazy, Suspense, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
-import { UndirectedGraphDragComponent, UndirectedGraphNode, UndirectedGraphEdge, Operation } from '@/types';
-import { useUndirectedGraph } from '@/hooks';
+import {
+  UndirectedGraphDragComponent,
+  UndirectedGraphNode,
+  UndirectedGraphEdge,
+  Operation,
+} from '@/types';
+import { useUndirectedGraphDragDrop } from '@/hooks';
 import { undirectedGraphDragComponents } from '@/data';
 import DragDropZone from '@/components/virtualization/shared/DragDropZone';
 import StepSelector from '@/components/virtualization/shared/StepSelector';
+import ExportPNGButton from '@/components/virtualization/shared/ExportPNGButton';
 
 // Lazy load heavy components
-const UndirectedGraphOperations = lazy(
-  () => import('@/components/virtualization/dragdrop/graph/undirected-graph/UndirectedGraphOperations'),
+const UndirectedGraphDragDropOperations = lazy(
+  () => import('@/components/virtualization/dragdrop/graph/undirected/UndirectedGraphOperations'),
 );
-const UndirectedGraphVisualization = lazy(
-  () => import('@/components/virtualization/dragdrop/graph/undirected-graph/UndirectedGraphVisualization'),
+const UndirectedGraphDragDropVisualization = lazy(
+  () =>
+    import('@/components/virtualization/dragdrop/graph/undirected/UndirectedGraphVisualization'),
 );
 
 const DragDropUndirectedGraph = () => {
-  const { state, addOperation, updateOperation, removeOperation, clearAll } = useUndirectedGraph();
+  const { state, addOperation, updateOperation, removeOperation, clearAll } =
+    useUndirectedGraphDragDrop();
 
   const [draggedItem, setDraggedItem] = useState<UndirectedGraphDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [isLoading] = useState(false);
   const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -66,12 +75,22 @@ const DragDropUndirectedGraph = () => {
           : '',
         fromVertex: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
         toVertex: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-        startVertex: ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type) ? '' : null,
+        startVertex: ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type)
+          ? ''
+          : null,
         endVertex: ['shortest_path'].includes(draggedItem.type) ? '' : null,
         color: draggedItem.color,
         category: draggedItem.category,
         position: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-        newValue: ['add_edge', 'remove_edge', 'traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type) ? '' : null,
+        newValue: [
+          'add_edge',
+          'remove_edge',
+          'traversal_dfs',
+          'traversal_bfs',
+          'shortest_path',
+        ].includes(draggedItem.type)
+          ? ''
+          : null,
       };
 
       addOperation(newOperation);
@@ -105,7 +124,7 @@ const DragDropUndirectedGraph = () => {
           return;
         }
       }
-      
+
       // Update fromVertex when position changes
       updateOperation(id, { position, fromVertex: position });
     } else {
@@ -116,13 +135,14 @@ const DragDropUndirectedGraph = () => {
   // Check for duplicate edges
   const checkDuplicateEdge = (fromVertex: string, toVertex: string): boolean => {
     if (fromVertex === toVertex) return true; // Self-loop not allowed
-    
+
     // Check existing edges in current state
     const existingEdge = state.edges.find(
-      edge => (edge.from === fromVertex && edge.to === toVertex) ||
-              (edge.from === toVertex && edge.to === fromVertex)
+      (edge) =>
+        (edge.from === fromVertex && edge.to === toVertex) ||
+        (edge.from === toVertex && edge.to === fromVertex),
     );
-    
+
     return !!existingEdge;
   };
 
@@ -137,10 +157,13 @@ const DragDropUndirectedGraph = () => {
           return;
         }
       }
-      
+
       // Update toVertex when newValue changes
       updateOperation(id, { newValue, toVertex: newValue });
-    } else if (operation && (operation.type === 'traversal_dfs' || operation.type === 'traversal_bfs')) {
+    } else if (
+      operation &&
+      (operation.type === 'traversal_dfs' || operation.type === 'traversal_bfs')
+    ) {
       // Update startVertex when newValue changes
       updateOperation(id, { newValue, startVertex: newValue });
     } else if (operation && operation.type === 'shortest_path') {
@@ -217,22 +240,27 @@ const DragDropUndirectedGraph = () => {
   }, []);
 
   // Calculate shortest path using Dijkstra's algorithm
-  const calculateShortestPath = (nodes: UndirectedGraphNode[], edges: UndirectedGraphEdge[], start: string, end: string): string[] => {
+  const calculateShortestPath = (
+    nodes: UndirectedGraphNode[],
+    edges: UndirectedGraphEdge[],
+    start: string,
+    end: string,
+  ): string[] => {
     if (start === end) return [start];
-    
+
     // Find start and end nodes by value
-    const startNode = nodes.find(n => n.value === start);
-    const endNode = nodes.find(n => n.value === end);
-    
+    const startNode = nodes.find((n) => n.value === start);
+    const endNode = nodes.find((n) => n.value === end);
+
     if (!startNode || !endNode) return [];
-    
+
     const distances: { [key: string]: number } = {};
     const previous: { [key: string]: string | null } = {};
     const visited = new Set<string>();
     const unvisited = new Set<string>();
 
     // Initialize distances using node IDs as keys
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       distances[node.id] = node.id === startNode.id ? 0 : Infinity;
       previous[node.id] = null;
       unvisited.add(node.id);
@@ -243,11 +271,11 @@ const DragDropUndirectedGraph = () => {
 
     while (unvisited.size > 0 && iterations < maxIterations) {
       iterations++;
-      
+
       // Find node with minimum distance
       let currentNodeId = '';
       let minDistance = Infinity;
-      
+
       for (const nodeId of unvisited) {
         if (distances[nodeId] < minDistance) {
           minDistance = distances[nodeId];
@@ -261,15 +289,16 @@ const DragDropUndirectedGraph = () => {
       visited.add(currentNodeId);
 
       // Check neighbors
-      const currentNode = nodes.find(n => n.id === currentNodeId);
+      const currentNode = nodes.find((n) => n.id === currentNodeId);
       if (!currentNode) break;
 
       for (const neighborId of currentNode.neighbors) {
         if (visited.has(neighborId)) continue;
 
         const edge = edges.find(
-          e => (e.from === currentNodeId && e.to === neighborId) ||
-               (e.from === neighborId && e.to === currentNodeId)
+          (e) =>
+            (e.from === currentNodeId && e.to === neighborId) ||
+            (e.from === neighborId && e.to === currentNodeId),
         );
 
         if (!edge) continue;
@@ -289,10 +318,10 @@ const DragDropUndirectedGraph = () => {
     let currentId = endNode.id;
     let pathIterations = 0;
     const maxPathIterations = nodes.length; // Safety check
-    
+
     while (currentId !== null && pathIterations < maxPathIterations) {
       pathIterations++;
-      const node = nodes.find(n => n.id === currentId);
+      const node = nodes.find((n) => n.id === currentId);
       if (node) {
         path.unshift(node.value);
       }
@@ -325,96 +354,104 @@ const DragDropUndirectedGraph = () => {
   };
 
   // Calculate state for selected step
-  const getStepState = useCallback((stepIndex: number) => {
-    if (stepIndex < 0 || stepIndex >= state.operations.length) {
-      return {
-        nodes: [],
-        edges: [],
-        stats: {
-          size: 0,
-          isEmpty: true,
-          vertices: 0,
-          edges: 0,
-          isConnected: true,
-          hasCycle: false,
-        },
-      };
-    }
-
-    let currentNodes: UndirectedGraphNode[] = [];
-    let currentEdges: UndirectedGraphEdge[] = [];
-
-    // Execute operations up to the selected step
-    for (let i = 0; i <= stepIndex; i++) {
-      const operation = state.operations[i];
-      if (!operation) continue;
-
-      switch (operation.type) {
-        case 'add_vertex':
-          if (operation.value) {
-            const newNode: UndirectedGraphNode = {
-              id: operation.value,
-              value: operation.value,
-              x: Math.random() * 400 + 50,
-              y: Math.random() * 300 + 50,
-              neighbors: [],
-            };
-            currentNodes.push(newNode);
-          }
-          break;
-        case 'add_edge':
-          if (operation.fromVertex && operation.toVertex) {
-            const fromNode = currentNodes.find(n => n.id === operation.fromVertex);
-            const toNode = currentNodes.find(n => n.id === operation.toVertex);
-            if (fromNode && toNode) {
-              const newEdge: UndirectedGraphEdge = {
-                id: `edge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                from: operation.fromVertex,
-                to: operation.toVertex,
-                weight: operation.value ? parseInt(operation.value, 10) : undefined,
-              };
-              currentEdges.push(newEdge);
-              fromNode.neighbors.push(operation.toVertex);
-              toNode.neighbors.push(operation.fromVertex);
-            }
-          }
-          break;
-        case 'remove_vertex':
-          if (operation.value) {
-            currentNodes = currentNodes.filter(n => n.id !== operation.value);
-            currentEdges = currentEdges.filter(e => e.from !== operation.value && e.to !== operation.value);
-          }
-          break;
-        case 'remove_edge':
-          if (operation.fromVertex && operation.toVertex) {
-            currentEdges = currentEdges.filter(
-              e => !(e.from === operation.fromVertex && e.to === operation.toVertex) &&
-                    !(e.from === operation.toVertex && e.to === operation.fromVertex)
-            );
-            const fromNode = currentNodes.find(n => n.id === operation.fromVertex);
-            const toNode = currentNodes.find(n => n.id === operation.toVertex);
-            if (fromNode) fromNode.neighbors = fromNode.neighbors.filter(n => n !== operation.toVertex);
-            if (toNode) toNode.neighbors = toNode.neighbors.filter(n => n !== operation.fromVertex);
-          }
-          break;
-        case 'shortest_path':
-          // Shortest path calculation will be handled in useEffect
-          break;
+  const getStepState = useCallback(
+    (stepIndex: number) => {
+      if (stepIndex < 0 || stepIndex >= state.operations.length) {
+        return {
+          nodes: [],
+          edges: [],
+          stats: {
+            size: 0,
+            isEmpty: true,
+            vertices: 0,
+            edges: 0,
+            isConnected: true,
+            hasCycle: false,
+          },
+        };
       }
-    }
 
-    // Calculate stats
-    const currentStats = {
-      size: currentNodes.length,
-      isEmpty: currentNodes.length === 0,
-      vertices: currentNodes.length,
-      edges: currentEdges.length,
-      isConnected: currentNodes.length <= 1 || currentEdges.length >= currentNodes.length - 1,
-      hasCycle: currentEdges.length >= currentNodes.length && currentNodes.length >= 3,
-    };
+      let currentNodes: UndirectedGraphNode[] = [];
+      let currentEdges: UndirectedGraphEdge[] = [];
 
-    return { nodes: currentNodes, edges: currentEdges, stats: currentStats };
-  }, [state.operations]);
+      // Execute operations up to the selected step
+      for (let i = 0; i <= stepIndex; i++) {
+        const operation = state.operations[i];
+        if (!operation) continue;
+
+        switch (operation.type) {
+          case 'add_vertex':
+            if (operation.value) {
+              const newNode: UndirectedGraphNode = {
+                id: operation.value,
+                value: operation.value,
+                x: Math.random() * 400 + 50,
+                y: Math.random() * 300 + 50,
+                neighbors: [],
+              };
+              currentNodes.push(newNode);
+            }
+            break;
+          case 'add_edge':
+            if (operation.fromVertex && operation.toVertex) {
+              const fromNode = currentNodes.find((n) => n.id === operation.fromVertex);
+              const toNode = currentNodes.find((n) => n.id === operation.toVertex);
+              if (fromNode && toNode) {
+                const newEdge: UndirectedGraphEdge = {
+                  id: `edge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                  from: operation.fromVertex,
+                  to: operation.toVertex,
+                  weight: operation.value ? parseInt(operation.value, 10) : undefined,
+                };
+                currentEdges.push(newEdge);
+                fromNode.neighbors.push(operation.toVertex);
+                toNode.neighbors.push(operation.fromVertex);
+              }
+            }
+            break;
+          case 'remove_vertex':
+            if (operation.value) {
+              currentNodes = currentNodes.filter((n) => n.id !== operation.value);
+              currentEdges = currentEdges.filter(
+                (e) => e.from !== operation.value && e.to !== operation.value,
+              );
+            }
+            break;
+          case 'remove_edge':
+            if (operation.fromVertex && operation.toVertex) {
+              currentEdges = currentEdges.filter(
+                (e) =>
+                  !(e.from === operation.fromVertex && e.to === operation.toVertex) &&
+                  !(e.from === operation.toVertex && e.to === operation.fromVertex),
+              );
+              const fromNode = currentNodes.find((n) => n.id === operation.fromVertex);
+              const toNode = currentNodes.find((n) => n.id === operation.toVertex);
+              if (fromNode)
+                fromNode.neighbors = fromNode.neighbors.filter((n) => n !== operation.toVertex);
+              if (toNode)
+                toNode.neighbors = toNode.neighbors.filter((n) => n !== operation.fromVertex);
+            }
+            break;
+          case 'shortest_path':
+            // Shortest path calculation will be handled in useEffect
+            break;
+        }
+      }
+
+      // Calculate stats
+      const currentStats = {
+        size: currentNodes.length,
+        isEmpty: currentNodes.length === 0,
+        vertices: currentNodes.length,
+        edges: currentEdges.length,
+        isConnected: currentNodes.length <= 1 || currentEdges.length >= currentNodes.length - 1,
+        hasCycle: currentEdges.length >= currentNodes.length && currentNodes.length >= 3,
+      };
+
+      return { nodes: currentNodes, edges: currentEdges, stats: currentStats };
+    },
+    [state.operations],
+  );
 
   // Get current visualization state based on selected step
   const currentVisualizationState = useMemo(() => {
@@ -430,10 +467,18 @@ const DragDropUndirectedGraph = () => {
       const operation = state.operations[selectedStep];
       if (operation?.type === 'shortest_path' && operation.startVertex && operation.endVertex) {
         // Get current state directly instead of using currentVisualizationState
-        const currentState = selectedStep !== null ? getStepState(selectedStep) : { nodes: state.nodes, edges: state.edges, stats: state.stats };
+        const currentState =
+          selectedStep !== null
+            ? getStepState(selectedStep)
+            : { nodes: state.nodes, edges: state.edges, stats: state.stats };
         const { nodes, edges } = currentState;
-        const path = calculateShortestPath(nodes, edges, operation.startVertex, operation.endVertex);
-        
+        const path = calculateShortestPath(
+          nodes,
+          edges,
+          operation.startVertex,
+          operation.endVertex,
+        );
+
         if (path.length > 0) {
           return path;
         }
@@ -452,8 +497,8 @@ const DragDropUndirectedGraph = () => {
             เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
           </p>
         </div>
+        <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
       </div>
-
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Left Side - Drag Components */}
@@ -464,7 +509,7 @@ const DragDropUndirectedGraph = () => {
             </div>
           }
         >
-          <UndirectedGraphOperations
+          <UndirectedGraphDragDropOperations
             dragComponents={undirectedGraphDragComponents}
             onDragStart={handleDragStart}
             onTouchStart={handleTouchStart}
@@ -519,7 +564,7 @@ const DragDropUndirectedGraph = () => {
           </div>
         }
       >
-        <UndirectedGraphVisualization
+        <UndirectedGraphDragDropVisualization
           ref={visualizationRef}
           nodes={currentVisualizationState.nodes}
           edges={currentVisualizationState.edges}
@@ -535,10 +580,8 @@ const DragDropUndirectedGraph = () => {
               ? selectedStep
               : null
           }
-          currentOperationData={
-            selectedStep !== null ? state.operations[selectedStep] : undefined
-          }
-            shortestPath={shortestPath}
+          currentOperationData={selectedStep !== null ? state.operations[selectedStep] : undefined}
+          shortestPath={shortestPath}
         />
       </Suspense>
     </div>

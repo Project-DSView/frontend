@@ -1,0 +1,158 @@
+interface StepthroughRequest {
+  code: string;
+  dataType: string;
+}
+
+interface StepthroughStep {
+  stepNumber: number;
+  line: number;
+  code: string;
+  state: {
+    message: string;
+    instances?: Record<string, unknown>;
+    active?: unknown;
+    print_output?: string[];
+    linkedlist?: unknown[];
+    nodes?: Record<string, unknown>;
+    step_detail?: {
+      operation: string;
+      method_name?: string;
+      detected_behavior?: string;
+      parameters?: string;
+      behavior_analysis?: {
+        name: string;
+        params: string[];
+        behavior_type: string;
+        operations: unknown[];
+        has_loop: boolean;
+        has_print: boolean;
+        creates_new_node: boolean;
+        modifies_head: boolean;
+        modifies_count: boolean;
+        modifies_next_pointers: boolean;
+        checks_empty_list: boolean;
+        traverses_list: boolean;
+        finds_target: boolean;
+        deletes_node: boolean;
+        method_name_hints: {
+          is_insert: boolean;
+          is_delete: boolean;
+          is_traverse: boolean;
+          is_front: boolean;
+          is_last: boolean;
+          is_getter: boolean;
+          is_init: boolean;
+        };
+      };
+    };
+  };
+}
+
+interface StepthroughResponse {
+  executionId: string;
+  code: string;
+  dataType: string;
+  steps: StepthroughStep[];
+  totalSteps: number;
+  status: 'success' | 'error';
+  errorMessage?: string | null;
+  executedAt: string;
+  createdAt: string;
+}
+
+interface StepthroughState {
+  code: string;
+  filename: string;
+  steps: StepthroughStep[];
+  currentStepIndex: number;
+  isRunning: boolean;
+  isAutoPlaying: boolean;
+  executionId: string | null;
+  error: string | null;
+  linkedListData: {
+    nodes: string[];
+    head: string | null;
+    tail: string | null;
+    count: number;
+  };
+}
+
+interface StepthroughHookReturn {
+  state: StepthroughState;
+  setCode: (code: string) => void;
+  setFilename: (filename: string) => void;
+  loadCodeFromFile: (code: string, filename: string) => void;
+  executeCode: () => Promise<void>;
+  setCurrentStep: (stepIndex: number) => void;
+  nextStep: () => void;
+  previousStep: () => void;
+  toggleAutoPlay: () => void;
+  reset: () => void;
+  isLoading: boolean;
+}
+
+interface StepthroughCodeEditorProps {
+  code: string;
+  onCodeChange: (code: string) => void;
+  disabled?: boolean;
+  currentStep?: {
+    line: number;
+    stepNumber: number;
+  } | null;
+}
+
+interface StepthroughStepControlProps {
+  steps: StepthroughStep[];
+  currentStepIndex: number;
+  onStepSelect: (stepIndex: number) => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  onAutoPlay: () => void;
+  isAutoPlaying: boolean;
+  isRunning: boolean;
+}
+
+interface StepthroughVisualizationProps {
+  steps: StepthroughStep[];
+  currentStepIndex: number;
+  linkedListData: {
+    nodes: string[];
+    head: string | null;
+    tail: string | null;
+    count: number;
+  };
+  isRunning: boolean;
+}
+
+interface StepthroughLayoutProps {
+  code: string;
+  onCodeChange: (code: string) => void;
+  onExecute: () => void;
+  steps: StepthroughStep[];
+  currentStepIndex: number;
+  onStepSelect: (stepIndex: number) => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  onAutoPlay: () => void;
+  isAutoPlaying: boolean;
+  isRunning: boolean;
+  isLoading: boolean;
+  linkedListData: {
+    nodes: string[];
+    head: string | null;
+    tail: string | null;
+    count: number;
+  };
+}
+
+export type {
+  StepthroughRequest,
+  StepthroughStep,
+  StepthroughResponse,
+  StepthroughState,
+  StepthroughHookReturn,
+  StepthroughCodeEditorProps,
+  StepthroughStepControlProps,
+  StepthroughVisualizationProps,
+  StepthroughLayoutProps,
+};

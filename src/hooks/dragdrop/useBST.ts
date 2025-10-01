@@ -1,5 +1,14 @@
 import { useCallback } from 'react';
-import { BSTState, BSTOperation, BSTNode, BSTStats, BSTData, BSTStatsExtended, BSTStateExtended, BaseState } from '@/types';
+import {
+  BSTState,
+  BSTOperation,
+  BSTNode,
+  BSTStats,
+  BSTData,
+  BSTStatsExtended,
+  BSTStateExtended,
+  BaseState,
+} from '@/types';
 import { BSTService } from '@/services';
 import { useBaseDataStructure } from './useBaseDataStructure';
 
@@ -70,23 +79,25 @@ const defaultState: BSTStateExtended = {
 };
 
 const useBST = () => {
-
   const baseHook = useBaseDataStructure<BSTData, BSTStatsExtended, BSTOperation>(
     defaultState,
-    BSTServiceAdapter
+    BSTServiceAdapter,
   );
 
   // BST-specific methods
-  const updateBSTState = useCallback((newRoot: BSTNode | null, newStats: BSTStats) => {
-    baseHook.updateDataState(
-      { root: newRoot },
-      {
-        size: newStats.size,
-        height: newStats.height,
-        isEmpty: newStats.isEmpty,
-      }
-    );
-  }, [baseHook]);
+  const updateBSTState = useCallback(
+    (newRoot: BSTNode | null, newStats: BSTStats) => {
+      baseHook.updateDataState(
+        { root: newRoot },
+        {
+          size: newStats.size,
+          height: newStats.height,
+          isEmpty: newStats.isEmpty,
+        },
+      );
+    },
+    [baseHook],
+  );
 
   return {
     ...baseHook,

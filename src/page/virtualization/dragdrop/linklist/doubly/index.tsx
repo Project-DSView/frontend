@@ -2,25 +2,29 @@
 
 import React, { useState, useRef, lazy, Suspense } from 'react';
 import { DoublyLinkedListDragComponent } from '@/types';
-import { useDoublyLinkedList } from '@/hooks';
+import { useDoublyLinkedListDragDrop } from '@/hooks';
 import { doublyLinkedListDragComponents } from '@/data';
 import DragDropZone from '@/components/virtualization/shared/DragDropZone';
 import StepSelector from '@/components/virtualization/shared/StepSelector';
+import ExportPNGButton from '@/components/virtualization/shared/ExportPNGButton';
 
 // Lazy load heavy components
-const DoublyLinkedListOperations = lazy(
-  () => import('@/components/virtualization/dragdrop/link-list/doubly-linked-list/DoublyLinkedListOperations'),
+const DoublyLinkedDragDropListOperations = lazy(
+  () => import('@/components/virtualization/dragdrop/linklist/doubly/DoublyLinkedListOperations'),
 );
-const DoublyLinkedListVisualization = lazy(
-  () => import('@/components/virtualization/dragdrop/link-list/doubly-linked-list/DoublyLinkedListVisualization'),
+const DoublyLinkedDragDropListVisualization = lazy(
+  () =>
+    import('@/components/virtualization/dragdrop/linklist/doubly/DoublyLinkedListVisualization'),
 );
 
 const DragDropDoublyLinkList = () => {
-  const { state, addOperation, updateOperation, removeOperation, clearAll } = useDoublyLinkedList();
+  const { state, addOperation, updateOperation, removeOperation, clearAll } =
+    useDoublyLinkedListDragDrop();
 
   const [draggedItem, setDraggedItem] = useState<DoublyLinkedListDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [isLoading] = useState(false);
   const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -319,6 +323,7 @@ const DragDropDoublyLinkList = () => {
             เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
           </p>
         </div>
+        <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -330,7 +335,7 @@ const DragDropDoublyLinkList = () => {
             </div>
           }
         >
-          <DoublyLinkedListOperations
+          <DoublyLinkedDragDropListOperations
             dragComponents={doublyLinkedListDragComponents}
             onDragStart={handleDragStart}
             onTouchStart={handleTouchStart}
@@ -385,7 +390,7 @@ const DragDropDoublyLinkList = () => {
           </div>
         }
       >
-        <DoublyLinkedListVisualization
+        <DoublyLinkedDragDropListVisualization
           ref={visualizationRef}
           nodes={currentVisualizationState.nodes}
           stats={currentVisualizationState.stats}

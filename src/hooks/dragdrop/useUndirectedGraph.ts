@@ -1,14 +1,14 @@
 import { useCallback } from 'react';
-import { 
-  UndirectedGraphState, 
-  UndirectedGraphOperation, 
-  UndirectedGraphNode, 
-  UndirectedGraphEdge, 
-  UndirectedGraphStats, 
-  UndirectedGraphData, 
-  UndirectedGraphStatsExtended, 
-  UndirectedGraphStateExtended, 
-  BaseState 
+import {
+  UndirectedGraphState,
+  UndirectedGraphOperation,
+  UndirectedGraphNode,
+  UndirectedGraphEdge,
+  UndirectedGraphStats,
+  UndirectedGraphData,
+  UndirectedGraphStatsExtended,
+  UndirectedGraphStateExtended,
+  BaseState,
 } from '@/types';
 import { UndirectedGraphService } from '@/services';
 import { useBaseDataStructure } from './useBaseDataStructure';
@@ -37,9 +37,9 @@ class UndirectedGraphServiceAdapter {
   getState(): BaseState<UndirectedGraphData, UndirectedGraphStatsExtended> {
     const graphState = this.service.getState();
     return {
-      data: { 
-        nodes: graphState.nodes, 
-        edges: graphState.edges 
+      data: {
+        nodes: graphState.nodes,
+        edges: graphState.edges,
       },
       operations: graphState.operations,
       stats: {
@@ -115,25 +115,33 @@ const defaultState: UndirectedGraphStateExtended = {
 };
 
 const useUndirectedGraph = () => {
-  const baseHook = useBaseDataStructure<UndirectedGraphData, UndirectedGraphStatsExtended, UndirectedGraphOperation>(
-    defaultState,
-    UndirectedGraphServiceAdapter
-  );
+  const baseHook = useBaseDataStructure<
+    UndirectedGraphData,
+    UndirectedGraphStatsExtended,
+    UndirectedGraphOperation
+  >(defaultState, UndirectedGraphServiceAdapter);
 
   // Graph-specific methods
-  const updateGraphState = useCallback((newNodes: UndirectedGraphNode[], newEdges: UndirectedGraphEdge[], newStats: UndirectedGraphStats) => {
-    baseHook.updateDataState(
-      { nodes: newNodes, edges: newEdges },
-      {
-        size: newStats.size,
-        isEmpty: newStats.isEmpty,
-        vertices: newStats.vertices,
-        edges: newStats.edges,
-        isConnected: newStats.isConnected,
-        hasCycle: newStats.hasCycle,
-      }
-    );
-  }, [baseHook]);
+  const updateGraphState = useCallback(
+    (
+      newNodes: UndirectedGraphNode[],
+      newEdges: UndirectedGraphEdge[],
+      newStats: UndirectedGraphStats,
+    ) => {
+      baseHook.updateDataState(
+        { nodes: newNodes, edges: newEdges },
+        {
+          size: newStats.size,
+          isEmpty: newStats.isEmpty,
+          vertices: newStats.vertices,
+          edges: newStats.edges,
+          isConnected: newStats.isConnected,
+          hasCycle: newStats.hasCycle,
+        },
+      );
+    },
+    [baseHook],
+  );
 
   return {
     ...baseHook,

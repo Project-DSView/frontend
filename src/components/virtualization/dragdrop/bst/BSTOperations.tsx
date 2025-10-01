@@ -4,32 +4,15 @@ import React, { useState } from 'react';
 import { BSTOperationsProps, OperationCategory } from '@/types';
 import OperationCard from '../../shared/OperationCard';
 import OperationCategoryDropdown from '../../shared/OperationCategoryDropdown';
+import { categories } from '@/data';
 
-const BSTOperations: React.FC<BSTOperationsProps> = ({
+const BSTDragDropOperations: React.FC<BSTOperationsProps> = ({
   dragComponents,
   onDragStart,
   onTouchStart,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<OperationCategory | null>(null);
   const [showOperations, setShowOperations] = useState(false);
-
-  const categories = [
-    {
-      key: 'insertion' as OperationCategory,
-      title: 'Insertion Operations',
-      color: 'text-blue-600',
-    },
-    {
-      key: 'deletion' as OperationCategory,
-      title: 'Deletion Operations',
-      color: 'text-red-600',
-    },
-    {
-      key: 'traversal' as OperationCategory,
-      title: 'Traversal Operations',
-      color: 'text-green-600',
-    },
-  ];
 
   const filteredComponents = selectedCategory
     ? dragComponents.filter((comp) => comp.category === selectedCategory)
@@ -92,4 +75,4 @@ const BSTOperations: React.FC<BSTOperationsProps> = ({
   );
 };
 
-export default BSTOperations;
+export default BSTDragDropOperations;

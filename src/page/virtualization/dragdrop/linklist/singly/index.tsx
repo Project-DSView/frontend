@@ -2,25 +2,29 @@
 
 import React, { useState, useRef, lazy, Suspense } from 'react';
 import { SinglyLinkedListDragComponent } from '@/types';
-import { useSinglyLinkedList } from '@/hooks';
+import { useSinglyLinkedListDragDrop } from '@/hooks';
 import { singlyLinkedListDragComponents } from '@/data';
 import DragDropZone from '@/components/virtualization/shared/DragDropZone';
 import StepSelector from '@/components/virtualization/shared/StepSelector';
+import ExportPNGButton from '@/components/virtualization/shared/ExportPNGButton';
 
 // Lazy load heavy components
-const SinglyLinkedListOperations = lazy(
-  () => import('@/components/virtualization/dragdrop/link-list/singly-linked-list/SinglyLinkedListOperations'),
+const SinglyLinkedListDragDropOperations = lazy(
+  () => import('@/components/virtualization/dragdrop/linklist/singly/SinglyLinkedListOperations'),
 );
-const SinglyLinkedListVisualization = lazy(
-  () => import('@/components/virtualization/dragdrop/link-list/singly-linked-list/SinglyLinkedListVisualization'),
+const SinglyLinkedListDragDropVisualization = lazy(
+  () =>
+    import('@/components/virtualization/dragdrop/linklist/singly/SinglyLinkedListVisualization'),
 );
 
 const DragDropSinglyLinkList = () => {
-  const { state, addOperation, updateOperation, removeOperation, clearAll } = useSinglyLinkedList();
+  const { state, addOperation, updateOperation, removeOperation, clearAll } =
+    useSinglyLinkedListDragDrop();
 
   const [draggedItem, setDraggedItem] = useState<SinglyLinkedListDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [isLoading] = useState(false);
   const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -296,6 +300,7 @@ const DragDropSinglyLinkList = () => {
             เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
           </p>
         </div>
+        <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -307,7 +312,7 @@ const DragDropSinglyLinkList = () => {
             </div>
           }
         >
-          <SinglyLinkedListOperations
+          <SinglyLinkedListDragDropOperations
             dragComponents={singlyLinkedListDragComponents}
             onDragStart={handleDragStart}
             onTouchStart={handleTouchStart}
@@ -362,7 +367,7 @@ const DragDropSinglyLinkList = () => {
           </div>
         }
       >
-        <SinglyLinkedListVisualization
+        <SinglyLinkedListDragDropVisualization
           ref={visualizationRef}
           nodes={currentVisualizationState.nodes}
           stats={currentVisualizationState.stats}

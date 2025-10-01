@@ -1,5 +1,11 @@
-// Auth queries
+// Auth
 export { useGoogleAuthUrl, useLogout, useRefreshToken } from './auth/auth.query';
-
-// Profile queries
 export { useProfile, useFetchProfile } from './auth/profile.query';
+
+// Stepthrough
+export {
+  useExecuteStepthrough,
+  useStepthroughData,
+  useCurrentStepDetails,
+  useStepthroughState,
+} from './stepthrough/stepthrough.query';

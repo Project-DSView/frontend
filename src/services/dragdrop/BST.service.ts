@@ -37,7 +37,6 @@ export class BSTService {
     return 1 + Math.max(this.getHeight(node.left), this.getHeight(node.right));
   }
 
-
   private generateId(): string {
     return Math.random().toString(36).substr(2, 9);
   }
@@ -316,5 +315,4 @@ export class BSTService {
       });
     }
   }
-
 }

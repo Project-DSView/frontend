@@ -3,24 +3,26 @@ import { VisualizationProps } from '@/types';
 import VirtualizedList from './VirtualizedList';
 
 // Memoized node component to prevent unnecessary re-renders
-const NodeItem = memo<{ value: string; index: number; isRunning: boolean }>(({ value, index, isRunning }) => (
-  <div className="flex items-center">
-    <div
-      className={`max-w-[200px] min-w-[120px] rounded-lg border-2 border-black bg-white p-3 text-center font-bold transition-all duration-500 ${
-        isRunning ? 'animate-bounce' : 'hover:bg-gray-50'
-      }`}
-    >
+const NodeItem = memo<{ value: string; index: number; isRunning: boolean }>(
+  ({ value, index, isRunning }) => (
+    <div className="flex items-center">
       <div
-        className={`break-words text-black ${
-          value.length > 15 ? 'text-xs' : value.length > 8 ? 'text-sm' : 'text-base'
+        className={`max-w-[200px] min-w-[120px] rounded-lg border-2 border-black bg-white p-3 text-center font-bold transition-all duration-500 ${
+          isRunning ? 'animate-bounce' : 'hover:bg-gray-50'
         }`}
       >
-        {value}
+        <div
+          className={`break-words text-black ${
+            value.length > 15 ? 'text-xs' : value.length > 8 ? 'text-sm' : 'text-base'
+          }`}
+        >
+          {value}
+        </div>
+        <div className="text-xs text-gray-500">Node {index + 1}</div>
       </div>
-      <div className="text-xs text-gray-500">Node {index + 1}</div>
     </div>
-  </div>
-));
+  ),
+);
 
 NodeItem.displayName = 'NodeItem';
 
@@ -32,9 +34,12 @@ const Visualization: React.FC<VisualizationProps> = ({
   renderNode,
 }) => {
   // Memoize the default render function
-  const defaultRenderNode = useCallback((value: string, index: number) => (
-    <NodeItem value={value} index={index} isRunning={isRunning} />
-  ), [isRunning]);
+  const defaultRenderNode = useCallback(
+    (value: string, index: number) => (
+      <NodeItem value={value} index={index} isRunning={isRunning} />
+    ),
+    [isRunning],
+  );
 
   // Memoize the nodes list to prevent unnecessary re-renders
   const memoizedNodes = useMemo(() => nodes, [nodes]);
@@ -43,14 +48,17 @@ const Visualization: React.FC<VisualizationProps> = ({
   const shouldUseVirtualization = memoizedNodes.length > 50;
 
   // Memoize the render function for virtualization
-  const renderVirtualizedItem = useCallback((value: string, index: number) => (
-    <div className="flex items-center">
-      {renderNode ? renderNode(value, index) : defaultRenderNode(value, index)}
-      {index < memoizedNodes.length - 1 && (
-        <div className="mx-3 text-xl font-bold text-black">→</div>
-      )}
-    </div>
-  ), [renderNode, defaultRenderNode, memoizedNodes.length]);
+  const renderVirtualizedItem = useCallback(
+    (value: string, index: number) => (
+      <div className="flex items-center">
+        {renderNode ? renderNode(value, index) : defaultRenderNode(value, index)}
+        {index < memoizedNodes.length - 1 && (
+          <div className="mx-3 text-xl font-bold text-black">→</div>
+        )}
+      </div>
+    ),
+    [renderNode, defaultRenderNode, memoizedNodes.length],
+  );
 
   return (
     <div className="mb-6 rounded-lg bg-white p-6 shadow">

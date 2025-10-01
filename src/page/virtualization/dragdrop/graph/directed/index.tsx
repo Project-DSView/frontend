@@ -2,26 +2,34 @@
 
 import React, { useState, useRef, lazy, Suspense, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
-import { DirectedGraphDragComponent, DirectedGraphNode, DirectedGraphEdge, Operation } from '@/types';
-import { useDirectedGraph } from '@/hooks';
+import {
+  DirectedGraphDragComponent,
+  DirectedGraphNode,
+  DirectedGraphEdge,
+  Operation,
+} from '@/types';
+import { useDirectedGraphDragDrop } from '@/hooks';
 import { directedGraphDragComponents } from '@/data';
 import DragDropZone from '@/components/virtualization/shared/DragDropZone';
 import StepSelector from '@/components/virtualization/shared/StepSelector';
+import ExportPNGButton from '@/components/virtualization/shared/ExportPNGButton';
 
 // Lazy load heavy components
-const DirectedGraphOperations = lazy(
-  () => import('@/components/virtualization/dragdrop/graph/directed-graph/DirectedGraphOperations'),
+const DirectedGraphDragDropOperations = lazy(
+  () => import('@/components/virtualization/dragdrop/graph/directed/DirectedGraphOperations'),
 );
-const DirectedGraphVisualization = lazy(
-  () => import('@/components/virtualization/dragdrop/graph/directed-graph/DirectedGraphVisualization'),
+const DirectedGraphDragDropVisualization = lazy(
+  () => import('@/components/virtualization/dragdrop/graph/directed/DirectedGraphVisualization'),
 );
 
 const DragDropDirectedGraph = () => {
-  const { state, addOperation, updateOperation, removeOperation, clearAll } = useDirectedGraph();
+  const { state, addOperation, updateOperation, removeOperation, clearAll } =
+    useDirectedGraphDragDrop();
 
   const [draggedItem, setDraggedItem] = useState<DirectedGraphDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [isLoading] = useState(false);
   const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -66,12 +74,22 @@ const DragDropDirectedGraph = () => {
           : '',
         fromVertex: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
         toVertex: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-        startVertex: ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type) ? '' : null,
+        startVertex: ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type)
+          ? ''
+          : null,
         endVertex: ['shortest_path'].includes(draggedItem.type) ? '' : null,
         color: draggedItem.color,
         category: draggedItem.category,
         position: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-        newValue: ['add_edge', 'remove_edge', 'traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type) ? '' : null,
+        newValue: [
+          'add_edge',
+          'remove_edge',
+          'traversal_dfs',
+          'traversal_bfs',
+          'shortest_path',
+        ].includes(draggedItem.type)
+          ? ''
+          : null,
       };
 
       addOperation(newOperation);
@@ -105,7 +123,7 @@ const DragDropDirectedGraph = () => {
           return;
         }
       }
-      
+
       // Update fromVertex when position changes
       updateOperation(id, { position, fromVertex: position });
     } else {
@@ -116,12 +134,12 @@ const DragDropDirectedGraph = () => {
   // Check for duplicate edges
   const checkDuplicateEdge = (fromVertex: string, toVertex: string): boolean => {
     if (fromVertex === toVertex) return true; // Self-loop not allowed
-    
+
     // Check existing edges in current state
     const existingEdge = state.edges.find(
-      edge => edge.from === fromVertex && edge.to === toVertex
+      (edge) => edge.from === fromVertex && edge.to === toVertex,
     );
-    
+
     return !!existingEdge;
   };
 
@@ -136,10 +154,13 @@ const DragDropDirectedGraph = () => {
           return;
         }
       }
-      
+
       // Update toVertex when newValue changes
       updateOperation(id, { newValue, toVertex: newValue });
-    } else if (operation && (operation.type === 'traversal_dfs' || operation.type === 'traversal_bfs')) {
+    } else if (
+      operation &&
+      (operation.type === 'traversal_dfs' || operation.type === 'traversal_bfs')
+    ) {
       // Update startVertex when newValue changes
       updateOperation(id, { newValue, startVertex: newValue });
     } else if (operation && operation.type === 'shortest_path') {
@@ -216,22 +237,27 @@ const DragDropDirectedGraph = () => {
   }, []);
 
   // Calculate shortest path using Dijkstra's algorithm
-  const calculateShortestPath = (nodes: DirectedGraphNode[], edges: DirectedGraphEdge[], start: string, end: string): string[] => {
+  const calculateShortestPath = (
+    nodes: DirectedGraphNode[],
+    edges: DirectedGraphEdge[],
+    start: string,
+    end: string,
+  ): string[] => {
     if (start === end) return [start];
-    
+
     // Find start and end nodes by value
-    const startNode = nodes.find(n => n.value === start);
-    const endNode = nodes.find(n => n.value === end);
-    
+    const startNode = nodes.find((n) => n.value === start);
+    const endNode = nodes.find((n) => n.value === end);
+
     if (!startNode || !endNode) return [];
-    
+
     const distances: { [key: string]: number } = {};
     const previous: { [key: string]: string | null } = {};
     const visited = new Set<string>();
     const unvisited = new Set<string>();
 
     // Initialize distances using node IDs as keys
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       distances[node.id] = node.id === startNode.id ? 0 : Infinity;
       previous[node.id] = null;
       unvisited.add(node.id);
@@ -242,11 +268,11 @@ const DragDropDirectedGraph = () => {
 
     while (unvisited.size > 0 && iterations < maxIterations) {
       iterations++;
-      
+
       // Find node with minimum distance
       let currentNodeId = '';
       let minDistance = Infinity;
-      
+
       for (const nodeId of unvisited) {
         if (distances[nodeId] < minDistance) {
           minDistance = distances[nodeId];
@@ -260,10 +286,10 @@ const DragDropDirectedGraph = () => {
       visited.add(currentNodeId);
 
       // Check outgoing neighbors only for directed graph
-      const currentNode = nodes.find(n => n.id === currentNodeId);
+      const currentNode = nodes.find((n) => n.id === currentNodeId);
       if (!currentNode) break;
 
-      const outgoingEdges = edges.filter(edge => edge.from === currentNodeId);
+      const outgoingEdges = edges.filter((edge) => edge.from === currentNodeId);
       for (const edge of outgoingEdges) {
         if (visited.has(edge.to)) continue;
 
@@ -282,10 +308,10 @@ const DragDropDirectedGraph = () => {
     let currentId = endNode.id;
     let pathIterations = 0;
     const maxPathIterations = nodes.length; // Safety check
-    
+
     while (currentId !== null && pathIterations < maxPathIterations) {
       pathIterations++;
-      const node = nodes.find(n => n.id === currentId);
+      const node = nodes.find((n) => n.id === currentId);
       if (node) {
         path.unshift(node.value);
       }
@@ -318,101 +344,112 @@ const DragDropDirectedGraph = () => {
   };
 
   // Calculate state for selected step
-  const getStepState = useCallback((stepIndex: number) => {
-    if (stepIndex < 0 || stepIndex >= state.operations.length) {
-      return {
-        nodes: [],
-        edges: [],
-        stats: {
-          size: 0,
-          isEmpty: true,
-          vertices: 0,
-          edges: 0,
-          isStronglyConnected: true,
-          hasCycle: false,
-          inDegree: {},
-          outDegree: {},
-        },
-      };
-    }
-
-    let currentNodes: DirectedGraphNode[] = [];
-    let currentEdges: DirectedGraphEdge[] = [];
-
-    // Execute operations up to the selected step
-    for (let i = 0; i <= stepIndex; i++) {
-      const operation = state.operations[i];
-      if (!operation) continue;
-
-      switch (operation.type) {
-        case 'add_vertex':
-          if (operation.value) {
-            const newNode: DirectedGraphNode = {
-              id: operation.value,
-              value: operation.value,
-              x: Math.random() * 400 + 50,
-              y: Math.random() * 300 + 50,
-              outgoingEdges: [],
-              incomingEdges: [],
-            };
-            currentNodes.push(newNode);
-          }
-          break;
-        case 'add_edge':
-          if (operation.fromVertex && operation.toVertex) {
-            const fromNode = currentNodes.find(n => n.id === operation.fromVertex);
-            const toNode = currentNodes.find(n => n.id === operation.toVertex);
-            if (fromNode && toNode) {
-              const newEdge: DirectedGraphEdge = {
-                id: `edge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                from: operation.fromVertex,
-                to: operation.toVertex,
-                weight: operation.value ? parseInt(operation.value, 10) : undefined,
-                isDirected: true,
-              };
-              currentEdges.push(newEdge);
-              fromNode.outgoingEdges.push(newEdge.id);
-              toNode.incomingEdges.push(newEdge.id);
-            }
-          }
-          break;
-        case 'remove_vertex':
-          if (operation.value) {
-            currentNodes = currentNodes.filter(n => n.id !== operation.value);
-            currentEdges = currentEdges.filter(e => e.from !== operation.value && e.to !== operation.value);
-          }
-          break;
-        case 'remove_edge':
-          if (operation.fromVertex && operation.toVertex) {
-            currentEdges = currentEdges.filter(
-              e => !(e.from === operation.fromVertex && e.to === operation.toVertex)
-            );
-            const fromNode = currentNodes.find(n => n.id === operation.fromVertex);
-            const toNode = currentNodes.find(n => n.id === operation.toVertex);
-            if (fromNode) fromNode.outgoingEdges = fromNode.outgoingEdges.filter(e => e !== operation.toVertex);
-            if (toNode) toNode.incomingEdges = toNode.incomingEdges.filter(e => e !== operation.fromVertex);
-          }
-          break;
-        case 'shortest_path':
-          // Shortest path calculation will be handled in useEffect
-          break;
+  const getStepState = useCallback(
+    (stepIndex: number) => {
+      if (stepIndex < 0 || stepIndex >= state.operations.length) {
+        return {
+          nodes: [],
+          edges: [],
+          stats: {
+            size: 0,
+            isEmpty: true,
+            vertices: 0,
+            edges: 0,
+            isStronglyConnected: true,
+            hasCycle: false,
+            inDegree: {},
+            outDegree: {},
+          },
+        };
       }
-    }
 
-    // Calculate stats
-    const currentStats = {
-      size: currentNodes.length,
-      isEmpty: currentNodes.length === 0,
-      vertices: currentNodes.length,
-      edges: currentEdges.length,
-      isStronglyConnected: currentNodes.length <= 1,
-      hasCycle: currentEdges.length >= currentNodes.length && currentNodes.length >= 3,
-      inDegree: {},
-      outDegree: {},
-    };
+      let currentNodes: DirectedGraphNode[] = [];
+      let currentEdges: DirectedGraphEdge[] = [];
 
-    return { nodes: currentNodes, edges: currentEdges, stats: currentStats };
-  }, [state.operations]);
+      // Execute operations up to the selected step
+      for (let i = 0; i <= stepIndex; i++) {
+        const operation = state.operations[i];
+        if (!operation) continue;
+
+        switch (operation.type) {
+          case 'add_vertex':
+            if (operation.value) {
+              const newNode: DirectedGraphNode = {
+                id: operation.value,
+                value: operation.value,
+                x: Math.random() * 400 + 50,
+                y: Math.random() * 300 + 50,
+                outgoingEdges: [],
+                incomingEdges: [],
+              };
+              currentNodes.push(newNode);
+            }
+            break;
+          case 'add_edge':
+            if (operation.fromVertex && operation.toVertex) {
+              const fromNode = currentNodes.find((n) => n.id === operation.fromVertex);
+              const toNode = currentNodes.find((n) => n.id === operation.toVertex);
+              if (fromNode && toNode) {
+                const newEdge: DirectedGraphEdge = {
+                  id: `edge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                  from: operation.fromVertex,
+                  to: operation.toVertex,
+                  weight: operation.value ? parseInt(operation.value, 10) : undefined,
+                  isDirected: true,
+                };
+                currentEdges.push(newEdge);
+                fromNode.outgoingEdges.push(newEdge.id);
+                toNode.incomingEdges.push(newEdge.id);
+              }
+            }
+            break;
+          case 'remove_vertex':
+            if (operation.value) {
+              currentNodes = currentNodes.filter((n) => n.id !== operation.value);
+              currentEdges = currentEdges.filter(
+                (e) => e.from !== operation.value && e.to !== operation.value,
+              );
+            }
+            break;
+          case 'remove_edge':
+            if (operation.fromVertex && operation.toVertex) {
+              currentEdges = currentEdges.filter(
+                (e) => !(e.from === operation.fromVertex && e.to === operation.toVertex),
+              );
+              const fromNode = currentNodes.find((n) => n.id === operation.fromVertex);
+              const toNode = currentNodes.find((n) => n.id === operation.toVertex);
+              if (fromNode)
+                fromNode.outgoingEdges = fromNode.outgoingEdges.filter(
+                  (e) => e !== operation.toVertex,
+                );
+              if (toNode)
+                toNode.incomingEdges = toNode.incomingEdges.filter(
+                  (e) => e !== operation.fromVertex,
+                );
+            }
+            break;
+          case 'shortest_path':
+            // Shortest path calculation will be handled in useEffect
+            break;
+        }
+      }
+
+      // Calculate stats
+      const currentStats = {
+        size: currentNodes.length,
+        isEmpty: currentNodes.length === 0,
+        vertices: currentNodes.length,
+        edges: currentEdges.length,
+        isStronglyConnected: currentNodes.length <= 1,
+        hasCycle: currentEdges.length >= currentNodes.length && currentNodes.length >= 3,
+        inDegree: {},
+        outDegree: {},
+      };
+
+      return { nodes: currentNodes, edges: currentEdges, stats: currentStats };
+    },
+    [state.operations],
+  );
 
   // Get current visualization state based on selected step
   const currentVisualizationState = useMemo(() => {
@@ -428,10 +465,18 @@ const DragDropDirectedGraph = () => {
       const operation = state.operations[selectedStep];
       if (operation?.type === 'shortest_path' && operation.startVertex && operation.endVertex) {
         // Get current state directly instead of using currentVisualizationState
-        const currentState = selectedStep !== null ? getStepState(selectedStep) : { nodes: state.nodes, edges: state.edges, stats: state.stats };
+        const currentState =
+          selectedStep !== null
+            ? getStepState(selectedStep)
+            : { nodes: state.nodes, edges: state.edges, stats: state.stats };
         const { nodes, edges } = currentState;
-        const path = calculateShortestPath(nodes, edges, operation.startVertex, operation.endVertex);
-        
+        const path = calculateShortestPath(
+          nodes,
+          edges,
+          operation.startVertex,
+          operation.endVertex,
+        );
+
         if (path.length > 0) {
           return path;
         }
@@ -450,6 +495,7 @@ const DragDropDirectedGraph = () => {
             เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
           </p>
         </div>
+        <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -461,7 +507,7 @@ const DragDropDirectedGraph = () => {
             </div>
           }
         >
-          <DirectedGraphOperations
+          <DirectedGraphDragDropOperations
             dragComponents={directedGraphDragComponents}
             onDragStart={handleDragStart}
             onTouchStart={handleTouchStart}
@@ -516,7 +562,7 @@ const DragDropDirectedGraph = () => {
           </div>
         }
       >
-        <DirectedGraphVisualization
+        <DirectedGraphDragDropVisualization
           ref={visualizationRef}
           nodes={currentVisualizationState.nodes}
           edges={currentVisualizationState.edges}
@@ -532,9 +578,7 @@ const DragDropDirectedGraph = () => {
               ? selectedStep
               : null
           }
-          currentOperationData={
-            selectedStep !== null ? state.operations[selectedStep] : undefined
-          }
+          currentOperationData={selectedStep !== null ? state.operations[selectedStep] : undefined}
           shortestPath={shortestPath}
         />
       </Suspense>

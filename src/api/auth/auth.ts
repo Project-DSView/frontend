@@ -1,16 +1,18 @@
 import { AuthResponse } from '@/types';
 import { api } from '../index';
 
-export const getGoogleAuthUrl = async (): Promise<AuthResponse> => {
-  const res = await api.get<AuthResponse>('/auth/google');
+const getGoogleAuthUrl = async (): Promise<AuthResponse> => {
+  const res = await api.get<AuthResponse>('/api/auth/google');
   return res.data;
 };
 
-export const logout = async (): Promise<void> => {
-  await api.post('/auth/logout');
+const logout = async (): Promise<void> => {
+  await api.post('/api/auth/logout');
 };
 
-export const refreshToken = async (): Promise<string> => {
-  const res = await api.post('/auth/refresh');
+const refreshToken = async (): Promise<string> => {
+  const res = await api.post('/api/auth/refresh');
   return res.data.data.token;
 };
+
+export { getGoogleAuthUrl, logout, refreshToken };

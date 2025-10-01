@@ -4,33 +4,20 @@ import React, { useState } from 'react';
 import { StackDragComponent, OperationCategory } from '@/types';
 import OperationCard from '../../shared/OperationCard';
 import OperationCategoryDropdown from '../../shared/OperationCategoryDropdown';
-
+import { categories } from '@/data';
 interface StackOperationsProps {
   dragComponents: StackDragComponent[];
   onDragStart: (e: React.DragEvent, component: StackDragComponent) => void;
   onTouchStart?: (e: React.TouchEvent, component: StackDragComponent) => void;
 }
 
-const StackOperations: React.FC<StackOperationsProps> = ({
+const StackDragDropOperations: React.FC<StackOperationsProps> = ({
   dragComponents,
   onDragStart,
   onTouchStart,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<OperationCategory | null>(null);
   const [showOperations, setShowOperations] = useState(false);
-
-  const categories = [
-    {
-      key: 'insertion' as OperationCategory,
-      title: 'Insertion Operations',
-      color: 'text-blue-600',
-    },
-    {
-      key: 'deletion' as OperationCategory,
-      title: 'Deletion Operations',
-      color: 'text-red-600',
-    }
-  ];
 
   const filteredComponents = selectedCategory
     ? dragComponents.filter((comp) => comp.category === selectedCategory)
@@ -93,4 +80,4 @@ const StackOperations: React.FC<StackOperationsProps> = ({
   );
 };
 
-export default StackOperations;
+export default StackDragDropOperations;

@@ -1,3 +1,4 @@
+// Components
 export type {
   SubItem,
   MenuItem,
@@ -5,27 +6,19 @@ export type {
   SubMenuItemProps,
   NestedSubMenuItemProps,
 } from './components/menu.types';
+
 export type { Feature, FeatureCardProps } from './components/card.types';
-export type { AuthResponse, UserProfile, UseAuthReturn } from './services/auth.types';
+
 export type {
-  SinglyLinkedListNode,
-  SinglyLinkedListState,
-  SinglyLinkedListOperation,
-  SinglyLinkedListDragComponent,
-  SinglyLinkedListExecutionStep,
-  SinglyLinkedListCodeTemplate,
-  SinglyLinkedListData,
-  SinglyLinkedListStatsExtended,
-  SinglyLinkedListStateExtended,
-} from './DataStructures/SinglyLinkedList.types';
-export type {
-  DataStructureType,
-  Operation,
-  DragComponent,
-  ExecutionState,
-  DataStructureStats,
-  OperationCategory,
-} from './common.types';
+  CopyAndExportButtonProps,
+  ExportPNGButtonProps,
+  FileUploadButtonProps,
+} from './components/button.types';
+
+export type { StepSelectorProps } from './components/StepSelector.types';
+
+export type { VirtualizedListProps } from './components/VirtualizedList.types';
+
 export type {
   CodeEditorProps,
   OperationCardProps,
@@ -39,14 +32,32 @@ export type {
   StackVisualizationProps,
   DragDropZoneProps,
 } from './components/DragDrop.types';
+
+// Services
+export type { AuthResponse, UserProfile, UseAuthReturn } from './services/auth.types';
+
+// Drag Drop
 export type {
-  CookieOptions,
-  CORSConfig,
-  JWTPayload,
-  RateLimitConfig,
-  RateLimitEntry,
-  SecureSessionData,
-} from './security/security.types';
+  SinglyLinkedListNode,
+  SinglyLinkedListState,
+  SinglyLinkedListOperation,
+  SinglyLinkedListDragComponent,
+  SinglyLinkedListExecutionStep,
+  SinglyLinkedListCodeTemplate,
+  SinglyLinkedListData,
+  SinglyLinkedListStatsExtended,
+  SinglyLinkedListStateExtended,
+} from './dragdrop/SinglyLinkedList.types';
+
+export type {
+  DataStructureType,
+  Operation,
+  DragComponent,
+  ExecutionState,
+  DataStructureStats,
+  OperationCategory,
+} from './dragdrop/common.types';
+
 export type {
   DoublyLinkedListNode,
   DoublyLinkedListState,
@@ -57,7 +68,8 @@ export type {
   DoublyLinkedListData,
   DoublyLinkedListStatsExtended,
   DoublyLinkedListStateExtended,
-} from './DataStructures/DoublyLinkedList.types';
+} from './dragdrop/DoublyLinkedList.types';
+
 export type {
   StackElement,
   StackState,
@@ -68,7 +80,8 @@ export type {
   StackData,
   StackStatsExtended,
   StackStateExtended,
-} from './DataStructures/Stack.types';
+} from './dragdrop/Stack.types';
+
 export type {
   BSTNode,
   BSTStats,
@@ -83,7 +96,8 @@ export type {
   BSTData,
   BSTStatsExtended,
   BSTStateExtended,
-} from './DataStructures/BST.types';
+} from './dragdrop/BST.types';
+
 export type {
   BaseOperation,
   BaseStats,
@@ -92,7 +106,8 @@ export type {
   BaseHookState,
   BaseHookReturn,
   BaseDataStructureService,
-} from './DataStructures/base.types';
+} from './dragdrop/base.types';
+
 export type {
   UndirectedGraphNode,
   UndirectedGraphEdge,
@@ -101,14 +116,14 @@ export type {
   UndirectedGraphDragComponent,
   UndirectedGraphState,
   UndirectedGraphExecutionStep,
-  UndirectedGraphCodeTemplate,
   UndirectedGraphOperationsProps,
   UndirectedGraphVisualizationProps,
   PositionedUndirectedGraphNode,
   UndirectedGraphData,
   UndirectedGraphStatsExtended,
   UndirectedGraphStateExtended,
-} from './DataStructures/UndirectedGraph.types';
+} from './dragdrop/UndirectedGraph.types';
+
 export type {
   DirectedGraphNode,
   DirectedGraphEdge,
@@ -117,12 +132,39 @@ export type {
   DirectedGraphDragComponent,
   DirectedGraphState,
   DirectedGraphExecutionStep,
-  DirectedGraphCodeTemplate,
   DirectedGraphOperationsProps,
   DirectedGraphVisualizationProps,
   PositionedDirectedGraphNode,
   DirectedGraphData,
   DirectedGraphStatsExtended,
   DirectedGraphStateExtended,
-} from './DataStructures/DirectedGraph.types';
+} from './dragdrop/DirectedGraph.types';
 
+// Security
+export type {
+  CookieOptions,
+  CORSConfig,
+  JWTPayload,
+  RateLimitConfig,
+  RateLimitEntry,
+  SecureSessionData,
+} from './security/security.types';
+
+// Stepthrough
+export type {
+  StepthroughRequest,
+  StepthroughStep,
+  StepthroughResponse,
+  StepthroughState,
+  StepthroughHookReturn,
+  StepthroughCodeEditorProps,
+  StepthroughStepControlProps,
+  StepthroughVisualizationProps,
+  StepthroughLayoutProps,
+} from './stepthrough/common.types';
+
+export type {
+  BaseStepthroughState,
+  BaseStepthroughHookReturn,
+  BaseStepthroughService,
+} from './stepthrough/base.types';

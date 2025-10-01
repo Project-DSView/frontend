@@ -1,5 +1,6 @@
 import React from 'react';
 import { DragDropZoneProps } from '@/types';
+import { toast } from 'sonner';
 
 const DragDropZone: React.FC<DragDropZoneProps> = ({
   operations,
@@ -13,6 +14,125 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
   onUpdateOperationNewValue,
   children,
 }) => {
+  // Function to validate required inputs for each operation
+  const validateOperation = (op: {
+    type: string;
+    name: string;
+    value?: string | null;
+    position?: string | null;
+    newValue?: string | null;
+    endVertex?: string | null;
+  }) => {
+    const errors: string[] = [];
+
+    // Check for required value input
+    if (
+      [
+        'insert_beginning',
+        'insert_end',
+        'insert_position',
+        'search_value',
+        'update_value',
+        'push',
+        'add_vertex',
+        'remove_vertex',
+      ].includes(op.type)
+    ) {
+      if (!op.value || op.value.trim() === '') {
+        errors.push(`กรุณาใส่ค่า Value สำหรับ ${op.name}`);
+      }
+    }
+
+    // Check for required position input
+    if (
+      [
+        'insert_position',
+        'delete_position',
+        'search_position',
+        'update_position',
+        'add_edge',
+        'remove_edge',
+      ].includes(op.type)
+    ) {
+      if (!op.position || op.position.trim() === '') {
+        errors.push(`กรุณาใส่ค่า Position สำหรับ ${op.name}`);
+      }
+    }
+
+    // Check for required newValue input
+    if (['update_value', 'update_position', 'add_edge', 'remove_edge'].includes(op.type)) {
+      if (!op.newValue || op.newValue.trim() === '') {
+        errors.push(`กรุณาใส่ค่า New Value สำหรับ ${op.name}`);
+      }
+    }
+
+    // Check for required endVertex input (stored in value field for shortest_path)
+    if (op.type === 'shortest_path') {
+      if (!op.value || op.value.trim() === '') {
+        errors.push(`กรุณาใส่ค่า End Vertex สำหรับ ${op.name}`);
+      }
+    }
+
+    // Check for required weight input for add_edge
+    if (op.type === 'add_edge') {
+      if (!op.value || op.value.trim() === '') {
+        errors.push(`กรุณาใส่ค่า Weight สำหรับ ${op.name}`);
+      }
+    }
+
+    return errors;
+  };
+
+  // Function to handle input validation
+  const handleInputValidation = (
+    op: {
+      id: number;
+      type: string;
+      name: string;
+      value?: string | null;
+      position?: string | null;
+      newValue?: string | null;
+    },
+    field: string,
+    value: string,
+  ) => {
+    // Update the operation first
+    if (field === 'value') {
+      onUpdateOperationValue(op.id, value);
+    } else if (field === 'position') {
+      onUpdateOperationPosition(op.id, value);
+    } else if (field === 'newValue') {
+      onUpdateOperationNewValue(op.id, value);
+    } else if (field === 'endVertex') {
+      onUpdateOperationValue(op.id, value); // endVertex is stored in value field
+    }
+
+    // Validate after a short delay to allow the state to update
+    setTimeout(() => {
+      const errors = validateOperation({ ...op, [field]: value });
+      if (errors.length > 0) {
+        errors.forEach((error) => toast.warning(error));
+      }
+    }, 100);
+  };
+
+  // Function to get input validation class
+  const getInputValidationClass = (
+    op: {
+      type: string;
+      name: string;
+      value?: string | null;
+      position?: string | null;
+      newValue?: string | null;
+    },
+    field: string,
+  ) => {
+    const errors = validateOperation(op);
+    const hasError = errors.some((error) =>
+      error.includes(field === 'value' ? 'Value' : field === 'position' ? 'Position' : 'New Value'),
+    );
+    return hasError ? 'border-error bg-error bg-error/10' : 'border-neutral';
+  };
   return (
     <div
       onDragOver={onDragOver}
@@ -58,8 +178,8 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                     type="text"
                     placeholder="Value"
                     value={op.value || ''}
-                    onChange={(e) => onUpdateOperationValue(op.id, e.target.value)}
-                    className="w-24 rounded border px-2 py-1 text-center text-sm"
+                    onChange={(e) => handleInputValidation(op, 'value', e.target.value)}
+                    className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'value')}`}
                   />
                 )}
 
@@ -69,8 +189,8 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                     type="number"
                     placeholder="Number"
                     value={op.value || ''}
-                    onChange={(e) => onUpdateOperationValue(op.id, e.target.value)}
-                    className="w-24 rounded border px-2 py-1 text-center text-sm"
+                    onChange={(e) => handleInputValidation(op, 'value', e.target.value)}
+                    className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'value')}`}
                     min="0"
                     step="1"
                   />
@@ -86,26 +206,38 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                   'remove_edge',
                 ].includes(op.type) && (
                   <input
-                    type={['add_edge', 'remove_edge'].includes(op.type) ? "text" : "number"}
-                    placeholder={['add_edge', 'remove_edge'].includes(op.type) ? "From Vertex" : "Position"}
+                    type={['add_edge', 'remove_edge'].includes(op.type) ? 'text' : 'number'}
+                    placeholder={
+                      ['add_edge', 'remove_edge'].includes(op.type) ? 'From Vertex' : 'Position'
+                    }
                     value={op.position || ''}
-                    onChange={(e) => onUpdateOperationPosition(op.id, e.target.value)}
-                    className="w-24 rounded border px-2 py-1 text-center text-sm"
+                    onChange={(e) => handleInputValidation(op, 'position', e.target.value)}
+                    className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'position')}`}
                   />
                 )}
 
                 {/* New Value input for update operations and edge operations */}
-                {['update_value', 'update_position', 'add_edge', 'remove_edge', 'traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(op.type) && (
+                {[
+                  'update_value',
+                  'update_position',
+                  'add_edge',
+                  'remove_edge',
+                  'traversal_dfs',
+                  'traversal_bfs',
+                  'shortest_path',
+                ].includes(op.type) && (
                   <input
                     type="text"
                     placeholder={
-                      ['add_edge', 'remove_edge'].includes(op.type) ? "To Vertex" :
-                      ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(op.type) ? "Start Vertex" :
-                      "New Value"
+                      ['add_edge', 'remove_edge'].includes(op.type)
+                        ? 'To Vertex'
+                        : ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(op.type)
+                          ? 'Start Vertex'
+                          : 'New Value'
                     }
                     value={op.newValue || ''}
-                    onChange={(e) => onUpdateOperationNewValue(op.id, e.target.value)}
-                    className="w-24 rounded border px-2 py-1 text-center text-sm"
+                    onChange={(e) => handleInputValidation(op, 'newValue', e.target.value)}
+                    className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'newValue')}`}
                   />
                 )}
 
@@ -115,8 +247,8 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                     type="text"
                     placeholder="End Vertex"
                     value={op.endVertex || ''}
-                    onChange={(e) => onUpdateOperationValue(op.id, e.target.value)}
-                    className="w-24 rounded border px-2 py-1 text-center text-sm"
+                    onChange={(e) => handleInputValidation(op, 'endVertex', e.target.value)}
+                    className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'endVertex')}`}
                   />
                 )}
 
@@ -126,8 +258,8 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                     type="number"
                     placeholder="Weight"
                     value={op.value || ''}
-                    onChange={(e) => onUpdateOperationValue(op.id, e.target.value)}
-                    className="w-24 rounded border px-2 py-1 text-center text-sm"
+                    onChange={(e) => handleInputValidation(op, 'value', e.target.value)}
+                    className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'value')}`}
                     step="1"
                   />
                 )}

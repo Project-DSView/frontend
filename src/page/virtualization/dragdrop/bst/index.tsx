@@ -2,14 +2,19 @@
 
 import React, { useState, useRef, lazy, Suspense } from 'react';
 import { BSTDragComponent, BSTNode, BSTOperation } from '@/types';
-import { useBST } from '@/hooks';
+import { useBSTDragDrop } from '@/hooks';
 import { bstDragComponents } from '@/data';
 import DragDropZone from '@/components/virtualization/shared/DragDropZone';
 import StepSelector from '@/components/virtualization/shared/StepSelector';
+import ExportPNGButton from '@/components/virtualization/shared/ExportPNGButton';
 
 // Lazy load heavy components
-const BSTOperations = lazy(() => import('@/components/virtualization/dragdrop/bst/BSTOperations'));
-const BSTVisualization = lazy(() => import('@/components/virtualization/dragdrop/bst/BSTVisualization'));
+const BSTDragDropOperations = lazy(
+  () => import('@/components/virtualization/dragdrop/bst/BSTOperations'),
+);
+const BSTDragDropVisualization = lazy(
+  () => import('@/components/virtualization/dragdrop/bst/BSTVisualization'),
+);
 
 // BST helper functions - moved outside component to prevent recreation
 const insertNode = (root: BSTNode | null, value: string): BSTNode => {
@@ -18,7 +23,7 @@ const insertNode = (root: BSTNode | null, value: string): BSTNode => {
       value,
       left: null,
       right: null,
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
     };
   }
 
@@ -78,7 +83,6 @@ const calculateStats = (root: BSTNode | null) => {
     return 1 + Math.max(getHeight(node.left), getHeight(node.right));
   };
 
-
   return {
     size: getSize(root),
     height: getHeight(root),
@@ -88,12 +92,13 @@ const calculateStats = (root: BSTNode | null) => {
 
 const DragDropBST = () => {
   const { state, addOperation, updateOperation, removeOperation, clearAll, updateBSTState } =
-    useBST();
+    useBSTDragDrop();
 
   const [draggedItem, setDraggedItem] = useState<BSTDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [isLoading] = useState(false);
   const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -139,11 +144,9 @@ const DragDropBST = () => {
       const newOperation = {
         type: draggedItem.type,
         name: draggedItem.name,
-        value: [
-          'traverse_inorder',
-          'traverse_preorder',
-          'traverse_postorder',
-        ].includes(draggedItem.type)
+        value: ['traverse_inorder', 'traverse_preorder', 'traverse_postorder'].includes(
+          draggedItem.type,
+        )
           ? null
           : '',
         color: draggedItem.color,
@@ -168,8 +171,6 @@ const DragDropBST = () => {
       setDraggedItem(null);
     }
   };
-
-
 
   const updateOperationValue = async (id: number, value: string) => {
     // Validate that value is a number for insert operations
@@ -355,6 +356,7 @@ const DragDropBST = () => {
             เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
           </p>
         </div>
+        <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
       </div>
 
       {/* Error Message */}
@@ -382,7 +384,7 @@ const DragDropBST = () => {
             </div>
           }
         >
-          <BSTOperations
+          <BSTDragDropOperations
             dragComponents={bstDragComponents}
             onDragStart={handleDragStart}
             onTouchStart={handleTouchStart}
@@ -437,7 +439,7 @@ const DragDropBST = () => {
           </div>
         }
       >
-        <BSTVisualization
+        <BSTDragDropVisualization
           ref={visualizationRef}
           root={currentVisualizationState.root}
           stats={currentVisualizationState.stats}

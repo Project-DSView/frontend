@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import { StackVisualizationProps } from '@/types';
 
-const StackVisualization = forwardRef<HTMLDivElement, StackVisualizationProps>(
+const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualizationProps>(
   ({ elements, stats, isRunning = false, currentOperation, currentStep }, ref) => {
     // Determine which element should be animated based on current operation
     const getAnimatedElementIndex = () => {
@@ -136,6 +136,6 @@ const StackVisualization = forwardRef<HTMLDivElement, StackVisualizationProps>(
   },
 );
 
-StackVisualization.displayName = 'StackVisualization';
+StackDragDropVisualization.displayName = 'StackDragDropVisualization';
 
-export default StackVisualization;
+export default StackDragDropVisualization;

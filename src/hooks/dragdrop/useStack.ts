@@ -1,4 +1,11 @@
-import { StackState, StackOperation, StackData, StackStatsExtended, StackStateExtended, BaseState } from '@/types';
+import {
+  StackState,
+  StackOperation,
+  StackData,
+  StackStatsExtended,
+  StackStateExtended,
+  BaseState,
+} from '@/types';
 import { StackService } from '@/services';
 import { useBaseDataStructure } from './useBaseDataStructure';
 class StackServiceAdapter {
@@ -61,10 +68,9 @@ const defaultState: StackStateExtended = {
 };
 
 const useStack = () => {
-
   const baseHook = useBaseDataStructure<StackData, StackStatsExtended, StackOperation>(
     defaultState,
-    StackServiceAdapter
+    StackServiceAdapter,
   );
 
   return {

@@ -1,14 +1,5 @@
 import React, { memo, useMemo, useCallback, useState, useEffect, useRef } from 'react';
-
-interface VirtualizedListProps<T> {
-  items: T[];
-  itemHeight: number;
-  containerHeight: number;
-  renderItem: (item: T, index: number) => React.ReactNode;
-  keyExtractor: (item: T, index: number) => string | number;
-  overscan?: number; // Number of items to render outside visible area
-  className?: string;
-}
+import { VirtualizedListProps } from '@/types';
 
 const VirtualizedList = <T,>({
   items,
@@ -27,7 +18,7 @@ const VirtualizedList = <T,>({
     const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
     const endIndex = Math.min(
       items.length - 1,
-      Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
+      Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan,
     );
     return { startIndex, endIndex };
   }, [scrollTop, itemHeight, containerHeight, items.length, overscan]);
@@ -76,10 +67,7 @@ const VirtualizedList = <T,>({
           {visibleItems.map((item, index) => {
             const actualIndex = visibleRange.startIndex + index;
             return (
-              <div
-                key={keyExtractor(item, actualIndex)}
-                style={{ height: itemHeight }}
-              >
+              <div key={keyExtractor(item, actualIndex)} style={{ height: itemHeight }}>
                 {renderItem(item, actualIndex)}
               </div>
             );

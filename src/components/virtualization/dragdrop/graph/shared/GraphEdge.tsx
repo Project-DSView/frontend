@@ -1,5 +1,10 @@
 import React, { memo } from 'react';
-import { UndirectedGraphNode, UndirectedGraphEdge, DirectedGraphNode, DirectedGraphEdge } from '@/types';
+import {
+  UndirectedGraphNode,
+  UndirectedGraphEdge,
+  DirectedGraphNode,
+  DirectedGraphEdge,
+} from '@/types';
 
 interface GraphEdgeProps {
   edge: UndirectedGraphEdge | DirectedGraphEdge;
@@ -53,7 +58,7 @@ const GraphEdge = memo<GraphEdgeProps>(({ edge, fromNode, toNode, isHighlighted 
           zIndex: 1,
         }}
       />
-      
+
       {/* Arrow head for directed edges */}
       {isDirected && (
         <svg
@@ -73,7 +78,7 @@ const GraphEdge = memo<GraphEdgeProps>(({ edge, fromNode, toNode, isHighlighted 
           />
         </svg>
       )}
-      
+
       {typeof edge.weight === 'number' && !isNaN(edge.weight) && (
         <div
           className="absolute -translate-x-1/2 -translate-y-1/2 rounded bg-white px-1 text-xs text-gray-700"

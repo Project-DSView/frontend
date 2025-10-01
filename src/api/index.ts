@@ -33,7 +33,8 @@ api.interceptors.response.use(
       // Clear session on unauthorized
       if (typeof window !== 'undefined') {
         sessionStorage.clear();
-        window.location.href = '/login';
+        // Redirect to home page instead of login
+        window.location.href = '/';
       }
     }
 
@@ -43,4 +44,5 @@ api.interceptors.response.use(
 
 // API Layer - Direct API calls only
 export { fetchProfile } from './auth/profile';
+export { executeStepthrough } from './stepthrough/stepthrough';
 export { getGoogleAuthUrl, logout, refreshToken } from './auth/auth';

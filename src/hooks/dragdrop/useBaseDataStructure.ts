@@ -1,9 +1,18 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { BaseState, BaseStats, BaseOperation, BaseHookState, BaseHookReturn, BaseDataStructureService } from '@/types';
+import {
+  BaseState,
+  BaseStats,
+  BaseOperation,
+  BaseHookState,
+  BaseHookReturn,
+  BaseDataStructureService,
+} from '@/types';
 
 const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extends BaseOperation>(
   initialState: BaseState<TData, TStats>,
-  ServiceClass: new (state: BaseState<TData, TStats>) => BaseDataStructureService<TData, TStats, TOperation>
+  ServiceClass: new (
+    state: BaseState<TData, TStats>,
+  ) => BaseDataStructureService<TData, TStats, TOperation>,
 ): BaseHookReturn<TData, TStats, TOperation> => {
   const [state, setState] = useState<BaseState<TData, TStats>>(initialState);
   const [hookState, setHookState] = useState<BaseHookState>({
@@ -109,14 +118,17 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
   }, []);
 
   const executeOperation = useCallback(
-    async (operation: TOperation, currentState: BaseState<TData, TStats>): Promise<BaseState<TData, TStats>> => {
+    async (
+      operation: TOperation,
+      currentState: BaseState<TData, TStats>,
+    ): Promise<BaseState<TData, TStats>> => {
       const service = new ServiceClass(currentState);
-      
+
       setHookState((prev) => ({ ...prev, currentOperation: operation.type }));
 
       try {
         const steps = await service.executeOperation(operation);
-        
+
         // Execute steps with animation
         for (let i = 0; i < steps.length; i++) {
           const step = steps[i];
@@ -127,7 +139,7 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
             executionHistory: [...prev.executionHistory, step.description],
           }));
 
-          // Update highlighted nodes 
+          // Update highlighted nodes
           if (step.nodeValue) {
             setHookState((prev) => ({ ...prev, highlightedNodes: [step.nodeValue!] }));
           }

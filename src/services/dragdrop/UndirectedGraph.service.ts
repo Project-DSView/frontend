@@ -1,9 +1,9 @@
-import { 
-  UndirectedGraphState, 
-  UndirectedGraphNode, 
-  UndirectedGraphEdge, 
+import {
+  UndirectedGraphState,
+  UndirectedGraphNode,
+  UndirectedGraphEdge,
   UndirectedGraphExecutionStep,
-  UndirectedGraphOperation
+  UndirectedGraphOperation,
 } from '@/types';
 import { createExecutionStep } from '@/lib';
 
@@ -39,20 +39,20 @@ class UndirectedGraphService {
   // Check if graph is connected using DFS
   private checkConnectivity(): boolean {
     if (this.state.nodes.length === 0) return true;
-    
+
     const visited = new Set<string>();
     const startNode = this.state.nodes[0];
     this.dfsVisit(startNode.id, visited);
-    
+
     return visited.size === this.state.nodes.length;
   }
 
   // DFS helper for connectivity check
   private dfsVisit(nodeId: string, visited: Set<string>): void {
     visited.add(nodeId);
-    const node = this.state.nodes.find(n => n.id === nodeId);
+    const node = this.state.nodes.find((n) => n.id === nodeId);
     if (node) {
-      node.neighbors.forEach(neighborId => {
+      node.neighbors.forEach((neighborId) => {
         if (!visited.has(neighborId)) {
           this.dfsVisit(neighborId, visited);
         }
@@ -63,10 +63,10 @@ class UndirectedGraphService {
   // Check if graph has cycle using DFS
   private checkCycle(): boolean {
     if (this.state.nodes.length === 0) return false;
-    
+
     const visited = new Set<string>();
     const recStack = new Set<string>();
-    
+
     for (const node of this.state.nodes) {
       if (!visited.has(node.id)) {
         if (this.hasCycleDFS(node.id, visited, recStack, null)) {
@@ -74,20 +74,25 @@ class UndirectedGraphService {
         }
       }
     }
-    
+
     return false;
   }
 
   // DFS helper for cycle detection
-  private hasCycleDFS(nodeId: string, visited: Set<string>, recStack: Set<string>, parent: string | null): boolean {
+  private hasCycleDFS(
+    nodeId: string,
+    visited: Set<string>,
+    recStack: Set<string>,
+    parent: string | null,
+  ): boolean {
     visited.add(nodeId);
     recStack.add(nodeId);
-    
-    const node = this.state.nodes.find(n => n.id === nodeId);
+
+    const node = this.state.nodes.find((n) => n.id === nodeId);
     if (node) {
       for (const neighborId of node.neighbors) {
         if (neighborId === parent) continue; // Skip parent in undirected graph
-        
+
         if (!visited.has(neighborId)) {
           if (this.hasCycleDFS(neighborId, visited, recStack, nodeId)) {
             return true;
@@ -97,7 +102,7 @@ class UndirectedGraphService {
         }
       }
     }
-    
+
     recStack.delete(nodeId);
     return false;
   }
@@ -115,7 +120,7 @@ class UndirectedGraphService {
     );
 
     // Check if vertex already exists
-    const existingNode = this.state.nodes.find(n => n.value === value);
+    const existingNode = this.state.nodes.find((n) => n.value === value);
     if (existingNode) {
       steps.push(
         createExecutionStep(
@@ -140,11 +145,7 @@ class UndirectedGraphService {
     this.updateStats();
 
     steps.push(
-      createExecutionStep(
-        `สร้าง Vertex ${value} สำเร็จ`,
-        `Vertex ${value} added to graph`,
-        1000,
-      ),
+      createExecutionStep(`สร้าง Vertex ${value} สำเร็จ`, `Vertex ${value} added to graph`, 1000),
     );
 
     return steps;
@@ -162,27 +163,19 @@ class UndirectedGraphService {
       ),
     );
 
-    const fromNode = this.state.nodes.find(n => n.value === fromValue);
-    const toNode = this.state.nodes.find(n => n.value === toValue);
+    const fromNode = this.state.nodes.find((n) => n.value === fromValue);
+    const toNode = this.state.nodes.find((n) => n.value === toValue);
 
     if (!fromNode) {
       steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${fromValue}`,
-          `Vertex ${fromValue} not found`,
-          1000,
-        ),
+        createExecutionStep(`ไม่พบ Vertex ${fromValue}`, `Vertex ${fromValue} not found`, 1000),
       );
       return steps;
     }
 
     if (!toNode) {
       steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${toValue}`,
-          `Vertex ${toValue} not found`,
-          1000,
-        ),
+        createExecutionStep(`ไม่พบ Vertex ${toValue}`, `Vertex ${toValue} not found`, 1000),
       );
       return steps;
     }
@@ -200,8 +193,9 @@ class UndirectedGraphService {
 
     // Check if edge already exists
     const existingEdge = this.state.edges.find(
-      e => (e.from === fromNode.id && e.to === toNode.id) || 
-           (e.from === toNode.id && e.to === fromNode.id)
+      (e) =>
+        (e.from === fromNode.id && e.to === toNode.id) ||
+        (e.from === toNode.id && e.to === fromNode.id),
     );
 
     if (existingEdge) {
@@ -253,39 +247,33 @@ class UndirectedGraphService {
       ),
     );
 
-    const nodeToRemove = this.state.nodes.find(n => n.value === value);
+    const nodeToRemove = this.state.nodes.find((n) => n.value === value);
     if (!nodeToRemove) {
-      steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${value}`,
-          `Vertex ${value} not found`,
-          1000,
-        ),
-      );
+      steps.push(createExecutionStep(`ไม่พบ Vertex ${value}`, `Vertex ${value} not found`, 1000));
       return steps;
     }
 
     // Remove all edges connected to this vertex
     const edgesToRemove = this.state.edges.filter(
-      e => e.from === nodeToRemove.id || e.to === nodeToRemove.id
+      (e) => e.from === nodeToRemove.id || e.to === nodeToRemove.id,
     );
 
     for (const edge of edgesToRemove) {
       // Update neighbors
       const otherNodeId = edge.from === nodeToRemove.id ? edge.to : edge.from;
-      const otherNode = this.state.nodes.find(n => n.id === otherNodeId);
+      const otherNode = this.state.nodes.find((n) => n.id === otherNodeId);
       if (otherNode) {
-        otherNode.neighbors = otherNode.neighbors.filter(id => id !== nodeToRemove.id);
+        otherNode.neighbors = otherNode.neighbors.filter((id) => id !== nodeToRemove.id);
       }
     }
 
     // Remove edges
     this.state.edges = this.state.edges.filter(
-      e => e.from !== nodeToRemove.id && e.to !== nodeToRemove.id
+      (e) => e.from !== nodeToRemove.id && e.to !== nodeToRemove.id,
     );
 
     // Remove node
-    this.state.nodes = this.state.nodes.filter(n => n.id !== nodeToRemove.id);
+    this.state.nodes = this.state.nodes.filter((n) => n.id !== nodeToRemove.id);
 
     this.updateStats();
 
@@ -312,8 +300,8 @@ class UndirectedGraphService {
       ),
     );
 
-    const fromNode = this.state.nodes.find(n => n.value === fromValue);
-    const toNode = this.state.nodes.find(n => n.value === toValue);
+    const fromNode = this.state.nodes.find((n) => n.value === fromValue);
+    const toNode = this.state.nodes.find((n) => n.value === toValue);
 
     if (!fromNode || !toNode) {
       steps.push(
@@ -327,8 +315,9 @@ class UndirectedGraphService {
     }
 
     const edgeToRemove = this.state.edges.find(
-      e => (e.from === fromNode.id && e.to === toNode.id) || 
-           (e.from === toNode.id && e.to === fromNode.id)
+      (e) =>
+        (e.from === fromNode.id && e.to === toNode.id) ||
+        (e.from === toNode.id && e.to === fromNode.id),
     );
 
     if (!edgeToRemove) {
@@ -343,11 +332,11 @@ class UndirectedGraphService {
     }
 
     // Remove edge
-    this.state.edges = this.state.edges.filter(e => e.id !== edgeToRemove.id);
+    this.state.edges = this.state.edges.filter((e) => e.id !== edgeToRemove.id);
 
     // Update neighbors
-    fromNode.neighbors = fromNode.neighbors.filter(id => id !== toNode.id);
-    toNode.neighbors = toNode.neighbors.filter(id => id !== fromNode.id);
+    fromNode.neighbors = fromNode.neighbors.filter((id) => id !== toNode.id);
+    toNode.neighbors = toNode.neighbors.filter((id) => id !== fromNode.id);
 
     this.updateStats();
 
@@ -374,14 +363,10 @@ class UndirectedGraphService {
       ),
     );
 
-    const startNode = this.state.nodes.find(n => n.value === startValue);
+    const startNode = this.state.nodes.find((n) => n.value === startValue);
     if (!startNode) {
       steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${startValue}`,
-          `Vertex ${startValue} not found`,
-          1000,
-        ),
+        createExecutionStep(`ไม่พบ Vertex ${startValue}`, `Vertex ${startValue} not found`, 1000),
       );
       return steps;
     }
@@ -391,20 +376,16 @@ class UndirectedGraphService {
 
     const dfs = (nodeId: string) => {
       if (visited.has(nodeId)) return;
-      
+
       visited.add(nodeId);
-      const node = this.state.nodes.find(n => n.id === nodeId);
+      const node = this.state.nodes.find((n) => n.id === nodeId);
       if (node) {
         result.push(node.value);
         steps.push(
-          createExecutionStep(
-            `เยี่ยม Vertex ${node.value}`,
-            `Visit vertex ${node.value}`,
-            1000,
-          ),
+          createExecutionStep(`เยี่ยม Vertex ${node.value}`, `Visit vertex ${node.value}`, 1000),
         );
-        
-        node.neighbors.forEach(neighborId => {
+
+        node.neighbors.forEach((neighborId) => {
           if (!visited.has(neighborId)) {
             dfs(neighborId);
           }
@@ -437,14 +418,10 @@ class UndirectedGraphService {
       ),
     );
 
-    const startNode = this.state.nodes.find(n => n.value === startValue);
+    const startNode = this.state.nodes.find((n) => n.value === startValue);
     if (!startNode) {
       steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${startValue}`,
-          `Vertex ${startValue} not found`,
-          1000,
-        ),
+        createExecutionStep(`ไม่พบ Vertex ${startValue}`, `Vertex ${startValue} not found`, 1000),
       );
       return steps;
     }
@@ -455,22 +432,18 @@ class UndirectedGraphService {
 
     while (queue.length > 0) {
       const nodeId = queue.shift()!;
-      
+
       if (visited.has(nodeId)) continue;
-      
+
       visited.add(nodeId);
-      const node = this.state.nodes.find(n => n.id === nodeId);
+      const node = this.state.nodes.find((n) => n.id === nodeId);
       if (node) {
         result.push(node.value);
         steps.push(
-          createExecutionStep(
-            `เยี่ยม Vertex ${node.value}`,
-            `Visit vertex ${node.value}`,
-            1000,
-          ),
+          createExecutionStep(`เยี่ยม Vertex ${node.value}`, `Visit vertex ${node.value}`, 1000),
         );
-        
-        node.neighbors.forEach(neighborId => {
+
+        node.neighbors.forEach((neighborId) => {
           if (!visited.has(neighborId)) {
             queue.push(neighborId);
           }
@@ -490,7 +463,10 @@ class UndirectedGraphService {
   }
 
   // Shortest Path (Dijkstra's Algorithm)
-  async shortestPath(startValue: string, endValue: string): Promise<UndirectedGraphExecutionStep[]> {
+  async shortestPath(
+    startValue: string,
+    endValue: string,
+  ): Promise<UndirectedGraphExecutionStep[]> {
     const steps: UndirectedGraphExecutionStep[] = [];
 
     steps.push(
@@ -501,27 +477,19 @@ class UndirectedGraphService {
       ),
     );
 
-    const startNode = this.state.nodes.find(n => n.value === startValue);
-    const endNode = this.state.nodes.find(n => n.value === endValue);
+    const startNode = this.state.nodes.find((n) => n.value === startValue);
+    const endNode = this.state.nodes.find((n) => n.value === endValue);
 
     if (!startNode) {
       steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${startValue}`,
-          `Vertex ${startValue} not found`,
-          1000,
-        ),
+        createExecutionStep(`ไม่พบ Vertex ${startValue}`, `Vertex ${startValue} not found`, 1000),
       );
       return steps;
     }
 
     if (!endNode) {
       steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${endValue}`,
-          `Vertex ${endValue} not found`,
-          1000,
-        ),
+        createExecutionStep(`ไม่พบ Vertex ${endValue}`, `Vertex ${endValue} not found`, 1000),
       );
       return steps;
     }
@@ -544,7 +512,7 @@ class UndirectedGraphService {
     const unvisited = new Set<string>();
 
     // Initialize distances
-    this.state.nodes.forEach(node => {
+    this.state.nodes.forEach((node) => {
       distances[node.id] = node.id === startNode.id ? 0 : Infinity;
       previous[node.id] = null;
       unvisited.add(node.id);
@@ -562,7 +530,7 @@ class UndirectedGraphService {
       // Find node with minimum distance
       let currentNodeId = '';
       let minDistance = Infinity;
-      
+
       for (const nodeId of unvisited) {
         if (distances[nodeId] < minDistance) {
           minDistance = distances[nodeId];
@@ -572,7 +540,7 @@ class UndirectedGraphService {
 
       if (currentNodeId === '') break;
 
-      const currentNode = this.state.nodes.find(n => n.id === currentNodeId);
+      const currentNode = this.state.nodes.find((n) => n.id === currentNodeId);
       if (!currentNode) break;
 
       unvisited.delete(currentNodeId);
@@ -591,8 +559,9 @@ class UndirectedGraphService {
         if (visited.has(neighborId)) continue;
 
         const edge = this.state.edges.find(
-          e => (e.from === currentNodeId && e.to === neighborId) ||
-               (e.from === neighborId && e.to === currentNodeId)
+          (e) =>
+            (e.from === currentNodeId && e.to === neighborId) ||
+            (e.from === neighborId && e.to === currentNodeId),
         );
 
         if (!edge) continue;
@@ -611,9 +580,9 @@ class UndirectedGraphService {
     const path: string[] = [];
     const pathNodeIds: string[] = [];
     let currentId = endNode.id;
-    
+
     while (currentId !== null) {
-      const node = this.state.nodes.find(n => n.id === currentId);
+      const node = this.state.nodes.find((n) => n.id === currentId);
       if (node) {
         path.unshift(node.value);
         pathNodeIds.unshift(node.id);
@@ -637,11 +606,11 @@ class UndirectedGraphService {
     for (let i = 0; i < pathNodeIds.length - 1; i++) {
       const fromId = pathNodeIds[i];
       const toId = pathNodeIds[i + 1];
-      
+
       const edge = this.state.edges.find(
-        e => (e.from === fromId && e.to === toId) || (e.from === toId && e.to === fromId)
+        (e) => (e.from === fromId && e.to === toId) || (e.from === toId && e.to === fromId),
       );
-      
+
       if (edge) {
         pathEdges.push(edge.id);
       }
@@ -659,7 +628,9 @@ class UndirectedGraphService {
   }
 
   // Execute operation
-  async executeOperation(operation: UndirectedGraphOperation): Promise<UndirectedGraphExecutionStep[]> {
+  async executeOperation(
+    operation: UndirectedGraphOperation,
+  ): Promise<UndirectedGraphExecutionStep[]> {
     switch (operation.type) {
       case 'add_vertex':
         return this.addVertex(operation.value || '');

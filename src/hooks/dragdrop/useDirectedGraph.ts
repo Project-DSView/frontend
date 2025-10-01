@@ -1,14 +1,14 @@
 import { useCallback } from 'react';
-import { 
-  DirectedGraphState, 
-  DirectedGraphOperation, 
-  DirectedGraphNode, 
-  DirectedGraphEdge, 
-  DirectedGraphStats, 
-  DirectedGraphData, 
-  DirectedGraphStatsExtended, 
-  DirectedGraphStateExtended, 
-  BaseState 
+import {
+  DirectedGraphState,
+  DirectedGraphOperation,
+  DirectedGraphNode,
+  DirectedGraphEdge,
+  DirectedGraphStats,
+  DirectedGraphData,
+  DirectedGraphStatsExtended,
+  DirectedGraphStateExtended,
+  BaseState,
 } from '@/types';
 import { DirectedGraphService } from '@/services';
 import { useBaseDataStructure } from './useBaseDataStructure';
@@ -39,9 +39,9 @@ class DirectedGraphServiceAdapter {
   getState(): BaseState<DirectedGraphData, DirectedGraphStatsExtended> {
     const graphState = this.service.getState();
     return {
-      data: { 
-        nodes: graphState.nodes, 
-        edges: graphState.edges 
+      data: {
+        nodes: graphState.nodes,
+        edges: graphState.edges,
       },
       operations: graphState.operations,
       stats: {
@@ -121,27 +121,35 @@ const defaultState: DirectedGraphStateExtended = {
 };
 
 const useDirectedGraph = () => {
-  const baseHook = useBaseDataStructure<DirectedGraphData, DirectedGraphStatsExtended, DirectedGraphOperation>(
-    defaultState,
-    DirectedGraphServiceAdapter
-  );
+  const baseHook = useBaseDataStructure<
+    DirectedGraphData,
+    DirectedGraphStatsExtended,
+    DirectedGraphOperation
+  >(defaultState, DirectedGraphServiceAdapter);
 
   // Graph-specific methods
-  const updateGraphState = useCallback((newNodes: DirectedGraphNode[], newEdges: DirectedGraphEdge[], newStats: DirectedGraphStats) => {
-    baseHook.updateDataState(
-      { nodes: newNodes, edges: newEdges },
-      {
-        size: newStats.size,
-        isEmpty: newStats.isEmpty,
-        vertices: newStats.vertices,
-        edges: newStats.edges,
-        isStronglyConnected: newStats.isStronglyConnected,
-        hasCycle: newStats.hasCycle,
-        inDegree: newStats.inDegree,
-        outDegree: newStats.outDegree,
-      }
-    );
-  }, [baseHook]);
+  const updateGraphState = useCallback(
+    (
+      newNodes: DirectedGraphNode[],
+      newEdges: DirectedGraphEdge[],
+      newStats: DirectedGraphStats,
+    ) => {
+      baseHook.updateDataState(
+        { nodes: newNodes, edges: newEdges },
+        {
+          size: newStats.size,
+          isEmpty: newStats.isEmpty,
+          vertices: newStats.vertices,
+          edges: newStats.edges,
+          isStronglyConnected: newStats.isStronglyConnected,
+          hasCycle: newStats.hasCycle,
+          inDegree: newStats.inDegree,
+          outDegree: newStats.outDegree,
+        },
+      );
+    },
+    [baseHook],
+  );
 
   return {
     ...baseHook,

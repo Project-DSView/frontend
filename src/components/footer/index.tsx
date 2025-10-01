@@ -1,10 +1,10 @@
 // components/footer.tsx
-import Image from "next/image";
+import Image from 'next/image';
 
 export default function Footer() {
   return (
-    <footer className="bg-neutral/10 border-t py-8 px-6">
-      <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+    <footer className="bg-neutral/10 border-t px-6 py-8">
+      <div className="mx-auto flex max-w-screen-xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
         {/* โลโก้ + ข้อความ */}
         <div className="flex items-center gap-3">
           <Image
@@ -14,7 +14,7 @@ export default function Footer() {
             height={40}
             className="object-contain"
           />
-          <div className="text-sm text-neutral text-left">
+          <div className="text-neutral text-left text-sm">
             <p>© 2025 DSView. All rights reserved.</p>
             <p>School of Information Technology, KMITL</p>
             <p>1 Chalongkrung Road, Bangkok, Thailand 10520</p>
@@ -22,7 +22,7 @@ export default function Footer() {
         </div>
 
         {/* เวอร์ชัน/รายละเอียดเพิ่มเติม */}
-        <div className="text-sm text-neutral text-left">
+        <div className="text-neutral text-left text-sm">
           <p>DSView</p>
           <p>Online Structural Validation based System</p>
         </div>

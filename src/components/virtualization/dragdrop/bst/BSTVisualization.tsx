@@ -1,7 +1,7 @@
 import React, { forwardRef, useMemo, useState, useEffect, memo, useCallback } from 'react';
 import { BSTVisualizationProps, BSTNode, PositionedNode } from '@/types';
 
-const BSTVisualization = forwardRef<HTMLDivElement, BSTVisualizationProps>(
+const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProps>(
   (
     {
       root,
@@ -144,78 +144,100 @@ const BSTVisualization = forwardRef<HTMLDivElement, BSTVisualizationProps>(
     }, [root]);
 
     // Memoized node component
-    const NodeComponent = memo<{ node: PositionedNode; isHighlighted: boolean; isInSearchPath: boolean; isTraverseSelected: boolean; isCurrentlyTraversing: boolean; isRunning: boolean }>(({ 
-      node, 
-      isHighlighted, 
-      isInSearchPath, 
-      isTraverseSelected, 
-      isCurrentlyTraversing, 
-      isRunning 
-    }) => (
-      <div
-        className="absolute -translate-x-1/2 -translate-y-1/2 transform"
-        style={{
-          left: `calc(50% + ${node.x}px)`, // Center the tree
-          top: `${node.y + 50}px`,
-        }}
-      >
+    const NodeComponent = memo<{
+      node: PositionedNode;
+      isHighlighted: boolean;
+      isInSearchPath: boolean;
+      isTraverseSelected: boolean;
+      isCurrentlyTraversing: boolean;
+      isRunning: boolean;
+    }>(
+      ({
+        node,
+        isHighlighted,
+        isInSearchPath,
+        isTraverseSelected,
+        isCurrentlyTraversing,
+        isRunning,
+      }) => (
         <div
-          className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-500 ${
-            isHighlighted
-              ? 'scale-110 border-yellow-400 bg-yellow-200 text-yellow-800 shadow-lg'
-              : isInSearchPath
-                ? 'scale-105 border-blue-400 bg-blue-200 text-blue-800 shadow-md'
-                : isTraverseSelected || isCurrentlyTraversing
-                  ? 'scale-110 border-green-400 bg-green-200 text-green-800 shadow-lg'
-                  : 'border-gray-600 bg-white text-gray-800 hover:shadow-md'
-          } ${isRunning ? 'animate-pulse' : ''} `}
+          className="absolute -translate-x-1/2 -translate-y-1/2 transform"
+          style={{
+            left: `calc(50% + ${node.x}px)`, // Center the tree
+            top: `${node.y + 50}px`,
+          }}
         >
-          {node.value}
-          {isHighlighted && (
-            <div className="absolute -top-2 -right-2 h-4 w-4 animate-ping rounded-full bg-yellow-400" />
-          )}
-          {(isTraverseSelected || isCurrentlyTraversing) && (
-            <div className="absolute -top-2 -right-2 h-4 w-4 animate-ping rounded-full bg-green-400" />
-          )}
+          <div
+            className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-500 ${
+              isHighlighted
+                ? 'scale-110 border-yellow-400 bg-yellow-200 text-yellow-800 shadow-lg'
+                : isInSearchPath
+                  ? 'scale-105 border-blue-400 bg-blue-200 text-blue-800 shadow-md'
+                  : isTraverseSelected || isCurrentlyTraversing
+                    ? 'scale-110 border-green-400 bg-green-200 text-green-800 shadow-lg'
+                    : 'border-gray-600 bg-white text-gray-800 hover:shadow-md'
+            } ${isRunning ? 'animate-pulse' : ''} `}
+          >
+            {node.value}
+            {isHighlighted && (
+              <div className="absolute -top-2 -right-2 h-4 w-4 animate-ping rounded-full bg-yellow-400" />
+            )}
+            {(isTraverseSelected || isCurrentlyTraversing) && (
+              <div className="absolute -top-2 -right-2 h-4 w-4 animate-ping rounded-full bg-green-400" />
+            )}
+          </div>
         </div>
-      </div>
-    ));
+      ),
+    );
 
     NodeComponent.displayName = 'NodeComponent';
 
-    const renderNode = useCallback((node: PositionedNode): React.ReactNode => {
-      const isHighlighted = highlightedNodes.includes(node.value);
-      const isInSearchPath = searchPath.includes(node.value);
+    const renderNode = useCallback(
+      (node: PositionedNode): React.ReactNode => {
+        const isHighlighted = highlightedNodes.includes(node.value);
+        const isInSearchPath = searchPath.includes(node.value);
 
-      // Check if this node should be animated during traversal
-      const isTraverseSelected = Boolean(
-        selectedStep !== null &&
-        selectedStep !== undefined &&
-        currentOperation &&
-        currentOperation.includes('traverse') &&
-        isTraversing &&
-        traverseIndex < traversalOrder.length &&
-        node.value === traversalOrder[traverseIndex]
-      );
+        // Check if this node should be animated during traversal
+        const isTraverseSelected = Boolean(
+          selectedStep !== null &&
+            selectedStep !== undefined &&
+            currentOperation &&
+            currentOperation.includes('traverse') &&
+            isTraversing &&
+            traverseIndex < traversalOrder.length &&
+            node.value === traversalOrder[traverseIndex],
+        );
 
-      const isCurrentlyTraversing = Boolean(
-        isTraversing &&
-        traverseIndex < traversalOrder.length &&
-        node.value === traversalOrder[traverseIndex]
-      );
+        const isCurrentlyTraversing = Boolean(
+          isTraversing &&
+            traverseIndex < traversalOrder.length &&
+            node.value === traversalOrder[traverseIndex],
+        );
 
-      return (
-        <NodeComponent
-          key={node.id}
-          node={node}
-          isHighlighted={isHighlighted}
-          isInSearchPath={isInSearchPath}
-          isTraverseSelected={isTraverseSelected}
-          isCurrentlyTraversing={isCurrentlyTraversing}
-          isRunning={isRunning ?? false}
-        />
-      );
-    }, [highlightedNodes, searchPath, selectedStep, currentOperation, isTraversing, traverseIndex, traversalOrder, isRunning, NodeComponent]);
+        return (
+          <NodeComponent
+            key={node.id}
+            node={node}
+            isHighlighted={isHighlighted}
+            isInSearchPath={isInSearchPath}
+            isTraverseSelected={isTraverseSelected}
+            isCurrentlyTraversing={isCurrentlyTraversing}
+            isRunning={isRunning ?? false}
+          />
+        );
+      },
+      [
+        highlightedNodes,
+        searchPath,
+        selectedStep,
+        currentOperation,
+        isTraversing,
+        traverseIndex,
+        traversalOrder,
+        isRunning,
+        NodeComponent,
+      ],
+    );
 
     const renderConnections = useCallback((): React.ReactNode => {
       if (!root) return null;
@@ -371,6 +393,6 @@ const BSTVisualization = forwardRef<HTMLDivElement, BSTVisualizationProps>(
   },
 );
 
-BSTVisualization.displayName = 'BSTVisualization';
+BSTDragDropVisualization.displayName = 'BSTDragDropVisualization';
 
-export default BSTVisualization;
+export default BSTDragDropVisualization;

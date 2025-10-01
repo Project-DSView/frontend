@@ -1,4 +1,11 @@
-import { SinglyLinkedListState, SinglyLinkedListOperation, SinglyLinkedListData, SinglyLinkedListStatsExtended, SinglyLinkedListStateExtended, BaseState } from '@/types';
+import {
+  SinglyLinkedListState,
+  SinglyLinkedListOperation,
+  SinglyLinkedListData,
+  SinglyLinkedListStatsExtended,
+  SinglyLinkedListStateExtended,
+  BaseState,
+} from '@/types';
 import { SinglyLinkedListService } from '@/services';
 import { useBaseDataStructure } from './useBaseDataStructure';
 
@@ -100,11 +107,11 @@ const defaultState: SinglyLinkedListStateExtended = {
 };
 
 const useSinglyLinkedList = () => {
-
-  const baseHook = useBaseDataStructure<SinglyLinkedListData, SinglyLinkedListStatsExtended, SinglyLinkedListOperation>(
-    defaultState,
-    SinglyLinkedListServiceAdapter
-  );
+  const baseHook = useBaseDataStructure<
+    SinglyLinkedListData,
+    SinglyLinkedListStatsExtended,
+    SinglyLinkedListOperation
+  >(defaultState, SinglyLinkedListServiceAdapter);
 
   return {
     ...baseHook,

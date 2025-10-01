@@ -1,4 +1,11 @@
-import { DoublyLinkedListState, DoublyLinkedListOperation, DoublyLinkedListData, DoublyLinkedListStatsExtended, DoublyLinkedListStateExtended, BaseState } from '@/types';
+import {
+  DoublyLinkedListState,
+  DoublyLinkedListOperation,
+  DoublyLinkedListData,
+  DoublyLinkedListStatsExtended,
+  DoublyLinkedListStateExtended,
+  BaseState,
+} from '@/types';
 import { DoublyLinkedListService } from '@/services';
 import { useBaseDataStructure } from './useBaseDataStructure';
 
@@ -114,11 +121,11 @@ const defaultState: DoublyLinkedListStateExtended = {
 };
 
 const useDoublyLinkedList = () => {
-
-  const baseHook = useBaseDataStructure<DoublyLinkedListData, DoublyLinkedListStatsExtended, DoublyLinkedListOperation>(
-    defaultState,
-    DoublyLinkedListServiceAdapter
-  );
+  const baseHook = useBaseDataStructure<
+    DoublyLinkedListData,
+    DoublyLinkedListStatsExtended,
+    DoublyLinkedListOperation
+  >(defaultState, DoublyLinkedListServiceAdapter);
 
   return {
     ...baseHook,

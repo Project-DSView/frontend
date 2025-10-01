@@ -92,6 +92,7 @@ export const getCSRFHeaders = (): Record<string, string> => {
   if (isDevelopment) {
     return {
       'X-Requested-With': 'XMLHttpRequest',
+      'dsview-api-key': process.env.NEXT_PUBLIC_API_KEY || 'dsview-api-key',
     };
   }
 
@@ -99,12 +100,14 @@ export const getCSRFHeaders = (): Record<string, string> => {
   if (!token) {
     return {
       'X-Requested-With': 'XMLHttpRequest',
+      'dsview-api-key': process.env.NEXT_PUBLIC_API_KEY || 'dsview-api-key',
     };
   }
 
   return {
     'X-CSRF-Token': token,
     'X-Requested-With': 'XMLHttpRequest',
+    'dsview-api-key': process.env.NEXT_PUBLIC_API_KEY || 'dsview-api-key',
   };
 };
 
@@ -114,5 +117,6 @@ export const getCSRFHeaders = (): Record<string, string> => {
 export const getMinimalHeaders = (): Record<string, string> => {
   return {
     'X-Requested-With': 'XMLHttpRequest',
+    'dsview-api-key': process.env.NEXT_PUBLIC_API_KEY || 'dsview-api-key',
   };
 };

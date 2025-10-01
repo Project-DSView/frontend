@@ -1,9 +1,9 @@
-import { 
-  DirectedGraphState, 
-  DirectedGraphNode, 
-  DirectedGraphEdge, 
+import {
+  DirectedGraphState,
+  DirectedGraphNode,
+  DirectedGraphEdge,
   DirectedGraphExecutionStep,
-  DirectedGraphOperation
+  DirectedGraphOperation,
 } from '@/types';
 import { createExecutionStep } from '@/lib';
 
@@ -43,14 +43,14 @@ class DirectedGraphService {
   // Calculate in-degree for each vertex
   private calculateInDegree(): { [key: string]: number } {
     const inDegree: { [key: string]: number } = {};
-    
+
     // Initialize all vertices with 0 in-degree
-    this.state.nodes.forEach(node => {
+    this.state.nodes.forEach((node) => {
       inDegree[node.id] = 0;
     });
 
     // Count incoming edges
-    this.state.edges.forEach(edge => {
+    this.state.edges.forEach((edge) => {
       inDegree[edge.to]++;
     });
 
@@ -60,14 +60,14 @@ class DirectedGraphService {
   // Calculate out-degree for each vertex
   private calculateOutDegree(): { [key: string]: number } {
     const outDegree: { [key: string]: number } = {};
-    
+
     // Initialize all vertices with 0 out-degree
-    this.state.nodes.forEach(node => {
+    this.state.nodes.forEach((node) => {
       outDegree[node.id] = 0;
     });
 
     // Count outgoing edges
-    this.state.edges.forEach(edge => {
+    this.state.edges.forEach((edge) => {
       outDegree[edge.from]++;
     });
 
@@ -77,27 +77,27 @@ class DirectedGraphService {
   // Check if graph is strongly connected using Kosaraju's algorithm
   private checkStrongConnectivity(): boolean {
     if (this.state.nodes.length === 0) return true;
-    
+
     const visited = new Set<string>();
     const stack: string[] = [];
-    
+
     // First DFS to fill stack
     const startNode = this.state.nodes[0];
     this.dfsFillStack(startNode.id, visited, stack);
-    
+
     // If not all nodes visited, not strongly connected
     if (visited.size !== this.state.nodes.length) return false;
-    
+
     // Create transpose graph
     const transpose = this.createTransposeGraph();
-    
+
     // Reset visited
     visited.clear();
-    
+
     // Second DFS on transpose graph
     const firstNode = stack.pop()!;
     this.dfsTranspose(firstNode, visited, transpose);
-    
+
     // If all nodes visited in transpose, strongly connected
     return visited.size === this.state.nodes.length;
   }
@@ -105,37 +105,41 @@ class DirectedGraphService {
   // DFS to fill stack for Kosaraju's algorithm
   private dfsFillStack(nodeId: string, visited: Set<string>, stack: string[]): void {
     visited.add(nodeId);
-    
-    this.state.edges.forEach(edge => {
+
+    this.state.edges.forEach((edge) => {
       if (edge.from === nodeId && !visited.has(edge.to)) {
         this.dfsFillStack(edge.to, visited, stack);
       }
     });
-    
+
     stack.push(nodeId);
   }
 
   // Create transpose graph
   private createTransposeGraph(): { [key: string]: string[] } {
     const transpose: { [key: string]: string[] } = {};
-    
-    this.state.nodes.forEach(node => {
+
+    this.state.nodes.forEach((node) => {
       transpose[node.id] = [];
     });
-    
-    this.state.edges.forEach(edge => {
+
+    this.state.edges.forEach((edge) => {
       transpose[edge.to].push(edge.from);
     });
-    
+
     return transpose;
   }
 
   // DFS on transpose graph
-  private dfsTranspose(nodeId: string, visited: Set<string>, transpose: { [key: string]: string[] }): void {
+  private dfsTranspose(
+    nodeId: string,
+    visited: Set<string>,
+    transpose: { [key: string]: string[] },
+  ): void {
     visited.add(nodeId);
-    
+
     if (transpose[nodeId]) {
-      transpose[nodeId].forEach(neighborId => {
+      transpose[nodeId].forEach((neighborId) => {
         if (!visited.has(neighborId)) {
           this.dfsTranspose(neighborId, visited, transpose);
         }
@@ -146,10 +150,10 @@ class DirectedGraphService {
   // Check if graph has cycle using DFS
   private checkCycle(): boolean {
     if (this.state.nodes.length === 0) return false;
-    
+
     const visited = new Set<string>();
     const recStack = new Set<string>();
-    
+
     for (const node of this.state.nodes) {
       if (!visited.has(node.id)) {
         if (this.hasCycleDFS(node.id, visited, recStack)) {
@@ -157,7 +161,7 @@ class DirectedGraphService {
         }
       }
     }
-    
+
     return false;
   }
 
@@ -165,9 +169,9 @@ class DirectedGraphService {
   private hasCycleDFS(nodeId: string, visited: Set<string>, recStack: Set<string>): boolean {
     visited.add(nodeId);
     recStack.add(nodeId);
-    
-    const outgoingEdges = this.state.edges.filter(edge => edge.from === nodeId);
-    
+
+    const outgoingEdges = this.state.edges.filter((edge) => edge.from === nodeId);
+
     for (const edge of outgoingEdges) {
       if (!visited.has(edge.to)) {
         if (this.hasCycleDFS(edge.to, visited, recStack)) {
@@ -177,7 +181,7 @@ class DirectedGraphService {
         return true;
       }
     }
-    
+
     recStack.delete(nodeId);
     return false;
   }
@@ -195,7 +199,7 @@ class DirectedGraphService {
     );
 
     // Check if vertex already exists
-    const existingNode = this.state.nodes.find(n => n.value === value);
+    const existingNode = this.state.nodes.find((n) => n.value === value);
     if (existingNode) {
       steps.push(
         createExecutionStep(
@@ -221,11 +225,7 @@ class DirectedGraphService {
     this.updateStats();
 
     steps.push(
-      createExecutionStep(
-        `สร้าง Vertex ${value} สำเร็จ`,
-        `Vertex ${value} added to graph`,
-        1000,
-      ),
+      createExecutionStep(`สร้าง Vertex ${value} สำเร็จ`, `Vertex ${value} added to graph`, 1000),
     );
 
     return steps;
@@ -243,27 +243,19 @@ class DirectedGraphService {
       ),
     );
 
-    const fromNode = this.state.nodes.find(n => n.value === fromValue);
-    const toNode = this.state.nodes.find(n => n.value === toValue);
+    const fromNode = this.state.nodes.find((n) => n.value === fromValue);
+    const toNode = this.state.nodes.find((n) => n.value === toValue);
 
     if (!fromNode) {
       steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${fromValue}`,
-          `Vertex ${fromValue} not found`,
-          1000,
-        ),
+        createExecutionStep(`ไม่พบ Vertex ${fromValue}`, `Vertex ${fromValue} not found`, 1000),
       );
       return steps;
     }
 
     if (!toNode) {
       steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${toValue}`,
-          `Vertex ${toValue} not found`,
-          1000,
-        ),
+        createExecutionStep(`ไม่พบ Vertex ${toValue}`, `Vertex ${toValue} not found`, 1000),
       );
       return steps;
     }
@@ -280,9 +272,7 @@ class DirectedGraphService {
     }
 
     // Check if edge already exists
-    const existingEdge = this.state.edges.find(
-      e => e.from === fromNode.id && e.to === toNode.id
-    );
+    const existingEdge = this.state.edges.find((e) => e.from === fromNode.id && e.to === toNode.id);
 
     if (existingEdge) {
       steps.push(
@@ -334,43 +324,37 @@ class DirectedGraphService {
       ),
     );
 
-    const nodeToRemove = this.state.nodes.find(n => n.value === value);
+    const nodeToRemove = this.state.nodes.find((n) => n.value === value);
     if (!nodeToRemove) {
-      steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${value}`,
-          `Vertex ${value} not found`,
-          1000,
-        ),
-      );
+      steps.push(createExecutionStep(`ไม่พบ Vertex ${value}`, `Vertex ${value} not found`, 1000));
       return steps;
     }
 
     // Remove all edges connected to this vertex
     const edgesToRemove = this.state.edges.filter(
-      e => e.from === nodeToRemove.id || e.to === nodeToRemove.id
+      (e) => e.from === nodeToRemove.id || e.to === nodeToRemove.id,
     );
 
     for (const edge of edgesToRemove) {
       // Update node connections
-      const fromNode = this.state.nodes.find(n => n.id === edge.from);
-      const toNode = this.state.nodes.find(n => n.id === edge.to);
-      
+      const fromNode = this.state.nodes.find((n) => n.id === edge.from);
+      const toNode = this.state.nodes.find((n) => n.id === edge.to);
+
       if (fromNode) {
-        fromNode.outgoingEdges = fromNode.outgoingEdges.filter(id => id !== edge.id);
+        fromNode.outgoingEdges = fromNode.outgoingEdges.filter((id) => id !== edge.id);
       }
       if (toNode) {
-        toNode.incomingEdges = toNode.incomingEdges.filter(id => id !== edge.id);
+        toNode.incomingEdges = toNode.incomingEdges.filter((id) => id !== edge.id);
       }
     }
 
     // Remove edges
     this.state.edges = this.state.edges.filter(
-      e => e.from !== nodeToRemove.id && e.to !== nodeToRemove.id
+      (e) => e.from !== nodeToRemove.id && e.to !== nodeToRemove.id,
     );
 
     // Remove node
-    this.state.nodes = this.state.nodes.filter(n => n.id !== nodeToRemove.id);
+    this.state.nodes = this.state.nodes.filter((n) => n.id !== nodeToRemove.id);
 
     this.updateStats();
 
@@ -397,8 +381,8 @@ class DirectedGraphService {
       ),
     );
 
-    const fromNode = this.state.nodes.find(n => n.value === fromValue);
-    const toNode = this.state.nodes.find(n => n.value === toValue);
+    const fromNode = this.state.nodes.find((n) => n.value === fromValue);
+    const toNode = this.state.nodes.find((n) => n.value === toValue);
 
     if (!fromNode || !toNode) {
       steps.push(
@@ -411,27 +395,21 @@ class DirectedGraphService {
       return steps;
     }
 
-    const edgeToRemove = this.state.edges.find(
-      e => e.from === fromNode.id && e.to === toNode.id
-    );
+    const edgeToRemove = this.state.edges.find((e) => e.from === fromNode.id && e.to === toNode.id);
 
     if (!edgeToRemove) {
       steps.push(
-        createExecutionStep(
-          `ไม่พบ Edge จาก ${fromValue} ไป ${toValue}`,
-          `Edge not found`,
-          1000,
-        ),
+        createExecutionStep(`ไม่พบ Edge จาก ${fromValue} ไป ${toValue}`, `Edge not found`, 1000),
       );
       return steps;
     }
 
     // Remove edge
-    this.state.edges = this.state.edges.filter(e => e.id !== edgeToRemove.id);
+    this.state.edges = this.state.edges.filter((e) => e.id !== edgeToRemove.id);
 
     // Update node connections
-    fromNode.outgoingEdges = fromNode.outgoingEdges.filter(id => id !== edgeToRemove.id);
-    toNode.incomingEdges = toNode.incomingEdges.filter(id => id !== edgeToRemove.id);
+    fromNode.outgoingEdges = fromNode.outgoingEdges.filter((id) => id !== edgeToRemove.id);
+    toNode.incomingEdges = toNode.incomingEdges.filter((id) => id !== edgeToRemove.id);
 
     this.updateStats();
 
@@ -458,14 +436,10 @@ class DirectedGraphService {
       ),
     );
 
-    const startNode = this.state.nodes.find(n => n.value === startValue);
+    const startNode = this.state.nodes.find((n) => n.value === startValue);
     if (!startNode) {
       steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${startValue}`,
-          `Vertex ${startValue} not found`,
-          1000,
-        ),
+        createExecutionStep(`ไม่พบ Vertex ${startValue}`, `Vertex ${startValue} not found`, 1000),
       );
       return steps;
     }
@@ -475,22 +449,18 @@ class DirectedGraphService {
 
     const dfs = (nodeId: string) => {
       if (visited.has(nodeId)) return;
-      
+
       visited.add(nodeId);
-      const node = this.state.nodes.find(n => n.id === nodeId);
+      const node = this.state.nodes.find((n) => n.id === nodeId);
       if (node) {
         result.push(node.value);
         steps.push(
-          createExecutionStep(
-            `เยี่ยม Vertex ${node.value}`,
-            `Visit vertex ${node.value}`,
-            1000,
-          ),
+          createExecutionStep(`เยี่ยม Vertex ${node.value}`, `Visit vertex ${node.value}`, 1000),
         );
-        
+
         // Visit outgoing edges only
-        const outgoingEdges = this.state.edges.filter(edge => edge.from === nodeId);
-        outgoingEdges.forEach(edge => {
+        const outgoingEdges = this.state.edges.filter((edge) => edge.from === nodeId);
+        outgoingEdges.forEach((edge) => {
           if (!visited.has(edge.to)) {
             dfs(edge.to);
           }
@@ -523,14 +493,10 @@ class DirectedGraphService {
       ),
     );
 
-    const startNode = this.state.nodes.find(n => n.value === startValue);
+    const startNode = this.state.nodes.find((n) => n.value === startValue);
     if (!startNode) {
       steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${startValue}`,
-          `Vertex ${startValue} not found`,
-          1000,
-        ),
+        createExecutionStep(`ไม่พบ Vertex ${startValue}`, `Vertex ${startValue} not found`, 1000),
       );
       return steps;
     }
@@ -541,24 +507,20 @@ class DirectedGraphService {
 
     while (queue.length > 0) {
       const nodeId = queue.shift()!;
-      
+
       if (visited.has(nodeId)) continue;
-      
+
       visited.add(nodeId);
-      const node = this.state.nodes.find(n => n.id === nodeId);
+      const node = this.state.nodes.find((n) => n.id === nodeId);
       if (node) {
         result.push(node.value);
         steps.push(
-          createExecutionStep(
-            `เยี่ยม Vertex ${node.value}`,
-            `Visit vertex ${node.value}`,
-            1000,
-          ),
+          createExecutionStep(`เยี่ยม Vertex ${node.value}`, `Visit vertex ${node.value}`, 1000),
         );
-        
+
         // Add outgoing neighbors to queue
-        const outgoingEdges = this.state.edges.filter(edge => edge.from === nodeId);
-        outgoingEdges.forEach(edge => {
+        const outgoingEdges = this.state.edges.filter((edge) => edge.from === nodeId);
+        outgoingEdges.forEach((edge) => {
           if (!visited.has(edge.to)) {
             queue.push(edge.to);
           }
@@ -589,27 +551,19 @@ class DirectedGraphService {
       ),
     );
 
-    const startNode = this.state.nodes.find(n => n.value === startValue);
-    const endNode = this.state.nodes.find(n => n.value === endValue);
+    const startNode = this.state.nodes.find((n) => n.value === startValue);
+    const endNode = this.state.nodes.find((n) => n.value === endValue);
 
     if (!startNode) {
       steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${startValue}`,
-          `Vertex ${startValue} not found`,
-          1000,
-        ),
+        createExecutionStep(`ไม่พบ Vertex ${startValue}`, `Vertex ${startValue} not found`, 1000),
       );
       return steps;
     }
 
     if (!endNode) {
       steps.push(
-        createExecutionStep(
-          `ไม่พบ Vertex ${endValue}`,
-          `Vertex ${endValue} not found`,
-          1000,
-        ),
+        createExecutionStep(`ไม่พบ Vertex ${endValue}`, `Vertex ${endValue} not found`, 1000),
       );
       return steps;
     }
@@ -632,7 +586,7 @@ class DirectedGraphService {
     const unvisited = new Set<string>();
 
     // Initialize distances
-    this.state.nodes.forEach(node => {
+    this.state.nodes.forEach((node) => {
       distances[node.id] = node.id === startNode.id ? 0 : Infinity;
       previous[node.id] = null;
       unvisited.add(node.id);
@@ -650,7 +604,7 @@ class DirectedGraphService {
       // Find node with minimum distance
       let currentNodeId = '';
       let minDistance = Infinity;
-      
+
       for (const nodeId of unvisited) {
         if (distances[nodeId] < minDistance) {
           minDistance = distances[nodeId];
@@ -660,7 +614,7 @@ class DirectedGraphService {
 
       if (currentNodeId === '') break;
 
-      const currentNode = this.state.nodes.find(n => n.id === currentNodeId);
+      const currentNode = this.state.nodes.find((n) => n.id === currentNodeId);
       if (!currentNode) break;
 
       unvisited.delete(currentNodeId);
@@ -675,7 +629,7 @@ class DirectedGraphService {
       );
 
       // Check outgoing neighbors only
-      const outgoingEdges = this.state.edges.filter(edge => edge.from === currentNodeId);
+      const outgoingEdges = this.state.edges.filter((edge) => edge.from === currentNodeId);
       for (const edge of outgoingEdges) {
         if (visited.has(edge.to)) continue;
 
@@ -693,9 +647,9 @@ class DirectedGraphService {
     const path: string[] = [];
     const pathNodeIds: string[] = [];
     let currentId = endNode.id;
-    
+
     while (currentId !== null) {
-      const node = this.state.nodes.find(n => n.id === currentId);
+      const node = this.state.nodes.find((n) => n.id === currentId);
       if (node) {
         path.unshift(node.value);
         pathNodeIds.unshift(node.id);
@@ -719,11 +673,9 @@ class DirectedGraphService {
     for (let i = 0; i < pathNodeIds.length - 1; i++) {
       const fromId = pathNodeIds[i];
       const toId = pathNodeIds[i + 1];
-      
-      const edge = this.state.edges.find(
-        e => e.from === fromId && e.to === toId
-      );
-      
+
+      const edge = this.state.edges.find((e) => e.from === fromId && e.to === toId);
+
       if (edge) {
         pathEdges.push(edge.id);
       }

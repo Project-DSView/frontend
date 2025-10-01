@@ -5,12 +5,8 @@ import {
   clearAllCookies,
   areCookiesEnabled,
 } from './cookie.utils';
-import {
-  isTokenExpired,
-  isTokenExpiringSoon,
-  isValidJWTFormat,
-  getTimeUntilExpiration,
-} from './jwt.utils';
+import { isTokenExpired, isValidJWTFormat, getTimeUntilExpiration } from './jwt.utils';
+import { encryptObject, decryptObject, isEncryptionSupported } from './encryption.utils';
 import { UserProfile, SecureSessionData } from '@/types';
 
 /**
@@ -18,11 +14,11 @@ import { UserProfile, SecureSessionData } from '@/types';
  */
 const secureSessionUtils = {
   /**
-   * Save session data securely
+   * Save session data securely with encryption
    * Token is stored in httpOnly cookie (set by server)
-   * Profile data is stored in secure cookie with short expiration
+   * Profile data is encrypted and stored in secure cookie
    */
-  saveSession: (token: string, userProfile: UserProfile): void => {
+  saveSession: async (token: string, userProfile: UserProfile): Promise<void> => {
     try {
       // Validate token before saving
       if (!isValidJWTFormat(token)) {
@@ -33,14 +29,33 @@ const secureSessionUtils = {
         throw new Error('Token is already expired');
       }
 
-      // Store profile in secure cookie with short expiration (1 hour)
+      // Check if encryption is supported
+      if (!isEncryptionSupported()) {
+        console.warn('Encryption not supported, storing data without encryption');
+        // Fallback to unencrypted storage
+        const profileData = {
+          ...userProfile,
+          savedAt: Date.now(),
+        };
+        setCookie('userProfile', JSON.stringify(profileData), {
+          maxAge: 10800, // 3 hours
+          secure: true,
+          sameSite: 'strict',
+          path: '/',
+        });
+        return;
+      }
+
+      // Store profile in encrypted secure cookie
       const profileData = {
         ...userProfile,
         savedAt: Date.now(),
       };
 
-      setCookie('userProfile', JSON.stringify(profileData), {
-        maxAge: 3600, // 1 hour
+      // Encrypt profile data before storing
+      const encryptedProfile = await encryptObject(profileData);
+      setCookie('userProfile', encryptedProfile, {
+        maxAge: 10800, // 3 hours
         secure: true,
         sameSite: 'strict',
         path: '/',
@@ -50,17 +65,28 @@ const secureSessionUtils = {
       const expirationTime = getTimeUntilExpiration(token);
       if (expirationTime !== null) {
         setCookie('tokenExpiresAt', (Date.now() + expirationTime * 60 * 1000).toString(), {
-          maxAge: 3600,
+          maxAge: 10800, // 3 hours
           secure: true,
           sameSite: 'strict',
           path: '/',
         });
       }
 
-      // Store non-sensitive data in sessionStorage for performance
-      sessionStorage.setItem('isAuthenticated', 'true');
-      sessionStorage.setItem('userId', userProfile.user_id || '');
-      sessionStorage.setItem('userRole', String(userProfile.is_teacher || false));
+      // Store authentication status in secure cookie
+      setCookie('isAuthenticated', 'true', {
+        maxAge: 10800, // 3 hours
+        secure: true,
+        sameSite: 'strict',
+        path: '/',
+      });
+
+      // Store user ID in secure cookie
+      setCookie('userId', userProfile.user_id || '', {
+        maxAge: 10800, // 3 hours
+        secure: true,
+        sameSite: 'strict',
+        path: '/',
+      });
     } catch (error) {
       console.error('Failed to save session securely:', error);
       // Clear any partial data
@@ -69,10 +95,10 @@ const secureSessionUtils = {
   },
 
   /**
-   * Load session data securely
+   * Load session data securely with decryption
    * Note: Token should be retrieved from httpOnly cookie by server
    */
-  loadSession: (): SecureSessionData | null => {
+  loadSession: async (): Promise<SecureSessionData | null> => {
     try {
       // Check if cookies are enabled
       if (!areCookiesEnabled()) {
@@ -86,10 +112,24 @@ const secureSessionUtils = {
         return null;
       }
 
-      const profileData = JSON.parse(profileStr);
+      let profileData;
 
-      // Check if profile data is not too old (max 1 hour)
-      const maxAge = 60 * 60 * 1000; // 1 hour in milliseconds
+      // Try to decrypt data first, fallback to plain JSON if decryption fails
+      if (isEncryptionSupported()) {
+        try {
+          profileData = await decryptObject(profileStr);
+        } catch (decryptError) {
+          console.warn('Failed to decrypt profile data, trying plain JSON:', decryptError);
+          // Fallback to plain JSON parsing
+          profileData = JSON.parse(profileStr);
+        }
+      } else {
+        // Fallback to plain JSON parsing
+        profileData = JSON.parse(profileStr);
+      }
+
+      // Check if profile data is not too old (max 3 hours)
+      const maxAge = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
       if (Date.now() - profileData.savedAt > maxAge) {
         console.warn('Profile data is too old, clearing session');
         secureSessionUtils.clearSession();
@@ -107,9 +147,9 @@ const secureSessionUtils = {
         return null;
       }
 
-      // Note: Actual token should be retrieved from httpOnly cookie by server
-      // This is a placeholder for the token
-      const token = 'retrieved-from-httpOnly-cookie';
+      // For client-side session management, we'll use a placeholder token
+      // The actual token should be retrieved from httpOnly cookie by server
+      const token = 'session-active';
 
       return {
         token,
@@ -132,10 +172,9 @@ const secureSessionUtils = {
       deleteCookie('userProfile');
       deleteCookie('tokenExpiresAt');
 
-      // Clear sessionStorage
-      sessionStorage.removeItem('isAuthenticated');
-      sessionStorage.removeItem('userId');
-      sessionStorage.removeItem('userRole');
+      // Clear authentication cookies
+      deleteCookie('isAuthenticated');
+      deleteCookie('userId');
 
       // Clear all other cookies (for logout)
       clearAllCookies();
@@ -147,16 +186,18 @@ const secureSessionUtils = {
   /**
    * Check if session is valid and not expired
    */
-  isSessionValid: (): boolean => {
+  isSessionValid: async (): Promise<boolean> => {
     try {
-      const sessionData = secureSessionUtils.loadSession();
+      const sessionData = await secureSessionUtils.loadSession();
       if (!sessionData) {
         return false;
       }
 
-      // Check if token is expiring soon (within 5 minutes)
-      if (isTokenExpiringSoon(sessionData.token, 5)) {
-        console.warn('Token is expiring soon, should refresh');
+      // For client-side session management, we only check if session data exists
+      // and if cookie shows user is authenticated
+      const isAuthenticated = getCookie('isAuthenticated') === 'true';
+
+      if (!isAuthenticated) {
         return false;
       }
 
@@ -170,9 +211,9 @@ const secureSessionUtils = {
   /**
    * Get user ID from session
    */
-  getUserId: (): string | null => {
+  getUserId: async (): Promise<string | null> => {
     try {
-      const sessionData = secureSessionUtils.loadSession();
+      const sessionData = await secureSessionUtils.loadSession();
       return sessionData?.profile?.user_id || null;
     } catch (error) {
       console.error('Failed to get user ID:', error);
@@ -181,13 +222,25 @@ const secureSessionUtils = {
   },
 
   /**
-   * Get user role from session
+   * Get user role from session profile (secure)
    */
-  getUserRole: (): string | null => {
+  getUserRole: async (): Promise<string | null> => {
     try {
-      return sessionStorage.getItem('userRole');
+      const sessionData = await secureSessionUtils.loadSession();
+      if (!sessionData) {
+        return null;
+      }
+
+      // Get role from profile data stored in secure cookie
+      const profile = sessionData.profile;
+      if (!profile) {
+        return null;
+      }
+
+      // Return role from profile
+      return profile.is_teacher ? 'teacher' : 'student';
     } catch (error) {
-      console.error('Failed to get user role:', error);
+      console.error('Failed to get user role from profile:', error);
       return null;
     }
   },
@@ -195,11 +248,11 @@ const secureSessionUtils = {
   /**
    * Check if user is authenticated
    */
-  isAuthenticated: (): boolean => {
+  isAuthenticated: async (): Promise<boolean> => {
     try {
-      return (
-        sessionStorage.getItem('isAuthenticated') === 'true' && secureSessionUtils.isSessionValid()
-      );
+      const isAuthCookie = getCookie('isAuthenticated') === 'true';
+      const isSessionValid = await secureSessionUtils.isSessionValid();
+      return isAuthCookie && isSessionValid;
     } catch (error) {
       console.error('Failed to check authentication status:', error);
       return false;

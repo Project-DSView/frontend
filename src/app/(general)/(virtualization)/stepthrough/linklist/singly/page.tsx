@@ -1,7 +1,9 @@
+import StepthroughSinglyLinkedList from '@/page/virtualization/stepthrough/linklist/singly';
+
 const Page = () => {
   return (
     <>
-      <h1>test</h1>
+      <StepthroughSinglyLinkedList />
     </>
   );
 };

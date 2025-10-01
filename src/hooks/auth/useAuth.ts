@@ -22,25 +22,44 @@ const useAuth = (): UseAuthReturn => {
 
   // Initialize session securely on hook mount
   useEffect(() => {
-    const sessionData = secureSessionUtils.loadSession();
-    if (sessionData && secureSessionUtils.isSessionValid()) {
-      setAccessToken(sessionData.token);
-      setProfile(sessionData.profile);
-    } else {
-      // Clear invalid session
-      secureSessionUtils.clearSession();
-    }
-    setIsInitialized(true);
+    const initializeSession = async () => {
+      try {
+        const sessionData = await secureSessionUtils.loadSession();
+        const isValid = await secureSessionUtils.isSessionValid();
+
+        if (sessionData && isValid) {
+          setAccessToken(sessionData.token);
+          setProfile(sessionData.profile);
+        } else {
+          // Clear invalid session
+          secureSessionUtils.clearSession();
+        }
+      } catch (error) {
+        console.error('Failed to initialize session:', error);
+        secureSessionUtils.clearSession();
+      } finally {
+        setIsInitialized(true);
+      }
+    };
+
+    initializeSession();
   }, []);
 
-  const loadSession = useCallback(() => {
-    const sessionData = secureSessionUtils.loadSession();
-    if (sessionData && secureSessionUtils.isSessionValid()) {
-      setAccessToken(sessionData.token);
-      setProfile(sessionData.profile);
-      return sessionData;
+  const loadSession = useCallback(async () => {
+    try {
+      const sessionData = await secureSessionUtils.loadSession();
+      const isValid = await secureSessionUtils.isSessionValid();
+
+      if (sessionData && isValid) {
+        setAccessToken(sessionData.token);
+        setProfile(sessionData.profile);
+        return sessionData;
+      }
+      return null;
+    } catch (error) {
+      console.error('Failed to load session:', error);
+      return null;
     }
-    return null;
   }, []);
 
   // ฟังก์ชัน refresh token with rate limiting
@@ -66,7 +85,7 @@ const useAuth = (): UseAuthReturn => {
       setAccessToken(newToken);
 
       if (profile) {
-        secureSessionUtils.saveSession(newToken, profile);
+        await secureSessionUtils.saveSession(newToken, profile);
       }
 
       return newToken;
@@ -94,7 +113,7 @@ const useAuth = (): UseAuthReturn => {
         throw new Error('Invalid profile data received');
       }
 
-      secureSessionUtils.saveSession(token, profileData);
+      await secureSessionUtils.saveSession(token, profileData);
       setProfile(profileData);
       return profileData;
     } catch (error) {
@@ -103,7 +122,7 @@ const useAuth = (): UseAuthReturn => {
     }
   }, []);
 
-  const setAuthData = useCallback((token: string, userProfile: UserProfile) => {
+  const setAuthData = useCallback(async (token: string, userProfile: UserProfile) => {
     // Validate inputs
     if (!token || !userProfile || !userProfile.user_id) {
       throw new Error('Invalid token or user profile data');
@@ -115,7 +134,7 @@ const useAuth = (): UseAuthReturn => {
 
     setAccessToken(token);
     setProfile(userProfile);
-    secureSessionUtils.saveSession(token, userProfile);
+    await secureSessionUtils.saveSession(token, userProfile);
   }, []);
 
   const clearAuthData = useCallback(() => {
