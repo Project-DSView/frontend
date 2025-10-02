@@ -5,7 +5,8 @@
   "installCommand": "bun install",
   "framework": "nextjs",
   "env": {
-    "NODE_ENV": "development"
+    "NEXT_PUBLIC_API_BASE_URL": "https://dsview-backend-fastapi.onrender.com/",
+    "NEXT_PUBLIC_API_KEY": "api_key_dsview_password_65"
   },
   "git": {
     "productionBranch": "dev",

@@ -5,6 +5,9 @@ export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   withCredentials: true,
   timeout: 10000, // 10 second timeout
+  headers: {
+    'dsview-api-key': process.env.NEXT_PUBLIC_API_KEY || '',
+  },
 });
 
 // Add safe headers to all requests
@@ -28,13 +31,18 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle 401 errors globally
+    // Handle 401 errors globally - but only for auth-related endpoints
     if (error.response?.status === 401) {
-      // Clear session on unauthorized
-      if (typeof window !== 'undefined') {
-        sessionStorage.clear();
-        // Redirect to home page instead of login
-        window.location.href = '/';
+      const url = error.config?.url || '';
+      
+      // Only redirect for auth endpoints, not for playground/run
+      if (url.includes('/auth/') || url.includes('/profile')) {
+        // Clear session on unauthorized
+        if (typeof window !== 'undefined') {
+          sessionStorage.clear();
+          // Redirect to home page instead of login
+          window.location.href = '/';
+        }
       }
     }
 

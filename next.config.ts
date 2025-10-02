@@ -19,11 +19,6 @@ const nextConfig: NextConfig = {
 
   // Webpack optimization
   webpack: (config, { isServer }) => {
-    // Tree shaking for heavy libraries
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      html2canvas: 'html2canvas/dist/html2canvas.min.js',
-    };
 
     // Optimize bundle splitting
     if (!isServer) {
