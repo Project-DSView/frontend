@@ -48,7 +48,7 @@ const AuthButtons: React.FC = () => {
       clearAllCookies();
 
       toast.success('Logged out successfully');
-      
+
       // Refresh the page after successful logout
       setTimeout(() => {
         window.location.reload();

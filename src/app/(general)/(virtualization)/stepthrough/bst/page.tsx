@@ -1,7 +1,11 @@
 import StepthroughBST from '@/page/virtualization/stepthrough/bst';
 
 const Page = () => {
-  return <StepthroughBST />;
+  return (
+    <>
+      <StepthroughBST />
+    </>
+  );
 };
 
 export default Page;

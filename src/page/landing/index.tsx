@@ -55,7 +55,7 @@ const Landing = () => {
             )}
 
             {isInitialized && !profile && (
-              <Button 
+              <Button
                 onClick={handleLogin}
                 className="bg-secondary rounded-xl px-8 py-4 text-lg text-white shadow-lg hover:bg-orange-600"
               >
@@ -65,7 +65,7 @@ const Landing = () => {
             )}
 
             {isInitialized && profile && (
-              <Button 
+              <Button
                 onClick={handleGoToCourse}
                 className="bg-secondary rounded-xl px-8 py-4 text-lg text-white shadow-lg hover:bg-orange-600"
               >
@@ -74,7 +74,6 @@ const Landing = () => {
               </Button>
             )}
           </div>
-
         </div>
       </section>
 
