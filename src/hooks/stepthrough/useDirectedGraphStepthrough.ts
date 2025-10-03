@@ -336,7 +336,7 @@ class DirectedGraphStepthroughService
       if (node) {
         node.outgoingEdges.forEach((edgeId) => {
           // Find the target node of this edge
-          const edge = this.findEdgeById(edgeId);
+          const edge = this.findEdgeById();
           if (edge && !visited.has(edge.to)) {
             dfs(edge.to);
           }
@@ -391,7 +391,7 @@ class DirectedGraphStepthroughService
     return false;
   }
 
-  private findEdgeById(edgeId: string): DirectedGraphEdge | null {
+  private findEdgeById(): DirectedGraphEdge | null {
     // This is a simplified implementation - in practice, you'd have access to edges
     // For now, we'll return null and let the cycle detection work with the available data
     return null;
