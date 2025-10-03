@@ -1,3 +1,17 @@
+import { LinkedListData } from './LinkedList.types';
+import { StackData } from './Stack.types';
+import { BSTData } from './BST.types';
+import { DirectedGraphData } from './DirectedGraph.types';
+import { UndirectedGraphData } from './UndirectedGraph.types';
+
+// Union type for all data structures
+type StepthroughData =
+  | LinkedListData
+  | StackData
+  | BSTData
+  | DirectedGraphData
+  | UndirectedGraphData;
+
 interface StepthroughRequest {
   code: string;
   dataType: string;
@@ -60,7 +74,7 @@ interface StepthroughResponse {
   createdAt: string;
 }
 
-interface StepthroughState {
+interface StepthroughState<TData extends StepthroughData = StepthroughData> {
   code: string;
   filename: string;
   steps: StepthroughStep[];
@@ -69,16 +83,11 @@ interface StepthroughState {
   isAutoPlaying: boolean;
   executionId: string | null;
   error: string | null;
-  linkedListData: {
-    nodes: string[];
-    head: string | null;
-    tail: string | null;
-    count: number;
-  };
+  data: TData;
 }
 
-interface StepthroughHookReturn {
-  state: StepthroughState;
+interface StepthroughHookReturn<TData extends StepthroughData = StepthroughData> {
+  state: StepthroughState<TData>;
   setCode: (code: string) => void;
   setFilename: (filename: string) => void;
   loadCodeFromFile: (code: string, filename: string) => void;
@@ -99,6 +108,7 @@ interface StepthroughCodeEditorProps {
     line: number;
     stepNumber: number;
   } | null;
+  height?: string | number;
 }
 
 interface StepthroughStepControlProps {
@@ -112,22 +122,20 @@ interface StepthroughStepControlProps {
   isRunning: boolean;
 }
 
-interface StepthroughVisualizationProps {
+interface StepthroughVisualizationProps<TData extends StepthroughData = StepthroughData> {
   steps: StepthroughStep[];
   currentStepIndex: number;
-  linkedListData: {
-    nodes: string[];
-    head: string | null;
-    tail: string | null;
-    count: number;
-  };
+  data: TData;
   isRunning: boolean;
 }
 
-interface StepthroughLayoutProps {
+interface StepthroughLayoutProps<TData extends StepthroughData = StepthroughData> {
   code: string;
   onCodeChange: (code: string) => void;
   onExecute: () => void;
+  onReset: () => void;
+  onFileLoad: (code: string, filename: string) => void;
+  filename: string;
   steps: StepthroughStep[];
   currentStepIndex: number;
   onStepSelect: (stepIndex: number) => void;
@@ -137,12 +145,10 @@ interface StepthroughLayoutProps {
   isAutoPlaying: boolean;
   isRunning: boolean;
   isLoading: boolean;
-  linkedListData: {
-    nodes: string[];
-    head: string | null;
-    tail: string | null;
-    count: number;
-  };
+  data: TData;
+  title: string;
+  description: string;
+  visualizationComponent: React.ComponentType<StepthroughVisualizationProps<TData>>;
 }
 
 export type {
@@ -155,4 +161,5 @@ export type {
   StepthroughStepControlProps,
   StepthroughVisualizationProps,
   StepthroughLayoutProps,
+  StepthroughData,
 };

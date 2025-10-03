@@ -5,6 +5,7 @@ import {
   secureSessionUtils,
   logError,
   isTokenExpired,
+  isValidJWTFormat,
   RATE_LIMIT_CONFIGS,
   isRateLimited,
   initializeCSRFProtection,
@@ -101,9 +102,15 @@ const useAuth = (): UseAuthReturn => {
   // ฟังก์ชัน fetch profile with auto refresh and validation
   const fetchUserProfile = useCallback(async (token: string) => {
     try {
+      // Validate token format first
+      if (!token || !isValidJWTFormat(token)) {
+        console.log('Invalid token format in fetchUserProfile:', token);
+        throw new Error('Invalid token format');
+      }
+
       // Validate token before making request
-      if (!token || isTokenExpired(token)) {
-        throw new Error('Invalid or expired token');
+      if (isTokenExpired(token)) {
+        throw new Error('Token is expired');
       }
 
       const profileData = await ProfileService.fetchProfile(token);
@@ -126,6 +133,12 @@ const useAuth = (): UseAuthReturn => {
     // Validate inputs
     if (!token || !userProfile || !userProfile.user_id) {
       throw new Error('Invalid token or user profile data');
+    }
+
+    // Validate token format
+    if (!isValidJWTFormat(token)) {
+      console.log('Invalid token format in setAuthData:', token);
+      throw new Error('Invalid token format');
     }
 
     if (isTokenExpired(token)) {

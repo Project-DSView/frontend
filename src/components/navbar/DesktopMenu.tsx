@@ -12,9 +12,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { playgroundItems } from '@/data';
 import SubMenuItem from './SubMenuItem';
+import useAuth from '@/hooks/auth/useAuth';
 
 const DesktopMenu = () => {
   const [isPlaygroundOpen, setIsPlaygroundOpen] = useState(false);
+  const { profile, isInitialized } = useAuth();
 
   return (
     <div className="hidden items-center space-x-1 md:flex">
@@ -47,14 +49,16 @@ const DesktopMenu = () => {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Link href="/course">
-        <Button
-          variant="ghost"
-          className="rounded-lg px-3 py-1.5 text-base font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-100"
-        >
-          My Course
-        </Button>
-      </Link>
+      {isInitialized && profile && (
+        <Link href="/course">
+          <Button
+            variant="ghost"
+            className="rounded-lg px-3 py-1.5 text-base font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-100"
+          >
+            My Course
+          </Button>
+        </Link>
+      )}
 
       <Link href="/about">
         <Button

@@ -1,9 +1,7 @@
+import StepthroughDirectedGraph from '@/page/virtualization/stepthrough/graph/directed';
+
 const Page = () => {
-  return (
-    <>
-      <h1>test</h1>
-    </>
-  );
+  return <StepthroughDirectedGraph />;
 };
 
 export default Page;

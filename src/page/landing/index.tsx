@@ -5,11 +5,32 @@ import Image from 'next/image';
 import { LogIn } from 'lucide-react';
 import { memo, lazy, Suspense } from 'react';
 import { features } from '@/data';
+import useAuth from '@/hooks/auth/useAuth';
+import { AuthService } from '@/services';
+import { useRouter } from 'next/navigation';
 
 // Lazy load components
 const FeatureCard = lazy(() => import('@/components/card'));
 
 const Landing = () => {
+  const { profile, isInitialized } = useAuth();
+  const router = useRouter();
+
+  const handleLogin = async () => {
+    try {
+      const response = await AuthService.getGoogleAuthUrl();
+      if (response.success && response.data.auth_url) {
+        window.location.href = response.data.auth_url;
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
+
+  const handleGoToCourse = () => {
+    router.push('/course');
+  };
+
   return (
     <main className="bg-base-100 flex min-h-screen flex-col font-sans">
       {/* Hero Section */}
@@ -27,17 +48,33 @@ const Landing = () => {
             Interactive Data Structure Visualization
           </p>
           <div className="mt-6 flex justify-center gap-6">
-            <Button className="bg-secondary rounded-xl px-8 py-4 text-lg text-white shadow-lg hover:bg-orange-600">
-              เข้าคอร์สเรียน
-              <LogIn size={24} />
-            </Button>
-            <Button
-              variant="outline"
-              className="border-primary text-primary hover:bg-primary rounded-xl border-2 px-8 py-4 text-lg hover:text-white"
-            >
-              Playground
-            </Button>
+            {!isInitialized && (
+              <div className="flex items-center justify-center">
+                <span className="text-neutral">กำลังตรวจสอบ...</span>
+              </div>
+            )}
+
+            {isInitialized && !profile && (
+              <Button 
+                onClick={handleLogin}
+                className="bg-secondary rounded-xl px-8 py-4 text-lg text-white shadow-lg hover:bg-orange-600"
+              >
+                เข้าสู่ระบบ
+                <LogIn size={24} />
+              </Button>
+            )}
+
+            {isInitialized && profile && (
+              <Button 
+                onClick={handleGoToCourse}
+                className="bg-secondary rounded-xl px-8 py-4 text-lg text-white shadow-lg hover:bg-orange-600"
+              >
+                เข้าคอร์สเรียน
+                <LogIn size={24} />
+              </Button>
+            )}
           </div>
+
         </div>
       </section>
 

@@ -5,9 +5,9 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useGoogleAuth, useAuth } from '@/hooks';
 import { useLogout } from '@/query';
+import { AuthResponse } from '@/types';
 import {
   clearAllCookies,
   removeQueryParams,
@@ -29,9 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const AuthButtons: React.FC = () => {
-  const { refetch, isFetching } = useGoogleAuth();
-  const searchParams = useSearchParams();
-  const tokenFromUrl = searchParams.get('token');
+  const { mutate: getGoogleAuth, isPending: isFetching } = useGoogleAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const logoutMutation = useLogout();
 
@@ -50,6 +48,11 @@ const AuthButtons: React.FC = () => {
       clearAllCookies();
 
       toast.success('Logged out successfully');
+      
+      // Refresh the page after successful logout
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error);
       logError('Logout failed:', error);
@@ -61,48 +64,74 @@ const AuthButtons: React.FC = () => {
     }
   };
 
-  // Handle token from URL - SECURITY RISK: Remove this in production
+  // Handle OAuth callback - Check if we're in callback mode
   useEffect(() => {
-    const handleTokenFromUrl = async () => {
-      if (!isInitialized || !tokenFromUrl) return;
+    const handleOAuthCallback = async () => {
+      if (!isInitialized) return;
 
-      // SECURITY WARNING: Token in URL is a security risk
-      console.warn(
-        'SECURITY WARNING: Token received via URL parameter. This should be avoided in production.',
-      );
+      // Check if we're in OAuth callback mode (has token in URL)
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      const success = urlParams.get('success');
 
-      try {
-        // Validate token format first
-        if (!isValidJWTFormat(tokenFromUrl)) {
-          throw new Error('Invalid token format');
+      if (token && success === 'true') {
+        console.log('OAuth callback detected, processing...');
+        console.log('Token received:', token);
+        console.log('Token length:', token.length);
+        console.log('Token type:', typeof token);
+
+        try {
+          // Clean token (remove whitespace and special characters)
+          const cleanToken = token.trim().replace(/[^\w.-]/g, '');
+          console.log('Cleaned token:', cleanToken);
+
+          // Validate token format first
+          if (!isValidJWTFormat(cleanToken)) {
+            console.error('Invalid token format:', cleanToken);
+            throw new Error('Invalid token format');
+          }
+
+          // Check if token is expired
+          if (isTokenExpired(cleanToken)) {
+            console.error('Token is expired');
+            throw new Error('Token is expired');
+          }
+
+          // Get user profile from token
+          const profileData = await fetchUserProfile(cleanToken);
+          setAuthData(cleanToken, profileData);
+          toast.success(`Welcome ${profileData.firstname} ${profileData.lastname}`);
+
+          // Redirect to home page after successful login
+          window.location.href = '/';
+        } catch (error) {
+          logError('OAuth callback failed:', error);
+          toast.error('Authentication failed. Please try again.');
+          // Redirect to error page
+          window.location.href = '/error?error=Authentication%20failed&code=auth_failed';
+        } finally {
+          // Clean up URL parameters
+          removeQueryParams();
         }
-
-        // Check if token is expired
-        if (isTokenExpired(tokenFromUrl)) {
-          throw new Error('Token is expired');
-        }
-
-        const profileData = await fetchUserProfile(tokenFromUrl);
-        setAuthData(tokenFromUrl, profileData);
-        toast.success(`Welcome back ${profileData.firstname} ${profileData.lastname}`);
-      } catch (error) {
-        logError('Failed to fetch profile from URL token:', error);
-        toast.error('Failed to login with provided token');
-      } finally {
-        // Always remove token from URL for security
-        removeQueryParams();
       }
     };
 
-    handleTokenFromUrl();
-  }, [isInitialized, tokenFromUrl, fetchUserProfile, setAuthData]);
+    handleOAuthCallback();
+  }, [isInitialized, setAuthData, fetchUserProfile]);
 
   // Validate existing session in background (delayed) - OPTIMIZED
   useEffect(() => {
-    if (!isInitialized || !profile || !accessToken || tokenFromUrl) return;
+    if (!isInitialized || !profile || !accessToken) return;
 
     const validateSession = async () => {
       try {
+        // First, validate token format
+        if (!isValidJWTFormat(accessToken)) {
+          console.log('Invalid token format detected, clearing session');
+          clearAuthData();
+          return;
+        }
+
         // Only validate if token is close to expiry (within 5 minutes)
         const tokenExpiry = getTokenExpirationTime(accessToken);
         const now = Date.now();
@@ -113,6 +142,29 @@ const AuthButtons: React.FC = () => {
           return;
         }
 
+        // Try to refresh token if it's close to expiry
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/refresh`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data.token) {
+              setAuthData(data.data.token, data.data.user);
+              console.log('Token refreshed successfully');
+              return;
+            }
+          }
+        } catch {
+          console.log('Token refresh failed, validating existing token');
+        }
+
+        // Fallback to validating existing token
         await fetchUserProfile(accessToken);
       } catch (error) {
         logError('Session validation failed:', error);
@@ -123,7 +175,7 @@ const AuthButtons: React.FC = () => {
     // Delay validation to avoid blocking UI - increased from 2s to 30s
     const timeoutId = setTimeout(validateSession, 30000);
     return () => clearTimeout(timeoutId);
-  }, [isInitialized, profile, accessToken, tokenFromUrl, fetchUserProfile, clearAuthData]);
+  }, [isInitialized, profile, accessToken, fetchUserProfile, clearAuthData, setAuthData]);
 
   const handleMyProfile = () => {
     // TODO: Navigate to profile page
@@ -143,7 +195,12 @@ const AuthButtons: React.FC = () => {
     }
 
     try {
-      const { data } = await refetch();
+      const data = await new Promise<AuthResponse>((resolve, reject) => {
+        getGoogleAuth(undefined, {
+          onSuccess: (data) => resolve(data),
+          onError: (error) => reject(error),
+        });
+      });
 
       if (data?.data.token) {
         // Validate token before using

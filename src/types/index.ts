@@ -77,7 +77,6 @@ export type {
   StackDragComponent,
   StackExecutionStep,
   StackCodeTemplate,
-  StackData,
   StackStatsExtended,
   StackStateExtended,
 } from './dragdrop/Stack.types';
@@ -93,7 +92,6 @@ export type {
   BSTOperationsProps,
   BSTVisualizationProps,
   PositionedNode,
-  BSTData,
   BSTStatsExtended,
   BSTStateExtended,
 } from './dragdrop/BST.types';
@@ -119,7 +117,6 @@ export type {
   UndirectedGraphOperationsProps,
   UndirectedGraphVisualizationProps,
   PositionedUndirectedGraphNode,
-  UndirectedGraphData,
   UndirectedGraphStatsExtended,
   UndirectedGraphStateExtended,
 } from './dragdrop/UndirectedGraph.types';
@@ -135,7 +132,6 @@ export type {
   DirectedGraphOperationsProps,
   DirectedGraphVisualizationProps,
   PositionedDirectedGraphNode,
-  DirectedGraphData,
   DirectedGraphStatsExtended,
   DirectedGraphStateExtended,
 } from './dragdrop/DirectedGraph.types';
@@ -161,6 +157,7 @@ export type {
   StepthroughStepControlProps,
   StepthroughVisualizationProps,
   StepthroughLayoutProps,
+  StepthroughData,
 } from './stepthrough/common.types';
 
 export type {
@@ -168,3 +165,13 @@ export type {
   BaseStepthroughHookReturn,
   BaseStepthroughService,
 } from './stepthrough/base.types';
+
+export type { LinkedListData } from './stepthrough/LinkedList.types';
+
+export type { StackData } from './stepthrough/Stack.types';
+
+export type { BSTData } from './stepthrough/BST.types';
+
+export type { DirectedGraphData } from './stepthrough/DirectedGraph.types';
+
+export type { UndirectedGraphData } from './stepthrough/UndirectedGraph.types';

@@ -6,14 +6,27 @@ import { JWTPayload } from '@/types';
  */
 export const decodeJWT = (token: string): JWTPayload | null => {
   try {
-    const parts = token.split('.');
+    // Validate input
+    if (!token || typeof token !== 'string') {
+      console.error('Invalid token input:', token);
+      return null;
+    }
+
+    // Clean token
+    const cleanToken = token.trim();
+    console.log('Decoding JWT token:', cleanToken.substring(0, 20) + '...');
+
+    const parts = cleanToken.split('.');
     if (parts.length !== 3) {
-      throw new Error('Invalid JWT format');
+      console.error('Invalid JWT format - parts count:', parts.length);
+      return null;
     }
 
     const payload = parts[1];
     const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-    return JSON.parse(decoded);
+    const parsed = JSON.parse(decoded);
+    console.log('JWT decoded successfully');
+    return parsed;
   } catch (error) {
     console.error('Failed to decode JWT:', error);
     return null;
@@ -83,21 +96,33 @@ export const getTimeUntilExpiration = (token: string): number | null => {
  */
 export const isValidJWTFormat = (token: string): boolean => {
   if (!token || typeof token !== 'string') {
+    console.log('Invalid token input:', token);
     return false;
   }
 
-  const parts = token.split('.');
+  const cleanToken = token.trim();
+  const parts = cleanToken.split('.');
+
+  console.log('JWT validation - parts count:', parts.length);
+  console.log('JWT validation - token preview:', cleanToken.substring(0, 20) + '...');
+
   if (parts.length !== 3) {
+    console.log('Invalid JWT format - expected 3 parts, got:', parts.length);
     return false;
   }
 
   // Check if all parts are base64 encoded
   try {
-    parts.forEach((part) => {
+    parts.forEach((part, index) => {
+      if (!part || part.length === 0) {
+        throw new Error(`Empty part at index ${index}`);
+      }
       atob(part.replace(/-/g, '+').replace(/_/g, '/'));
     });
+    console.log('JWT format validation passed');
     return true;
-  } catch {
+  } catch (error) {
+    console.log('JWT format validation failed:', error);
     return false;
   }
 };

@@ -19,7 +19,6 @@ const nextConfig: NextConfig = {
 
   // Webpack optimization
   webpack: (config, { isServer }) => {
-
     // Optimize bundle splitting
     if (!isServer) {
       config.optimization.splitChunks = {

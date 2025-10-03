@@ -13,11 +13,13 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
 }) => {
   if (steps.length === 0) {
     return (
-      <div className="h-full rounded-lg bg-white p-6 shadow">
+      <div className="h-full rounded-lg bg-white p-3 shadow sm:p-6">
         <div className="flex h-full items-center justify-center">
           <div className="text-center">
-            <h3 className="mb-2 text-lg font-semibold text-gray-600">No Steps Available</h3>
-            <p className="text-sm text-gray-500">Run your code to see execution steps</p>
+            <h3 className="mb-2 text-base font-semibold text-gray-600 sm:text-lg">
+              No Steps Available
+            </h3>
+            <p className="text-xs text-gray-500 sm:text-sm">Run your code to see execution steps</p>
           </div>
         </div>
       </div>
@@ -29,26 +31,26 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
   const isLastStep = currentStepIndex === steps.length - 1;
 
   return (
-    <main className="flex h-full flex-col">
-      <section>
+    <main className="flex h-full flex-col" suppressHydrationWarning>
+      <section className="min-h-0 flex-1">
         {/* Header with Step Counter */}
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">Step Control</h3>
-          <p className="text-sm text-gray-600">
+        <div className="mb-3 sm:mb-4">
+          <h3 className="text-base font-semibold text-gray-800 sm:text-lg">Step Control</h3>
+          <p className="text-xs text-gray-600 sm:text-sm">
             Step {currentStepIndex + 1} of {steps.length}
           </p>
         </div>
 
         {/* Current Step Info */}
         {currentStep && (
-          <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <div className="mb-3 rounded-lg border border-gray-200 bg-gray-50 p-3 sm:mb-4 sm:p-4">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-xs font-medium text-gray-700 sm:text-sm">
                 Step {currentStep.stepNumber || currentStepIndex + 1}
               </span>
               <span className="text-xs text-gray-500">Line {currentStep.line || 'N/A'}</span>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-xs text-gray-600 sm:text-sm">
               {currentStep.state?.message || 'No description available'}
             </div>
           </div>
@@ -57,12 +59,12 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
         {/* Current Step Details - Scrollable */}
         <div className="flex-1 overflow-y-auto">
           {currentStep && (
-            <div className="space-y-4">
+            <div className="space-y-2 sm:space-y-4">
               {/* Code */}
               {currentStep.code && (
-                <div className="rounded-lg bg-gray-50 p-4">
-                  <div className="mb-2 text-sm font-medium text-gray-700">Code:</div>
-                  <pre className="text-sm break-words whitespace-pre-wrap text-gray-800">
+                <div className="rounded-lg bg-gray-50 p-3 sm:p-4">
+                  <div className="mb-2 text-xs font-medium text-gray-700 sm:text-sm">Code:</div>
+                  <pre className="text-xs break-words whitespace-pre-wrap text-gray-800 sm:text-sm">
                     {currentStep.code}
                   </pre>
                 </div>
@@ -70,13 +72,15 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
 
               {/* Print Output */}
               {currentStep.state?.print_output && currentStep.state.print_output.length > 0 && (
-                <div className="bg-accent/20 rounded-lg p-4">
-                  <div className="text-accent/80 mb-2 text-sm font-bold">Print Output:</div>
+                <div className="bg-accent/20 rounded-lg p-3 sm:p-4">
+                  <div className="text-accent/80 mb-2 text-xs font-bold sm:text-sm">
+                    Print Output:
+                  </div>
                   <div className="space-y-1">
                     {currentStep.state.print_output.map((output, index) => (
                       <div
                         key={index}
-                        className="rounded bg-white p-2 font-mono text-sm text-gray-800 shadow-sm"
+                        className="rounded bg-white p-2 font-mono text-xs text-gray-800 shadow-sm sm:text-sm"
                       >
                         {output}
                       </div>
@@ -87,9 +91,11 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
 
               {/* Step Details */}
               {currentStep.state?.step_detail && (
-                <div className="bg-accent/10 rounded-lg p-4">
-                  <div className="text-accent/80 mb-2 text-sm font-bold">Operation Details:</div>
-                  <div className="text-accent/80 space-y-2 text-sm">
+                <div className="bg-accent/10 rounded-lg p-3 sm:p-4">
+                  <div className="text-accent/80 mb-2 text-xs font-bold sm:text-sm">
+                    Operation Details:
+                  </div>
+                  <div className="text-accent/80 space-y-1 text-xs sm:space-y-2 sm:text-sm">
                     <div>
                       <span className="font-medium">Operation:</span>{' '}
                       {currentStep.state.step_detail.operation}
@@ -120,9 +126,9 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
         </div>
       </section>
 
-      <section className="mt-12">
+      <section className="mt-4 sm:mt-8">
         {/* Step Slider */}
-        <div className="mb-4 flex flex-col items-center justify-center px-2">
+        <div className="mb-3 flex flex-col items-center justify-center px-2 sm:mb-4">
           <Slider
             value={[currentStepIndex]}
             onValueChange={(value) => onStepSelect(value[0])}
@@ -132,19 +138,24 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
             className="w-full"
           />
           <div className="mt-2 mb-2 flex items-center justify-between">
-            <span className="text-gray-500">
+            <span className="text-xs text-gray-500 sm:text-sm">
               {currentStepIndex + 1} / {steps.length}
             </span>
           </div>
         </div>
         {/* Navigation Controls */}
-        <div className="mb-4 flex items-center justify-center space-x-3">
+        <div className="mb-2 flex flex-wrap items-center justify-center gap-1 sm:mb-4 sm:gap-3">
           <button
             onClick={() => onStepSelect(0)}
             disabled={isFirstStep}
-            className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm"
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="h-3 w-3 sm:h-4 sm:w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -152,15 +163,21 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
                 d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
               />
             </svg>
-            <span>First</span>
+            <span className="hidden sm:inline">First</span>
+            <span className="sm:hidden">⏮</span>
           </button>
 
           <button
             onClick={onPrevious}
             disabled={isFirstStep}
-            className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm"
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="h-3 w-3 sm:h-4 sm:w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -168,16 +185,23 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
                 d="M15 19l-7-7 7-7"
               />
             </svg>
-            <span>Previous</span>
+            <span className="hidden sm:inline">Previous</span>
+            <span className="sm:hidden">⏪</span>
           </button>
 
           <button
             onClick={onNext}
             disabled={isLastStep}
-            className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm"
           >
-            <span>Next</span>
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className="hidden sm:inline">Next</span>
+            <span className="sm:hidden">⏩</span>
+            <svg
+              className="h-3 w-3 sm:h-4 sm:w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -185,10 +209,16 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           <button
             onClick={() => onStepSelect(steps.length - 1)}
             disabled={isLastStep}
-            className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm"
           >
-            <span>Last</span>
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className="hidden sm:inline">Last</span>
+            <span className="sm:hidden">⏭</span>
+            <svg
+              className="h-3 w-3 sm:h-4 sm:w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -200,7 +230,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
 
           <button
             onClick={onAutoPlay}
-            className={`flex items-center space-x-2 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
+            className={`flex items-center space-x-1 rounded-lg px-2 py-2 text-xs font-medium transition-all sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm ${
               isAutoPlaying
                 ? 'bg-error hover:bg-error/80 text-white'
                 : 'bg-success hover:bg-success/80 text-white'
@@ -208,17 +238,19 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           >
             {isAutoPlaying ? (
               <>
-                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
                 </svg>
-                <span>Stop</span>
+                <span className="hidden sm:inline">Stop</span>
+                <span className="sm:hidden">⏸</span>
               </>
             ) : (
               <>
-                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
-                <span>Auto Play</span>
+                <span className="hidden sm:inline">Auto Play</span>
+                <span className="sm:hidden">▶</span>
               </>
             )}
           </button>

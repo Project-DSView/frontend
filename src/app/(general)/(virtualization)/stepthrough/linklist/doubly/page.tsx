@@ -1,7 +1,9 @@
+import StepthroughDoublyLinkedList from '@/page/virtualization/stepthrough/linklist/doubly';
+
 const Page = () => {
   return (
     <>
-      <h1>test</h1>
+      <StepthroughDoublyLinkedList />
     </>
   );
 };

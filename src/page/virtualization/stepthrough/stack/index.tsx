@@ -1,9 +1,53 @@
-const Page = () => {
+'use client';
+
+import React, { lazy } from 'react';
+import { useStackStepthrough } from '@/hooks';
+import StepthroughLayout from '@/components/virtualization/shared/StepthroughLayout';
+import { StackData } from '@/types';
+
+// Lazy load heavy components
+const StackStepthroughVisualization = lazy(
+  () => import('@/components/virtualization/stepthrough/stack/StackVisualization'),
+);
+
+const StepthroughStack: React.FC = () => {
+  const {
+    state,
+    setCode,
+    loadCodeFromFile,
+    executeCode,
+    setCurrentStep,
+    nextStep,
+    previousStep,
+    toggleAutoPlay,
+    reset,
+    isLoading,
+    stackData,
+  } = useStackStepthrough();
+
   return (
-    <>
-      <h1>test</h1>
-    </>
+    <StepthroughLayout<StackData>
+      code={state.code}
+      onCodeChange={setCode}
+      onExecute={executeCode}
+      onReset={reset}
+      onFileLoad={loadCodeFromFile}
+      filename={state.filename}
+      steps={state.steps}
+      currentStepIndex={state.currentStepIndex}
+      onStepSelect={setCurrentStep}
+      onNext={nextStep}
+      onPrevious={previousStep}
+      onAutoPlay={toggleAutoPlay}
+      isAutoPlaying={state.isAutoPlaying}
+      isRunning={state.isRunning}
+      isLoading={isLoading}
+      data={stackData}
+      title="Stepthrough Stack"
+      description="เขียนโค้ด Python และดูการทำงานแบบ step-by-step พร้อม visualization"
+      visualizationComponent={StackStepthroughVisualization}
+    />
   );
 };
 
-export default Page;
+export default StepthroughStack;

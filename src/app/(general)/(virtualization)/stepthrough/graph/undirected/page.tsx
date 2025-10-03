@@ -1,7 +1,9 @@
+import StepthroughUndirectedGraph from '@/page/virtualization/stepthrough/graph/undirected';
+
 const Page = () => {
   return (
     <>
-      <h1>test</h1>
+      <StepthroughUndirectedGraph />
     </>
   );
 };

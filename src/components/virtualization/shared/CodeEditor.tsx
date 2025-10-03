@@ -18,6 +18,7 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
   onCodeChange,
   disabled = false,
   currentStep,
+  height = '100%',
 }) => {
   const [isClient, setIsClient] = useState(false);
   const [editorView, setEditorView] = useState<unknown>(null);
@@ -62,10 +63,29 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
     }
   }, [currentStep?.line, editorView]);
 
+  // Reset height when step changes to prevent height accumulation
+  useEffect(() => {
+    if (currentStep) {
+      // Force a small delay to ensure the height calculation is accurate
+      const timer = setTimeout(() => {
+        // This will trigger a re-render with the correct height
+        if (editorView) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const view = editorView as any;
+          view.dispatch({
+            effects: [],
+          });
+        }
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, editorView]);
+
   if (!isClient) {
     // Fallback for SSR
     return (
-      <div className="h-full rounded-lg bg-white shadow">
+      <div className="rounded-lg bg-white shadow" style={{ height }} suppressHydrationWarning>
         <div className="flex h-12 items-center justify-between border-b border-gray-200 px-4">
           <h2 className="text-lg font-semibold text-gray-800">Code Editor</h2>
           <button
@@ -85,7 +105,7 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
   }
 
   return (
-    <div className="h-full overflow-hidden">
+    <div className="overflow-hidden" style={{ height }} suppressHydrationWarning>
       <React.Suspense
         fallback={
           <div className="flex h-full items-center justify-center bg-gray-50">
@@ -96,7 +116,7 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
         <CodeMirror
           value={code}
           onChange={onCodeChange}
-          height="100%"
+          height={typeof height === 'number' ? `${height}px` : height}
           theme={vscodeLight}
           editable={!disabled}
           basicSetup={{
@@ -116,7 +136,7 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
           style={{
             fontSize: '16px',
             fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
-            height: '100%',
+            height: height,
             overflow: 'hidden',
           }}
           onCreateEditor={(view: unknown) => setEditorView(view)}

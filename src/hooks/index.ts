@@ -12,3 +12,8 @@ export { default as useDirectedGraphDragDrop } from './dragdrop/useDirectedGraph
 
 // Stepthrough
 export { default as useSinglyLinkedListStepthrough } from './stepthrough/useSinglyLinkedListStepthrough';
+export { default as useDoublyLinkedListStepthrough } from './stepthrough/useDoublyLinkedListStepthrough';
+export { default as useStackStepthrough } from './stepthrough/useStackStepthrough';
+export { default as useBSTStepthrough } from './stepthrough/useBSTStepthrough';
+export { default as useUndirectedGraphStepthrough } from './stepthrough/useUndirectedGraphStepthrough';
+export { default as useDirectedGraphStepthrough } from './stepthrough/useDirectedGraphStepthrough';

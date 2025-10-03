@@ -5,11 +5,13 @@ import { Menu, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { playgroundItems } from '@/data';
 import { SubItem } from '@/types';
+import useAuth from '@/hooks/auth/useAuth';
 
 const MobileMenu = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<number[]>([]);
   const [expandedSubItems, setExpandedSubItems] = useState<string[]>([]);
+  const { profile, isInitialized } = useAuth();
 
   const toggleCategory = (index: number) => {
     setExpandedCategories((prev) =>
@@ -141,14 +143,16 @@ const MobileMenu = () => {
 
             {/* Other Links */}
             <div className="space-y-2 border-t border-gray-200 pt-4">
-              <Link href="/course" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button
-                  variant="ghost"
-                  className="mb-2 w-full justify-start rounded-lg border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50"
-                >
-                  My Course
-                </Button>
-              </Link>
+              {isInitialized && profile && (
+                <Link href="/course" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button
+                    variant="ghost"
+                    className="mb-2 w-full justify-start rounded-lg border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50"
+                  >
+                    My Course
+                  </Button>
+                </Link>
+              )}
               <Link href="/about" onClick={() => setIsMobileMenuOpen(false)}>
                 <Button
                   variant="ghost"

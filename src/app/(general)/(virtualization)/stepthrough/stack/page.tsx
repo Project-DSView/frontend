@@ -1,9 +1,7 @@
+import StepthroughStack from '@/page/virtualization/stepthrough/stack';
+
 const Page = () => {
-  return (
-    <>
-      <h1>test</h1>
-    </>
-  );
+  return <StepthroughStack />;
 };
 
 export default Page;

@@ -2,10 +2,8 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { AuthService } from '@/services';
 
 export const useGoogleAuthUrl = () => {
-  return useQuery({
-    queryKey: ['auth', 'google-url'],
-    queryFn: AuthService.getGoogleAuthUrl,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+  return useMutation({
+    mutationFn: AuthService.getGoogleAuthUrl,
   });
 };
 

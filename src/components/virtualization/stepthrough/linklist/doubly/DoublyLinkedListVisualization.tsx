@@ -1,7 +1,7 @@
 import React, { forwardRef, useState, useEffect, Fragment, useRef } from 'react';
 import { StepthroughVisualizationProps, LinkedListData } from '@/types';
 
-const SinglyLinkedListStepthroughVisualization = forwardRef<
+const DoublyLinkedListStepthroughVisualization = forwardRef<
   HTMLDivElement,
   StepthroughVisualizationProps<LinkedListData>
 >(({ steps, currentStepIndex, data, isRunning }, ref) => {
@@ -9,6 +9,7 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
   const [, setHeadPosition] = useState(0);
   const [traverseIndex, setTraverseIndex] = useState(0);
   const [isTraversing, setIsTraversing] = useState(false);
+  const [isReverseTraversing, setIsReverseTraversing] = useState(false);
 
   // Use ref to store nodes to prevent unnecessary re-renders
   const nodesRef = useRef(data.nodes);
@@ -30,31 +31,58 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
 
       // Check if this is a traverse operation
       if (message.includes('traverse') || message.includes('current.data')) {
-        setIsTraversing(true);
-        setTraverseIndex(0);
+        if (message.includes('traverseReverse') || message.includes('reverse')) {
+          // Reverse traverse
+          setIsReverseTraversing(true);
+          setIsTraversing(false);
+          setTraverseIndex(nodes.length - 1);
 
-        // Start animation from first node
-        const interval = setInterval(() => {
-          setTraverseIndex((prev) => {
-            const nextIndex = prev + 1;
-            if (nextIndex >= nodes.length) {
-              // Animation finished, stop traversing
-              setIsTraversing(false);
-              clearInterval(interval);
-              return prev; // Keep at last node
-            }
-            return nextIndex;
-          });
-        }, 1000); // Move to next node every 1 second
+          // Start animation from last node
+          const interval = setInterval(() => {
+            setTraverseIndex((prev) => {
+              const nextIndex = prev - 1;
+              if (nextIndex < 0) {
+                // Animation finished, stop traversing
+                setIsReverseTraversing(false);
+                clearInterval(interval);
+                return prev; // Keep at first node
+              }
+              return nextIndex;
+            });
+          }, 1000); // Move to previous node every 1 second
 
-        return () => clearInterval(interval);
+          return () => clearInterval(interval);
+        } else {
+          // Forward traverse
+          setIsTraversing(true);
+          setIsReverseTraversing(false);
+          setTraverseIndex(0);
+
+          // Start animation from first node
+          const interval = setInterval(() => {
+            setTraverseIndex((prev) => {
+              const nextIndex = prev + 1;
+              if (nextIndex >= nodes.length) {
+                // Animation finished, stop traversing
+                setIsTraversing(false);
+                clearInterval(interval);
+                return prev; // Keep at last node
+              }
+              return nextIndex;
+            });
+          }, 1000); // Move to next node every 1 second
+
+          return () => clearInterval(interval);
+        }
       } else {
         // Reset when not traversing
         setIsTraversing(false);
+        setIsReverseTraversing(false);
         setTraverseIndex(0);
       }
     } else {
       setIsTraversing(false);
+      setIsReverseTraversing(false);
       setTraverseIndex(0);
     }
   }, [steps, currentStepIndex, nodes.length]);
@@ -110,37 +138,49 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
   // Render a single node
   const renderNode = (value: string, index: number) => {
     const isHighlighted = highlightedNodeIndex === index;
+    const isFirst = index === 0;
     const isLast = index === nodes.length - 1;
 
     return (
       <div className="flex items-center" key={index}>
-        {/* Node Container - Horizontal Layout */}
+        {/* Node Container - 3 Section Layout like in dragdrop */}
         <div
-          className={`max-w-[250px] min-w-[160px] rounded-lg border-2 border-black bg-white p-3 text-center font-bold ${
-            isHighlighted ? 'shadow-lg' : 'hover:bg-gray-50'
+          className={`flex h-16 w-40 rounded-lg border-2 border-black bg-white transition-all duration-500 ${
+            isHighlighted ? 'bg-blue-50 shadow-lg' : 'hover:bg-gray-50'
           }`}
         >
-          {/* Data Section - Left */}
-          <div className="inline-block w-1/2 border-r-2 border-black pr-2">
-            <div
-              className={`font-bold break-words text-black ${
-                value.length > 15 ? 'text-xs' : value.length > 8 ? 'text-sm' : 'text-base'
-              }`}
-            >
-              {value}
-            </div>
-          </div>
-          {/* Pointer Section - Right */}
-          <div className="flex inline-block w-1/2 items-center justify-center pl-2">
-            {isLast ? (
+          {/* Prev Section - Left */}
+          <div className="flex w-1/3 items-center justify-center rounded-l-lg bg-gray-100">
+            {isFirst ? (
               <div className="relative flex h-full w-full items-center justify-center">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="mb-2 h-0.5 w-8 rotate-45 transform bg-black"></div>
-                  <div className="absolute mb-2 h-0.5 w-8 -rotate-45 transform bg-black"></div>
+                  <div className="h-0.5 w-8 rotate-45 transform bg-black"></div>
+                  <div className="absolute h-0.5 w-8 -rotate-45 transform bg-black"></div>
                 </div>
               </div>
             ) : (
-              <div className="text-xs text-gray-600">next</div>
+              <span className="text-xs font-bold text-black">Prev</span>
+            )}
+          </div>
+
+          {/* Data Section - Center */}
+          <div className="flex w-1/3 items-center justify-center border-x border-x-2 border-black bg-gray-100">
+            <span className={`font-bold text-black ${value.length > 6 ? 'text-sm' : 'text-lg'}`}>
+              {value}
+            </span>
+          </div>
+
+          {/* Next Section - Right */}
+          <div className="flex w-1/3 items-center justify-center rounded-r-lg bg-gray-100">
+            {isLast ? (
+              <div className="relative flex h-full w-full items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="h-0.5 w-8 rotate-45 transform bg-black"></div>
+                  <div className="absolute h-0.5 w-8 -rotate-45 transform bg-black"></div>
+                </div>
+              </div>
+            ) : (
+              <span className="text-xs font-bold text-black">Next</span>
             )}
           </div>
         </div>
@@ -151,7 +191,7 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
   return (
     <div ref={ref} className="rounded-lg bg-white p-6 shadow">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-800">Singly Linked List Visualization</h2>
+        <h2 className="text-lg font-semibold text-gray-800">Doubly Linked List Visualization</h2>
         {isRunning && (
           <div className="flex items-center space-x-2 text-sm text-blue-600">
             <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600" />
@@ -174,7 +214,7 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
         {nodes.length === 0 ? (
           <div className="flex h-full items-center justify-center text-gray-400">
             <div className="text-center">
-              <div className="text-lg font-semibold">Empty Linked List</div>
+              <div className="text-lg font-semibold">Empty Doubly Linked List</div>
               {steps.length > 0 ? (
                 <div className="text-sm">
                   Executing step {currentStepIndex + 1} of {steps.length}
@@ -186,7 +226,7 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
           </div>
         ) : (
           <div className="flex items-center justify-start space-x-2">
-            {/* Nodes with Head Pointer */}
+            {/* Nodes with Head/Tail Pointers */}
             {nodes.map((value, index) => {
               const message =
                 steps.length > 0 && currentStepIndex < steps.length
@@ -197,7 +237,12 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
                   <div className="relative">
                     {/* Head Label - Always show on first node */}
                     {index === 0 && (
-                      <div className="absolute -top-16 left-1/2 z-10 -translate-x-1/2 transform">
+                      <div
+                        className="absolute -top-16 left-1/2 z-10 -translate-x-1/2 transform"
+                        style={{
+                          left: nodes.length === 1 ? '25%' : '50%',
+                        }}
+                      >
                         <div className="px-2 py-1 text-lg font-semibold text-gray-600">head</div>
                         <div className="flex flex-col items-center">
                           <div className="h-4 w-0.5 bg-black"></div>
@@ -210,16 +255,23 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
                     {index === traverseIndex &&
                       (message.includes('traverse') ||
                         message.includes('current.data') ||
-                        isTraversing) && (
+                        isTraversing ||
+                        isReverseTraversing) && (
                         <div
-                          className={`absolute -bottom-16 left-1/2 z-10 -translate-x-1/2 transform ${isTraversing ? 'animate-pulse' : ''}`}
+                          className={`absolute -bottom-16 left-1/2 z-10 -translate-x-1/2 transform ${
+                            isTraversing || isReverseTraversing ? 'animate-pulse' : ''
+                          }`}
                         >
                           <div className="flex flex-col items-center">
                             <div
-                              className={`h-0 w-0 border-r-[4px] border-b-[6px] border-l-[4px] border-r-transparent border-b-blue-500 border-l-transparent ${isTraversing ? 'animate-pulse' : ''}`}
+                              className={`h-0 w-0 border-r-[4px] border-b-[6px] border-l-[4px] border-r-transparent border-b-blue-500 border-l-transparent ${
+                                isTraversing || isReverseTraversing ? 'animate-pulse' : ''
+                              }`}
                             ></div>
                             <div
-                              className={`h-4 w-0.5 bg-blue-500 ${isTraversing ? 'animate-pulse' : ''}`}
+                              className={`h-4 w-0.5 bg-blue-500 ${
+                                isTraversing || isReverseTraversing ? 'animate-pulse' : ''
+                              }`}
                             ></div>
                           </div>
                           <div className="px-2 py-1 text-lg font-semibold text-blue-600">
@@ -227,6 +279,22 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
                           </div>
                         </div>
                       )}
+
+                    {/* Tail Label - Always show on last node */}
+                    {index === nodes.length - 1 && (
+                      <div
+                        className="absolute -top-16 left-1/2 z-10 -translate-x-1/2 transform"
+                        style={{
+                          left: nodes.length === 1 ? '75%' : '50%',
+                        }}
+                      >
+                        <div className="px-2 py-1 text-lg font-semibold text-gray-600">tail</div>
+                        <div className="flex flex-col items-center">
+                          <div className="h-4 w-0.5 bg-black"></div>
+                          <div className="h-0 w-0 border-t-[6px] border-r-[4px] border-l-[4px] border-t-black border-r-transparent border-l-transparent"></div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Node */}
                     {renderNode(value, index)}
@@ -274,6 +342,6 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
   );
 });
 
-SinglyLinkedListStepthroughVisualization.displayName = 'SinglyLinkedListStepthroughVisualization';
+DoublyLinkedListStepthroughVisualization.displayName = 'DoublyLinkedListStepthroughVisualization';
 
-export default SinglyLinkedListStepthroughVisualization;
+export default DoublyLinkedListStepthroughVisualization;

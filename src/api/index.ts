@@ -6,7 +6,8 @@ export const api = axios.create({
   withCredentials: true,
   timeout: 10000, // 10 second timeout
   headers: {
-    'dsview-api-key': process.env.NEXT_PUBLIC_API_KEY || '',
+    [process.env.NEXT_PUBLIC_API_KEY_NAME || 'dsview-api-key']:
+      process.env.NEXT_PUBLIC_API_KEY || '',
   },
 });
 
@@ -34,9 +35,15 @@ api.interceptors.response.use(
     // Handle 401 errors globally - but only for auth-related endpoints
     if (error.response?.status === 401) {
       const url = error.config?.url || '';
-      
+
       // Only redirect for auth endpoints, not for playground/run
       if (url.includes('/auth/') || url.includes('/profile')) {
+        // Don't redirect if this is a callback endpoint (to avoid infinite loops)
+        if (url.includes('/callback')) {
+          console.log('OAuth callback failed, not redirecting to avoid loops');
+          return Promise.reject(error);
+        }
+
         // Clear session on unauthorized
         if (typeof window !== 'undefined') {
           sessionStorage.clear();
