@@ -334,7 +334,7 @@ class DirectedGraphStepthroughService
       visited.add(nodeId);
       const node = nodes.find((n) => n.id === nodeId);
       if (node) {
-        node.outgoingEdges.forEach((edgeId) => {
+        node.outgoingEdges.forEach(() => {
           // Find the target node of this edge
           const edge = this.findEdgeById();
           if (edge && !visited.has(edge.to)) {

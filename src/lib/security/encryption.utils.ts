@@ -1,8 +1,3 @@
-/**
- * Encryption utilities for secure data storage
- * Uses Web Crypto API for client-side encryption
- */
-
 // Simple encryption key (in production, this should be generated server-side)
 const ENCRYPTION_KEY = 'kmitl-edu-platform-2024-secure-key';
 

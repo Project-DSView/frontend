@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useId } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -31,7 +31,14 @@ import {
 const AuthButtons: React.FC = () => {
   const { mutate: getGoogleAuth, isPending: isFetching } = useGoogleAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const logoutMutation = useLogout();
+  const dropdownId = useId();
+
+  // Prevent hydration issues by only rendering on client
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const { profile, accessToken, isInitialized, fetchUserProfile, setAuthData, clearAuthData } =
     useAuth();
@@ -228,7 +235,8 @@ const AuthButtons: React.FC = () => {
     }
   };
 
-  if (!isInitialized) {
+  // Show loading state during hydration
+  if (!isMounted || !isInitialized) {
     return (
       <div className="flex items-center space-x-2">
         <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
@@ -258,6 +266,7 @@ const AuthButtons: React.FC = () => {
         <Button
           variant="ghost"
           className="flex items-center space-x-2 rounded-lg px-3 py-1.5 hover:bg-gray-100"
+          id={`user-menu-trigger-${dropdownId}`}
         >
           <div className="flex items-center space-x-2">
             {profile.profile_img ? (
@@ -283,7 +292,7 @@ const AuthButtons: React.FC = () => {
           <ChevronDown className="h-4 w-4 text-gray-500" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-56" id={`user-menu-content-${dropdownId}`}>
         <div className="px-2 py-1.5 text-sm text-gray-500">
           Signed in as <span className="font-medium text-gray-900">{profile.email}</span>
         </div>

@@ -27,6 +27,36 @@ const DirectedGraphDragDropVisualization = forwardRef<
     const [traverseIndex, setTraverseIndex] = useState(0);
     const [isTraversing, setIsTraversing] = useState(false);
     const [traversalOrder, setTraversalOrder] = useState<string[]>([]);
+    const [draggedNode, setDraggedNode] = useState<string | null>(null);
+    const [nodePositions, setNodePositions] = useState<{ [key: string]: { x: number; y: number } }>(
+      {},
+    );
+
+    // Handle drag events
+    const handleMouseDown = useCallback((e: React.MouseEvent, nodeId: string) => {
+      e.preventDefault();
+      setDraggedNode(nodeId);
+    }, []);
+
+    const handleMouseMove = useCallback(
+      (e: React.MouseEvent) => {
+        if (draggedNode) {
+          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          setNodePositions((prev) => ({
+            ...prev,
+            [draggedNode]: { x, y },
+          }));
+        }
+      },
+      [draggedNode],
+    );
+
+    const handleMouseUp = useCallback(() => {
+      setDraggedNode(null);
+    }, []);
 
     // Generate traversal order based on current operation
     const generateTraversalOrder = useCallback(
@@ -174,6 +204,9 @@ const DirectedGraphDragDropVisualization = forwardRef<
             isTraverseSelected={isTraverseSelected}
             isCurrentlyTraversing={isCurrentlyTraversing}
             isRunning={isRunning ?? false}
+            onMouseDown={handleMouseDown}
+            position={nodePositions[node.id]}
+            isDragging={draggedNode === node.id}
           />
         );
       },
@@ -186,6 +219,9 @@ const DirectedGraphDragDropVisualization = forwardRef<
         traverseIndex,
         traversalOrder,
         isRunning,
+        handleMouseDown,
+        nodePositions,
+        draggedNode,
       ],
     );
 
@@ -199,21 +235,35 @@ const DirectedGraphDragDropVisualization = forwardRef<
 
         const isHighlighted = highlightedEdges.includes(edge.id);
 
+        // Use dragged positions if available, otherwise use original positions
+        const fromPosition = nodePositions[fromNode.id] || { x: fromNode.x, y: fromNode.y };
+        const toPosition = nodePositions[toNode.id] || { x: toNode.x, y: toNode.y };
+
+        // Create nodes with updated positions for GraphEdge
+        const fromNodeWithPosition = { ...fromNode, x: fromPosition.x, y: fromPosition.y };
+        const toNodeWithPosition = { ...toNode, x: toPosition.x, y: toPosition.y };
+
         return (
           <GraphEdge
             key={edge.id}
             edge={edge}
-            fromNode={fromNode}
-            toNode={toNode}
+            fromNode={fromNodeWithPosition}
+            toNode={toNodeWithPosition}
             isHighlighted={isHighlighted}
           />
         );
       },
-      [nodes, highlightedEdges],
+      [nodes, highlightedEdges, nodePositions],
     );
 
     return (
-      <div ref={ref} className="rounded-lg bg-white p-6 shadow">
+      <div
+        ref={ref}
+        className="rounded-lg bg-white p-6 shadow"
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-800">Directed Graph Visualization</h2>
           {isRunning && (

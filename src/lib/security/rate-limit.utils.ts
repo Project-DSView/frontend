@@ -1,14 +1,7 @@
 import { RateLimitConfig, RateLimitEntry } from '@/types';
 
-/**
- * In-memory rate limiting store
- * In production, this should be backed by a persistent store
- */
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
-/**
- * Check if action is rate limited
- */
 const isRateLimited = (config: RateLimitConfig): boolean => {
   const now = Date.now();
   const key = config.key;

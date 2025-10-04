@@ -1,6 +1,13 @@
 import React from 'react';
 import { DragDropZoneProps } from '@/types';
 import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const DragDropZone: React.FC<DragDropZoneProps> = ({
   operations,
@@ -169,7 +176,6 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                   'insert_position',
                   'delete_value',
                   'search_value',
-                  'update_value',
                   'push',
                   'add_vertex',
                   'remove_vertex',
@@ -181,6 +187,32 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                     onChange={(e) => handleInputValidation(op, 'value', e.target.value)}
                     className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'value')}`}
                   />
+                )}
+
+                {/* Value Select for update_value operation */}
+                {op.type === 'update_value' && (
+                  <Select
+                    value={op.value || ''}
+                    onValueChange={(value) => handleInputValidation(op, 'value', value)}
+                  >
+                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'value')}`}>
+                      <SelectValue placeholder="Select Value" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {operations
+                        .filter(
+                          (otherOp) =>
+                            ['insert_beginning', 'insert_end', 'insert_position'].includes(
+                              otherOp.type,
+                            ) && otherOp.value,
+                        )
+                        .map((valueOp) => (
+                          <SelectItem key={valueOp.id} value={valueOp.value || ''}>
+                            {valueOp.value}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
                 )}
 
                 {/* Number input for BST operations */}
@@ -202,39 +234,74 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                   'delete_position',
                   'search_position',
                   'update_position',
-                  'add_edge',
-                  'remove_edge',
                 ].includes(op.type) && (
                   <input
-                    type={['add_edge', 'remove_edge'].includes(op.type) ? 'text' : 'number'}
-                    placeholder={
-                      ['add_edge', 'remove_edge'].includes(op.type) ? 'From Vertex' : 'Position'
-                    }
+                    type="number"
+                    placeholder="Position"
                     value={op.position || ''}
                     onChange={(e) => handleInputValidation(op, 'position', e.target.value)}
                     className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'position')}`}
                   />
                 )}
 
-                {/* New Value input for update operations and edge operations */}
-                {[
-                  'update_value',
-                  'update_position',
-                  'add_edge',
-                  'remove_edge',
-                  'traversal_dfs',
-                  'traversal_bfs',
-                  'shortest_path',
-                ].includes(op.type) && (
+                {/* From Vertex Select for edge operations */}
+                {['add_edge', 'remove_edge'].includes(op.type) && (
+                  <Select
+                    value={op.position || ''}
+                    onValueChange={(value) => handleInputValidation(op, 'position', value)}
+                  >
+                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'position')}`}>
+                      <SelectValue placeholder="From Vertex" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {operations
+                        .filter((otherOp) => otherOp.type === 'add_vertex' && otherOp.value)
+                        .map((vertexOp) => (
+                          <SelectItem key={vertexOp.id} value={vertexOp.value || ''}>
+                            {vertexOp.value}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {/* New Value input for update operations */}
+                {['update_value', 'update_position'].includes(op.type) && (
                   <input
                     type="text"
-                    placeholder={
-                      ['add_edge', 'remove_edge'].includes(op.type)
-                        ? 'To Vertex'
-                        : ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(op.type)
-                          ? 'Start Vertex'
-                          : 'New Value'
-                    }
+                    placeholder="New Value"
+                    value={op.newValue || ''}
+                    onChange={(e) => handleInputValidation(op, 'newValue', e.target.value)}
+                    className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'newValue')}`}
+                  />
+                )}
+
+                {/* To Vertex Select for edge operations */}
+                {['add_edge', 'remove_edge'].includes(op.type) && (
+                  <Select
+                    value={op.newValue || ''}
+                    onValueChange={(value) => handleInputValidation(op, 'newValue', value)}
+                  >
+                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'newValue')}`}>
+                      <SelectValue placeholder="To Vertex" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {operations
+                        .filter((otherOp) => otherOp.type === 'add_vertex' && otherOp.value)
+                        .map((vertexOp) => (
+                          <SelectItem key={vertexOp.id} value={vertexOp.value || ''}>
+                            {vertexOp.value}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {/* Start Vertex input for traversal operations */}
+                {['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(op.type) && (
+                  <input
+                    type="text"
+                    placeholder="Start Vertex"
                     value={op.newValue || ''}
                     onChange={(e) => handleInputValidation(op, 'newValue', e.target.value)}
                     className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'newValue')}`}

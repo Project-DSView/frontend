@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,24 @@ import useAuth from '@/hooks/auth/useAuth';
 
 const DesktopMenu = () => {
   const [isPlaygroundOpen, setIsPlaygroundOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const { profile, isInitialized } = useAuth();
+
+  // Prevent hydration issues by only rendering on client
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Show loading state during hydration
+  if (!isMounted) {
+    return (
+      <div className="hidden items-center space-x-1 md:flex">
+        <div className="h-8 w-20 animate-pulse rounded bg-gray-200"></div>
+        <div className="h-8 w-16 animate-pulse rounded bg-gray-200"></div>
+        <div className="h-8 w-16 animate-pulse rounded bg-gray-200"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="hidden items-center space-x-1 md:flex">

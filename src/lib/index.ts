@@ -1,6 +1,3 @@
-// Dev Tools
-export { devUtils, devToolsConfig } from './dev-tools';
-
 // Drag Drop
 export {
   delay,
@@ -10,20 +7,12 @@ export {
   formatExecutionMessage,
 } from './dragdrop/execution.utils';
 
-// Export utilities
-export { ExportUtils } from './export.utils';
+// Query
+export { devUtils, devToolsConfig } from './query/dev-tools';
 
-// Security utilities
-export {
-  decodeJWT,
-  isTokenExpired,
-  isTokenExpiringSoon,
-  isValidJWTFormat,
-  getUserIdFromToken,
-  getTokenExpirationTime,
-  getTimeUntilExpiration,
-} from './security/jwt.utils';
+export { createQueryClient } from './query/query-client';
 
+// Security
 export {
   sessionUtils,
   clearAllCookies,
@@ -41,7 +30,16 @@ export {
   getAllCookies,
 } from './security/cookie.utils';
 
-export { secureSessionUtils } from './security/secure-session.utils';
+export {
+  getSafeHeaders,
+  isOriginAllowed,
+  getAllowedHeaders,
+  getAllowedMethods,
+  shouldIncludeCredentials,
+  generateCORSHeaders,
+  handleCORSPreflight,
+  DEFAULT_CORS_CONFIG,
+} from './security/cors.utils';
 
 export {
   generateCSRFToken,
@@ -55,6 +53,16 @@ export {
 } from './security/csrf.utils';
 
 export {
+  decodeJWT,
+  isTokenExpired,
+  isTokenExpiringSoon,
+  isValidJWTFormat,
+  getUserIdFromToken,
+  getTokenExpirationTime,
+  getTimeUntilExpiration,
+} from './security/jwt.utils';
+
+export {
   isRateLimited,
   getRemainingAttempts,
   getTimeUntilReset,
@@ -65,19 +73,11 @@ export {
   cleanupExpiredEntries,
 } from './security/rate-limit.utils';
 
-export {
-  getSafeHeaders,
-  isOriginAllowed,
-  getAllowedHeaders,
-  getAllowedMethods,
-  shouldIncludeCredentials,
-  generateCORSHeaders,
-  handleCORSPreflight,
-  DEFAULT_CORS_CONFIG,
-} from './security/cors.utils';
-
-// Query Client
-export { createQueryClient } from './query-client';
+export { secureSessionUtils } from './security/secure-session.utils';
 
 // Utils
-export { default as cn } from './utils';
+export { ExportUtils } from './utils/export.utils';
+
+export { isValidImageUrl, getCourseImageFallback } from './utils/image.utils';
+
+export { default as cn } from './utils/utils';

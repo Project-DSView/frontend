@@ -9,15 +9,7 @@ import { isTokenExpired, isValidJWTFormat, getTimeUntilExpiration } from './jwt.
 import { encryptObject, decryptObject, isEncryptionSupported } from './encryption.utils';
 import { UserProfile, SecureSessionData } from '@/types';
 
-/**
- * Secure Session Storage using cookies for sensitive data
- */
 const secureSessionUtils = {
-  /**
-   * Save session data securely with encryption
-   * Token is stored in httpOnly cookie (set by server)
-   * Profile data is encrypted and stored in secure cookie
-   */
   saveSession: async (token: string, userProfile: UserProfile): Promise<void> => {
     try {
       // Validate token before saving
@@ -87,6 +79,11 @@ const secureSessionUtils = {
         sameSite: 'strict',
         path: '/',
       });
+
+      // Store token in localStorage for client-side access
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('accessToken', token);
+      }
     } catch (error) {
       console.error('Failed to save session securely:', error);
       // Clear any partial data
@@ -147,9 +144,18 @@ const secureSessionUtils = {
         return null;
       }
 
-      // For client-side session management, we'll use a placeholder token
-      // The actual token should be retrieved from httpOnly cookie by server
-      const token = 'session-active';
+      // For client-side session management, we need to get the actual token
+      // Check if we have a stored token in localStorage as fallback
+      let token = null;
+      if (typeof window !== 'undefined') {
+        token = localStorage.getItem('accessToken');
+      }
+
+      // If no token found, return null to indicate no valid session
+      if (!token) {
+        console.warn('No valid token found in session');
+        return null;
+      }
 
       return {
         token,
@@ -175,6 +181,11 @@ const secureSessionUtils = {
       // Clear authentication cookies
       deleteCookie('isAuthenticated');
       deleteCookie('userId');
+
+      // Clear localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
+      }
 
       // Clear all other cookies (for logout)
       clearAllCookies();
