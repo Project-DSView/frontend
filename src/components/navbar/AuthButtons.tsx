@@ -19,7 +19,7 @@ import {
   isValidJWTFormat,
   getTokenExpirationTime,
 } from '@/lib';
-import { User, ChevronDown } from 'lucide-react';
+import { User, ChevronDown, BarChart3, LayoutDashboard } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -184,9 +184,14 @@ const AuthButtons: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [isInitialized, profile, accessToken, fetchUserProfile, clearAuthData, setAuthData]);
 
-  const handleMyProfile = () => {
-    // TODO: Navigate to profile page
-    toast.info('Profile page coming soon!');
+  const handleViewScore = () => {
+    // TODO: Navigate to score page
+    toast.info('Score page coming soon!');
+  };
+
+  const handleDashboard = () => {
+    // TODO: Navigate to dashboard page
+    toast.info('Dashboard page coming soon!');
   };
 
   const handleLogin = async () => {
@@ -297,10 +302,19 @@ const AuthButtons: React.FC = () => {
           Signed in as <span className="font-medium text-gray-900">{profile.email}</span>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" onClick={handleMyProfile}>
-          <User className="mr-2 h-4 w-4" />
-          <span>My Profile</span>
+        <DropdownMenuItem className="cursor-pointer" onClick={handleViewScore}>
+          <BarChart3 className="mr-2 h-4 w-4" />
+          <span>View Score</span>
         </DropdownMenuItem>
+        {profile.is_teacher && (
+          <>
+            <DropdownMenuItem className="cursor-pointer" onClick={handleDashboard}>
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              <span>Dashboard</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-600"
