@@ -32,7 +32,9 @@ const CourseCard: React.FC<CourseCardProps> = ({
   };
 
   return (
-    <Card className={`h-full transition-all duration-200 hover:shadow-lg ${course.status === 'archived' ? 'opacity-50' : ''}`}>
+    <Card
+      className={`h-full transition-all duration-200 hover:shadow-lg ${course.status === 'archived' ? 'opacity-50' : ''}`}
+    >
       <CardHeader className="pb-3">
         {/* Course Image */}
         <div className="mb-4">
@@ -51,7 +53,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
             <div
               className={`h-48 w-full bg-gradient-to-br ${getCourseImageFallback(course.name)} flex items-center justify-center rounded-lg border border-gray-200`}
             >
-              <BookOpen className="h-16 w-16 text-info" />
+              <BookOpen className="text-info h-16 w-16" />
             </div>
           )}
         </div>
@@ -63,12 +65,12 @@ const CourseCard: React.FC<CourseCardProps> = ({
           </CardTitle>
           {course.status === 'archived' && (
             <div className="mt-1">
-              <span className="inline-flex items-center rounded-full bg-error px-2 py-1 text-xs font-medium text-white">
+              <span className="bg-error inline-flex items-center rounded-full px-2 py-1 text-xs font-medium text-white">
                 Archived Course
               </span>
             </div>
           )}
-          <CardDescription className="mt-2 line-clamp-2 text-sm text-neutral">
+          <CardDescription className="text-neutral mt-2 line-clamp-2 text-sm">
             {course.description}
           </CardDescription>
         </div>
@@ -77,7 +79,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
       <CardContent className="pt-0">
         <div className="space-y-3">
           {/* Course Stats */}
-          <div className="flex items-center gap-4 text-sm text-neutral">
+          <div className="text-neutral flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4" />
               <span>นักเรียน {course.enrollment_count} คน</span>
@@ -85,7 +87,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           </div>
 
           {/* Creator Info */}
-          <div className="flex items-center gap-2 text-sm text-neutral">
+          <div className="text-neutral flex items-center gap-2 text-sm">
             <User className="h-4 w-4" />
             <span>
               สร้างโดย {course.creator.firstname} {course.creator.lastname}
@@ -93,7 +95,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           </div>
 
           {/* Created Date */}
-          <div className="flex items-center gap-2 text-sm text-neutral">
+          <div className="text-neutral flex items-center gap-2 text-sm">
             <Calendar className="h-4 w-4" />
             <span>สร้างเมื่อ {formatDate(course.created_at)}</span>
           </div>
