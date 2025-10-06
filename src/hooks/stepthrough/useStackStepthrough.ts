@@ -6,46 +6,49 @@ import {
   BaseStepthroughState,
   BaseStepthroughService,
   StepthroughStep,
+  StackInstanceData,
+  StackStepDetail,
 } from '@/types';
 import { stackCodeTemplate } from '@/data';
-
-// Type definitions for stack instance data
-interface StackInstanceData {
-  data: unknown[];
-  size?: number;
-  isEmpty?: boolean;
-  top?: unknown;
-}
-
-interface StackStepDetail {
-  operation?: string;
-  after_data?: unknown[];
-  before_data?: unknown[];
-  value?: unknown[];
-  size?: number;
-  instance_name?: string;
-}
 
 // Stack Stepthrough Service
 class StackStepthroughService implements BaseStepthroughService<StackData, StackStatsExtended> {
   extractDataFromSteps(steps: StepthroughStep[], stepIndex: number): StackData {
     if (stepIndex < 0 || stepIndex >= steps.length) {
-      return { elements: [] };
+      return { elements: [], count: 0 };
     }
 
     const step = steps[stepIndex];
     const state = step.state;
 
-    // Extract elements from instances
+    // Extract all stack instances dynamically
+    const allStacks: {
+      [stackName: string]: { data: string[]; size: number; isEmpty: boolean; top: string | null };
+    } = {};
     let elements: string[] = [];
 
     if (state.instances) {
-      // Look for stack instances in the state
-      Object.entries(state.instances).forEach(([, instanceData]) => {
+      // Look for all stack instances in the state
+      Object.entries(state.instances).forEach(([instanceName, instanceData]) => {
         if (instanceData && typeof instanceData === 'object' && 'data' in instanceData) {
           const instance = instanceData as StackInstanceData;
           if (Array.isArray(instance.data)) {
-            elements = instance.data.map((item: unknown) => String(item));
+            const stackData = instance.data.map((item: unknown) => String(item));
+            allStacks[instanceName] = {
+              data: stackData,
+              size: instance.size || stackData.length,
+              isEmpty: instance.isEmpty || stackData.length === 0,
+              top: instance.top
+                ? String(instance.top)
+                : stackData.length > 0
+                  ? stackData[stackData.length - 1]
+                  : null,
+            };
+
+            // Use the first stack as primary elements for backward compatibility
+            if (elements.length === 0) {
+              elements = stackData;
+            }
           }
         }
       });
@@ -92,7 +95,11 @@ class StackStepthroughService implements BaseStepthroughService<StackData, Stack
       }
     }
 
-    return { elements };
+    return {
+      elements,
+      count: elements.length,
+      allStacks: Object.keys(allStacks).length > 0 ? allStacks : undefined,
+    };
   }
 
   extractStatsFromSteps(steps: StepthroughStep[], stepIndex: number): StackStatsExtended {
@@ -132,7 +139,7 @@ const defaultState: BaseStepthroughState<StackData, StackStatsExtended> = {
   code: stackCodeTemplate,
   filename: 'playground.py',
   steps: [],
-  data: { elements: [] },
+  data: { elements: [], count: 0, allStacks: undefined },
   stats: {
     size: 0,
     headValue: null,
@@ -151,12 +158,14 @@ const useStackStepthrough = () => {
   const stackData = useMemo(
     () => ({
       elements: baseHook.state.data.elements,
+      allStacks: baseHook.state.data.allStacks,
       head: baseHook.state.stats.headValue,
       tail: baseHook.state.stats.tailValue,
       count: baseHook.state.stats.size,
     }),
     [
       baseHook.state.data.elements,
+      baseHook.state.data.allStacks,
       baseHook.state.stats.headValue,
       baseHook.state.stats.tailValue,
       baseHook.state.stats.size,

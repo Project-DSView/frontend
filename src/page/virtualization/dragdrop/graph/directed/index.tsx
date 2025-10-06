@@ -10,16 +10,16 @@ import {
 } from '@/types';
 import { useDirectedGraphDragDrop } from '@/hooks';
 import { directedGraphDragComponents } from '@/data';
-import DragDropZone from '@/components/virtualization/shared/DragDropZone';
-import StepSelector from '@/components/virtualization/shared/StepSelector';
-import ExportPNGButton from '@/components/virtualization/shared/ExportPNGButton';
+import DragDropZone from '@/components/playground/shared/DragDropZone';
+import StepSelector from '@/components/playground/shared/StepSelector';
+import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 
 // Lazy load heavy components
 const DirectedGraphDragDropOperations = lazy(
-  () => import('@/components/virtualization/dragdrop/graph/directed/DirectedGraphOperations'),
+  () => import('@/components/playground/dragdrop/opeartion/DirectedGraph'),
 );
 const DirectedGraphDragDropVisualization = lazy(
-  () => import('@/components/virtualization/dragdrop/graph/directed/DirectedGraphVisualization'),
+  () => import('@/components/playground/dragdrop/visualization/DirectedGraph'),
 );
 
 const DragDropDirectedGraph = () => {
@@ -173,6 +173,12 @@ const DragDropDirectedGraph = () => {
 
   const handleClearAll = () => {
     clearAll();
+    setSelectedStep(null);
+  };
+
+  const handleRemoveOperation = (id: number) => {
+    removeOperation(id);
+    // Reset step selection when removing operations
     setSelectedStep(null);
   };
 
@@ -534,25 +540,13 @@ const DragDropDirectedGraph = () => {
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onRemoveOperation={removeOperation}
+            onRemoveOperation={handleRemoveOperation}
             onUpdateOperationValue={updateOperationValue}
             onUpdateOperationPosition={updateOperationPosition}
             onUpdateOperationNewValue={updateOperationNewValue}
           />
         </div>
       </div>
-
-      {/* Step Selection */}
-      <StepSelector
-        operations={state.operations as Operation[]}
-        selectedStep={selectedStep}
-        onStepSelect={handleStepSelect}
-        getStepDescription={getStepDescription}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onAutoPlay={handleAutoPlay}
-        isAutoPlaying={isAutoPlaying}
-      />
 
       {/* Visualization */}
       <Suspense
@@ -582,6 +576,20 @@ const DragDropDirectedGraph = () => {
           shortestPath={shortestPath}
         />
       </Suspense>
+
+      <div className="mt-6">
+        {/* Step Selection */}
+        <StepSelector
+          operations={state.operations as Operation[]}
+          selectedStep={selectedStep}
+          onStepSelect={handleStepSelect}
+          getStepDescription={getStepDescription}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onAutoPlay={handleAutoPlay}
+          isAutoPlaying={isAutoPlaying}
+        />
+      </div>
     </div>
   );
 };

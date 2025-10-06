@@ -14,7 +14,6 @@ export const decodeJWT = (token: string): JWTPayload | null => {
 
     // Clean token
     const cleanToken = token.trim();
-    console.log('Decoding JWT token:', cleanToken.substring(0, 20) + '...');
 
     const parts = cleanToken.split('.');
     if (parts.length !== 3) {
@@ -25,7 +24,6 @@ export const decodeJWT = (token: string): JWTPayload | null => {
     const payload = parts[1];
     const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
     const parsed = JSON.parse(decoded);
-    console.log('JWT decoded successfully');
     return parsed;
   } catch (error) {
     console.error('Failed to decode JWT:', error);
@@ -96,18 +94,13 @@ export const getTimeUntilExpiration = (token: string): number | null => {
  */
 export const isValidJWTFormat = (token: string): boolean => {
   if (!token || typeof token !== 'string') {
-    console.log('Invalid token input:', token);
     return false;
   }
 
   const cleanToken = token.trim();
   const parts = cleanToken.split('.');
 
-  console.log('JWT validation - parts count:', parts.length);
-  console.log('JWT validation - token preview:', cleanToken.substring(0, 20) + '...');
-
   if (parts.length !== 3) {
-    console.log('Invalid JWT format - expected 3 parts, got:', parts.length);
     return false;
   }
 
@@ -119,10 +112,8 @@ export const isValidJWTFormat = (token: string): boolean => {
       }
       atob(part.replace(/-/g, '+').replace(/_/g, '/'));
     });
-    console.log('JWT format validation passed');
     return true;
-  } catch (error) {
-    console.log('JWT format validation failed:', error);
+  } catch {
     return false;
   }
 };

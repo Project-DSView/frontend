@@ -10,8 +10,6 @@ import {
   UndirectedGraphEdge,
 } from '@/types';
 import { undirectedGraphCodeTemplate } from '@/data';
-
-// Undirected Graph Stepthrough Service
 class UndirectedGraphStepthroughService
   implements BaseStepthroughService<UndirectedGraphData, UndirectedGraphStats>
 {
@@ -27,8 +25,6 @@ class UndirectedGraphStepthroughService
     let nodes: UndirectedGraphNode[] = [];
     let edges: UndirectedGraphEdge[] = [];
 
-    console.log('UndirectedGraph extractDataFromSteps - state:', state);
-
     // Check if we have vertices and edges in state
     const stateWithGraph = state as Record<string, unknown>;
     if (
@@ -37,11 +33,6 @@ class UndirectedGraphStepthroughService
       stateWithGraph.edges &&
       Array.isArray(stateWithGraph.edges)
     ) {
-      console.log('UndirectedGraph found vertices and edges in state:', {
-        vertices: stateWithGraph.vertices,
-        edges: stateWithGraph.edges,
-      });
-
       // Create nodes from vertices
       nodes = (stateWithGraph.vertices as string[]).map((vertex: string) => ({
         id: vertex,
@@ -87,17 +78,10 @@ class UndirectedGraphStepthroughService
 
     // If no graph data found, try to extract from instances
     if (nodes.length === 0 && state.instances) {
-      console.log('UndirectedGraph checking instances:', state.instances);
-
-      Object.entries(state.instances).forEach(([instanceName, instanceData]) => {
-        console.log(`UndirectedGraph instance ${instanceName}:`, instanceData);
+      Object.entries(state.instances).forEach(([, instanceData]) => {
         if (instanceData && typeof instanceData === 'object' && 'adjacency_list' in instanceData) {
           const instance = instanceData as Record<string, unknown>;
           if (instance.adjacency_list) {
-            console.log(
-              'UndirectedGraph found adjacency_list in instance:',
-              instance.adjacency_list,
-            );
             const graphData = this.convertAdjacencyListToGraphData(instance.adjacency_list);
             nodes = graphData.nodes;
             edges = graphData.edges;
@@ -113,7 +97,6 @@ class UndirectedGraphStepthroughService
       edges = graphData.edges;
     }
 
-    console.log('UndirectedGraph extractDataFromSteps - final result:', { nodes, edges });
     return { nodes, edges };
   }
 
@@ -182,10 +165,7 @@ class UndirectedGraphStepthroughService
     nodes: UndirectedGraphNode[];
     edges: UndirectedGraphEdge[];
   } {
-    console.log('UndirectedGraph convertAdjacencyListToGraphData - input:', adjacencyList);
-
     if (!adjacencyList || typeof adjacencyList !== 'object') {
-      console.log('UndirectedGraph convertAdjacencyListToGraphData - invalid input');
       return { nodes: [], edges: [] };
     }
 
@@ -237,7 +217,6 @@ class UndirectedGraphStepthroughService
       });
     });
 
-    console.log('UndirectedGraph convertAdjacencyListToGraphData - result:', { nodes, edges });
     return { nodes, edges };
   }
 
@@ -248,19 +227,10 @@ class UndirectedGraphStepthroughService
     let nodes: UndirectedGraphNode[] = [];
     const edges: UndirectedGraphEdge[] = [];
 
-    console.log(
-      'UndirectedGraph buildGraphFromSteps - steps:',
-      steps.length,
-      'stepIndex:',
-      stepIndex,
-    );
-
     // Use the latest step that has graph data
     for (let i = stepIndex; i >= 0; i--) {
       const step = steps[i];
       const state = step.state;
-
-      console.log(`UndirectedGraph step ${i}:`, { step, state });
 
       // Check if we have vertices and edges in state
       const stateWithGraph = state as Record<string, unknown>;
@@ -270,11 +240,6 @@ class UndirectedGraphStepthroughService
         stateWithGraph.edges &&
         Array.isArray(stateWithGraph.edges)
       ) {
-        console.log('UndirectedGraph buildGraphFromSteps - found vertices and edges:', {
-          vertices: stateWithGraph.vertices,
-          edges: stateWithGraph.edges,
-        });
-
         // Create nodes from vertices
         nodes = (stateWithGraph.vertices as string[]).map((vertex: string) => ({
           id: vertex,
@@ -322,7 +287,6 @@ class UndirectedGraphStepthroughService
       }
     }
 
-    console.log('UndirectedGraph buildGraphFromSteps - final result:', { nodes, edges });
     return { nodes, edges };
   }
 

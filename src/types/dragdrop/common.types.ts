@@ -8,6 +8,8 @@ interface Operation {
   color: string;
   category: string;
   endVertex?: string | null;
+  sourceStack?: string | null; // For copyStack operation
+  targetStack?: string | null; // For copyStack operation
 }
 
 interface DragComponent {

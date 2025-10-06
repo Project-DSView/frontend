@@ -4,17 +4,16 @@ import React, { useState, useRef, lazy, Suspense } from 'react';
 import { SinglyLinkedListDragComponent } from '@/types';
 import { useSinglyLinkedListDragDrop } from '@/hooks';
 import { singlyLinkedListDragComponents } from '@/data';
-import DragDropZone from '@/components/virtualization/shared/DragDropZone';
-import StepSelector from '@/components/virtualization/shared/StepSelector';
-import ExportPNGButton from '@/components/virtualization/shared/ExportPNGButton';
+import DragDropZone from '@/components/playground/shared/DragDropZone';
+import StepSelector from '@/components/playground/shared/StepSelector';
+import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 
 // Lazy load heavy components
 const SinglyLinkedListDragDropOperations = lazy(
-  () => import('@/components/virtualization/dragdrop/linklist/singly/SinglyLinkedListOperations'),
+  () => import('@/components/playground/dragdrop/opeartion/SinglyLinkedList'),
 );
 const SinglyLinkedListDragDropVisualization = lazy(
-  () =>
-    import('@/components/virtualization/dragdrop/linklist/singly/SinglyLinkedListVisualization'),
+  () => import('@/components/playground/dragdrop/visualization/SinglyLinkedList'),
 );
 
 const DragDropSinglyLinkList = () => {
@@ -102,6 +101,12 @@ const DragDropSinglyLinkList = () => {
     setSelectedStep(null);
   };
 
+  const handleRemoveOperation = (id: number) => {
+    removeOperation(id);
+    // Reset step selection when removing operations
+    setSelectedStep(null);
+  };
+
   const handleStepSelect = (stepIndex: number) => {
     setSelectedStep(stepIndex);
     // Stop auto play when manually selecting a step
@@ -175,6 +180,7 @@ const DragDropSinglyLinkList = () => {
       insert_position: `เพิ่มข้อมูล ${operation.value} ที่ตำแหน่ง ${operation.position}`,
       delete_beginning: 'ลบข้อมูลที่ตำแหน่งเริ่มต้นของ linked list',
       delete_end: 'ลบข้อมูลที่ตำแหน่งท้ายของ linked list',
+      delete_value: `ลบข้อมูลตามค่า ${operation.value}`,
       delete_position: `ลบข้อมูลที่ตำแหน่ง ${operation.position}`,
       search: `ค้นหาข้อมูล ${operation.value} ใน linked list`,
       search_position: `ค้นหาข้อมูลที่ตำแหน่ง ${operation.position}`,
@@ -242,6 +248,14 @@ const DragDropSinglyLinkList = () => {
             currentNodes = currentNodes.slice(0, -1);
           }
           break;
+        case 'delete_value':
+          if (operation.value) {
+            const idx = currentNodes.indexOf(operation.value);
+            if (idx !== -1) {
+              currentNodes.splice(idx, 1);
+            }
+          }
+          break;
         case 'delete_position':
           if (operation.position) {
             const pos = parseInt(operation.position);
@@ -284,6 +298,10 @@ const DragDropSinglyLinkList = () => {
   const getCurrentVisualizationState = () => {
     if (selectedStep !== null) {
       return getStepState(selectedStep);
+    }
+    // If no step is selected but there are operations, show the final state
+    if (state.operations.length > 0) {
+      return getStepState(state.operations.length - 1);
     }
     return { nodes: state.nodes, stats: state.stats };
   };
@@ -339,25 +357,13 @@ const DragDropSinglyLinkList = () => {
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onRemoveOperation={removeOperation}
+            onRemoveOperation={handleRemoveOperation}
             onUpdateOperationValue={updateOperationValue}
             onUpdateOperationPosition={updateOperationPosition}
             onUpdateOperationNewValue={updateOperationNewValue}
           />
         </div>
       </div>
-
-      {/* Step Selection */}
-      <StepSelector
-        operations={state.operations}
-        selectedStep={selectedStep}
-        onStepSelect={handleStepSelect}
-        getStepDescription={getStepDescription}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onAutoPlay={handleAutoPlay}
-        isAutoPlaying={isAutoPlaying}
-      />
 
       {/* Visualization */}
       <Suspense
@@ -381,6 +387,20 @@ const DragDropSinglyLinkList = () => {
           }
         />
       </Suspense>
+
+      <div className="mt-6">
+        {/* Step Selection */}
+        <StepSelector
+          operations={state.operations}
+          selectedStep={selectedStep}
+          onStepSelect={handleStepSelect}
+          getStepDescription={getStepDescription}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onAutoPlay={handleAutoPlay}
+          isAutoPlaying={isAutoPlaying}
+        />
+      </div>
     </div>
   );
 };

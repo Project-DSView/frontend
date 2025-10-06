@@ -82,15 +82,9 @@ const AuthButtons: React.FC = () => {
       const success = urlParams.get('success');
 
       if (token && success === 'true') {
-        console.log('OAuth callback detected, processing...');
-        console.log('Token received:', token);
-        console.log('Token length:', token.length);
-        console.log('Token type:', typeof token);
-
         try {
           // Clean token (remove whitespace and special characters)
           const cleanToken = token.trim().replace(/[^\w.-]/g, '');
-          console.log('Cleaned token:', cleanToken);
 
           // Validate token format first
           if (!isValidJWTFormat(cleanToken)) {
@@ -134,7 +128,6 @@ const AuthButtons: React.FC = () => {
       try {
         // First, validate token format
         if (!isValidJWTFormat(accessToken)) {
-          console.log('Invalid token format detected, clearing session');
           clearAuthData();
           return;
         }
@@ -163,12 +156,11 @@ const AuthButtons: React.FC = () => {
             const data = await response.json();
             if (data.success && data.data.token) {
               setAuthData(data.data.token, data.data.user);
-              console.log('Token refreshed successfully');
               return;
             }
           }
         } catch {
-          console.log('Token refresh failed, validating existing token');
+          // Token refresh failed, continue with existing token
         }
 
         // Fallback to validating existing token

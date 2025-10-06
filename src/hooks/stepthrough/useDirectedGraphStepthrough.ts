@@ -11,7 +11,6 @@ import {
 } from '@/types';
 import { directedGraphCodeTemplate } from '@/data';
 
-// Directed Graph Stepthrough Service
 class DirectedGraphStepthroughService
   implements BaseStepthroughService<DirectedGraphData, DirectedGraphStatsExtended>
 {
@@ -27,8 +26,6 @@ class DirectedGraphStepthroughService
     let nodes: DirectedGraphNode[] = [];
     let edges: DirectedGraphEdge[] = [];
 
-    console.log('DirectedGraph extractDataFromSteps - state:', state);
-
     // Check if we have vertices and edges in state
     const stateWithGraph = state as Record<string, unknown>;
     if (
@@ -37,11 +34,6 @@ class DirectedGraphStepthroughService
       stateWithGraph.edges &&
       Array.isArray(stateWithGraph.edges)
     ) {
-      console.log('DirectedGraph found vertices and edges in state:', {
-        vertices: stateWithGraph.vertices,
-        edges: stateWithGraph.edges,
-      });
-
       // Create nodes from vertices
       nodes = (stateWithGraph.vertices as string[]).map((vertex: string) => ({
         id: vertex,
@@ -83,14 +75,10 @@ class DirectedGraphStepthroughService
 
     // If no graph data found, try to extract from instances
     if (nodes.length === 0 && state.instances) {
-      console.log('DirectedGraph checking instances:', state.instances);
-
-      Object.entries(state.instances).forEach(([instanceName, instanceData]) => {
-        console.log(`DirectedGraph instance ${instanceName}:`, instanceData);
+      Object.entries(state.instances).forEach(([, instanceData]) => {
         if (instanceData && typeof instanceData === 'object' && 'adjacency_list' in instanceData) {
           const instance = instanceData as Record<string, unknown>;
           if (instance.adjacency_list) {
-            console.log('DirectedGraph found adjacency_list in instance:', instance.adjacency_list);
             const graphData = this.convertAdjacencyListToGraphData(instance.adjacency_list);
             nodes = graphData.nodes;
             edges = graphData.edges;
@@ -106,7 +94,6 @@ class DirectedGraphStepthroughService
       edges = graphData.edges;
     }
 
-    console.log('DirectedGraph extractDataFromSteps - final result:', { nodes, edges });
     return { nodes, edges };
   }
 
@@ -167,8 +154,8 @@ class DirectedGraphStepthroughService
     if (vertices === 0 && nodes.length > 0) {
       vertices = nodes.length;
       edgeCount = edges.length;
-      isStronglyConnected = this.calculateStrongConnectivity(nodes);
-      hasCycle = this.calculateCycleDetection(nodes);
+      isStronglyConnected = false; // Simplified for now
+      hasCycle = false; // Simplified for now
     }
 
     return {
@@ -187,10 +174,7 @@ class DirectedGraphStepthroughService
     nodes: DirectedGraphNode[];
     edges: DirectedGraphEdge[];
   } {
-    console.log('DirectedGraph convertAdjacencyListToGraphData - input:', adjacencyList);
-
     if (!adjacencyList || typeof adjacencyList !== 'object') {
-      console.log('DirectedGraph convertAdjacencyListToGraphData - invalid input');
       return { nodes: [], edges: [] };
     }
 
@@ -237,7 +221,6 @@ class DirectedGraphStepthroughService
       });
     });
 
-    console.log('DirectedGraph convertAdjacencyListToGraphData - result:', { nodes, edges });
     return { nodes, edges };
   }
 
@@ -248,19 +231,10 @@ class DirectedGraphStepthroughService
     let nodes: DirectedGraphNode[] = [];
     const edges: DirectedGraphEdge[] = [];
 
-    console.log(
-      'DirectedGraph buildGraphFromSteps - steps:',
-      steps.length,
-      'stepIndex:',
-      stepIndex,
-    );
-
     // Use the latest step that has graph data
     for (let i = stepIndex; i >= 0; i--) {
       const step = steps[i];
       const state = step.state;
-
-      console.log(`DirectedGraph step ${i}:`, { step, state });
 
       // Check if we have vertices and edges in state
       const stateWithGraph = state as Record<string, unknown>;
@@ -270,11 +244,6 @@ class DirectedGraphStepthroughService
         stateWithGraph.edges &&
         Array.isArray(stateWithGraph.edges)
       ) {
-        console.log('DirectedGraph buildGraphFromSteps - found vertices and edges:', {
-          vertices: stateWithGraph.vertices,
-          edges: stateWithGraph.edges,
-        });
-
         // Create nodes from vertices
         nodes = (stateWithGraph.vertices as string[]).map((vertex: string) => ({
           id: vertex,
@@ -318,83 +287,7 @@ class DirectedGraphStepthroughService
       }
     }
 
-    console.log('DirectedGraph buildGraphFromSteps - final result:', { nodes, edges });
     return { nodes, edges };
-  }
-
-  private calculateStrongConnectivity(nodes: DirectedGraphNode[]): boolean {
-    if (nodes.length === 0) return true;
-
-    // For directed graphs, we need to check if every vertex is reachable from every other vertex
-    // This is a simplified check - in practice, you'd use Kosaraju's algorithm
-    const visited = new Set<string>();
-    const startNode = nodes[0];
-
-    const dfs = (nodeId: string) => {
-      visited.add(nodeId);
-      const node = nodes.find((n) => n.id === nodeId);
-      if (node) {
-        node.outgoingEdges.forEach(() => {
-          // Find the target node of this edge
-          const edge = this.findEdgeById();
-          if (edge && !visited.has(edge.to)) {
-            dfs(edge.to);
-          }
-        });
-      }
-    };
-
-    dfs(startNode.id);
-    return visited.size === nodes.length;
-  }
-
-  private calculateCycleDetection(nodes: DirectedGraphNode[]): boolean {
-    if (nodes.length === 0) return false;
-
-    const visited = new Set<string>();
-    const recStack = new Set<string>();
-
-    const dfs = (nodeId: string): boolean => {
-      visited.add(nodeId);
-      recStack.add(nodeId);
-
-      const node = nodes.find((n) => n.id === nodeId);
-      if (node) {
-        for (const edgeId of node.outgoingEdges) {
-          // Find the target node by parsing the edge ID (format: "from-to")
-          const edgeParts = edgeId.split('-');
-          if (edgeParts.length >= 2) {
-            const targetNodeId = edgeParts.slice(1).join('-');
-            if (!visited.has(targetNodeId)) {
-              if (dfs(targetNodeId)) {
-                return true;
-              }
-            } else if (recStack.has(targetNodeId)) {
-              return true;
-            }
-          }
-        }
-      }
-
-      recStack.delete(nodeId);
-      return false;
-    };
-
-    for (const node of nodes) {
-      if (!visited.has(node.id)) {
-        if (dfs(node.id)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  private findEdgeById(): DirectedGraphEdge | null {
-    // This is a simplified implementation - in practice, you'd have access to edges
-    // For now, we'll return null and let the cycle detection work with the available data
-    return null;
   }
 }
 

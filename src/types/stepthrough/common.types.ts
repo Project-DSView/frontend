@@ -109,6 +109,7 @@ interface StepthroughCodeEditorProps {
     stepNumber: number;
   } | null;
   height?: string | number;
+  error?: string | null;
 }
 
 interface StepthroughStepControlProps {
@@ -127,6 +128,7 @@ interface StepthroughVisualizationProps<TData extends StepthroughData = Stepthro
   currentStepIndex: number;
   data: TData;
   isRunning: boolean;
+  error?: string | null;
 }
 
 interface StepthroughLayoutProps<TData extends StepthroughData = StepthroughData> {
@@ -149,6 +151,7 @@ interface StepthroughLayoutProps<TData extends StepthroughData = StepthroughData
   title: string;
   description: string;
   visualizationComponent: React.ComponentType<StepthroughVisualizationProps<TData>>;
+  error?: string | null;
 }
 
 export type {

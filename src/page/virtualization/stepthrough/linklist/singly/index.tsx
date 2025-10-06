@@ -2,13 +2,12 @@
 
 import React, { lazy } from 'react';
 import { useSinglyLinkedListStepthrough } from '@/hooks';
-import StepthroughLayout from '@/components/virtualization/shared/StepthroughLayout';
+import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 import { LinkedListData } from '@/types';
 
 // Lazy load heavy components
 const SinglyLinkedListStepthroughVisualization = lazy(
-  () =>
-    import('@/components/virtualization/stepthrough/linklist/singly/SinglyLinkedListVisualization'),
+  () => import('@/components/playground/stepthrough/visualization/SinglyLinkedList'),
 );
 
 const StepthroughSinglyLinkedList: React.FC = () => {
@@ -47,6 +46,7 @@ const StepthroughSinglyLinkedList: React.FC = () => {
       title="Stepthrough Singly Linked List"
       description="เขียนโค้ด Python และดูการทำงานแบบ step-by-step พร้อม visualization"
       visualizationComponent={SinglyLinkedListStepthroughVisualization}
+      error={state.error}
     />
   );
 };

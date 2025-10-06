@@ -79,6 +79,7 @@ interface StackVisualizationProps {
   elements: string[];
   stats: {
     length: number;
+    count: number;
     headValue: string | null;
     tailValue: string | null;
     isEmpty: boolean;
@@ -86,6 +87,15 @@ interface StackVisualizationProps {
   isRunning?: boolean;
   currentOperation?: string;
   currentStep?: string;
+  // For copyStack operation - support multiple stacks
+  stacks?: {
+    s1: string[];
+    s2: string[];
+  };
+  // Individual stack data
+  mainStack?: string[];
+  stackS1?: string[];
+  stackS2?: string[];
 }
 
 interface DragDropZoneProps {
@@ -98,6 +108,8 @@ interface DragDropZoneProps {
   onUpdateOperationValue: (id: number, value: string) => void;
   onUpdateOperationPosition: (id: number, position: string) => void;
   onUpdateOperationNewValue: (id: number, newValue: string) => void;
+  onUpdateOperationSourceStack?: (id: number, sourceStack: string) => void;
+  onUpdateOperationTargetStack?: (id: number, targetStack: string) => void;
   children?: React.ReactNode;
 }
 

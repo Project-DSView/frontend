@@ -4,16 +4,14 @@ import React, { useState, useRef, lazy, Suspense } from 'react';
 import { BSTDragComponent, BSTNode, BSTOperation } from '@/types';
 import { useBSTDragDrop } from '@/hooks';
 import { bstDragComponents } from '@/data';
-import DragDropZone from '@/components/virtualization/shared/DragDropZone';
-import StepSelector from '@/components/virtualization/shared/StepSelector';
-import ExportPNGButton from '@/components/virtualization/shared/ExportPNGButton';
+import DragDropZone from '@/components/playground/shared/DragDropZone';
+import StepSelector from '@/components/playground/shared/StepSelector';
+import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 
 // Lazy load heavy components
-const BSTDragDropOperations = lazy(
-  () => import('@/components/virtualization/dragdrop/bst/BSTOperations'),
-);
+const BSTDragDropOperations = lazy(() => import('@/components/playground/dragdrop/opeartion/BST'));
 const BSTDragDropVisualization = lazy(
-  () => import('@/components/virtualization/dragdrop/bst/BSTVisualization'),
+  () => import('@/components/playground/dragdrop/visualization/BST'),
 );
 
 // BST helper functions - moved outside component to prevent recreation
@@ -201,6 +199,12 @@ const DragDropBST = () => {
 
   const handleClearAll = () => {
     clearAll();
+    setSelectedStep(null);
+  };
+
+  const handleRemoveOperation = (id: number) => {
+    removeOperation(id);
+    // Reset step selection when removing operations
     setSelectedStep(null);
   };
 
@@ -411,25 +415,13 @@ const DragDropBST = () => {
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onRemoveOperation={removeOperation}
+            onRemoveOperation={handleRemoveOperation}
             onUpdateOperationValue={updateOperationValue}
             onUpdateOperationPosition={updateOperationPosition}
             onUpdateOperationNewValue={updateOperationNewValue}
           />
         </div>
       </div>
-
-      {/* Step Selection */}
-      <StepSelector
-        operations={state.operations}
-        selectedStep={selectedStep}
-        onStepSelect={handleStepSelect}
-        getStepDescription={getStepDescription}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onAutoPlay={handleAutoPlay}
-        isAutoPlaying={isAutoPlaying}
-      />
 
       {/* Visualization */}
       <Suspense
@@ -453,6 +445,20 @@ const DragDropBST = () => {
           }
         />
       </Suspense>
+
+      <div className="mt-6">
+        {/* Step Selection */}
+        <StepSelector
+          operations={state.operations}
+          selectedStep={selectedStep}
+          onStepSelect={handleStepSelect}
+          getStepDescription={getStepDescription}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onAutoPlay={handleAutoPlay}
+          isAutoPlaying={isAutoPlaying}
+        />
+      </div>
     </div>
   );
 };

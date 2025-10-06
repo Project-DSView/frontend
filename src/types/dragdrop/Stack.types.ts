@@ -13,7 +13,7 @@ interface StackState {
 }
 
 interface StackOperation extends Operation {
-  type: 'push' | 'pop' | 'peek' | 'is_empty' | 'size';
+  type: 'push' | 'pop' | 'peek' | 'is_empty' | 'size' | 'copyStack';
 }
 
 interface StackDragComponent extends DragComponent {
@@ -38,6 +38,7 @@ interface StackCodeTemplate {
 // Stack-specific types
 interface StackData {
   elements: string[];
+  count: number;
 }
 
 interface StackStatsExtended extends BaseStats {

@@ -2,12 +2,12 @@
 
 import React, { lazy } from 'react';
 import { useStackStepthrough } from '@/hooks';
-import StepthroughLayout from '@/components/virtualization/shared/StepthroughLayout';
+import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 import { StackData } from '@/types';
 
 // Lazy load heavy components
 const StackStepthroughVisualization = lazy(
-  () => import('@/components/virtualization/stepthrough/stack/StackVisualization'),
+  () => import('@/components/playground/stepthrough/visualization/Stack'),
 );
 
 const StepthroughStack: React.FC = () => {
@@ -46,6 +46,7 @@ const StepthroughStack: React.FC = () => {
       title="Stepthrough Stack"
       description="เขียนโค้ด Python และดูการทำงานแบบ step-by-step พร้อม visualization"
       visualizationComponent={StackStepthroughVisualization}
+      error={state.error}
     />
   );
 };

@@ -23,16 +23,12 @@ class BSTStepthroughService implements BaseStepthroughService<BSTData, BSTStatsE
     // Extract BST root from instances
     let root: BSTNode | null = null;
 
-    console.log('BST extractDataFromSteps - state.instances:', state.instances);
-
     if (state.instances) {
       // Look for BST instances in the state
-      Object.entries(state.instances).forEach(([instanceName, instanceData]) => {
-        console.log(`BST instance ${instanceName}:`, instanceData);
+      Object.entries(state.instances).forEach(([, instanceData]) => {
         if (instanceData && typeof instanceData === 'object' && 'root' in instanceData) {
           const instance = instanceData as Record<string, unknown>;
           if (instance.root) {
-            console.log('BST found root in instance:', instance.root);
             root = this.convertToBSTNode(instance.root);
           }
         }
@@ -42,16 +38,13 @@ class BSTStepthroughService implements BaseStepthroughService<BSTData, BSTStatsE
     // If no root found, try to extract from step detail
     if (!root && state.step_detail) {
       const stepDetail = state.step_detail as Record<string, unknown>;
-      console.log('BST step_detail:', stepDetail);
 
       // Check for insert operations
       if (stepDetail.operation === 'insert' && stepDetail.after_tree) {
-        console.log('BST found root in insert after_tree:', stepDetail.after_tree);
         root = this.convertToBSTNode(stepDetail.after_tree);
       }
       // Check for delete operations
       else if (stepDetail.operation === 'delete' && stepDetail.after_tree) {
-        console.log('BST found root in delete after_tree:', stepDetail.after_tree);
         root = this.convertToBSTNode(stepDetail.after_tree);
       }
       // Check for traverse operations
@@ -120,10 +113,7 @@ class BSTStepthroughService implements BaseStepthroughService<BSTData, BSTStatsE
   }
 
   private convertToBSTNode(nodeData: unknown): BSTNode | null {
-    console.log('BST convertToBSTNode - input:', nodeData);
-
     if (!nodeData || typeof nodeData !== 'object') {
-      console.log('BST convertToBSTNode - invalid input');
       return null;
     }
 
@@ -135,8 +125,6 @@ class BSTStepthroughService implements BaseStepthroughService<BSTData, BSTStatsE
       id: Math.random().toString(36).substring(2, 11),
     };
 
-    console.log('BST convertToBSTNode - created node:', node);
-
     if (data.left) {
       node.left = this.convertToBSTNode(data.left);
     }
@@ -144,26 +132,20 @@ class BSTStepthroughService implements BaseStepthroughService<BSTData, BSTStatsE
       node.right = this.convertToBSTNode(data.right);
     }
 
-    console.log('BST convertToBSTNode - final node:', node);
     return node;
   }
 
   private buildTreeFromSteps(steps: StepthroughStep[], stepIndex: number): BSTNode | null {
     let root: BSTNode | null = null;
 
-    console.log('BST buildTreeFromSteps - steps:', steps.length, 'stepIndex:', stepIndex);
-
     for (let i = 0; i <= stepIndex; i++) {
       const step = steps[i];
       const state = step.state;
-
-      console.log(`BST step ${i}:`, { step, state });
 
       // Check for insert operations in step detail
       if (state.step_detail?.operation === 'insert') {
         const stepDetail = state.step_detail as Record<string, unknown>;
         if (stepDetail.after_tree) {
-          console.log('BST buildTreeFromSteps - found insert after_tree:', stepDetail.after_tree);
           root = this.convertToBSTNode(stepDetail.after_tree);
         }
       }
@@ -171,13 +153,11 @@ class BSTStepthroughService implements BaseStepthroughService<BSTData, BSTStatsE
       else if (state.step_detail?.operation === 'delete') {
         const stepDetail = state.step_detail as Record<string, unknown>;
         if (stepDetail.after_tree) {
-          console.log('BST buildTreeFromSteps - found delete after_tree:', stepDetail.after_tree);
           root = this.convertToBSTNode(stepDetail.after_tree);
         }
       }
     }
 
-    console.log('BST buildTreeFromSteps - final root:', root);
     return root;
   }
 
@@ -235,7 +215,6 @@ const useBSTStepthrough = () => {
       count: bstData.size,
       root: bstData.root, // Add root for BST visualization
     };
-    console.log('BST linkedListData:', data);
     return data;
   }, [bstData.size, bstData.root]);
 

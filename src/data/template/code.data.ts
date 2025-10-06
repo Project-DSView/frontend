@@ -210,154 +210,129 @@ mylist.traverseReverse()
 const stackCodeTemplate = `class ArrayStack:
     def __init__(self):
         self.data = []
+
     def size(self):
         return len(self.data)
+
     def is_empty(self):
-        if self.data == []:
-            return True
-        else:
-            return False
+        return self.data == []
+
     def push(self, input_data):
         self.data.append(input_data)
+
     def pop(self):
         if self.data == []:
-            return print("Underflow: Cannot pop data from an empty list")
+            print("Underflow: Cannot pop data from an empty list")
+            return None
         else:
-            self.data.pop()
+            return self.data.pop() 
+
     def stackTop(self):
+        if self.data == []:
+            return None
         return self.data[-1]
 
     def printStack(self):
         print(self.data)
 
+
 def is_parentheses_matching(expression):
-        myStack = ArrayStack()
-        for i in expression:
-            if i == "(":
+    myStack = ArrayStack()
+    for i in expression:
+        if i == "(":
+            myStack.push(i)
+        elif i == ")":
+            if myStack.is_empty():
+                print("Parentheses in " + expression + " are unmatched")
+                return False
+            elif myStack.stackTop() == "(":
+                myStack.pop()
+            else:
                 myStack.push(i)
-            elif i == ")":
-                if myStack.stackTop() == "(":
-                    myStack.pop()
-                else:
-                    myStack.push(i)
-        if myStack.size() == 0:
-            return True
-        else:
-            print("Parentheses in "+ expression + " are unmatched")
-            return False
-        
+
+    if myStack.size() == 0:
+        return True
+    else:
+        print("Parentheses in " + expression + " are unmatched")
+        return False
+
+
 def copyStack(s1, s2):
-        newStack = ArrayStack()
-        while s1.size() != 0:
-            data = s1.pop()
-            newStack.push(data)
-        while s2.size() != 0:
-            s2.pop()
-        while newStack.size() != 0:
-            data = newStack.pop()
-            s1.push(data)
-            s2.push(data)
-        
-        del newStack
+    newStack = ArrayStack()
+    # คัดลอกจาก s1 ไป newStack (กลับลำดับ)
+    while s1.size() != 0:
+        data = s1.pop()
+        newStack.push(data)
+    # เคลียร์ s2
+    while s2.size() != 0:
+        s2.pop()
+    # คัดลอกจาก newStack กลับไป s1 และ s2
+    while newStack.size() != 0:
+        data = newStack.pop()
+        s1.push(data)
+        s2.push(data)
+    del newStack
+
+
 def infixToPostfix(expression):
-        text = ""
-        getStack = ArrayStack()
-        lista = ["+", "-"]
-        listb = ["*", "/"]
-        for i in expression:
-            if i not in lista and i not in listb:
-                text += i
-            elif i in listb:
-                if getStack.size() == 0:
-                    getStack.push(i)
-                else:
-                    if getStack.stackTop() == "+" or getStack.stackTop() == "-":
-                        getStack.push(i)
-                    else:
-                        while getStack.size() != 0:
-                            data = getStack.stackTop()
-                            text += data
-                            getStack.push(i)
-            elif i in lista:
-                if getStack.size() == 0:
-                    getStack.push(i)
-                else:
-                    while getStack.size() != 0:
-                        data = getStack.stackTop()
-                        text += data
-                        getStack.pop()
-                    getStack.push(i)
-        while getStack.size() != 0:
-            data = getStack.stackTop()
-            text += data
-            getStack.pop()
-        return text
+    text = ""
+    getStack = ArrayStack()
+    prec = {'+': 1, '-': 1, '*': 2, '/': 2}
+
+    for i in expression:
+        if i.isalpha():  # ถ้าเป็นตัวแปร เช่น A, B, C
+            text += i
+        else:
+            # ถ้าเป็น operator (+ - * /)
+            while (not getStack.is_empty() and prec.get(i, 0) <= prec.get(getStack.stackTop(), 0)):
+                text += getStack.pop()
+            getStack.push(i)
+
+    while not getStack.is_empty():
+        text += getStack.pop()
+
+    return text
+
 
 newStack = ArrayStack()
-str = "(((A-B)*C)"
-result = is_parentheses_matching(str)
+expr = "(((A-B)*C))"
+result = is_parentheses_matching(expr)
 print(result)
-s1 = ArrayStack(); 
-s1.push(10); s1.push(20); s1.push(30)
-s2 = ArrayStack(); s2.push(15)
+
+s1 = ArrayStack()
+s1.push(10)
+s1.push(20)
+s1.push(30)
+
+s2 = ArrayStack()
+s2.push(15)
+
 copyStack(s1, s2)
 s1.printStack()
 s2.printStack()
+
+s1.push(50)
+s1.printStack()
+
 exp = "A+B*C-D/E"
 postfix = infixToPostfix(exp)
 print("Postfix of", exp, "is", postfix)
-
 `;
 
 const bstCodeTemplate = `class BSTNode:
-    """
-    A class representing a single node in the Binary Search Tree.
-
-    Attributes:
-        data: The data stored in the node.
-        left: A reference to the left child node.
-        right: A reference to the right child node.
-    """
     def __init__(self, data):
-        """
-        Initializes a new BSTNode.
-
-        Args:
-            data: The data to be stored in the node.
-        """
         self.data = data
         self.left = None
         self.right = None
 
 class BST:
-    """
-    A class representing the Binary Search Tree.
-
-    Attributes:
-        root: The root node of the tree.
-    """
     def __init__(self):
-        """
-        Initializes an empty Binary Search Tree.
-        """
         self.root = None
 
     def is_empty(self):
-        """
-        Checks if the tree is empty.
-
-        Returns:
-            True if the tree is empty, False otherwise.
-        """
         return self.root is None
 
     def insert(self, data):
-        """
-        Inserts a new data value into the tree.
-
-        Args:
-            data: The data to be inserted.
-        """
         new_node = BSTNode(data)
         if self.is_empty():
             self.root = new_node
@@ -378,15 +353,6 @@ class BST:
                     current_node = current_node.right
 
     def delete(self, data):
-        """
-        Deletes a node with the specified data from the tree.
-
-        Args:
-            data: The data of the node to be deleted.
-
-        Returns:
-            The deleted data if successful, None otherwise.
-        """
         # A helper function to find the successor for case 4
         def find_min_node(node):
             current = node
@@ -431,12 +397,6 @@ class BST:
 
 
     def findMin(self):
-        """
-        Finds the minimum value in the tree.
-
-        Returns:
-            The minimum value, or None if the tree is empty.
-        """
         if self.is_empty():
             return None
         current_node = self.root
@@ -445,12 +405,6 @@ class BST:
         return current_node.data
 
     def findMax(self):
-        """
-        Finds the maximum value in the tree.
-
-        Returns:
-            The maximum value, or None if the tree is empty.
-        """
         if self.is_empty():
             return None
         current_node = self.root
@@ -459,9 +413,6 @@ class BST:
         return current_node.data
 
     def traverse(self):
-        """
-        Performs all three traversals (preorder, inorder, postorder) and prints the results.
-        """
         if self.is_empty():
             print("The tree is empty.")
             return
@@ -479,27 +430,18 @@ class BST:
         print()
 
     def preorder(self, root):
-        """
-        Performs a preorder traversal (Root -> Left -> Right).
-        """
         if root is not None:
             print(f"-> {root.data}", end=" ")
             self.preorder(root.left)
             self.preorder(root.right)
 
     def inorder(self, root):
-        """
-        Performs an inorder traversal (Left -> Root -> Right).
-        """
         if root is not None:
             self.inorder(root.left)
             print(f"-> {root.data}", end=" ")
             self.inorder(root.right)
 
     def postorder(self, root):
-        """
-        Performs a postorder traversal (Left -> Right -> Root).
-        """
         if root is not None:
             self.postorder(root.left)
             self.postorder(root.right)
@@ -521,14 +463,14 @@ myBST.insert(10)
 myBST.insert(33)
 myBST.traverse()
 
-print("\n--- Test Case 2: Deletion and Finding Min/Max ---")
+print("--- Test Case 2: Deletion and Finding Min/Max ---")
 deleted_data = myBST.delete(14)
 print(f"Deleted data: {deleted_data}")
 print("Min: ", myBST.findMin())
 print("Max: ", myBST.findMax())
 
 # --- Test Case 3: More Deletion Tests ---
-print("\n--- Test Case 3: More Deletion Tests ---")
+print("--- Test Case 3: More Deletion Tests ---")
 myBST_del = BST()
 myBST_del.insert(14)
 myBST_del.insert(23)
@@ -541,24 +483,23 @@ myBST_del.insert(13)
 print("Initial tree:")
 myBST_del.traverse()
 
-print("\nDeleting leaf node (5):")
+print("Deleting leaf node (5):")
 deleted_data = myBST_del.delete(5)
 print(f"Deleted data: {deleted_data}")
 myBST_del.traverse()
 
-print("\nDeleting node with two children (14):")
+print("Deleting node with two children (14):")
 deleted_data = myBST_del.delete(14)
 print(f"Deleted data: {deleted_data}")
 myBST_del.traverse()
 
-print("\nDeleting node with one child (7):")
+print("Deleting node with one child (7):")
 deleted_data = myBST_del.delete(7)
 print(f"Deleted data: {deleted_data}")
 myBST_del.traverse()
 `;
 
-const undirectedGraphCodeTemplate = `
-    import collections
+const undirectedGraphCodeTemplate = `import collections
 
 class UndirectedGraph:
     def __init__(self):
@@ -604,10 +545,10 @@ class UndirectedGraph:
         if not self.adjacency_list:
             print("The graph is empty.")
             return
-        print("\n--- Graph Adjacency List ---")
+        print("--- Graph Adjacency List ---")
         for vertex, neighbors in self.adjacency_list.items():
             print(f"'{vertex}': {', '.join(map(str, neighbors)) if neighbors else 'No neighbors'}")
-        print("----------------------------\n")
+        print("----------------------------")
         
     def bfs(self, start_vertex):
         if start_vertex not in self.adjacency_list:
@@ -755,10 +696,10 @@ class DirectedGraph:
         if not self.adjacency_list:
             print("The graph is empty.")
             return
-        print("\n--- Directed Graph Adjacency List ---")
+        print("--- Directed Graph Adjacency List ---")
         for vertex, neighbors in self.adjacency_list.items():
             print(f"'{vertex}': {', '.join(map(str, neighbors)) if neighbors else 'No outgoing edges'}")
-        print("------------------------------------\n")
+        print("------------------------------------")
         
     def bfs(self, start_vertex):
         if start_vertex not in self.adjacency_list:
@@ -863,6 +804,8 @@ myGraph.add_edge("A", "C")
 myGraph.add_edge("B", "D")
 myGraph.add_edge("C", "D")
 myGraph.add_edge("D", "A")  # This creates a cycle
+myGraph.add_edge("B", "A")  # This creates bidirectional edge
+myGraph.add_edge("C", "A")  # This creates bidirectional edge
 myGraph.display()
 
 print("--- Graph Traversal ---")

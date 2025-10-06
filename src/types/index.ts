@@ -139,6 +139,72 @@ export type {
   UndirectedGraphStateExtended,
 } from './dragdrop/UndirectedGraph.types';
 
+// Realtime
+export type {
+  SinglyLinkedListNode as RealtimeSinglyLinkedListNode,
+  SinglyLinkedListData as RealtimeSinglyLinkedListData,
+  SinglyLinkedListStats as RealtimeSinglyLinkedListStats,
+  SinglyLinkedListRealtimeProps,
+  SecurityStatus as SinglyLinkedListSecurityStatus,
+  ParsedCode as SinglyLinkedListParsedCode,
+  Operation as RealtimeSinglyLinkedListOperation,
+  ExecutionResult,
+} from './realtime/SinglyLinkedList.types';
+
+export type {
+  DoublyLinkedListNode as RealtimeDoublyLinkedListNode,
+  DoublyLinkedListData as RealtimeDoublyLinkedListData,
+  DoublyLinkedListStats as RealtimeDoublyLinkedListStats,
+  DoublyLinkedListRealtimeProps,
+  SecurityStatus as DoublyLinkedListSecurityStatus,
+  ParsedCode as DoublyLinkedListParsedCode,
+  Operation as RealtimeDoublyLinkedListOperation,
+  ExecutionResult as DoublyLinkedListExecutionResult,
+} from './realtime/DoublyLinkedList.types';
+
+export type {
+  StackData as RealtimeStackData,
+  StackStats as RealtimeStackStats,
+  StackRealtimeProps,
+  SecurityStatus as StackSecurityStatus,
+  ParsedCode as StackParsedCode,
+  Operation as RealtimeStackOperation,
+  ExecutionResult as StackExecutionResult,
+} from './realtime/Stack.types';
+
+export type {
+  UndirectedGraphData as RealtimeUndirectedGraphData,
+  UndirectedGraphStats as RealtimeUndirectedGraphStats,
+  UndirectedGraphNodeData as RealtimeUndirectedGraphNodeData,
+  UndirectedGraphEdgeData as RealtimeUndirectedGraphEdgeData,
+  UndirectedGraphRealtimeVisualizationProps,
+  SecurityStatus as UndirectedGraphSecurityStatus,
+  ParsedCode as UndirectedGraphParsedCode,
+  Operation as RealtimeUndirectedGraphOperation,
+} from './realtime/UndirectedGraph.types';
+
+export type {
+  DirectedGraphData as RealtimeDirectedGraphData,
+  DirectedGraphStats as RealtimeDirectedGraphStats,
+  DirectedGraphNodeData as RealtimeDirectedGraphNodeData,
+  DirectedGraphEdgeData as RealtimeDirectedGraphEdgeData,
+  GraphData,
+  SecurityStatus as DirectedGraphSecurityStatus,
+  ParsedCode as DirectedGraphParsedCode,
+  Operation as RealtimeDirectedGraphOperation,
+  DirectedGraphRealtimeProps,
+} from './realtime/DirectedGraph.types';
+
+export type {
+  BSTData as RealtimeBSTData,
+  BSTStats as RealtimeBSTStats,
+  BSTNodeData as RealtimeBSTNodeData,
+  SecurityStatus as BSTSecurityStatus,
+  ParsedCode as BSTParsedCode,
+  Operation as RealtimeBSTOperation,
+  BSTRealtimeProps,
+} from './realtime/BST.types';
+
 // Services
 export type { AuthResponse, UserProfile, UseAuthReturn } from './services/auth.types';
 export type {
@@ -165,6 +231,10 @@ export type {
   RateLimitConfig,
   RateLimitEntry,
   SecureSessionData,
+  ExecutionResult as SecurityExecutionResult,
+  CodeExecutionConfig,
+  SecurityStatus,
+  CodeValidationConfig,
 } from './security/security.types';
 
 // Stepthrough
@@ -193,6 +263,6 @@ export type { DirectedGraphData } from './stepthrough/DirectedGraph.types';
 
 export type { LinkedListData } from './stepthrough/LinkedList.types';
 
-export type { StackData } from './stepthrough/Stack.types';
+export type { StackData, StackInstanceData, StackStepDetail } from './stepthrough/Stack.types';
 
 export type { UndirectedGraphData } from './stepthrough/UndirectedGraph.types';

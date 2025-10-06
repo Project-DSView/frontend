@@ -2,12 +2,12 @@
 
 import React, { lazy } from 'react';
 import { useDirectedGraphStepthrough } from '@/hooks';
-import StepthroughLayout from '@/components/virtualization/shared/StepthroughLayout';
+import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 import { DirectedGraphData } from '@/types';
 
 // Lazy load heavy components
 const DirectedGraphStepthroughVisualization = lazy(
-  () => import('@/components/virtualization/stepthrough/graph/directed/DirectedGraphVisualization'),
+  () => import('@/components/playground/stepthrough/visualization/DirectedGraph'),
 );
 
 const StepthroughDirectedGraph: React.FC = () => {
@@ -46,6 +46,7 @@ const StepthroughDirectedGraph: React.FC = () => {
       title="Stepthrough Directed Graph"
       description="เขียนโค้ด Python และดูการทำงานแบบ step-by-step พร้อม visualization ของ Directed Graph"
       visualizationComponent={DirectedGraphStepthroughVisualization}
+      error={state.error}
     />
   );
 };

@@ -28,7 +28,10 @@ class StackServiceAdapter {
   getState(): BaseState<StackData, StackStatsExtended> {
     const stackState = this.service.getState();
     return {
-      data: { elements: stackState.elements },
+      data: {
+        elements: stackState.elements,
+        count: stackState.stats.length,
+      },
       operations: stackState.operations,
       stats: {
         size: stackState.stats.length,
@@ -48,6 +51,10 @@ class StackServiceAdapter {
         break;
       case 'pop':
         return await this.service.pop();
+      case 'copyStack':
+        // For copyStack, we need to handle multiple stacks
+        // This will be handled in the visualization layer
+        return [];
       default:
         console.warn('Unknown operation type:', operation.type);
         return [];
@@ -57,7 +64,10 @@ class StackServiceAdapter {
 }
 
 const defaultState: StackStateExtended = {
-  data: { elements: [] },
+  data: {
+    elements: [],
+    count: 0,
+  },
   operations: [],
   stats: {
     size: 0,

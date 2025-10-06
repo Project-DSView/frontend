@@ -104,7 +104,6 @@ const useAuth = (): UseAuthReturn => {
     try {
       // Validate token format first
       if (!token || !isValidJWTFormat(token)) {
-        console.log('Invalid token format in fetchUserProfile:', token);
         throw new Error('Invalid token format');
       }
 
@@ -137,7 +136,6 @@ const useAuth = (): UseAuthReturn => {
 
     // Validate token format
     if (!isValidJWTFormat(token)) {
-      console.log('Invalid token format in setAuthData:', token);
       throw new Error('Invalid token format');
     }
 

@@ -10,17 +10,16 @@ import {
 } from '@/types';
 import { useUndirectedGraphDragDrop } from '@/hooks';
 import { undirectedGraphDragComponents } from '@/data';
-import DragDropZone from '@/components/virtualization/shared/DragDropZone';
-import StepSelector from '@/components/virtualization/shared/StepSelector';
-import ExportPNGButton from '@/components/virtualization/shared/ExportPNGButton';
+import DragDropZone from '@/components/playground/shared/DragDropZone';
+import StepSelector from '@/components/playground/shared/StepSelector';
+import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 
 // Lazy load heavy components
 const UndirectedGraphDragDropOperations = lazy(
-  () => import('@/components/virtualization/dragdrop/graph/undirected/UndirectedGraphOperations'),
+  () => import('@/components/playground/dragdrop/opeartion/UndirectedGraph'),
 );
 const UndirectedGraphDragDropVisualization = lazy(
-  () =>
-    import('@/components/virtualization/dragdrop/graph/undirected/UndirectedGraphVisualization'),
+  () => import('@/components/playground/dragdrop/visualization/UndirectedGraph'),
 );
 
 const DragDropUndirectedGraph = () => {
@@ -176,6 +175,12 @@ const DragDropUndirectedGraph = () => {
 
   const handleClearAll = () => {
     clearAll();
+    setSelectedStep(null);
+  };
+
+  const handleRemoveOperation = (id: number) => {
+    removeOperation(id);
+    // Reset step selection when removing operations
     setSelectedStep(null);
   };
 
@@ -536,25 +541,13 @@ const DragDropUndirectedGraph = () => {
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onRemoveOperation={removeOperation}
+            onRemoveOperation={handleRemoveOperation}
             onUpdateOperationValue={updateOperationValue}
             onUpdateOperationPosition={updateOperationPosition}
             onUpdateOperationNewValue={updateOperationNewValue}
           />
         </div>
       </div>
-
-      {/* Step Selection */}
-      <StepSelector
-        operations={state.operations as Operation[]}
-        selectedStep={selectedStep}
-        onStepSelect={handleStepSelect}
-        getStepDescription={getStepDescription}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onAutoPlay={handleAutoPlay}
-        isAutoPlaying={isAutoPlaying}
-      />
 
       {/* Visualization */}
       <Suspense
@@ -584,6 +577,20 @@ const DragDropUndirectedGraph = () => {
           shortestPath={shortestPath}
         />
       </Suspense>
+
+      <div className="mt-6">
+        {/* Step Selection */}
+        <StepSelector
+          operations={state.operations as Operation[]}
+          selectedStep={selectedStep}
+          onStepSelect={handleStepSelect}
+          getStepDescription={getStepDescription}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onAutoPlay={handleAutoPlay}
+          isAutoPlaying={isAutoPlaying}
+        />
+      </div>
     </div>
   );
 };

@@ -4,16 +4,16 @@ import React, { useState, useRef, lazy, Suspense } from 'react';
 import { StackDragComponent } from '@/types';
 import { useStackDragDrop } from '@/hooks';
 import { stackDragComponents } from '@/data';
-import DragDropZone from '@/components/virtualization/shared/DragDropZone';
-import StepSelector from '@/components/virtualization/shared/StepSelector';
-import ExportPNGButton from '@/components/virtualization/shared/ExportPNGButton';
+import DragDropZone from '@/components/playground/shared/DragDropZone';
+import StepSelector from '@/components/playground/shared/StepSelector';
+import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 
 // Lazy load heavy components
 const StackDragDropOperations = lazy(
-  () => import('@/components/virtualization/dragdrop/stack/StackOperations'),
+  () => import('@/components/playground/dragdrop/opeartion/Stack'),
 );
 const StackDragDropVisualization = lazy(
-  () => import('@/components/virtualization/dragdrop/stack/StackVisualization'),
+  () => import('@/components/playground/dragdrop/visualization/Stack'),
 );
 
 const DragDropStack = () => {
@@ -86,8 +86,22 @@ const DragDropStack = () => {
     updateOperation(id, { newValue });
   };
 
+  const updateOperationSourceStack = (id: number, sourceStack: string) => {
+    updateOperation(id, { sourceStack });
+  };
+
+  const updateOperationTargetStack = (id: number, targetStack: string) => {
+    updateOperation(id, { targetStack });
+  };
+
   const handleClearAll = () => {
     clearAll();
+    setSelectedStep(null);
+  };
+
+  const handleRemoveOperation = (id: number) => {
+    removeOperation(id);
+    // Reset step selection when removing operations
     setSelectedStep(null);
   };
 
@@ -156,14 +170,17 @@ const DragDropStack = () => {
     value?: string | null;
     position?: string | null;
     newValue?: string | null;
+    sourceStack?: string | null;
+    targetStack?: string | null;
     name: string;
   }) => {
     const descriptions: { [key: string]: string } = {
-      push: `เพิ่มข้อมูล ${operation.value} ลงใน stack (LIFO - Last In First Out)`,
-      pop: 'ลบข้อมูลออกจาก stack ที่ตำแหน่งบนสุด',
+      push: `เพิ่มข้อมูล ${operation.value} ลงใน ${operation.targetStack || 'stack'} (LIFO - Last In First Out)`,
+      pop: `ลบข้อมูลออกจาก ${operation.targetStack || 'stack'} ที่ตำแหน่งบนสุด`,
       peek: 'ดูข้อมูลที่ตำแหน่งบนสุดของ stack โดยไม่ลบออก',
       is_empty: 'ตรวจสอบว่า stack ว่างเปล่าหรือไม่',
       size: 'นับจำนวนข้อมูลใน stack',
+      copyStack: `คัดลอกข้อมูลจาก ${operation.sourceStack || 'source stack'} ไปยัง ${operation.targetStack || 'target stack'}`,
     };
 
     return descriptions[operation.type] || `ดำเนินการ ${operation.name}`;
@@ -176,35 +193,111 @@ const DragDropStack = () => {
         elements: [],
         stats: {
           length: 0,
+          count: 0,
           headValue: null as string | null,
           tailValue: null as string | null,
           isEmpty: true,
         },
+        currentOperation: undefined,
+        stacks: undefined,
       };
     }
 
     let currentElements: string[] = [];
     let currentStats = {
       length: 0,
+      count: 0,
       headValue: null as string | null,
       tailValue: null as string | null,
       isEmpty: true,
     };
+    let currentOperation: string | undefined;
+    let stacks: { s1: string[]; s2: string[] } | undefined;
+    let mainStack: string[] = [];
+    let stackS1: string[] = [];
+    let stackS2: string[] = [];
 
     // Execute operations up to the selected step
     for (let i = 0; i <= stepIndex; i++) {
       const operation = state.operations[i];
       if (!operation) continue;
 
+      currentOperation = operation.type;
+
       switch (operation.type) {
         case 'push':
-          if (operation.value) {
-            currentElements = [...currentElements, operation.value];
+          if (operation.value && operation.targetStack) {
+            // Add to the appropriate stack based on targetStack selection
+            if (operation.targetStack === 'main') {
+              mainStack = [...mainStack, operation.value];
+              currentElements = mainStack; // Main stack is the primary display
+            } else if (operation.targetStack === 's1') {
+              stackS1 = [...stackS1, operation.value];
+            } else if (operation.targetStack === 's2') {
+              stackS2 = [...stackS2, operation.value];
+            }
+
+            // Update stacks object to show multiple stacks when using s1 or s2
+            stacks = {
+              s1: stackS1,
+              s2: stackS2,
+            };
           }
           break;
         case 'pop':
-          if (currentElements.length > 0) {
-            currentElements = currentElements.slice(0, -1);
+          if (operation.targetStack) {
+            // Pop from the appropriate stack based on targetStack selection
+            if (operation.targetStack === 'main') {
+              if (mainStack.length > 0) {
+                mainStack = mainStack.slice(0, -1);
+                currentElements = mainStack; // Main stack is the primary display
+              }
+            } else if (operation.targetStack === 's1') {
+              if (stackS1.length > 0) {
+                stackS1 = stackS1.slice(0, -1);
+              }
+            } else if (operation.targetStack === 's2') {
+              if (stackS2.length > 0) {
+                stackS2 = stackS2.slice(0, -1);
+              }
+            }
+
+            // Update stacks object to show multiple stacks when using s1 or s2
+            stacks = {
+              s1: stackS1,
+              s2: stackS2,
+            };
+          }
+          break;
+        case 'copyStack':
+          // Simulate copyStack operation
+          if (operation.sourceStack && operation.targetStack) {
+            let sourceElements: string[] = [];
+
+            // Get source elements based on sourceStack selection
+            if (operation.sourceStack === 'main') {
+              sourceElements = [...mainStack];
+            } else if (operation.sourceStack === 's1') {
+              sourceElements = [...stackS1];
+            } else if (operation.sourceStack === 's2') {
+              sourceElements = [...stackS2];
+            }
+
+            // Copy to target stack
+            if (operation.targetStack === 'main') {
+              mainStack = [...sourceElements];
+              currentElements = mainStack;
+            } else if (operation.targetStack === 's1') {
+              stackS1 = [...sourceElements];
+            } else if (operation.targetStack === 's2') {
+              stackS2 = [...sourceElements];
+            }
+
+            // Show both stacks for copyStack operation
+            stacks = {
+              s1: stackS1,
+              s2: stackS2,
+            };
           }
           break;
         case 'peek':
@@ -217,13 +310,22 @@ const DragDropStack = () => {
       // Update stats
       currentStats = {
         length: currentElements.length,
+        count: currentElements.length,
         headValue: currentElements.length > 0 ? currentElements[currentElements.length - 1] : null, // Top of stack
         tailValue: currentElements.length > 0 ? currentElements[0] : null, // Bottom of stack
         isEmpty: currentElements.length === 0,
       };
     }
 
-    return { elements: currentElements, stats: currentStats };
+    return {
+      elements: currentElements,
+      stats: currentStats,
+      currentOperation,
+      stacks,
+      mainStack,
+      stackS1,
+      stackS2,
+    };
   };
 
   // Get current visualization state based on selected step
@@ -231,7 +333,18 @@ const DragDropStack = () => {
     if (selectedStep !== null) {
       return getStepState(selectedStep);
     }
-    return { elements: state.elements, stats: state.stats };
+    return {
+      elements: state.elements,
+      stats: {
+        ...state.stats,
+        count: state.stats.length,
+      },
+      currentOperation: undefined,
+      stacks: undefined,
+      mainStack: [],
+      stackS1: [],
+      stackS2: [],
+    };
   };
 
   const currentVisualizationState = getCurrentVisualizationState();
@@ -242,9 +355,7 @@ const DragDropStack = () => {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="mb-2 text-2xl font-bold text-gray-800">Drag & Drop Stack</h1>
-          <p className="text-gray-600">
-            เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
-          </p>
+          <p className="text-gray-600">ลาก operations ไปยัง Drop Zone และเลือก stack ที่ต้องการ</p>
         </div>
         <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
       </div>
@@ -285,25 +396,15 @@ const DragDropStack = () => {
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onRemoveOperation={removeOperation}
+            onRemoveOperation={handleRemoveOperation}
             onUpdateOperationValue={updateOperationValue}
             onUpdateOperationPosition={updateOperationPosition}
             onUpdateOperationNewValue={updateOperationNewValue}
+            onUpdateOperationSourceStack={updateOperationSourceStack}
+            onUpdateOperationTargetStack={updateOperationTargetStack}
           />
         </div>
       </div>
-
-      {/* Step Selection */}
-      <StepSelector
-        operations={state.operations}
-        selectedStep={selectedStep}
-        onStepSelect={handleStepSelect}
-        getStepDescription={getStepDescription}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onAutoPlay={handleAutoPlay}
-        isAutoPlaying={isAutoPlaying}
-      />
 
       {/* Visualization */}
       <Suspense
@@ -317,8 +418,27 @@ const DragDropStack = () => {
           ref={visualizationRef}
           elements={currentVisualizationState.elements}
           stats={currentVisualizationState.stats}
+          currentOperation={currentVisualizationState.currentOperation}
+          stacks={currentVisualizationState.stacks}
+          mainStack={currentVisualizationState.mainStack}
+          stackS1={currentVisualizationState.stackS1}
+          stackS2={currentVisualizationState.stackS2}
         />
       </Suspense>
+
+      <div className="mt-6">
+        {/* Step Selection */}
+        <StepSelector
+          operations={state.operations}
+          selectedStep={selectedStep}
+          onStepSelect={handleStepSelect}
+          getStepDescription={getStepDescription}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onAutoPlay={handleAutoPlay}
+          isAutoPlaying={isAutoPlaying}
+        />
+      </div>
     </div>
   );
 };

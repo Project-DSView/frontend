@@ -1,9 +1,28 @@
-const Page = () => {
+'use client';
+
+import React, { useState } from 'react';
+import RealtimeLayout from '@/components/playground/realtime/layout/RealtimeLayout';
+import DoublyLinkedListRealtime from '@/components/playground/realtime/visualization/DoublyLinkedList';
+import { doublyLinkedListCodeTemplate } from '@/data';
+import useRealtimeDoublyLinkedList from '@/hooks/realtime/useDoublyLinkedList';
+
+const DoublyLinkedListRealtimePage: React.FC = () => {
+  const [code, setCode] = useState(doublyLinkedListCodeTemplate);
+
+  const { data, isExecuting, error, securityStatus } = useRealtimeDoublyLinkedList(code);
+
   return (
-    <>
-      <h1>test</h1>
-    </>
+    <RealtimeLayout
+      dataStructure="doubly-linked-list"
+      code={code}
+      onCodeChange={setCode}
+      data={data}
+      isExecuting={isExecuting}
+      error={error}
+      securityStatus={securityStatus}
+      visualizationComponent={DoublyLinkedListRealtime}
+    />
   );
 };
 
-export default Page;
+export default DoublyLinkedListRealtimePage;

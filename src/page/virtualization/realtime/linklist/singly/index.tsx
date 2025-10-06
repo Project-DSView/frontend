@@ -1,9 +1,31 @@
-const Page = () => {
+'use client';
+
+import React, { lazy, useState } from 'react';
+import RealtimeLayout from '@/components/playground/realtime/layout/RealtimeLayout';
+import { singlyLinkedListCodeTemplate } from '@/data';
+import { useRealtimeSinglyLinkedList } from '@/hooks';
+
+// Lazy load heavy components
+const SinglyLinkedListRealtimeVisualization = lazy(
+  () => import('@/components/playground/realtime/visualization/SinglyLinkedList'),
+);
+
+const RealtimeSinglyLinkedList: React.FC = () => {
+  const [code, setCode] = useState(singlyLinkedListCodeTemplate);
+  const { data, isExecuting, error, securityStatus } = useRealtimeSinglyLinkedList(code);
+
   return (
-    <>
-      <h1>test</h1>
-    </>
+    <RealtimeLayout
+      dataStructure="singly-linked-list"
+      code={code}
+      onCodeChange={setCode}
+      data={data}
+      isExecuting={isExecuting}
+      error={error}
+      securityStatus={securityStatus}
+      visualizationComponent={SinglyLinkedListRealtimeVisualization}
+    />
   );
 };
 
-export default Page;
+export default RealtimeSinglyLinkedList;

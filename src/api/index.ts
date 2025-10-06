@@ -40,7 +40,6 @@ api.interceptors.response.use(
       if (url.includes('/auth/') || url.includes('/profile')) {
         // Don't redirect if this is a callback endpoint (to avoid infinite loops)
         if (url.includes('/callback')) {
-          console.log('OAuth callback failed, not redirecting to avoid loops');
           return Promise.reject(error);
         }
 

@@ -2,12 +2,12 @@
 
 import React, { lazy } from 'react';
 import { useBSTStepthrough } from '@/hooks';
-import StepthroughLayout from '@/components/virtualization/shared/StepthroughLayout';
+import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 import { BSTData } from '@/types';
 
 // Lazy load heavy components
 const BSTStepthroughVisualization = lazy(
-  () => import('@/components/virtualization/stepthrough/bst/BSTVisualization'),
+  () => import('@/components/playground/stepthrough/visualization/BST'),
 );
 
 const StepthroughBST: React.FC = () => {
@@ -46,6 +46,7 @@ const StepthroughBST: React.FC = () => {
       title="Stepthrough Binary Search Tree"
       description="เขียนโค้ด Python และดูการทำงานแบบ step-by-step พร้อม visualization"
       visualizationComponent={BSTStepthroughVisualization}
+      error={state.error}
     />
   );
 };

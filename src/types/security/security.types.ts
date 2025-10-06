@@ -41,6 +41,32 @@ interface SecureSessionData {
   expiresAt: number;
 }
 
+interface ExecutionResult<T = unknown> {
+  success: boolean;
+  data: T | null;
+  error: string | null;
+}
+
+interface CodeExecutionConfig<T> {
+  service: unknown; // Service class for executing operations
+  initialData: T;
+  parseCode: (code: string) => { operations: unknown[]; isValid: boolean; errors: string[] };
+  executeOperations: (operations: unknown[]) => T;
+}
+
+interface SecurityStatus {
+  isSafe: boolean;
+  violations: string[];
+  warnings: string[];
+}
+
+interface CodeValidationConfig {
+  dangerousImports?: string[];
+  dangerousFunctions?: string[];
+  allowedImports?: string[];
+  allowedFunctions?: string[];
+}
+
 export type {
   CookieOptions,
   CORSConfig,
@@ -48,4 +74,8 @@ export type {
   RateLimitConfig,
   RateLimitEntry,
   SecureSessionData,
+  ExecutionResult,
+  CodeExecutionConfig,
+  SecurityStatus,
+  CodeValidationConfig,
 };

@@ -2,13 +2,12 @@
 
 import React, { lazy } from 'react';
 import { useUndirectedGraphStepthrough } from '@/hooks';
-import StepthroughLayout from '@/components/virtualization/shared/StepthroughLayout';
+import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 import { UndirectedGraphData } from '@/types';
 
 // Lazy load heavy components
 const UndirectedGraphStepthroughVisualization = lazy(
-  () =>
-    import('@/components/virtualization/stepthrough/graph/undirected/UndirectedGraphVisualization'),
+  () => import('@/components/playground/stepthrough/visualization/UndirectedGraph'),
 );
 
 const StepthroughUndirectedGraph: React.FC = () => {
@@ -47,6 +46,7 @@ const StepthroughUndirectedGraph: React.FC = () => {
       title="Stepthrough Undirected Graph"
       description="เขียนโค้ด Python และดูการทำงานแบบ step-by-step พร้อม visualization ของ Undirected Graph"
       visualizationComponent={UndirectedGraphStepthroughVisualization}
+      error={state.error}
     />
   );
 };

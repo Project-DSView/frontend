@@ -20,6 +20,16 @@ const stackDragComponents: StackDragComponent[] = [
     type: 'pop',
     description: 'เอาออก element บนสุดของ stack',
   },
+
+  // Utility Operations
+  {
+    id: 'copyStack',
+    name: 'Copy Stack',
+    color: 'bg-green-100 border-green-300',
+    category: 'utility',
+    type: 'copyStack',
+    description: 'คัดลอกข้อมูลจาก stack หนึ่งไปยังอีก stack หนึ่ง',
+  },
 ];
 
 export { stackDragComponents };

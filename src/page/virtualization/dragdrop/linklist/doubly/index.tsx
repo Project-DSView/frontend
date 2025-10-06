@@ -4,17 +4,16 @@ import React, { useState, useRef, lazy, Suspense } from 'react';
 import { DoublyLinkedListDragComponent } from '@/types';
 import { useDoublyLinkedListDragDrop } from '@/hooks';
 import { doublyLinkedListDragComponents } from '@/data';
-import DragDropZone from '@/components/virtualization/shared/DragDropZone';
-import StepSelector from '@/components/virtualization/shared/StepSelector';
-import ExportPNGButton from '@/components/virtualization/shared/ExportPNGButton';
+import DragDropZone from '@/components/playground/shared/DragDropZone';
+import StepSelector from '@/components/playground/shared/StepSelector';
+import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 
 // Lazy load heavy components
 const DoublyLinkedDragDropListOperations = lazy(
-  () => import('@/components/virtualization/dragdrop/linklist/doubly/DoublyLinkedListOperations'),
+  () => import('@/components/playground/dragdrop/opeartion/DoublyLinkedList'),
 );
 const DoublyLinkedDragDropListVisualization = lazy(
-  () =>
-    import('@/components/virtualization/dragdrop/linklist/doubly/DoublyLinkedListVisualization'),
+  () => import('@/components/playground/dragdrop/visualization/DoublyLinkedList'),
 );
 
 const DragDropDoublyLinkList = () => {
@@ -103,6 +102,12 @@ const DragDropDoublyLinkList = () => {
 
   const handleClearAll = () => {
     clearAll();
+    setSelectedStep(null);
+  };
+
+  const handleRemoveOperation = (id: number) => {
+    removeOperation(id);
+    // Reset step selection when removing operations
     setSelectedStep(null);
   };
 
@@ -362,25 +367,13 @@ const DragDropDoublyLinkList = () => {
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onRemoveOperation={removeOperation}
+            onRemoveOperation={handleRemoveOperation}
             onUpdateOperationValue={updateOperationValue}
             onUpdateOperationPosition={updateOperationPosition}
             onUpdateOperationNewValue={updateOperationNewValue}
           />
         </div>
       </div>
-
-      {/* Step Selection */}
-      <StepSelector
-        operations={state.operations}
-        selectedStep={selectedStep}
-        onStepSelect={handleStepSelect}
-        getStepDescription={getStepDescription}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onAutoPlay={handleAutoPlay}
-        isAutoPlaying={isAutoPlaying}
-      />
 
       {/* Visualization */}
       <Suspense
@@ -406,6 +399,20 @@ const DragDropDoublyLinkList = () => {
           }
         />
       </Suspense>
+
+      <div className="mt-6">
+        {/* Step Selection */}
+        <StepSelector
+          operations={state.operations}
+          selectedStep={selectedStep}
+          onStepSelect={handleStepSelect}
+          getStepDescription={getStepDescription}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onAutoPlay={handleAutoPlay}
+          isAutoPlaying={isAutoPlaying}
+        />
+      </div>
     </div>
   );
 };

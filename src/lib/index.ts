@@ -75,6 +75,20 @@ export {
 
 export { secureSessionUtils } from './security/secure-session.utils';
 
+export {
+  validateCodeSecurity,
+  validatePythonCodeSecurity,
+  validateJSCodeSecurity,
+} from './security/code-validation.utils';
+
+export {
+  executeCodeSafely,
+  createCodeExecutor,
+  executeCodeWithService,
+  executeCodeBatch,
+  executeCodeWithTimeout,
+} from './security/code-execution.utils';
+
 // Utils
 export { ExportUtils } from './utils/export.utils';
 
