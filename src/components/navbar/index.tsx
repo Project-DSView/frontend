@@ -1,6 +1,8 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Bug } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import DesktopMenu from './DesktopMenu';
 import AuthButtonsWrapper from './AuthButtonsWrapper';
 import MobileMenu from './MobileMenu';
@@ -25,6 +27,15 @@ const Navbar = () => {
 
         {/* Right side */}
         <div className="flex items-center space-x-3">
+          <a href="https://forms.gle/y8GzM5HxdVd8stjo6" target="_blank" rel="noopener noreferrer">
+            <Button
+              variant="ghost"
+              className="bg-error hover:bg-error/90 hidden items-center space-x-2 rounded-lg px-3 py-1.5 text-white shadow-sm transition-all duration-200 hover:shadow-md sm:px-4 md:flex"
+            >
+              <Bug size={16} />
+              <span>Report Issue</span>
+            </Button>
+          </a>
           <AuthButtonsWrapper />
           <MobileMenu />
         </div>
