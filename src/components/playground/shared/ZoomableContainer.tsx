@@ -33,11 +33,11 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
 
   // Zoom functions
   const zoomIn = useCallback(() => {
-    setZoom(prev => Math.min(prev * 1.2, maxZoom));
+    setZoom((prev) => Math.min(prev * 1.2, maxZoom));
   }, [maxZoom]);
 
   const zoomOut = useCallback(() => {
-    setZoom(prev => Math.max(prev / 1.2, minZoom));
+    setZoom((prev) => Math.max(prev / 1.2, minZoom));
   }, [minZoom]);
 
   const resetZoom = useCallback(() => {
@@ -47,31 +47,34 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
 
   const fitToScreen = useCallback(() => {
     if (!containerRef.current || !contentRef.current) return;
-    
+
     const containerRect = containerRef.current.getBoundingClientRect();
     const contentRect = contentRef.current.getBoundingClientRect();
-    
+
     // Calculate the scale needed to fit content in container
     const scaleX = containerRect.width / contentRect.width;
     const scaleY = containerRect.height / contentRect.height;
     const scale = Math.min(scaleX, scaleY, maxZoom) * 0.9; // 90% to add some padding
-    
+
     setZoom(Math.max(scale, minZoom));
     setPan({ x: 0, y: 0 });
   }, [minZoom, maxZoom]);
 
   // Mouse wheel zoom
-  const handleWheel = useCallback((e: WheelEvent) => {
-    if (!enableWheelZoom) return;
-    
-    e.preventDefault();
-    
-    if (e.deltaY < 0) {
-      zoomIn();
-    } else {
-      zoomOut();
-    }
-  }, [enableWheelZoom, zoomIn, zoomOut]);
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      if (!enableWheelZoom) return;
+
+      e.preventDefault();
+
+      if (e.deltaY < 0) {
+        zoomIn();
+      } else {
+        zoomOut();
+      }
+    },
+    [enableWheelZoom, zoomIn, zoomOut],
+  );
 
   // Keyboard zoom
   useEffect(() => {
@@ -102,26 +105,32 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
   }, [enableKeyboardZoom, zoomIn, zoomOut, resetZoom]);
 
   // Pan functions
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!enablePan) return;
-    
-    setIsPanning(true);
-    setLastPanPoint({ x: e.clientX, y: e.clientY });
-  }, [enablePan]);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (!enablePan) return;
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isPanning || !enablePan) return;
-    
-    const deltaX = e.clientX - lastPanPoint.x;
-    const deltaY = e.clientY - lastPanPoint.y;
-    
-    setPan(prev => ({
-      x: prev.x + deltaX,
-      y: prev.y + deltaY,
-    }));
-    
-    setLastPanPoint({ x: e.clientX, y: e.clientY });
-  }, [isPanning, enablePan, lastPanPoint]);
+      setIsPanning(true);
+      setLastPanPoint({ x: e.clientX, y: e.clientY });
+    },
+    [enablePan],
+  );
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isPanning || !enablePan) return;
+
+      const deltaX = e.clientX - lastPanPoint.x;
+      const deltaY = e.clientY - lastPanPoint.y;
+
+      setPan((prev) => ({
+        x: prev.x + deltaX,
+        y: prev.y + deltaY,
+      }));
+
+      setLastPanPoint({ x: e.clientX, y: e.clientY });
+    },
+    [isPanning, enablePan, lastPanPoint],
+  );
 
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);
@@ -132,29 +141,35 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
   }, []);
 
   // Touch events for mobile
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (!enablePan || e.touches.length !== 1) return;
-    
-    const touch = e.touches[0];
-    setIsPanning(true);
-    setLastPanPoint({ x: touch.clientX, y: touch.clientY });
-  }, [enablePan]);
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (!enablePan || e.touches.length !== 1) return;
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isPanning || !enablePan || e.touches.length !== 1) return;
-    
-    e.preventDefault();
-    const touch = e.touches[0];
-    const deltaX = touch.clientX - lastPanPoint.x;
-    const deltaY = touch.clientY - lastPanPoint.y;
-    
-    setPan(prev => ({
-      x: prev.x + deltaX,
-      y: prev.y + deltaY,
-    }));
-    
-    setLastPanPoint({ x: touch.clientX, y: touch.clientY });
-  }, [isPanning, enablePan, lastPanPoint]);
+      const touch = e.touches[0];
+      setIsPanning(true);
+      setLastPanPoint({ x: touch.clientX, y: touch.clientY });
+    },
+    [enablePan],
+  );
+
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isPanning || !enablePan || e.touches.length !== 1) return;
+
+      e.preventDefault();
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - lastPanPoint.x;
+      const deltaY = touch.clientY - lastPanPoint.y;
+
+      setPan((prev) => ({
+        x: prev.x + deltaX,
+        y: prev.y + deltaY,
+      }));
+
+      setLastPanPoint({ x: touch.clientX, y: touch.clientY });
+    },
+    [isPanning, enablePan, lastPanPoint],
+  );
 
   const handleTouchEnd = useCallback(() => {
     setIsPanning(false);
@@ -192,7 +207,7 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
       >
         {children}
       </div>
-      
+
       {showControls && (
         <ZoomControls
           zoom={zoom}

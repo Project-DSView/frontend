@@ -22,7 +22,7 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
       setIsTransitioning(true);
       nodesRef.current = data.nodes;
       setNodes(data.nodes);
-      
+
       // Stop transition animation after duration
       setTimeout(() => setIsTransitioning(false), 800);
     }
@@ -80,11 +80,15 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
           setHeadPosition(0);
           setHighlightedNodeIndex(traverseIndex);
           return;
-        } 
+        }
         // Check if this is a delete operation - don't highlight nodes for delete operations
-        else if (message.includes('delete') || message.includes('Delete') || 
-                 message.includes('ลบ') || message.includes('removing') ||
-                 message.includes('removed')) {
+        else if (
+          message.includes('delete') ||
+          message.includes('Delete') ||
+          message.includes('ลบ') ||
+          message.includes('removing') ||
+          message.includes('removed')
+        ) {
           // For delete operations, don't highlight any nodes
           setHeadPosition(0);
           setHighlightedNodeIndex(-1);
@@ -132,11 +136,11 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
         {/* Node Container - Horizontal Layout */}
         <div
           className={`max-w-[250px] min-w-[160px] rounded-lg border-2 border-black bg-white p-3 text-center font-bold transition-all duration-700 ease-in-out ${
-            isHighlighted 
-              ? 'shadow-lg scale-105 animate-bounce bg-yellow-50' 
+            isHighlighted
+              ? 'scale-105 animate-bounce bg-yellow-50 shadow-lg'
               : isTransitioning
                 ? 'scale-105 animate-pulse bg-blue-50'
-                : 'hover:bg-gray-50 hover:scale-105'
+                : 'hover:scale-105 hover:bg-gray-50'
           } ${isTransitioning ? 'animate-pulse' : ''}`}
         >
           {/* Data Section - Left */}
@@ -217,9 +221,9 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
       )}
 
       {/* Visualization Area */}
-      <ZoomableContainer 
-        className="min-h-[220px] rounded-lg bg-gray-50" 
-        minZoom={0.5} 
+      <ZoomableContainer
+        className="min-h-[220px] rounded-lg bg-gray-50"
+        minZoom={0.5}
         maxZoom={2}
         initialZoom={1}
         enablePan={true}
@@ -228,7 +232,7 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
         showControls={true}
       >
         {nodes.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-gray-400 p-6">
+          <div className="flex h-full items-center justify-center p-6 text-gray-400">
             <div className="text-center">
               <div className="text-lg font-semibold">Empty Linked List</div>
               {steps.length > 0 ? (

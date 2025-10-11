@@ -125,9 +125,9 @@ const BSTRealtime = forwardRef<HTMLDivElement, BSTRealtimeProps>(
       return (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-700">{treeName}</h3>
-          <ZoomableContainer 
-            className="min-h-[400px] rounded-lg bg-gray-50" 
-            minZoom={0.3} 
+          <ZoomableContainer
+            className="min-h-[400px] rounded-lg bg-gray-50"
+            minZoom={0.3}
             maxZoom={2}
             initialZoom={1}
             enablePan={true}

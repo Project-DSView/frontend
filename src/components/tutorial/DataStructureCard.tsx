@@ -11,21 +11,24 @@ interface DataStructureCardProps {
 const DataStructureCard: React.FC<DataStructureCardProps> = ({ structure }) => {
   const getIcon = (iconName: string) => {
     switch (iconName) {
-      case 'LinkIcon': return <LinkIcon className="h-6 w-6" />;
-      case 'Layers': return <Layers className="h-6 w-6" />;
-      case 'TreePine': return <TreePine className="h-6 w-6" />;
-      case 'Network': return <Network className="h-6 w-6" />;
-      default: return <LinkIcon className="h-6 w-6" />;
+      case 'LinkIcon':
+        return <LinkIcon className="h-6 w-6" />;
+      case 'Layers':
+        return <Layers className="h-6 w-6" />;
+      case 'TreePine':
+        return <TreePine className="h-6 w-6" />;
+      case 'Network':
+        return <Network className="h-6 w-6" />;
+      default:
+        return <LinkIcon className="h-6 w-6" />;
     }
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className="transition-shadow hover:shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-3">
-          <div className={structure.iconColor}>
-            {getIcon(structure.iconName)}
-          </div>
+          <div className={structure.iconColor}>{getIcon(structure.iconName)}</div>
           {structure.name}
         </CardTitle>
       </CardHeader>

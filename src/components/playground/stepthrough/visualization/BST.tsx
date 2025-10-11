@@ -333,12 +333,12 @@ const BSTStepthroughVisualization = forwardRef<
         <div
           className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-700 ease-in-out ${
             isHighlighted
-              ? 'scale-110 border-yellow-400 bg-yellow-200 text-yellow-800 shadow-lg animate-bounce'
+              ? 'scale-110 animate-bounce border-yellow-400 bg-yellow-200 text-yellow-800 shadow-lg'
               : isInSearchPath
-                ? 'scale-105 border-blue-400 bg-blue-200 text-blue-800 shadow-md animate-pulse'
+                ? 'scale-105 animate-pulse border-blue-400 bg-blue-200 text-blue-800 shadow-md'
                 : isTraverseSelected || isCurrentlyTraversing
-                  ? 'scale-110 border-green-400 bg-green-200 text-green-800 shadow-lg animate-bounce'
-                  : 'border-black bg-transparent text-gray-800 hover:shadow-md hover:scale-105'
+                  ? 'scale-110 animate-bounce border-green-400 bg-green-200 text-green-800 shadow-lg'
+                  : 'border-black bg-transparent text-gray-800 hover:scale-105 hover:shadow-md'
           } ${isRunning ? 'animate-pulse' : ''} ${isTransitioning ? 'animate-pulse' : ''}`}
         >
           {node.value}
@@ -349,7 +349,7 @@ const BSTStepthroughVisualization = forwardRef<
             <div className="absolute -top-2 -right-2 h-4 w-4 animate-ping rounded-full bg-green-400" />
           )}
           {isTransitioning && (
-            <div className="absolute inset-0 rounded-full border-2 border-blue-300 animate-ping" />
+            <div className="absolute inset-0 animate-ping rounded-full border-2 border-blue-300" />
           )}
         </div>
       </div>
@@ -622,9 +622,9 @@ const BSTStepthroughVisualization = forwardRef<
           </div>
         </div>
       ) : (
-        <ZoomableContainer 
-          className="min-h-[400px] rounded-lg bg-gray-50" 
-          minZoom={0.3} 
+        <ZoomableContainer
+          className="min-h-[400px] rounded-lg bg-gray-50"
+          minZoom={0.3}
           maxZoom={2}
           initialZoom={1}
           enablePan={true}

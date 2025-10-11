@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { ReactQueryProvider } from '@/providers';
 import { Toaster } from '@/components/ui/sonner';
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://dsview.it.kmitl.ac.th/'),
@@ -46,6 +47,7 @@ export default function RootLayout({
         <main>
           <ReactQueryProvider>{children}</ReactQueryProvider>
           <Toaster position="top-center" />
+          <SpeedInsights />
         </main>
       </body>
     </html>

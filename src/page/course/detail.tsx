@@ -17,17 +17,18 @@ const CourseDetailPage: React.FC = () => {
   const courseId = params.id as string;
 
   // Fetch course data
-  const { data: courseData, isLoading: isCourseLoading, error: courseError } = useCourse(
-    accessToken,
-    courseId
-  );
+  const {
+    data: courseData,
+    isLoading: isCourseLoading,
+    error: courseError,
+  } = useCourse(accessToken, courseId);
 
   // Fetch announcements
-  const { data: announcementsData, isLoading: isAnnouncementsLoading, error: announcementsError } = useAnnouncements(
-    accessToken,
-    courseId,
-    { limit: 50, offset: 0 }
-  );
+  const {
+    data: announcementsData,
+    isLoading: isAnnouncementsLoading,
+    error: announcementsError,
+  } = useAnnouncements(accessToken, courseId, { limit: 50, offset: 0 });
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -111,15 +112,11 @@ const CourseDetailPage: React.FC = () => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <Button
-            variant="outline"
-            onClick={() => router.back()}
-            className="mb-4"
-          >
+          <Button variant="outline" onClick={() => router.back()} className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
             กลับ
           </Button>
-          
+
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{course.name}</h1>
@@ -127,7 +124,9 @@ const CourseDetailPage: React.FC = () => {
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-500">สร้างโดย</p>
-              <p className="font-medium">{course.creator.firstname} {course.creator.lastname}</p>
+              <p className="font-medium">
+                {course.creator.firstname} {course.creator.lastname}
+              </p>
             </div>
           </div>
         </div>
@@ -138,7 +137,7 @@ const CourseDetailPage: React.FC = () => {
             <CardTitle>ข้อมูลคอร์ส</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <p className="text-sm text-gray-500">ชื่อคอร์ส</p>
                 <p className="font-medium">{course.name}</p>
@@ -149,7 +148,9 @@ const CourseDetailPage: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500">สร้างโดย</p>
-                <p className="font-medium">{course.creator.firstname} {course.creator.lastname}</p>
+                <p className="font-medium">
+                  {course.creator.firstname} {course.creator.lastname}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">อีเมล</p>
@@ -170,9 +171,7 @@ const CourseDetailPage: React.FC = () => {
               </div>
             )}
             {announcementsError && (
-              <div className="text-sm text-red-500">
-                เกิดข้อผิดพลาดในการโหลดประกาศ
-              </div>
+              <div className="text-sm text-red-500">เกิดข้อผิดพลาดในการโหลดประกาศ</div>
             )}
           </CardHeader>
           <CardContent>

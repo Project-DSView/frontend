@@ -20,7 +20,7 @@ const StackStepthroughVisualization = forwardRef<
       setIsTransitioning(true);
       elementsRef.current = data.elements;
       setElements(data.elements);
-      
+
       // Stop transition animation after duration
       setTimeout(() => setIsTransitioning(false), 800);
     }
@@ -113,7 +113,7 @@ const StackStepthroughVisualization = forwardRef<
               ? 'border-accent scale-110 animate-bounce bg-blue-50'
               : isTransitioning
                 ? 'scale-105 animate-pulse bg-blue-50'
-                : 'hover:bg-gray-50 hover:scale-105'
+                : 'hover:scale-105 hover:bg-gray-50'
           } ${isTop ? 'border-2 border-blue-500' : 'border-t-0'} ${isTop ? 'ring-2 ring-blue-300' : ''} ${
             isTransitioning ? 'animate-pulse' : ''
           }`}
@@ -211,9 +211,9 @@ const StackStepthroughVisualization = forwardRef<
       )}
 
       {/* Stack Container */}
-      <ZoomableContainer 
-        className="min-h-[300px] rounded-lg bg-gray-50" 
-        minZoom={0.5} 
+      <ZoomableContainer
+        className="min-h-[300px] rounded-lg bg-gray-50"
+        minZoom={0.5}
         maxZoom={2}
         initialZoom={1}
         enablePan={true}

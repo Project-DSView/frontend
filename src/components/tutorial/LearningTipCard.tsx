@@ -9,11 +9,9 @@ interface LearningTipCardProps {
 
 const LearningTipCard: React.FC<LearningTipCardProps> = ({ tip }) => {
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className="transition-shadow hover:shadow-lg">
       <CardHeader>
-        <CardTitle className="flex items-center gap-3">
-          {tip.title}
-        </CardTitle>
+        <CardTitle className="flex items-center gap-3">{tip.title}</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-gray-600">{tip.description}</p>
@@ -23,4 +21,3 @@ const LearningTipCard: React.FC<LearningTipCardProps> = ({ tip }) => {
 };
 
 export default LearningTipCard;
-

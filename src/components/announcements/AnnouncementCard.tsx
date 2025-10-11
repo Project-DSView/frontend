@@ -52,7 +52,7 @@ const AnnouncementCard: React.FC<AnnouncementCardProps> = ({ announcement }) => 
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-700 whitespace-pre-wrap">{announcement.content}</p>
+        <p className="whitespace-pre-wrap text-gray-700">{announcement.content}</p>
       </CardContent>
     </Card>
   );

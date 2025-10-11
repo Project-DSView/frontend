@@ -9,11 +9,11 @@ const getAnnouncements = async (
     week?: number;
     limit?: number;
     offset?: number;
-  }
+  },
 ): Promise<AnnouncementsResponse> => {
   const queryParams = new URLSearchParams();
   queryParams.append('course_id', courseId);
-  
+
   if (params?.week !== undefined) {
     queryParams.append('week', params.week.toString());
   }

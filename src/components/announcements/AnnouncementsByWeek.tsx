@@ -1,7 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Announcement } from '@/types';
 import AnnouncementCard from './AnnouncementCard';
 
@@ -11,14 +16,17 @@ interface AnnouncementsByWeekProps {
 
 const AnnouncementsByWeek: React.FC<AnnouncementsByWeekProps> = ({ announcements }) => {
   // Group announcements by week
-  const announcementsByWeek = announcements.reduce((acc, announcement) => {
-    const week = announcement.week;
-    if (!acc[week]) {
-      acc[week] = [];
-    }
-    acc[week].push(announcement);
-    return acc;
-  }, {} as Record<number, Announcement[]>);
+  const announcementsByWeek = announcements.reduce(
+    (acc, announcement) => {
+      const week = announcement.week;
+      if (!acc[week]) {
+        acc[week] = [];
+      }
+      acc[week].push(announcement);
+      return acc;
+    },
+    {} as Record<number, Announcement[]>,
+  );
 
   // Sort weeks in descending order (newest first)
   const sortedWeeks = Object.keys(announcementsByWeek)
@@ -31,7 +39,7 @@ const AnnouncementsByWeek: React.FC<AnnouncementsByWeekProps> = ({ announcements
       // Pinned announcements first
       if (a.is_pinned && !b.is_pinned) return -1;
       if (!a.is_pinned && b.is_pinned) return 1;
-      
+
       // Then by date (newest first)
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
@@ -39,7 +47,7 @@ const AnnouncementsByWeek: React.FC<AnnouncementsByWeekProps> = ({ announcements
 
   if (sortedWeeks.length === 0) {
     return (
-      <div className="text-center py-8">
+      <div className="py-8 text-center">
         <p className="text-gray-500">ยังไม่มีประกาศในคอร์สนี้</p>
       </div>
     );
@@ -49,8 +57,8 @@ const AnnouncementsByWeek: React.FC<AnnouncementsByWeekProps> = ({ announcements
     <Accordion type="multiple" className="w-full">
       {sortedWeeks.map((week) => {
         const weekAnnouncements = sortAnnouncements(announcementsByWeek[week]);
-        const pinnedCount = weekAnnouncements.filter(a => a.is_pinned).length;
-        
+        const pinnedCount = weekAnnouncements.filter((a) => a.is_pinned).length;
+
         return (
           <AccordionItem key={week} value={`week-${week}`}>
             <AccordionTrigger className="text-left">

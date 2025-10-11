@@ -211,9 +211,9 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
         </h2>
 
         {/* Linked List Visualization */}
-        <ZoomableContainer 
-          className="min-h-[220px] rounded-lg bg-gray-50" 
-          minZoom={0.5} 
+        <ZoomableContainer
+          className="min-h-[220px] rounded-lg bg-gray-50"
+          minZoom={0.5}
           maxZoom={2}
           initialZoom={1}
           enablePan={true}
@@ -222,7 +222,7 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
           showControls={true}
         >
           {nodes.length === 0 ? (
-            <div className="text-gray-400 italic p-6">Empty linked list</div>
+            <div className="p-6 text-gray-400 italic">Empty linked list</div>
           ) : (
             <div className="flex items-center justify-start space-x-2 p-6 pt-20">
               {/* Nodes with Head Pointer */}

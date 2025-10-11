@@ -117,9 +117,9 @@ const SinglyLinkedListRealtime = forwardRef<HTMLDivElement, SinglyLinkedListReal
         )}
 
         {/* Linked List Visualization */}
-        <ZoomableContainer 
-          className="min-h-[300px] rounded-lg bg-gray-50" 
-          minZoom={0.5} 
+        <ZoomableContainer
+          className="min-h-[300px] rounded-lg bg-gray-50"
+          minZoom={0.5}
           maxZoom={2}
           initialZoom={1}
           enablePan={true}
@@ -128,7 +128,7 @@ const SinglyLinkedListRealtime = forwardRef<HTMLDivElement, SinglyLinkedListReal
           showControls={true}
         >
           {nodes.length === 0 ? (
-            <div className="text-gray-400 italic p-6">Empty linked list</div>
+            <div className="p-6 text-gray-400 italic">Empty linked list</div>
           ) : (
             <div className="flex w-full items-center justify-center space-x-2 p-6 pt-20">
               {/* Nodes with Head Pointer */}

@@ -123,9 +123,9 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
         </div>
 
         {/* Stack Container */}
-        <ZoomableContainer 
-          className="min-h-[300px] rounded-lg bg-gray-50" 
-          minZoom={0.5} 
+        <ZoomableContainer
+          className="min-h-[300px] rounded-lg bg-gray-50"
+          minZoom={0.5}
           maxZoom={2}
           initialZoom={1}
           enablePan={true}

@@ -37,13 +37,17 @@ const EnrollmentPopover: React.FC<EnrollmentPopoverProps> = ({
       }
     } catch (error: unknown) {
       console.error('Enrollment error:', error);
-      
+
       // ตรวจสอบ error message จาก API
       if (error && typeof error === 'object' && 'response' in error) {
         const apiError = error as { response?: { data?: { message?: string } } };
         if (apiError?.response?.data?.message) {
           const errorMessage = apiError.response.data.message;
-          if (errorMessage.includes('enroll key') || errorMessage.includes('invalid') || errorMessage.includes('ไม่ถูกต้อง')) {
+          if (
+            errorMessage.includes('enroll key') ||
+            errorMessage.includes('invalid') ||
+            errorMessage.includes('ไม่ถูกต้อง')
+          ) {
             toast.error('รหัสลงทะเบียนไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง');
           } else {
             toast.error(errorMessage);

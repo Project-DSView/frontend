@@ -324,9 +324,9 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
         )}
 
         {/* Tree Visualization */}
-        <ZoomableContainer 
-          className="min-h-[400px] rounded-lg bg-gray-50" 
-          minZoom={0.3} 
+        <ZoomableContainer
+          className="min-h-[400px] rounded-lg bg-gray-50"
+          minZoom={0.3}
           maxZoom={2}
           initialZoom={1}
           enablePan={true}

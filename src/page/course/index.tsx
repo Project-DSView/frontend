@@ -66,19 +66,23 @@ const CoursePage: React.FC = () => {
 
       // ตรวจสอบ error จาก API response
       if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { 
-          response?: { 
+        const axiosError = error as {
+          response?: {
             status?: number;
             data?: { message?: string };
-          } 
+          };
         };
-        
+
         if (axiosError.response?.status === 409) {
           toast.error('คุณได้ลงทะเบียนในคอร์สนี้แล้ว');
         } else if (axiosError.response?.status === 400) {
           // ตรวจสอบ error message จาก API
           const errorMessage = axiosError.response.data?.message || '';
-          if (errorMessage.includes('enroll key') || errorMessage.includes('invalid') || errorMessage.includes('ไม่ถูกต้อง')) {
+          if (
+            errorMessage.includes('enroll key') ||
+            errorMessage.includes('invalid') ||
+            errorMessage.includes('ไม่ถูกต้อง')
+          ) {
             toast.error('รหัสลงทะเบียนไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง');
           } else {
             toast.error('รหัสลงทะเบียนไม่ถูกต้อง');

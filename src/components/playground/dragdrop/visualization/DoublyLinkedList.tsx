@@ -285,9 +285,9 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
           Doubly Linked List Visualization
         </h2>
         {/* Linked List Visualization */}
-        <ZoomableContainer 
-          className="min-h-[220px] rounded-lg bg-gray-50" 
-          minZoom={0.5} 
+        <ZoomableContainer
+          className="min-h-[220px] rounded-lg bg-gray-50"
+          minZoom={0.5}
           maxZoom={2}
           initialZoom={1}
           enablePan={true}
@@ -296,7 +296,7 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
           showControls={true}
         >
           {nodes.length === 0 && !isRunning && !currentStep ? (
-            <div className="text-gray-400 italic p-6">Empty doubly linked list</div>
+            <div className="p-6 text-gray-400 italic">Empty doubly linked list</div>
           ) : (
             <div className="flex items-center justify-start space-x-2 p-6 pt-20">
               {/* Nodes with Head/Tail Pointers */}
