@@ -1,6 +1,6 @@
 import { BSTState, BSTNode, BSTStats, BSTExecutionStep } from '@/types';
 
-export class BSTService {
+class BSTService {
   private state: BSTState;
 
   constructor(initialState: BSTState) {
@@ -316,3 +316,5 @@ export class BSTService {
     }
   }
 }
+
+export default BSTService;

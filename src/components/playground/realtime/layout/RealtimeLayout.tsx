@@ -6,6 +6,7 @@ import CodeEditor from '@/components/playground/shared/CodeEditor';
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 import ExportPythonButton from '@/components/playground/shared/ExportPythonButton';
 import FileUploadButton from '@/components/playground/shared/FileUploadButton';
+import CopyCodeButton from '@/components/playground/shared/CopyCodeButton';
 
 interface RealtimeLayoutProps<T = unknown> {
   dataStructure: string;
@@ -58,6 +59,7 @@ const RealtimeLayout = <T,>({
               <FileUploadButton onFileLoad={(content) => onCodeChange(content)} />
               <ExportPNGButton visualizationRef={visualizationRef} />
               <ExportPythonButton code={code} />
+              <CopyCodeButton code={code} />
             </div>
           </div>
         </div>

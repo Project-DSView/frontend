@@ -1,5 +1,6 @@
 import React, { forwardRef, useState, useEffect, Fragment, useRef } from 'react';
 import { StepthroughVisualizationProps, LinkedListData } from '@/types';
+import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const DoublyLinkedListStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -10,6 +11,7 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
   const [traverseIndex, setTraverseIndex] = useState(0);
   const [isTraversing, setIsTraversing] = useState(false);
   const [isReverseTraversing, setIsReverseTraversing] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Use ref to store nodes to prevent unnecessary re-renders
   const nodesRef = useRef(data.nodes);
@@ -18,8 +20,12 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
   // Update nodes when data.nodes actually changes
   useEffect(() => {
     if (JSON.stringify(nodesRef.current) !== JSON.stringify(data.nodes)) {
+      setIsTransitioning(true);
       nodesRef.current = data.nodes;
       setNodes(data.nodes);
+      
+      // Stop transition animation after duration
+      setTimeout(() => setIsTransitioning(false), 800);
     }
   }, [data.nodes]);
 
@@ -102,6 +108,15 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
           setHeadPosition(0);
           setHighlightedNodeIndex(traverseIndex);
           return;
+        } 
+        // Check if this is a delete operation - don't highlight nodes for delete operations
+        else if (message.includes('delete') || message.includes('Delete') || 
+                 message.includes('ลบ') || message.includes('removing') ||
+                 message.includes('removed')) {
+          // For delete operations, don't highlight any nodes
+          setHeadPosition(0);
+          setHighlightedNodeIndex(-1);
+          return;
         } else {
           // For non-traverse operations, head stays at position 0
           setHeadPosition(0);
@@ -116,7 +131,7 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
             }
           }
 
-          // Look for node values in the message
+          // Look for node values in the message (but not for delete operations)
           for (let i = 0; i < nodes.length; i++) {
             if (message.includes(nodes[i])) {
               setHighlightedNodeIndex(i);
@@ -145,9 +160,13 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
       <div className="flex items-center" key={index}>
         {/* Node Container - 3 Section Layout like in dragdrop */}
         <div
-          className={`flex h-16 w-40 rounded-lg border-2 border-black bg-white transition-all duration-500 ${
-            isHighlighted ? 'bg-blue-50 shadow-lg' : 'hover:bg-gray-50'
-          }`}
+          className={`flex h-16 w-40 rounded-lg border-2 border-black bg-white transition-all duration-700 ease-in-out ${
+            isHighlighted 
+              ? 'bg-blue-50 shadow-lg scale-105 animate-bounce' 
+              : isTransitioning
+                ? 'scale-105 animate-pulse bg-blue-50'
+                : 'hover:bg-gray-50 hover:scale-105'
+          } ${isTransitioning ? 'animate-pulse' : ''}`}
         >
           {/* Prev Section - Left */}
           <div className="flex w-1/3 items-center justify-center rounded-l-lg bg-gray-100">
@@ -238,9 +257,18 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
       )}
 
       {/* Visualization Area */}
-      <div className="relative min-h-[220px] overflow-x-auto rounded-lg bg-gray-50 p-6 pt-20">
+      <ZoomableContainer 
+        className="min-h-[220px] rounded-lg bg-gray-50" 
+        minZoom={0.5} 
+        maxZoom={2}
+        initialZoom={1}
+        enablePan={true}
+        enableWheelZoom={true}
+        enableKeyboardZoom={true}
+        showControls={true}
+      >
         {nodes.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-gray-400">
+          <div className="flex h-full items-center justify-center text-gray-400 p-6">
             <div className="text-center">
               <div className="text-lg font-semibold">Empty Doubly Linked List</div>
               {steps.length > 0 ? (
@@ -253,7 +281,7 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-start space-x-2">
+          <div className="flex items-center justify-start space-x-2 p-6 pt-20">
             {/* Nodes with Head/Tail Pointers */}
             {nodes.map((value, index) => {
               const message =
@@ -339,7 +367,7 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
             })}
           </div>
         )}
-      </div>
+      </ZoomableContainer>
 
       {/* Stats */}
       <div className="mt-4 flex space-x-6 text-sm text-gray-600">

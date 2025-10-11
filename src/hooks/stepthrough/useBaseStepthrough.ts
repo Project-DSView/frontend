@@ -193,7 +193,7 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
             return { ...prev, isAutoPlaying: false };
           }
         });
-      }, 2000); // 2 seconds per step
+      }, 1500); // 1.5 seconds per step for smoother experience
     }
   }, [
     hookState.isAutoPlaying,

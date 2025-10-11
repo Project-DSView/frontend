@@ -662,4 +662,4 @@ class UndirectedGraphService {
   }
 }
 
-export { UndirectedGraphService };
+export default UndirectedGraphService;

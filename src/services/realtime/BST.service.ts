@@ -5,7 +5,7 @@ import {
   RealtimeBSTOperation,
 } from '@/types';
 
-export class BSTRealtimeService {
+class BSTRealtimeService {
   private data: RealtimeBSTData;
 
   constructor(initialData: RealtimeBSTData) {
@@ -412,3 +412,5 @@ export class BSTRealtimeService {
     return this.getState();
   }
 }
+
+export default BSTRealtimeService;

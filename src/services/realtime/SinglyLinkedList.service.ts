@@ -5,7 +5,7 @@ import {
   RealtimeSinglyLinkedListOperation,
 } from '@/types';
 
-export class SinglyLinkedListRealtimeService {
+class SinglyLinkedListRealtimeService {
   private data: RealtimeSinglyLinkedListData;
 
   constructor(initialData: RealtimeSinglyLinkedListData) {
@@ -241,3 +241,5 @@ export class SinglyLinkedListRealtimeService {
     return this.getState();
   }
 }
+
+export default SinglyLinkedListRealtimeService;

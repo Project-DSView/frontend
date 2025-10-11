@@ -53,21 +53,45 @@ const CoursePage: React.FC = () => {
         enrollmentData: { enroll_key: enrollKey },
       });
 
+      // แสดงข้อความสำเร็จเฉพาะเมื่อ API ส่งคืนผลลัพธ์สำเร็จ
       toast.success('ลงทะเบียนสำเร็จ!');
       // Refresh courses data
       refetch();
+      // Refresh หน้าเพื่ออัปเดตสถานะการลงทะเบียน
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error: unknown) {
       console.error('Enrollment error:', error);
 
+      // ตรวจสอบ error จาก API response
       if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { status?: number } };
+        const axiosError = error as { 
+          response?: { 
+            status?: number;
+            data?: { message?: string };
+          } 
+        };
+        
         if (axiosError.response?.status === 409) {
           toast.error('คุณได้ลงทะเบียนในคอร์สนี้แล้ว');
         } else if (axiosError.response?.status === 400) {
-          toast.error('รหัสลงทะเบียนไม่ถูกต้อง');
+          // ตรวจสอบ error message จาก API
+          const errorMessage = axiosError.response.data?.message || '';
+          if (errorMessage.includes('enroll key') || errorMessage.includes('invalid') || errorMessage.includes('ไม่ถูกต้อง')) {
+            toast.error('รหัสลงทะเบียนไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง');
+          } else {
+            toast.error('รหัสลงทะเบียนไม่ถูกต้อง');
+          }
+        } else if (axiosError.response?.status === 401) {
+          toast.error('กรุณาเข้าสู่ระบบใหม่');
+        } else if (axiosError.response?.status === 404) {
+          toast.error('ไม่พบคอร์สที่ระบุ');
         } else {
           toast.error('เกิดข้อผิดพลาดในการลงทะเบียน');
         }
+      } else if (error instanceof Error) {
+        toast.error(error.message);
       } else {
         toast.error('เกิดข้อผิดพลาดในการลงทะเบียน');
       }

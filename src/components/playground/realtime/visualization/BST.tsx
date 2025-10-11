@@ -1,5 +1,6 @@
 import React, { forwardRef } from 'react';
 import { BSTRealtimeProps, RealtimeBSTNodeData } from '@/types';
+import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const BSTRealtime = forwardRef<HTMLDivElement, BSTRealtimeProps>(
   ({ data, error, securityStatus }, ref) => {
@@ -124,13 +125,22 @@ const BSTRealtime = forwardRef<HTMLDivElement, BSTRealtimeProps>(
       return (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-700">{treeName}</h3>
-          <div className="relative min-h-[400px] overflow-auto rounded-lg bg-gray-50">
+          <ZoomableContainer 
+            className="min-h-[400px] rounded-lg bg-gray-50" 
+            minZoom={0.3} 
+            maxZoom={2}
+            initialZoom={1}
+            enablePan={true}
+            enableWheelZoom={true}
+            enableKeyboardZoom={true}
+            showControls={true}
+          >
             <div className="flex h-full min-h-[400px] items-center justify-center p-8">
               <svg width={width} height={height} viewBox="0 0 600 400" className="overflow-visible">
                 {nodes}
               </svg>
             </div>
-          </div>
+          </ZoomableContainer>
         </div>
       );
     };

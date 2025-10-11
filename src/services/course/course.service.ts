@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { getCourses as apiGetCourses, getCourse as apiGetCourse } from '@/api';
 import { CourseListResponse, CourseResponse, CourseQueryParams } from '@/types';
-import { AuthService } from '../auth/auth.service';
+import AuthService from '../auth/auth.service';
 
-export class CourseService {
+class CourseService {
   // Get courses with pagination and filtering
   static async getCourses(token: string, params?: CourseQueryParams): Promise<CourseListResponse> {
     try {
@@ -34,3 +34,5 @@ export class CourseService {
     }
   }
 }
+
+export default CourseService;

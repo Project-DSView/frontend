@@ -1,5 +1,6 @@
 import React, { forwardRef, useMemo } from 'react';
 import { SinglyLinkedListRealtimeProps, RealtimeSinglyLinkedListNode } from '@/types';
+import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const SinglyLinkedListRealtime = forwardRef<HTMLDivElement, SinglyLinkedListRealtimeProps>(
   ({ data, error, securityStatus }, ref) => {
@@ -116,11 +117,20 @@ const SinglyLinkedListRealtime = forwardRef<HTMLDivElement, SinglyLinkedListReal
         )}
 
         {/* Linked List Visualization */}
-        <div className="relative min-h-[300px] w-full overflow-x-auto rounded-lg bg-gray-50 p-6 pt-20">
+        <ZoomableContainer 
+          className="min-h-[300px] rounded-lg bg-gray-50" 
+          minZoom={0.5} 
+          maxZoom={2}
+          initialZoom={1}
+          enablePan={true}
+          enableWheelZoom={true}
+          enableKeyboardZoom={true}
+          showControls={true}
+        >
           {nodes.length === 0 ? (
-            <div className="text-gray-400 italic">Empty linked list</div>
+            <div className="text-gray-400 italic p-6">Empty linked list</div>
           ) : (
-            <div className="flex w-full items-center justify-center space-x-2">
+            <div className="flex w-full items-center justify-center space-x-2 p-6 pt-20">
               {/* Nodes with Head Pointer */}
               {nodes.map((value, index) => (
                 <React.Fragment key={index}>
@@ -150,7 +160,7 @@ const SinglyLinkedListRealtime = forwardRef<HTMLDivElement, SinglyLinkedListReal
               ))}
             </div>
           )}
-        </div>
+        </ZoomableContainer>
 
         {/* Stats */}
         <div className="mt-4 flex space-x-6 text-sm text-gray-600">

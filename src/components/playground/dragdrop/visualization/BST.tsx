@@ -1,5 +1,6 @@
 import React, { forwardRef, useMemo, useState, useEffect, memo, useCallback } from 'react';
 import { BSTVisualizationProps, BSTNode, PositionedNode } from '@/types';
+import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProps>(
   (
@@ -323,9 +324,18 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
         )}
 
         {/* Tree Visualization */}
-        <div className="relative mb-6 min-h-[400px] overflow-auto rounded-lg bg-gray-50">
+        <ZoomableContainer 
+          className="min-h-[400px] rounded-lg bg-gray-50" 
+          minZoom={0.3} 
+          maxZoom={2}
+          initialZoom={1}
+          enablePan={true}
+          enableWheelZoom={true}
+          enableKeyboardZoom={true}
+          showControls={true}
+        >
           {root ? (
-            <div className="relative h-full min-h-[400px] w-full">
+            <div className="relative h-full min-h-[400px] w-full p-6">
               {/* Render connections first (behind nodes) */}
               {renderConnections()}
 
@@ -340,7 +350,7 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
               </div>
             </div>
           )}
-        </div>
+        </ZoomableContainer>
 
         {/* Stats Display */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">

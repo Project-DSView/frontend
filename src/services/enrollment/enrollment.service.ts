@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { getMyEnrollment as apiGetMyEnrollment, enrollInCourse as apiEnrollInCourse } from '@/api';
 import { MyEnrollmentResponse, EnrollmentRequest, EnrollmentResponse } from '@/types';
-import { AuthService } from '../auth/auth.service';
+import AuthService from '../auth/auth.service';
 
-export class EnrollmentService {
+class EnrollmentService {
   // Get my enrollment status
   static async getMyEnrollment(
     token: string,
@@ -42,3 +42,5 @@ export class EnrollmentService {
     }
   }
 }
+
+export default EnrollmentService;

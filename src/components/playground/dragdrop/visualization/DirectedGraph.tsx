@@ -2,6 +2,7 @@ import React, { forwardRef, useState, useEffect, useCallback } from 'react';
 import { DirectedGraphVisualizationProps, DirectedGraphNode, DirectedGraphEdge } from '@/types';
 import GraphNode from '../../shared/GraphNode';
 import GraphEdge from '../../shared/GraphEdge';
+import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const DirectedGraphDragDropVisualization = forwardRef<
   HTMLDivElement,
@@ -283,7 +284,16 @@ const DirectedGraphDragDropVisualization = forwardRef<
         )}
 
         {/* Graph Visualization */}
-        <div className="relative mb-6 min-h-[400px] overflow-auto rounded-lg bg-gray-50">
+        <ZoomableContainer 
+          className="min-h-[400px] rounded-lg bg-gray-50" 
+          minZoom={0.3} 
+          maxZoom={2}
+          initialZoom={1}
+          enablePan={true}
+          enableWheelZoom={true}
+          enableKeyboardZoom={true}
+          showControls={true}
+        >
           {nodes.length === 0 ? (
             <div className="flex h-96 items-center justify-center text-gray-400">
               <div className="text-center">
@@ -292,7 +302,7 @@ const DirectedGraphDragDropVisualization = forwardRef<
               </div>
             </div>
           ) : (
-            <div className="relative h-full min-h-[400px] w-full">
+            <div className="relative h-full min-h-[400px] w-full p-6">
               {/* Render edges first (behind nodes) */}
               {edges.map(renderEdge)}
 
@@ -300,7 +310,7 @@ const DirectedGraphDragDropVisualization = forwardRef<
               {nodes.map(renderNode)}
             </div>
           )}
-        </div>
+        </ZoomableContainer>
 
         {/* Stats Display */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

@@ -10,6 +10,7 @@ import {
 } from '@/types';
 import GraphNode from '../../shared/GraphNode';
 import GraphEdge from '../../shared/GraphEdge';
+import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const DirectedGraphRealtimeVisualization = forwardRef<HTMLDivElement, DirectedGraphRealtimeProps>(
   (
@@ -276,7 +277,16 @@ const DirectedGraphRealtimeVisualization = forwardRef<HTMLDivElement, DirectedGr
       return (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-700">{graphName}</h3>
-          <div className="relative min-h-[400px] overflow-auto rounded-lg bg-gray-50">
+          <ZoomableContainer 
+            className="min-h-[400px] rounded-lg bg-gray-50" 
+            minZoom={0.3} 
+            maxZoom={2}
+            initialZoom={1}
+            enablePan={true}
+            enableWheelZoom={true}
+            enableKeyboardZoom={true}
+            showControls={true}
+          >
             <div className="flex h-full min-h-[400px] items-center justify-center p-8">
               <div className="relative h-full min-h-[400px] w-full">
                 {/* Render edges first (behind nodes) */}
@@ -286,7 +296,7 @@ const DirectedGraphRealtimeVisualization = forwardRef<HTMLDivElement, DirectedGr
                 {graphData.nodes.map(renderNode)}
               </div>
             </div>
-          </div>
+          </ZoomableContainer>
         </div>
       );
     };

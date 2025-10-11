@@ -1,5 +1,6 @@
 import React, { forwardRef, useState, useEffect, useRef } from 'react';
 import { StepthroughVisualizationProps, StackData } from '@/types';
+import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const StackStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -7,6 +8,7 @@ const StackStepthroughVisualization = forwardRef<
 >(({ steps, currentStepIndex, data, isRunning, error }, ref) => {
   const [highlightedElementIndex, setHighlightedElementIndex] = useState(-1);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Use ref to store elements to prevent unnecessary re-renders
   const elementsRef = useRef(data.elements);
@@ -15,8 +17,12 @@ const StackStepthroughVisualization = forwardRef<
   // Update elements when data.elements actually changes
   useEffect(() => {
     if (JSON.stringify(elementsRef.current) !== JSON.stringify(data.elements)) {
+      setIsTransitioning(true);
       elementsRef.current = data.elements;
       setElements(data.elements);
+      
+      // Stop transition animation after duration
+      setTimeout(() => setIsTransitioning(false), 800);
     }
   }, [data.elements]);
 
@@ -82,6 +88,7 @@ const StackStepthroughVisualization = forwardRef<
     value: string,
     index: number,
     stackLength: number,
+    isTransitioning: boolean = false,
   ): React.ReactNode => {
     const isHighlighted = highlightedElementIndex === index;
     const isTop = index === stackLength - 1;
@@ -101,11 +108,15 @@ const StackStepthroughVisualization = forwardRef<
 
         {/* Stack Element */}
         <div
-          className={`bg-neutral/20 flex h-16 w-16 items-center justify-center shadow-lg transition-all duration-500 ${
+          className={`bg-neutral/20 flex h-16 w-16 items-center justify-center shadow-lg transition-all duration-700 ease-in-out ${
             isHighlighted && isAnimating
-              ? 'border-accent scale-105 animate-pulse bg-blue-50'
-              : 'hover:bg-gray-50'
-          } ${isTop ? 'border-2 border-blue-500' : 'border-t-0'} ${isTop ? 'ring-2 ring-blue-300' : ''}`}
+              ? 'border-accent scale-110 animate-bounce bg-blue-50'
+              : isTransitioning
+                ? 'scale-105 animate-pulse bg-blue-50'
+                : 'hover:bg-gray-50 hover:scale-105'
+          } ${isTop ? 'border-2 border-blue-500' : 'border-t-0'} ${isTop ? 'ring-2 ring-blue-300' : ''} ${
+            isTransitioning ? 'animate-pulse' : ''
+          }`}
         >
           <span className={`font-bold text-black ${value.length > 6 ? 'text-sm' : 'text-lg'}`}>
             {value}
@@ -139,7 +150,7 @@ const StackStepthroughVisualization = forwardRef<
               <div className="flex flex-col-reverse">
                 {stackData.map((element, index) => (
                   <div key={`${element}-${index}`} className="relative">
-                    {renderStackElement(element, index, stackData.length)}
+                    {renderStackElement(element, index, stackData.length, isTransitioning)}
                   </div>
                 ))}
               </div>
@@ -200,43 +211,54 @@ const StackStepthroughVisualization = forwardRef<
       )}
 
       {/* Stack Container */}
-      {showMultipleStacks ? (
-        <div className="space-y-6">
-          <div className="flex justify-center space-x-8">
-            {data.allStacks &&
-              Object.entries(data.allStacks)
-                .filter(([, stackData]) => stackData.data.length > 0) // กรองเอาเฉพาะ stack ที่มีข้อมูล
-                .map(([stackName, stackData]) =>
-                  renderSingleStack(stackData.data, `Stack ${stackName}`, stackName),
-                )}
+      <ZoomableContainer 
+        className="min-h-[300px] rounded-lg bg-gray-50" 
+        minZoom={0.5} 
+        maxZoom={2}
+        initialZoom={1}
+        enablePan={true}
+        enableWheelZoom={true}
+        enableKeyboardZoom={true}
+        showControls={true}
+      >
+        {showMultipleStacks ? (
+          <div className="space-y-6 p-6">
+            <div className="flex justify-center space-x-8">
+              {data.allStacks &&
+                Object.entries(data.allStacks)
+                  .filter(([, stackData]) => stackData.data.length > 0) // กรองเอาเฉพาะ stack ที่มีข้อมูล
+                  .map(([stackName, stackData]) =>
+                    renderSingleStack(stackData.data, `Stack ${stackName}`, stackName),
+                  )}
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="flex min-h-[200px] flex-col items-center justify-end">
-          {elements.length === 0 ? (
-            <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50">
-              <div className="text-center text-gray-500">
-                <div className="font-semibold">Stack is Empty</div>
-                <div className="text-sm">Add elements using Push operation</div>
+        ) : (
+          <div className="flex min-h-[200px] flex-col items-center justify-end p-6">
+            {elements.length === 0 ? (
+              <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50">
+                <div className="text-center text-gray-500">
+                  <div className="font-semibold">Stack is Empty</div>
+                  <div className="text-sm">Add elements using Push operation</div>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="relative w-36">
-              {/* Stack Frame - กรอบสี่เหลี่ยมไม่มีเส้นด้านบน */}
-              <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black"></div>
+            ) : (
+              <div className="relative w-36">
+                {/* Stack Frame - กรอบสี่เหลี่ยมไม่มีเส้นด้านบน */}
+                <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black"></div>
 
-              {/* Stack Elements - อยู่ติดกันไม่มีช่องว่าง */}
-              <div className="flex flex-col-reverse">
-                {elements.map((element, index) => (
-                  <div key={`${element}-${index}`} className="relative">
-                    {renderStackElement(element, index, elements.length)}
-                  </div>
-                ))}
+                {/* Stack Elements - อยู่ติดกันไม่มีช่องว่าง */}
+                <div className="flex flex-col-reverse">
+                  {elements.map((element, index) => (
+                    <div key={`${element}-${index}`} className="relative">
+                      {renderStackElement(element, index, elements.length)}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </ZoomableContainer>
 
       {/* Stack Info */}
       <div className="mt-4 rounded-lg bg-gray-50 p-4">

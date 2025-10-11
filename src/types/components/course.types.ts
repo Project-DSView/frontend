@@ -1,4 +1,5 @@
 import { Course } from '../services/course.types';
+import { UserProfile } from '../services/auth.types';
 
 interface CourseCardProps {
   course: Course;
@@ -6,6 +7,7 @@ interface CourseCardProps {
   isEnrolling?: boolean;
   isEnrolled?: boolean;
   onEnterCourse?: (courseId: string) => void;
+  userProfile?: UserProfile | null;
 }
 
 interface EnrollmentPopoverProps {
@@ -21,6 +23,7 @@ interface CourseCardWithEnrollmentProps {
   isEnrolling: boolean;
   onEnterCourse: (courseId: string) => void;
   accessToken: string | null;
+  userProfile?: UserProfile | null;
 }
 
 export type { CourseCardProps, EnrollmentPopoverProps, CourseCardWithEnrollmentProps };

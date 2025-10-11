@@ -203,7 +203,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
       className="min-h-[300px] rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4"
     >
       {operations.length === 0 ? (
-        <div className="flex h-full items-center justify-center text-gray-400">
+        <div className="flex h-full w-full items-center justify-center text-gray-400">
           ลาก operations มาที่นี่
         </div>
       ) : (

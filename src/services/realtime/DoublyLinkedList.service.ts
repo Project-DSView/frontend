@@ -5,7 +5,7 @@ import {
   RealtimeDoublyLinkedListOperation,
 } from '@/types';
 
-export class DoublyLinkedListRealtimeService {
+class DoublyLinkedListRealtimeService {
   private data: RealtimeDoublyLinkedListData;
 
   constructor(initialData: RealtimeDoublyLinkedListData) {
@@ -410,3 +410,5 @@ export class DoublyLinkedListRealtimeService {
     return this.getState();
   }
 }
+
+export default DoublyLinkedListRealtimeService;

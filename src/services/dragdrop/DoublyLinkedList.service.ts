@@ -645,4 +645,4 @@ class DoublyLinkedListService {
   }
 }
 
-export { DoublyLinkedListService };
+export default DoublyLinkedListService;

@@ -5,6 +5,7 @@ import {
   DirectedGraphNode,
   DirectedGraphEdge,
 } from '@/types';
+import ZoomableContainer from '../../shared/ZoomableContainer';
 import GraphEdge from '../../shared/GraphEdge';
 
 const DirectedGraphStepthroughVisualization = forwardRef<
@@ -21,6 +22,7 @@ const DirectedGraphStepthroughVisualization = forwardRef<
   const [nodePositions, setNodePositions] = useState<{ [key: string]: { x: number; y: number } }>(
     {},
   );
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Extract current step information
   const currentStep = useMemo(() => {
@@ -131,6 +133,13 @@ const DirectedGraphStepthroughVisualization = forwardRef<
     }
   }, [currentMessage, data.nodes, generateTraversalOrder]);
 
+  // Handle transition animation when step changes
+  useEffect(() => {
+    setIsTransitioning(true);
+    const timer = setTimeout(() => setIsTransitioning(false), 800);
+    return () => clearTimeout(timer);
+  }, [currentStepIndex]);
+
   // Handle operation-specific highlighting
   useEffect(() => {
     if (currentMessage.includes('add_vertex') || currentMessage.includes('Vertex')) {
@@ -189,6 +198,7 @@ const DirectedGraphStepthroughVisualization = forwardRef<
     isTraverseSelected: boolean;
     isCurrentlyTraversing: boolean;
     isRunning: boolean;
+    isTransitioning: boolean;
     onMouseDown: (e: React.MouseEvent, nodeId: string) => void;
   }>(
     ({
@@ -198,13 +208,16 @@ const DirectedGraphStepthroughVisualization = forwardRef<
       isTraverseSelected,
       isCurrentlyTraversing,
       isRunning,
+      isTransitioning,
       onMouseDown,
     }) => {
       const position = nodePositions[node.id] || { x: node.x, y: node.y };
 
       return (
         <div
-          className="absolute -translate-x-1/2 -translate-y-1/2 transform cursor-move"
+          className={`absolute -translate-x-1/2 -translate-y-1/2 transform cursor-move transition-all duration-700 ease-in-out ${
+            isTransitioning ? 'animate-pulse' : ''
+          }`}
           style={{
             left: `${position.x}px`,
             top: `${position.y}px`,
@@ -212,15 +225,17 @@ const DirectedGraphStepthroughVisualization = forwardRef<
           onMouseDown={(e) => onMouseDown(e, node.id)}
         >
           <div
-            className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-500 ${
+            className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-700 ease-in-out ${
               isHighlighted
-                ? 'scale-110 border-yellow-400 bg-yellow-200 text-yellow-800 shadow-lg'
+                ? 'scale-110 border-yellow-400 bg-yellow-200 text-yellow-800 shadow-lg animate-bounce'
                 : isInSearchPath
-                  ? 'scale-105 border-blue-400 bg-blue-200 text-blue-800 shadow-md'
+                  ? 'scale-105 border-blue-400 bg-blue-200 text-blue-800 shadow-md animate-pulse'
                   : isTraverseSelected || isCurrentlyTraversing
-                    ? 'scale-110 border-green-400 bg-green-200 text-green-800 shadow-lg'
-                    : 'border-gray-600 bg-white text-gray-800 hover:shadow-md'
-            } ${isRunning ? 'animate-pulse' : ''} ${draggedNode === node.id ? 'z-10' : ''}`}
+                    ? 'scale-110 border-green-400 bg-green-200 text-green-800 shadow-lg animate-bounce'
+                    : 'border-gray-600 bg-white text-gray-800 hover:shadow-md hover:scale-105'
+            } ${isRunning ? 'animate-pulse' : ''} ${isTransitioning ? 'animate-pulse' : ''} ${
+              draggedNode === node.id ? 'z-10' : ''
+            }`}
           >
             {node.value}
             {isHighlighted && (
@@ -228,6 +243,9 @@ const DirectedGraphStepthroughVisualization = forwardRef<
             )}
             {(isTraverseSelected || isCurrentlyTraversing) && (
               <div className="absolute -top-2 -right-2 h-4 w-4 animate-ping rounded-full bg-green-400" />
+            )}
+            {isTransitioning && (
+              <div className="absolute inset-0 rounded-full border-2 border-blue-300 animate-ping" />
             )}
           </div>
         </div>
@@ -264,6 +282,7 @@ const DirectedGraphStepthroughVisualization = forwardRef<
           isTraverseSelected={isTraverseSelected}
           isCurrentlyTraversing={isCurrentlyTraversing}
           isRunning={isRunning ?? false}
+          isTransitioning={isTransitioning}
           onMouseDown={handleMouseDown}
         />
       );
@@ -275,6 +294,7 @@ const DirectedGraphStepthroughVisualization = forwardRef<
       traverseIndex,
       traversalOrder,
       isRunning,
+      isTransitioning,
       NodeComponent,
       handleMouseDown,
     ],
@@ -300,17 +320,23 @@ const DirectedGraphStepthroughVisualization = forwardRef<
       } as DirectedGraphEdge;
 
       return (
-        <GraphEdge
+        <div
           key={edge.id}
-          edge={edgeForRender}
-          fromNode={{ ...fromNode, x: fromPosition.x, y: fromPosition.y }}
-          toNode={{ ...toNode, x: toPosition.x, y: toPosition.y }}
-          isHighlighted={isHighlighted}
-          allEdges={data.edges}
-        />
+          className={`transition-all duration-700 ease-in-out ${
+            isTransitioning ? 'animate-pulse' : ''
+          }`}
+        >
+          <GraphEdge
+            edge={edgeForRender}
+            fromNode={{ ...fromNode, x: fromPosition.x, y: fromPosition.y }}
+            toNode={{ ...toNode, x: toPosition.x, y: toPosition.y }}
+            isHighlighted={isHighlighted}
+            allEdges={data.edges}
+          />
+        </div>
       );
     },
-    [data.nodes, data.edges, highlightedEdges, nodePositions],
+    [data.nodes, data.edges, highlightedEdges, nodePositions, isTransitioning],
   );
 
   return (
@@ -370,9 +396,18 @@ const DirectedGraphStepthroughVisualization = forwardRef<
       )}
 
       {/* Graph Visualization */}
-      <div className="relative mb-6 min-h-[400px] overflow-auto rounded-lg bg-gray-50">
+      <ZoomableContainer 
+        className="min-h-[400px] rounded-lg bg-gray-50" 
+        minZoom={0.3} 
+        maxZoom={2}
+        initialZoom={1}
+        enablePan={true}
+        enableWheelZoom={true}
+        enableKeyboardZoom={true}
+        showControls={true}
+      >
         {data.nodes.length > 0 ? (
-          <div className="relative h-full min-h-[400px] w-full">
+          <div className="relative h-full min-h-[400px] w-full p-6">
             {/* Render edges first (behind nodes) */}
             {data.edges.map(renderEdge)}
 
@@ -387,7 +422,7 @@ const DirectedGraphStepthroughVisualization = forwardRef<
             </div>
           </div>
         )}
-      </div>
+      </ZoomableContainer>
 
       {/* Stats Display */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">

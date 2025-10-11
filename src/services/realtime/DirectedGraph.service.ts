@@ -5,7 +5,7 @@ import {
   RealtimeDirectedGraphOperation,
 } from '@/types';
 
-export class DirectedGraphRealtimeService {
+class DirectedGraphRealtimeService {
   private data: RealtimeDirectedGraphData;
   private nodePositions: { [key: string]: { x: number; y: number } } = {};
 
@@ -840,3 +840,5 @@ export class DirectedGraphRealtimeService {
     return this.getData();
   }
 }
+
+export default DirectedGraphRealtimeService;

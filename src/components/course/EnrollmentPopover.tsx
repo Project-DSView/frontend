@@ -33,11 +33,29 @@ const EnrollmentPopover: React.FC<EnrollmentPopoverProps> = ({
         await onEnroll(courseId, enrollKey.trim());
         setEnrollKey('');
         setOpen(false);
-        toast.success('ลงทะเบียนสำเร็จ!');
+        // ไม่ต้องแสดง toast success ที่นี่ เพราะจะแสดงใน parent component แล้ว
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Enrollment error:', error);
-      toast.error('เกิดข้อผิดพลาดในการลงทะเบียน');
+      
+      // ตรวจสอบ error message จาก API
+      if (error && typeof error === 'object' && 'response' in error) {
+        const apiError = error as { response?: { data?: { message?: string } } };
+        if (apiError?.response?.data?.message) {
+          const errorMessage = apiError.response.data.message;
+          if (errorMessage.includes('enroll key') || errorMessage.includes('invalid') || errorMessage.includes('ไม่ถูกต้อง')) {
+            toast.error('รหัสลงทะเบียนไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง');
+          } else {
+            toast.error(errorMessage);
+          }
+        } else {
+          toast.error('เกิดข้อผิดพลาดในการลงทะเบียน');
+        }
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('เกิดข้อผิดพลาดในการลงทะเบียน');
+      }
     } finally {
       setIsSubmitting(false);
     }

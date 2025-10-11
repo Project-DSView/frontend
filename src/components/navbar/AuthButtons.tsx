@@ -19,7 +19,7 @@ import {
   isValidJWTFormat,
   getTokenExpirationTime,
 } from '@/lib';
-import { User, ChevronDown, BarChart3, LayoutDashboard } from 'lucide-react';
+import { User, ChevronDown, BarChart3 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -181,11 +181,6 @@ const AuthButtons: React.FC = () => {
     toast.info('Score page coming soon!');
   };
 
-  const handleDashboard = () => {
-    // TODO: Navigate to dashboard page
-    toast.info('Dashboard page coming soon!');
-  };
-
   const handleLogin = async () => {
     if (isLoggingOut) {
       toast.info('Please wait, logging out...');
@@ -298,15 +293,6 @@ const AuthButtons: React.FC = () => {
           <BarChart3 className="mr-2 h-4 w-4" />
           <span>View Score</span>
         </DropdownMenuItem>
-        {profile.is_teacher && (
-          <>
-            <DropdownMenuItem className="cursor-pointer" onClick={handleDashboard}>
-              <LayoutDashboard className="mr-2 h-4 w-4" />
-              <span>Dashboard</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </>
-        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-600"

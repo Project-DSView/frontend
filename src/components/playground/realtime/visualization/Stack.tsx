@@ -1,5 +1,6 @@
 import React, { forwardRef, useMemo } from 'react';
 import { StackRealtimeProps } from '@/types';
+import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const StackRealtime = forwardRef<HTMLDivElement, StackRealtimeProps>(
   ({ data, error, securityStatus }, ref) => {
@@ -138,29 +139,38 @@ const StackRealtime = forwardRef<HTMLDivElement, StackRealtimeProps>(
         )}
 
         {/* Stack Container */}
-        {showMultipleStacks ? (
-          <div className="space-y-6">
-            <div className="flex justify-center space-x-8">
-              {data.allStacks &&
-                Object.entries(data.allStacks)
-                  .filter(([, stackData]) => stackData.data.length > 0) // กรองเอาเฉพาะ stack ที่มีข้อมูล
-                  .map(([stackName, stackData]) => (
-                    <div key={stackName}>
-                      {renderSingleStack(stackData.data, `Stack ${stackName}`, stackName)}
-                    </div>
-                  ))}
+        <ZoomableContainer 
+          className="min-h-[300px] rounded-lg bg-gray-50" 
+          minZoom={0.5} 
+          maxZoom={2}
+          initialZoom={1}
+          enablePan={true}
+          enableWheelZoom={true}
+          enableKeyboardZoom={true}
+          showControls={true}
+        >
+          {showMultipleStacks ? (
+            <div className="space-y-6 p-6">
+              <div className="flex justify-center space-x-8">
+                {data.allStacks &&
+                  Object.entries(data.allStacks)
+                    .filter(([, stackData]) => stackData.data.length > 0) // กรองเอาเฉพาะ stack ที่มีข้อมูล
+                    .map(([stackName, stackData]) => (
+                      <div key={stackName}>
+                        {renderSingleStack(stackData.data, `Stack ${stackName}`, stackName)}
+                      </div>
+                    ))}
+              </div>
             </div>
-          </div>
-        ) : isCopyStackMode ? (
-          <div className="space-y-6">
-            <div className="flex justify-center space-x-8">
-              <div key="s1">{renderSingleStack(data.stacks!.s1, 'Stack s1', 's1')}</div>
-              <div key="s2">{renderSingleStack(data.stacks!.s2, 'Stack s2', 's2')}</div>
+          ) : isCopyStackMode ? (
+            <div className="space-y-6 p-6">
+              <div className="flex justify-center space-x-8">
+                <div key="s1">{renderSingleStack(data.stacks!.s1, 'Stack s1', 's1')}</div>
+                <div key="s2">{renderSingleStack(data.stacks!.s2, 'Stack s2', 's2')}</div>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="relative min-h-[300px] w-full overflow-x-auto rounded-lg bg-gray-50 p-6 pt-20">
-            <div className="flex min-h-[200px] flex-col items-center justify-end">
+          ) : (
+            <div className="flex min-h-[200px] flex-col items-center justify-end p-6 pt-20">
               {elements.length === 0 ? (
                 <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50">
                   <div className="text-center text-gray-500">
@@ -184,8 +194,8 @@ const StackRealtime = forwardRef<HTMLDivElement, StackRealtimeProps>(
                 </div>
               )}
             </div>
-          </div>
-        )}
+          )}
+        </ZoomableContainer>
 
         {/* Stack Info */}
         <div className="mt-4 rounded-lg bg-gray-50 p-4">

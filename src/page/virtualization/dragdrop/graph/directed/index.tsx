@@ -228,7 +228,7 @@ const DragDropDirectedGraph = () => {
             }
             return prev + 1;
           });
-        }, 2000); // Change step every 2 seconds
+        }, 1500); // Change step every 1.5 seconds for smoother experience
       }
     }
   };

@@ -661,4 +661,4 @@ class SinglyLinkedListService {
   }
 }
 
-export { SinglyLinkedListService };
+export default SinglyLinkedListService;

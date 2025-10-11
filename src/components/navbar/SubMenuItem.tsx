@@ -23,7 +23,7 @@ const SubMenuItem = ({ title, description, items }: SubMenuItemProps) => (
         sideOffset={8}
         alignOffset={-4}
       >
-        {items.map((item, index) => (
+        {items?.map((item, index) => (
           <DropdownMenuItem key={index} asChild>
             <NestedSubMenuItem item={item} />
           </DropdownMenuItem>

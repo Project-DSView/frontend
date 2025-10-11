@@ -1,6 +1,6 @@
 import { RealtimeStackData, RealtimeStackStats, RealtimeStackOperation } from '@/types';
 
-export class StackRealtimeService {
+class StackRealtimeService {
   private data: RealtimeStackData;
 
   constructor(initialData: RealtimeStackData) {
@@ -355,3 +355,5 @@ export class StackRealtimeService {
     return this.getState();
   }
 }
+
+export default StackRealtimeService;

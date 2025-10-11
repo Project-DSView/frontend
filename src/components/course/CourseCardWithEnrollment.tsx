@@ -12,6 +12,7 @@ const CourseCardWithEnrollment: React.FC<CourseCardWithEnrollmentProps> = ({
   isEnrolling,
   onEnterCourse,
   accessToken,
+  userProfile,
 }) => {
   const { data: enrollmentData, isLoading: isCheckingEnrollment } = useMyEnrollment(
     accessToken,
@@ -38,6 +39,7 @@ const CourseCardWithEnrollment: React.FC<CourseCardWithEnrollmentProps> = ({
       isEnrolling={isEnrolling}
       isEnrolled={isEnrolled}
       onEnterCourse={onEnterCourse}
+      userProfile={userProfile}
     />
   );
 };

@@ -1,7 +1,6 @@
-// components/footer.tsx
 import Image from 'next/image';
 
-export default function Footer() {
+function Footer() {
   return (
     <footer className="bg-neutral/10 border-t px-6 py-8">
       <div className="mx-auto flex max-w-screen-xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -30,3 +29,5 @@ export default function Footer() {
     </footer>
   );
 }
+
+export default Footer;

@@ -1,5 +1,6 @@
 import React, { forwardRef } from 'react';
 import { StackVisualizationProps } from '@/types';
+import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualizationProps>(
   (
@@ -122,40 +123,51 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
         </div>
 
         {/* Stack Container */}
-        {showMultipleStacks ? (
-          <div className="space-y-6">
-            <div className="flex justify-center space-x-8">
-              {renderSingleStack(mainStack || elements, 'Main Stack', 'main')}
-              {renderSingleStack(stackS1 || [], 'Stack s1', 's1')}
-              {renderSingleStack(stackS2 || [], 'Stack s2', 's2')}
+        <ZoomableContainer 
+          className="min-h-[300px] rounded-lg bg-gray-50" 
+          minZoom={0.5} 
+          maxZoom={2}
+          initialZoom={1}
+          enablePan={true}
+          enableWheelZoom={true}
+          enableKeyboardZoom={true}
+          showControls={true}
+        >
+          {showMultipleStacks ? (
+            <div className="space-y-6 p-6">
+              <div className="flex justify-center space-x-8">
+                {renderSingleStack(mainStack || elements, 'Main Stack', 'main')}
+                {renderSingleStack(stackS1 || [], 'Stack s1', 's1')}
+                {renderSingleStack(stackS2 || [], 'Stack s2', 's2')}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="flex min-h-[200px] flex-col items-center justify-end">
-            {elements.length === 0 ? (
-              <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50">
-                <div className="text-center text-gray-500">
-                  <div className="font-semibold">Stack is Empty</div>
-                  <div className="text-sm">Add elements using Push operation</div>
+          ) : (
+            <div className="flex min-h-[200px] flex-col items-center justify-end p-6">
+              {elements.length === 0 ? (
+                <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50">
+                  <div className="text-center text-gray-500">
+                    <div className="font-semibold">Stack is Empty</div>
+                    <div className="text-sm">Add elements using Push operation</div>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="relative w-36">
-                {/* Stack Frame - กรอบสี่เหลี่ยมไม่มีเส้นด้านบน */}
-                <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black"></div>
+              ) : (
+                <div className="relative w-36">
+                  {/* Stack Frame - กรอบสี่เหลี่ยมไม่มีเส้นด้านบน */}
+                  <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black"></div>
 
-                {/* Stack Elements - อยู่ติดกันไม่มีช่องว่าง */}
-                <div className="flex flex-col-reverse">
-                  {elements.map((element, index) => (
-                    <div key={`${element}-${index}`} className="relative">
-                      {renderStackElement(element, index, elements.length)}
-                    </div>
-                  ))}
+                  {/* Stack Elements - อยู่ติดกันไม่มีช่องว่าง */}
+                  <div className="flex flex-col-reverse">
+                    {elements.map((element, index) => (
+                      <div key={`${element}-${index}`} className="relative">
+                        {renderStackElement(element, index, elements.length)}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+        </ZoomableContainer>
 
         {/* Stack Info */}
         <div className="mt-4 rounded-lg bg-gray-50 p-4">

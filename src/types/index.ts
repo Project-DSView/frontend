@@ -39,6 +39,17 @@ export type { StepSelectorProps } from './components/StepSelector.types';
 
 export type { VirtualizedListProps } from './components/VirtualizedList.types';
 
+export type {
+  DataStructure,
+  LearningTip,
+  TutorialStep,
+  PlaygroundMode,
+  TutorialSection,
+  ImageModalProps,
+  PlaygroundModeCardProps,
+  TutorialStepProps,
+} from './components/tutorial.types';
+
 // Drag Drop
 export type {
   BaseOperation,
@@ -222,6 +233,13 @@ export type {
   EnrollmentRequest,
   EnrollmentResponse,
 } from './services/enrollment.types';
+
+export type {
+  Announcement,
+  AnnouncementsData,
+  AnnouncementsResponse,
+  AnnouncementsParams,
+} from './services/announcements.types';
 
 // Security
 export type {

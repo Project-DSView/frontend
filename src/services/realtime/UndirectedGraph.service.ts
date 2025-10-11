@@ -5,7 +5,7 @@ import {
   RealtimeUndirectedGraphOperation,
 } from '@/types';
 
-export class UndirectedGraphRealtimeService {
+class UndirectedGraphRealtimeService {
   private data: RealtimeUndirectedGraphData;
   private nodePositions: { [key: string]: { x: number; y: number } } = {};
 
@@ -627,3 +627,5 @@ export class UndirectedGraphRealtimeService {
     return this.getData();
   }
 }
+
+export default UndirectedGraphRealtimeService;

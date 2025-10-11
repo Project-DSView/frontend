@@ -25,6 +25,11 @@ const getSubmenuItemsWithNested = (basePath: string): MenuItem[] => [
 
 const playgroundItems: PlaygroundItem[] = [
   {
+    title: 'Tutorial',
+    description: 'Tutorial For Use This Playground',
+    href: '/tutorial',
+  },
+  {
     title: 'Drag & Drop',
     description: 'Instant Code Preview',
     items: getSubmenuItemsWithNested('/dragdrop'),

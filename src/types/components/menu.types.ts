@@ -13,13 +13,14 @@ type MenuItem = {
 type PlaygroundItem = {
   title: string;
   description: string;
-  items: MenuItem[];
+  items?: MenuItem[];
+  href?: string;
 };
 
 interface SubMenuItemProps {
   title: string;
   description: string;
-  items: PlaygroundItem['items'];
+  items?: PlaygroundItem['items'];
 }
 
 interface NestedSubMenuItemProps {

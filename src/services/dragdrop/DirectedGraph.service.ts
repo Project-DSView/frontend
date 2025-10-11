@@ -725,4 +725,4 @@ class DirectedGraphService {
   }
 }
 
-export { DirectedGraphService };
+export default DirectedGraphService;

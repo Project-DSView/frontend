@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { fetchProfile as apiFetchProfile } from '@/api';
 import { UserProfile } from '@/types';
-import { AuthService } from './auth.service';
+import AuthService from './auth.service';
 
-export class ProfileService {
+class ProfileService {
   static async fetchProfile(token: string): Promise<UserProfile> {
     try {
       return await apiFetchProfile(token);
@@ -18,3 +18,5 @@ export class ProfileService {
     }
   }
 }
+
+export default ProfileService;

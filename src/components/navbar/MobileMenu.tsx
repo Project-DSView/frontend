@@ -54,90 +54,108 @@ const MobileMenu = () => {
             {/* Mobile Playground Items */}
             {playgroundItems.map((item, index) => (
               <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
-                <Button
-                  variant="ghost"
-                  onClick={() => toggleCategory(index)}
-                  className="w-full justify-between rounded-lg px-3 py-3 text-left font-medium text-gray-900 hover:bg-gray-50"
-                >
-                  <div>
-                    <div className="font-semibold">{item.title}</div>
-                    <div className="text-sm text-gray-500">{item.description}</div>
-                  </div>
-                  {expandedCategories.includes(index) ? (
-                    <ChevronUp size={16} className="text-gray-500" />
-                  ) : (
-                    <ChevronDown size={16} className="text-gray-500" />
-                  )}
-                </Button>
-
-                {/* Category Items */}
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    expandedCategories.includes(index)
-                      ? 'mt-2 max-h-96 opacity-100'
-                      : 'max-h-0 opacity-0'
-                  } `}
-                >
-                  <div className="space-y-2 pl-4">
-                    {item.items.map((subItem, subIndex) => (
-                      <div key={subIndex}>
-                        {!subItem.hasSubItems ? (
-                          <Link
-                            href={subItem.href ?? '#'}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                          >
-                            <Button
-                              variant="ghost"
-                              className="w-full justify-start rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-all duration-200 hover:bg-gray-100"
-                            >
-                              {subItem.label}
-                            </Button>
-                          </Link>
-                        ) : (
-                          <div className="space-y-1">
-                            <Button
-                              variant="ghost"
-                              onClick={() => toggleSubItem(`${index}-${subIndex}`)}
-                              className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
-                            >
-                              {subItem.label}
-                              {expandedSubItems.includes(`${index}-${subIndex}`) ? (
-                                <ChevronUp size={14} />
-                              ) : (
-                                <ChevronDown size={14} />
-                              )}
-                            </Button>
-
-                            <div
-                              className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                                expandedSubItems.includes(`${index}-${subIndex}`)
-                                  ? 'max-h-48 opacity-100'
-                                  : 'max-h-0 opacity-0'
-                              } `}
-                            >
-                              <div className="space-y-1 pl-4">
-                                {subItem.subItems?.map((nestedItem: SubItem) => (
-                                  <Link
-                                    key={nestedItem.href}
-                                    href={nestedItem.href}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                  >
-                                    <Button
-                                      variant="ghost"
-                                      className="mt-2 mb-2 w-full justify-start rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs transition-all duration-200 hover:bg-gray-50"
-                                    >
-                                      {nestedItem.label}
-                                    </Button>
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                {item.href ? (
+                  // Direct link item (Tutorial)
+                  <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start rounded-lg px-3 py-3 text-left font-medium text-gray-900 hover:bg-gray-50"
+                    >
+                      <div>
+                        <div className="font-semibold">{item.title}</div>
+                        <div className="text-sm text-gray-500">{item.description}</div>
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    </Button>
+                  </Link>
+                ) : (
+                  // Submenu item
+                  <>
+                    <Button
+                      variant="ghost"
+                      onClick={() => toggleCategory(index)}
+                      className="w-full justify-between rounded-lg px-3 py-3 text-left font-medium text-gray-900 hover:bg-gray-50"
+                    >
+                      <div>
+                        <div className="font-semibold">{item.title}</div>
+                        <div className="text-sm text-gray-500">{item.description}</div>
+                      </div>
+                      {expandedCategories.includes(index) ? (
+                        <ChevronUp size={16} className="text-gray-500" />
+                      ) : (
+                        <ChevronDown size={16} className="text-gray-500" />
+                      )}
+                    </Button>
+
+                    {/* Category Items */}
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        expandedCategories.includes(index)
+                          ? 'mt-2 max-h-96 opacity-100'
+                          : 'max-h-0 opacity-0'
+                      } `}
+                    >
+                      <div className="space-y-2 pl-4">
+                        {item.items?.map((subItem, subIndex) => (
+                          <div key={subIndex}>
+                            {!subItem.hasSubItems ? (
+                              <Link
+                                href={subItem.href ?? '#'}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <Button
+                                  variant="ghost"
+                                  className="w-full justify-start rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-all duration-200 hover:bg-gray-100"
+                                >
+                                  {subItem.label}
+                                </Button>
+                              </Link>
+                            ) : (
+                              <div className="space-y-1">
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => toggleSubItem(`${index}-${subIndex}`)}
+                                  className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
+                                >
+                                  {subItem.label}
+                                  {expandedSubItems.includes(`${index}-${subIndex}`) ? (
+                                    <ChevronUp size={14} />
+                                  ) : (
+                                    <ChevronDown size={14} />
+                                  )}
+                                </Button>
+
+                                <div
+                                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                    expandedSubItems.includes(`${index}-${subIndex}`)
+                                      ? 'max-h-48 opacity-100'
+                                      : 'max-h-0 opacity-0'
+                                  } `}
+                                >
+                                  <div className="space-y-1 pl-4">
+                                    {subItem.subItems?.map((nestedItem: SubItem) => (
+                                      <Link
+                                        key={nestedItem.href}
+                                        href={nestedItem.href}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                      >
+                                        <Button
+                                          variant="ghost"
+                                          className="mt-2 mb-2 w-full justify-start rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs transition-all duration-200 hover:bg-gray-50"
+                                        >
+                                          {nestedItem.label}
+                                        </Button>
+                                      </Link>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
 

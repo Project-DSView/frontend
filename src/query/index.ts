@@ -7,6 +7,7 @@ export { useCourses, useCourse } from './course/course';
 
 // Enrollment
 export { useMyEnrollment, useEnrollInCourse } from './enrollment/enrollment';
+export { useAnnouncements } from './announcements/announcements';
 
 // Stepthrough
 export {

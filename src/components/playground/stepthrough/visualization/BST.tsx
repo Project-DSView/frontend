@@ -1,5 +1,6 @@
 import React, { forwardRef, useMemo, useState, useEffect, memo, useCallback } from 'react';
 import { StepthroughVisualizationProps, BSTNode, PositionedNode, BSTData } from '@/types';
+import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const BSTStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -10,6 +11,8 @@ const BSTStepthroughVisualization = forwardRef<
   const [traverseIndex, setTraverseIndex] = useState(0);
   const [isTraversing, setIsTraversing] = useState(false);
   const [traversalOrder, setTraversalOrder] = useState<string[]>([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [previousNodes, setPreviousNodes] = useState<PositionedNode[]>([]);
 
   // Helper function to convert backend tree data to BSTNode
   const convertToBSTNode = useCallback((nodeData: unknown): BSTNode | null => {
@@ -289,6 +292,16 @@ const BSTStepthroughVisualization = forwardRef<
     return calculateTreeLayout(root);
   }, [root, calculateTreeLayout]);
 
+  // Handle transition animation when nodes change
+  useEffect(() => {
+    if (previousNodes.length > 0) {
+      setIsTransitioning(true);
+      const timer = setTimeout(() => setIsTransitioning(false), 800);
+      return () => clearTimeout(timer);
+    }
+    setPreviousNodes(positionedNodes);
+  }, [positionedNodes, previousNodes.length]);
+
   // Memoized node component
   const NodeComponent = memo<{
     node: PositionedNode;
@@ -297,6 +310,7 @@ const BSTStepthroughVisualization = forwardRef<
     isTraverseSelected: boolean;
     isCurrentlyTraversing: boolean;
     isRunning: boolean;
+    isTransitioning: boolean;
   }>(
     ({
       node,
@@ -305,24 +319,27 @@ const BSTStepthroughVisualization = forwardRef<
       isTraverseSelected,
       isCurrentlyTraversing,
       isRunning,
+      isTransitioning,
     }) => (
       <div
-        className="absolute -translate-x-1/2 -translate-y-1/2 transform"
+        className={`absolute -translate-x-1/2 -translate-y-1/2 transform transition-all duration-700 ease-in-out ${
+          isTransitioning ? 'animate-pulse' : ''
+        }`}
         style={{
-          left: `calc(50% + ${node.x}px)`, // ใช้ calc เพื่อให้ responsive
+          left: `calc(50% + ${node.x}px)`,
           top: `${node.y}px`,
         }}
       >
         <div
-          className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-500 ${
+          className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-700 ease-in-out ${
             isHighlighted
-              ? 'scale-110 border-yellow-400 bg-yellow-200 text-yellow-800 shadow-lg'
+              ? 'scale-110 border-yellow-400 bg-yellow-200 text-yellow-800 shadow-lg animate-bounce'
               : isInSearchPath
-                ? 'scale-105 border-blue-400 bg-blue-200 text-blue-800 shadow-md'
+                ? 'scale-105 border-blue-400 bg-blue-200 text-blue-800 shadow-md animate-pulse'
                 : isTraverseSelected || isCurrentlyTraversing
-                  ? 'scale-110 border-green-400 bg-green-200 text-green-800 shadow-lg'
-                  : 'border-black bg-transparent text-gray-800 hover:shadow-md'
-          } ${isRunning ? 'animate-pulse' : ''} `}
+                  ? 'scale-110 border-green-400 bg-green-200 text-green-800 shadow-lg animate-bounce'
+                  : 'border-black bg-transparent text-gray-800 hover:shadow-md hover:scale-105'
+          } ${isRunning ? 'animate-pulse' : ''} ${isTransitioning ? 'animate-pulse' : ''}`}
         >
           {node.value}
           {isHighlighted && (
@@ -330,6 +347,9 @@ const BSTStepthroughVisualization = forwardRef<
           )}
           {(isTraverseSelected || isCurrentlyTraversing) && (
             <div className="absolute -top-2 -right-2 h-4 w-4 animate-ping rounded-full bg-green-400" />
+          )}
+          {isTransitioning && (
+            <div className="absolute inset-0 rounded-full border-2 border-blue-300 animate-ping" />
           )}
         </div>
       </div>
@@ -365,6 +385,7 @@ const BSTStepthroughVisualization = forwardRef<
           isTraverseSelected={isTraverseSelected}
           isCurrentlyTraversing={isCurrentlyTraversing}
           isRunning={isRunning ?? false}
+          isTransitioning={isTransitioning}
         />
       );
     },
@@ -375,6 +396,7 @@ const BSTStepthroughVisualization = forwardRef<
       traverseIndex,
       traversalOrder,
       isRunning,
+      isTransitioning,
       NodeComponent,
     ],
   );
@@ -403,13 +425,15 @@ const BSTStepthroughVisualization = forwardRef<
         connections.push(
           <div
             key={`${parent.id}-${child.id}`}
-            className="pointer-events-none absolute z-0"
+            className={`pointer-events-none absolute z-0 transition-all duration-700 ease-in-out ${
+              isTransitioning ? 'animate-pulse' : ''
+            }`}
             style={{
-              left: `calc(50% + ${parentX}px)`, // ใช้ calc เพื่อให้ responsive
+              left: `calc(50% + ${parentX}px)`,
               top: `${parentY}px`,
               width: `${lineLength}px`,
               height: '2px',
-              backgroundColor: '#000000',
+              backgroundColor: isTransitioning ? '#3b82f6' : '#000000',
               transformOrigin: '0 50%',
               transform: `rotate(${lineAngle}deg)`,
             }}
@@ -428,7 +452,7 @@ const BSTStepthroughVisualization = forwardRef<
 
       return <>{connections}</>;
     },
-    [],
+    [isTransitioning],
   );
 
   // Render a single tree
@@ -598,7 +622,16 @@ const BSTStepthroughVisualization = forwardRef<
           </div>
         </div>
       ) : (
-        <div className="relative mb-6 min-h-[400px] overflow-auto rounded-lg bg-gray-50">
+        <ZoomableContainer 
+          className="min-h-[400px] rounded-lg bg-gray-50" 
+          minZoom={0.3} 
+          maxZoom={2}
+          initialZoom={1}
+          enablePan={true}
+          enableWheelZoom={true}
+          enableKeyboardZoom={true}
+          showControls={true}
+        >
           {root ? (
             <div className="relative flex h-full min-h-[400px] w-full justify-center">
               <div className="relative" style={{ minWidth: '800px', minHeight: '400px' }}>
@@ -617,7 +650,7 @@ const BSTStepthroughVisualization = forwardRef<
               </div>
             </div>
           )}
-        </div>
+        </ZoomableContainer>
       )}
 
       {/* Traversal Order Display - Multiple Trees */}

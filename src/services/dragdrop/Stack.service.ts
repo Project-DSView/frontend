@@ -94,4 +94,4 @@ class StackService {
   }
 }
 
-export { StackService };
+export default StackService;

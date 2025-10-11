@@ -59,7 +59,16 @@ const DesktopMenu = () => {
           <DropdownMenuGroup>
             {playgroundItems.map((item, index) => (
               <DropdownMenuItem key={index} asChild>
-                <SubMenuItem {...item} />
+                {item.href ? (
+                  <Link href={item.href} className="block">
+                    <div className="flex flex-col p-2">
+                      <span className="font-medium text-gray-900">{item.title}</span>
+                      <span className="text-sm text-gray-500">{item.description}</span>
+                    </div>
+                  </Link>
+                ) : (
+                  <SubMenuItem {...item} />
+                )}
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>

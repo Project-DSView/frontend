@@ -22,6 +22,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
   isEnrolling = false,
   isEnrolled = false,
   onEnterCourse,
+  userProfile,
 }) => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('th-TH', {
@@ -111,6 +112,14 @@ const CourseCard: React.FC<CourseCardProps> = ({
             >
               <LogIn className="mr-2 h-4 w-4" />
               เข้าสู่คอร์สเรียน
+            </Button>
+          ) : userProfile?.is_teacher ? (
+            <Button
+              onClick={() => onEnterCourse?.(course.course_id)}
+              className="bg-primary hover:bg-primary/90 w-full"
+            >
+              <LogIn className="mr-2 h-4 w-4" />
+              เข้าคอร์สเรียน
             </Button>
           ) : (
             <EnrollmentPopover
