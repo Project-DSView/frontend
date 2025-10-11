@@ -16,10 +16,7 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
 }) => {
   return (
     <div
-      className={clsx(
-        'animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700',
-        className
-      )}
+      className={clsx('animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700', className)}
       style={{
         width: width || '100%',
         height: height || '100%',
@@ -39,17 +36,13 @@ export const ImageSkeleton: React.FC<{ className?: string }> = ({ className }) =
   <LoadingSkeleton className={clsx('h-32 w-full', className)} />
 );
 
-export const TextSkeleton: React.FC<{ lines?: number; className?: string }> = ({ 
-  lines = 1, 
-  className 
+export const TextSkeleton: React.FC<{ lines?: number; className?: string }> = ({
+  lines = 1,
+  className,
 }) => (
   <div className={clsx('space-y-2', className)}>
     {Array.from({ length: lines }).map((_, i) => (
-      <LoadingSkeleton
-        key={i}
-        height="1rem"
-        width={i === lines - 1 ? '75%' : '100%'}
-      />
+      <LoadingSkeleton key={i} height="1rem" width={i === lines - 1 ? '75%' : '100%'} />
     ))}
   </div>
 );

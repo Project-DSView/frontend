@@ -26,6 +26,7 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
     error: null as string | null,
   });
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const currentStepIndexRef = useRef<number>(0);
 
   // Extract data from steps - to be implemented by specific data structure hooks
   const extractDataFromSteps = useCallback(
@@ -43,6 +44,7 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
   useEffect(() => {
     if (executeMutation.isSuccess && executeMutation.data) {
       const response = executeMutation.data;
+      currentStepIndexRef.current = 0;
       setState((prev) => ({
         ...prev,
         steps: response.steps,
@@ -123,6 +125,7 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
     (stepIndex: number) => {
       if (stepIndex < 0 || stepIndex >= state.steps.length) return;
 
+      currentStepIndexRef.current = stepIndex;
       setState((prev) => ({
         ...prev,
         currentStepIndex: stepIndex,
@@ -150,64 +153,79 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
     }
   }, [hookState.currentStepIndex, setCurrentStep]);
 
+  // Auto play step with dynamic delay
+  const autoPlayNextStep = useCallback(() => {
+    const currentIndex = currentStepIndexRef.current;
+
+    // Calculate delay based on current step content
+    const currentStep = state.steps[currentIndex];
+    const message = currentStep?.state?.message || '';
+    let delay = 2000; // Default 2 seconds
+
+    // If it's a traversal step, calculate delay based on actual traversal duration
+    if (
+      message.includes('traverse') ||
+      message.includes('Traverse') ||
+      message.includes('BFS') ||
+      message.includes('DFS')
+    ) {
+      // Calculate exact delay based on traversal animation
+      // Each node takes 1 second to animate, plus 0.5 second buffer
+      const estimatedNodes = Math.max(2, Math.min(8, state.steps.length / 3));
+      delay = estimatedNodes * 1000 + 50; // 1 second per node + 0.5 second buffer
+    }
+
+    // Schedule step change with calculated delay
+    autoPlayIntervalRef.current = setTimeout(() => {
+      setState((prev) => {
+        if (currentIndex < prev.steps.length - 1) {
+          const nextIndex = currentIndex + 1;
+          currentStepIndexRef.current = nextIndex;
+          setHookState((prevHook) => ({ ...prevHook, currentStepIndex: nextIndex }));
+
+          return {
+            ...prev,
+            currentStepIndex: nextIndex,
+            data: extractDataFromSteps(prev.steps, nextIndex),
+          };
+        } else {
+          // Auto play finished
+          autoPlayIntervalRef.current = null;
+          setHookState((prevHook) => ({ ...prevHook, isAutoPlaying: false }));
+          return prev;
+        }
+      });
+
+      // Schedule next step if not finished
+      if (currentIndex < state.steps.length - 1) {
+        autoPlayNextStep();
+      }
+    }, delay);
+  }, [extractDataFromSteps, state.steps]);
+
   // Toggle auto play
   const toggleAutoPlay = useCallback(() => {
     if (hookState.isAutoPlaying) {
       // Stop auto play
       if (autoPlayIntervalRef.current) {
-        clearInterval(autoPlayIntervalRef.current);
+        clearTimeout(autoPlayIntervalRef.current);
         autoPlayIntervalRef.current = null;
       }
       setHookState((prev) => ({ ...prev, isAutoPlaying: false }));
     } else {
       // Start auto play
       setHookState((prev) => ({ ...prev, isAutoPlaying: true }));
-      autoPlayIntervalRef.current = setInterval(() => {
-        setState((prev) => {
-          if (hookState.currentStepIndex < prev.steps.length - 1) {
-            const nextIndex = hookState.currentStepIndex + 1;
-            return {
-              ...prev,
-              currentStepIndex: nextIndex,
-              data: extractDataFromSteps(prev.steps, nextIndex),
-            };
-          } else {
-            // Auto play finished
-            if (autoPlayIntervalRef.current) {
-              clearInterval(autoPlayIntervalRef.current);
-              autoPlayIntervalRef.current = null;
-            }
-            setHookState((prev) => ({ ...prev, isAutoPlaying: false }));
-            return prev;
-          }
-        });
-        setHookState((prev) => {
-          if (prev.currentStepIndex < state.steps.length - 1) {
-            return { ...prev, currentStepIndex: prev.currentStepIndex + 1 };
-          } else {
-            // Auto play finished
-            if (autoPlayIntervalRef.current) {
-              clearInterval(autoPlayIntervalRef.current);
-              autoPlayIntervalRef.current = null;
-            }
-            return { ...prev, isAutoPlaying: false };
-          }
-        });
-      }, 1500); // 1.5 seconds per step for smoother experience
+      autoPlayNextStep();
     }
-  }, [
-    hookState.isAutoPlaying,
-    hookState.currentStepIndex,
-    state.steps.length,
-    extractDataFromSteps,
-  ]);
+  }, [hookState.isAutoPlaying, autoPlayNextStep]);
 
   // Reset
   const reset = useCallback(() => {
     if (autoPlayIntervalRef.current) {
-      clearInterval(autoPlayIntervalRef.current);
+      clearTimeout(autoPlayIntervalRef.current);
       autoPlayIntervalRef.current = null;
     }
+    currentStepIndexRef.current = 0;
     setState(initialState);
     setHookState({
       isRunning: false,
@@ -222,7 +240,7 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
   useEffect(() => {
     return () => {
       if (autoPlayIntervalRef.current) {
-        clearInterval(autoPlayIntervalRef.current);
+        clearTimeout(autoPlayIntervalRef.current);
       }
     };
   }, []);

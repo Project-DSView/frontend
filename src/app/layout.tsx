@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { ReactQueryProvider } from '@/providers';
 import { Toaster } from '@/components/ui/sonner';
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://dsview.it.kmitl.ac.th/'),
