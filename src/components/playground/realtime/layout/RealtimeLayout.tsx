@@ -164,10 +164,12 @@ const RealtimeLayout = <T,>({
           <div ref={visualizationRef} className="h-[300px] overflow-auto lg:h-[calc(100%-60px)]">
             <Suspense
               fallback={
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-                    <p className="mt-2 text-sm text-gray-600">Loading visualization...</p>
+                <div className="h-[300px] w-full rounded-lg border bg-gray-50 lg:h-[calc(100%-60px)]">
+                  <div className="flex h-full items-center justify-center">
+                    <div className="text-center">
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                      <p className="mt-2 text-sm text-gray-600">Loading visualization...</p>
+                    </div>
                   </div>
                 </div>
               }

@@ -364,8 +364,10 @@ const DragDropStack = () => {
         {/* Left Side - Drag Components */}
         <Suspense
           fallback={
-            <div className="flex h-64 items-center justify-center rounded-lg border bg-gray-50">
-              Loading operations...
+            <div className="h-64 w-full rounded-lg border bg-gray-50">
+              <div className="flex h-full items-center justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+              </div>
             </div>
           }
         >
@@ -409,8 +411,10 @@ const DragDropStack = () => {
       {/* Visualization */}
       <Suspense
         fallback={
-          <div className="flex h-64 items-center justify-center rounded-lg border bg-gray-50">
-            Loading visualization...
+          <div className="h-64 w-full rounded-lg border bg-gray-50">
+            <div className="flex h-full items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+            </div>
           </div>
         }
       >

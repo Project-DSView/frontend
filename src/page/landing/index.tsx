@@ -43,6 +43,7 @@ const Landing = () => {
             height={150}
             className="mx-auto mb-6 h-auto max-w-[240px] object-contain md:max-w-[340px] lg:max-w-[420px]"
             priority
+            sizes="(max-width: 768px) 240px, (max-width: 1024px) 340px, 420px"
           />
           <p className="text-neutral mt-2 text-lg md:text-xl">
             Interactive Data Structure Visualization
@@ -82,18 +83,10 @@ const Landing = () => {
         <article className="mx-auto grid max-w-screen-lg grid-cols-1 items-stretch gap-8 px-6 md:grid-cols-2 lg:grid-cols-4">
           <Suspense
             fallback={
-              <div className="col-span-full flex items-center justify-center py-8">
-                <div className="flex space-x-2">
-                  <div className="bg-primary h-3 w-3 animate-bounce rounded-full"></div>
-                  <div
-                    className="bg-primary h-3 w-3 animate-bounce rounded-full"
-                    style={{ animationDelay: '0.1s' }}
-                  ></div>
-                  <div
-                    className="bg-primary h-3 w-3 animate-bounce rounded-full"
-                    style={{ animationDelay: '0.2s' }}
-                  ></div>
-                </div>
+              <div className="col-span-full grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, idx) => (
+                  <div key={idx} className="h-48 w-full animate-pulse rounded-lg bg-gray-200"></div>
+                ))}
               </div>
             }
           >
@@ -120,6 +113,7 @@ const Landing = () => {
                 loading="lazy"
                 placeholder="blur"
                 blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 300px"
               />
             </div>
             {/* Text */}
@@ -147,6 +141,7 @@ const Landing = () => {
                 loading="lazy"
                 placeholder="blur"
                 blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 300px"
               />
             </div>
             {/* Text */}

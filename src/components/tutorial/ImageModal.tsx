@@ -23,7 +23,8 @@ const ImageModal: React.FC<ImageModalProps> = ({ selectedImage, onClose }) => {
             width={1200}
             height={800}
             className="h-full w-full rounded-lg object-contain shadow-2xl"
-            unoptimized
+            sizes="(max-width: 768px) 95vw, (max-width: 1200px) 80vw, 70vw"
+            priority
           />
         </div>
       </div>
