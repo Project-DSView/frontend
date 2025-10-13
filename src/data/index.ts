@@ -1,6 +1,5 @@
 // Components
 export { getSubmenuItemsWithNested, playgroundItems } from './components/menu.data';
-export { modes, structures } from './components/toggle.data';
 export { default as features } from './components/card.data';
 export { structures as showcaseStructures } from './components/showcase.data';
 export {
