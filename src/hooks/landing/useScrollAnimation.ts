@@ -19,7 +19,6 @@ export const useParallax = (speed = 0.5) => {
   useEffect(() => {
     const handleScroll = () => {
       if (ref.current) {
-        const rect = ref.current.getBoundingClientRect();
         const scrolled = window.pageYOffset;
         const rate = scrolled * -speed;
         setOffsetY(rate);
@@ -45,13 +44,14 @@ export const useIntersectionObserver = (threshold = 0.1) => {
       { threshold },
     );
 
-    if (ref.current) {
-      observer.observe(ref.current);
+    const currentRef = ref.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, [threshold]);

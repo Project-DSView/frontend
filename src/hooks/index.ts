@@ -19,7 +19,7 @@ export {
   useParallax,
   useIntersectionObserver,
   useScrollProgress,
-} from './useScrollAnimation';
+} from './landing/useScrollAnimation';
 
 // Stepthrough
 export { default as useBSTStepthrough } from './stepthrough/useBSTStepthrough';
