@@ -1,5 +1,5 @@
 // Animations
-export * from './animations';
+export * from './utils/animations';
 
 // Drag Drop
 export {
@@ -100,4 +100,4 @@ export { isValidImageUrl, getCourseImageFallback } from './utils/image.utils';
 export { default as cn } from './utils/utils';
 
 // Video
-export { getEmbedUrl, isSupportedVideoPlatform, getVideoPlatform } from './video';
+export { getEmbedUrl, isSupportedVideoPlatform, getVideoPlatform } from './utils/video';

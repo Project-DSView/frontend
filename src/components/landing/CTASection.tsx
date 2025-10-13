@@ -2,16 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { fadeInUpVariants, buttonVariants } from '@/lib/animations';
+import { fadeInUpVariants, buttonVariants } from '@/lib/utils/animations';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { CTASectionProps } from '@/types';
 
-interface CTASectionProps {
-  onGetStarted?: () => void;
-}
-
-const CTASection = ({ onGetStarted }: CTASectionProps) => {
+const CTASection = ({}: CTASectionProps) => {
   const [particles, setParticles] = useState<Array<{ left: string; top: string }>>([]);
 
   useEffect(() => {

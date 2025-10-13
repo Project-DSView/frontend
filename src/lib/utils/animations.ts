@@ -1,7 +1,7 @@
 import { Variants } from 'framer-motion';
 
 // Page load animations
-export const pageVariants: Variants = {
+const pageVariants: Variants = {
   initial: { opacity: 0, y: 20 },
   animate: {
     opacity: 1,
@@ -16,7 +16,7 @@ export const pageVariants: Variants = {
 };
 
 // Hero section animations
-export const heroVariants: Variants = {
+const heroVariants: Variants = {
   initial: { opacity: 0, y: 50 },
   animate: {
     opacity: 1,
@@ -29,7 +29,7 @@ export const heroVariants: Variants = {
   },
 };
 
-export const heroChildVariants: Variants = {
+const heroChildVariants: Variants = {
   initial: { opacity: 0, y: 30 },
   animate: {
     opacity: 1,
@@ -39,7 +39,7 @@ export const heroChildVariants: Variants = {
 };
 
 // Scroll-triggered animations
-export const fadeInUpVariants: Variants = {
+const fadeInUpVariants: Variants = {
   initial: { opacity: 0, y: 60 },
   animate: {
     opacity: 1,
@@ -48,7 +48,7 @@ export const fadeInUpVariants: Variants = {
   },
 };
 
-export const fadeInLeftVariants: Variants = {
+const fadeInLeftVariants: Variants = {
   initial: { opacity: 0, x: -60 },
   animate: {
     opacity: 1,
@@ -57,7 +57,7 @@ export const fadeInLeftVariants: Variants = {
   },
 };
 
-export const fadeInRightVariants: Variants = {
+const fadeInRightVariants: Variants = {
   initial: { opacity: 0, x: 60 },
   animate: {
     opacity: 1,
@@ -67,7 +67,7 @@ export const fadeInRightVariants: Variants = {
 };
 
 // Stagger animations for lists
-export const staggerContainerVariants: Variants = {
+const staggerContainerVariants: Variants = {
   initial: {},
   animate: {
     transition: {
@@ -77,7 +77,7 @@ export const staggerContainerVariants: Variants = {
   },
 };
 
-export const staggerItemVariants: Variants = {
+const staggerItemVariants: Variants = {
   initial: { opacity: 0, y: 30 },
   animate: {
     opacity: 1,
@@ -87,7 +87,7 @@ export const staggerItemVariants: Variants = {
 };
 
 // Feature cards animations
-export const cardVariants: Variants = {
+const cardVariants: Variants = {
   initial: { opacity: 0, y: 40, scale: 0.95 },
   animate: {
     opacity: 1,
@@ -103,7 +103,7 @@ export const cardVariants: Variants = {
 };
 
 // Button animations
-export const buttonVariants: Variants = {
+const buttonVariants: Variants = {
   initial: { scale: 1 },
   hover: {
     scale: 1.05,
@@ -116,7 +116,7 @@ export const buttonVariants: Variants = {
 };
 
 // Icon animations
-export const iconVariants: Variants = {
+const iconVariants: Variants = {
   initial: { scale: 1, rotate: 0 },
   hover: {
     scale: 1.1,
@@ -126,7 +126,7 @@ export const iconVariants: Variants = {
 };
 
 // Floating animation
-export const floatVariants: Variants = {
+const floatVariants: Variants = {
   animate: {
     y: [-10, 10, -10],
     transition: {
@@ -138,7 +138,7 @@ export const floatVariants: Variants = {
 };
 
 // Gradient background animation
-export const gradientVariants: Variants = {
+const gradientVariants: Variants = {
   animate: {
     backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
     transition: {
@@ -150,7 +150,7 @@ export const gradientVariants: Variants = {
 };
 
 // Scale in animation
-export const scaleInVariants: Variants = {
+const scaleInVariants: Variants = {
   initial: { opacity: 0, scale: 0.8 },
   animate: {
     opacity: 1,
@@ -160,11 +160,29 @@ export const scaleInVariants: Variants = {
 };
 
 // Slide up animation
-export const slideUpVariants: Variants = {
+const slideUpVariants: Variants = {
   initial: { opacity: 0, y: 100 },
   animate: {
     opacity: 1,
     y: 0,
     transition: { duration: 0.8, ease: 'easeOut' },
   },
+};
+
+export {
+  pageVariants,
+  heroVariants,
+  heroChildVariants,
+  fadeInUpVariants,
+  fadeInLeftVariants,
+  fadeInRightVariants,
+  staggerContainerVariants,
+  staggerItemVariants,
+  cardVariants,
+  buttonVariants,
+  iconVariants,
+  floatVariants,
+  gradientVariants,
+  scaleInVariants,
+  slideUpVariants,
 };

@@ -2,7 +2,7 @@ import { memo } from 'react';
 import Image from 'next/image';
 import { FeatureCardProps } from '@/types';
 import { motion } from 'framer-motion';
-import { cardVariants, iconVariants } from '@/lib/animations';
+import { cardVariants, iconVariants } from '@/lib/utils/animations';
 
 const FeatureCard = memo(({ feature, index }: FeatureCardProps) => (
   <motion.div

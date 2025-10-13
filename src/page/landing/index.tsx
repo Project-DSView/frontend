@@ -9,7 +9,7 @@ import useAuth from '@/hooks/auth/useAuth';
 import { AuthService } from '@/services';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { heroVariants, heroChildVariants, buttonVariants } from '@/lib/animations';
+import { heroVariants, heroChildVariants, buttonVariants } from '@/lib/utils/animations';
 
 // Lazy load components
 const FeatureCard = lazy(() => import('@/components/card'));

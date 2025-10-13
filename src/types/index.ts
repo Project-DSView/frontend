@@ -39,6 +39,8 @@ export type { StepSelectorProps } from './components/StepSelector.types';
 
 export type { VirtualizedListProps } from './components/VirtualizedList.types';
 
+export type { Structure, CTASectionProps } from './components/showcase.types';
+
 export type {
   DataStructure,
   LearningTip,

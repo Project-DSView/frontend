@@ -2,44 +2,10 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { fadeInUpVariants, staggerContainerVariants, staggerItemVariants } from '@/lib/animations';
+import { staggerContainerVariants, staggerItemVariants } from '@/lib/utils/animations';
 import { Button } from '@/components/ui/button';
-import { Code, GitBranch, Layers, Network } from 'lucide-react';
-
-const structures = [
-  {
-    id: 'bst',
-    name: 'Binary Search Tree',
-    icon: GitBranch,
-    description: 'โครงสร้างข้อมูลแบบต้นไม้ที่ช่วยในการค้นหาอย่างมีประสิทธิภาพ',
-    preview: '/landing/LearnPicture.png',
-    color: 'from-blue-500 to-cyan-500',
-  },
-  {
-    id: 'graph',
-    name: 'Graph',
-    icon: Network,
-    description: 'โครงสร้างข้อมูลแบบกราฟสำหรับแสดงความสัมพันธ์ระหว่างข้อมูล',
-    preview: '/landing/Understand.png',
-    color: 'from-purple-500 to-pink-500',
-  },
-  {
-    id: 'linkedlist',
-    name: 'Linked List',
-    icon: GitBranch,
-    description: 'โครงสร้างข้อมูลแบบลิงก์ลิสต์ที่เชื่อมต่อข้อมูลแบบต่อเนื่อง',
-    preview: '/landing/Easytouse.png',
-    color: 'from-green-500 to-emerald-500',
-  },
-  {
-    id: 'stack',
-    name: 'Stack',
-    icon: Layers,
-    description: 'โครงสร้างข้อมูลแบบสแต็กที่ทำงานแบบ LIFO (Last In First Out)',
-    preview: '/landing/Picture2.png',
-    color: 'from-orange-500 to-red-500',
-  },
-];
+import { Code } from 'lucide-react';
+import { showcaseStructures } from '@/data';
 
 const InteractiveShowcase = () => {
   const [activeStructure, setActiveStructure] = useState('bst');
@@ -71,7 +37,7 @@ const InteractiveShowcase = () => {
             <h3 className="text-primary mb-6 text-2xl font-bold">เลือกโครงสร้างข้อมูล</h3>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {structures.map((structure) => {
+              {showcaseStructures.map((structure) => {
                 const Icon = structure.icon;
                 const isActive = activeStructure === structure.id;
 
@@ -154,18 +120,18 @@ const InteractiveShowcase = () => {
                 >
                   <div
                     className={`mx-auto mb-4 h-32 w-32 rounded-2xl bg-gradient-to-r ${
-                      structures.find((s) => s.id === activeStructure)?.color ||
+                      showcaseStructures.find((s) => s.id === activeStructure)?.color ||
                       'from-gray-400 to-gray-600'
                     } flex items-center justify-center shadow-lg`}
                   >
                     {(() => {
-                      const structure = structures.find((s) => s.id === activeStructure);
+                      const structure = showcaseStructures.find((s) => s.id === activeStructure);
                       const Icon = structure?.icon || Code;
                       return <Icon className="h-16 w-16 text-white" />;
                     })()}
                   </div>
                   <h4 className="text-primary mb-2 text-xl font-bold">
-                    {structures.find((s) => s.id === activeStructure)?.name}
+                    {showcaseStructures.find((s) => s.id === activeStructure)?.name}
                   </h4>
                   <p className="text-neutral text-sm">คลิกเพื่อดูการทำงานแบบ Interactive</p>
                 </motion.div>
