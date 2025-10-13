@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { staggerContainerVariants, staggerItemVariants } from '@/lib/utils/animations';
+import { staggerContainerVariants, staggerItemVariants } from '@/lib';
 import { Button } from '@/components/ui/button';
 import { Code } from 'lucide-react';
 import { showcaseStructures } from '@/data';

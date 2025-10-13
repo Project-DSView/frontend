@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { fadeInUpVariants, buttonVariants } from '@/lib/utils/animations';
+import { fadeInUpVariants, buttonVariants } from '@/lib';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
