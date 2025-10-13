@@ -14,7 +14,12 @@ export { default as useUndirectedGraphDragDrop } from './dragdrop/useUndirectedG
 export { default as useMobile } from './mobile/use-mobile';
 
 // Scroll Animation
-export { useScrollAnimation, useParallax, useIntersectionObserver, useScrollProgress } from './useScrollAnimation';
+export {
+  useScrollAnimation,
+  useParallax,
+  useIntersectionObserver,
+  useScrollProgress,
+} from './useScrollAnimation';
 
 // Stepthrough
 export { default as useBSTStepthrough } from './stepthrough/useBSTStepthrough';

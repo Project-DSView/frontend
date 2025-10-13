@@ -43,13 +43,8 @@ const useEnrollInCourse = () => {
 // Unenroll from course mutation
 const useUnenrollFromCourse = () => {
   return useMutation({
-    mutationFn: ({
-      token,
-      courseId,
-    }: {
-      token: string;
-      courseId: string;
-    }) => EnrollmentService.unenrollFromCourse(token, courseId),
+    mutationFn: ({ token, courseId }: { token: string; courseId: string }) =>
+      EnrollmentService.unenrollFromCourse(token, courseId),
   });
 };
 

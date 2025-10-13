@@ -11,7 +11,7 @@ const getEmbedUrl = (url: string): string => {
   if (url.includes('youtube.com/embed/')) {
     return url; // Already an embed URL
   }
-  
+
   // Google Drive URLs
   if (url.includes('drive.google.com/file/d/')) {
     // Extract file ID from Google Drive URL
@@ -29,16 +29,12 @@ const getEmbedUrl = (url: string): string => {
       return `https://drive.google.com/file/d/${fileId}/preview`;
     }
   }
-  
+
   return url; // Return as-is for other video platforms
 };
 
-
 const isSupportedVideoPlatform = (url: string): boolean => {
-  return (
-    url.includes('youtube.com') ||
-    url.includes('drive.google.com') 
-  );
+  return url.includes('youtube.com') || url.includes('drive.google.com');
 };
 
 const getVideoPlatform = (url: string): string => {

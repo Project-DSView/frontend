@@ -1,5 +1,9 @@
 import axios from 'axios';
-import { getMyEnrollment as apiGetMyEnrollment, enrollInCourse as apiEnrollInCourse, unenrollFromCourse as apiUnenrollFromCourse } from '@/api';
+import {
+  getMyEnrollment as apiGetMyEnrollment,
+  enrollInCourse as apiEnrollInCourse,
+  unenrollFromCourse as apiUnenrollFromCourse,
+} from '@/api';
 import { MyEnrollmentResponse, EnrollmentRequest, EnrollmentResponse } from '@/types';
 import AuthService from '../auth/auth.service';
 

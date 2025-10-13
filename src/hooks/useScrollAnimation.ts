@@ -3,10 +3,10 @@ import { useInView } from 'framer-motion';
 
 export const useScrollAnimation = (threshold = 0.1) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { 
-    once: true, 
-    margin: "-100px 0px",
-    amount: threshold 
+  const isInView = useInView(ref, {
+    once: true,
+    margin: '-100px 0px',
+    amount: threshold,
   });
 
   return { ref, isInView };
@@ -42,7 +42,7 @@ export const useIntersectionObserver = (threshold = 0.1) => {
       ([entry]) => {
         setIsIntersecting(entry.isIntersecting);
       },
-      { threshold }
+      { threshold },
     );
 
     if (ref.current) {

@@ -3,15 +3,14 @@ export { getSubmenuItemsWithNested, playgroundItems } from './components/menu.da
 export { modes, structures } from './components/toggle.data';
 export { default as features } from './components/card.data';
 export {
-    materialTypeLabels,
-    materialTypeColors,
-    getMaterialIcon,
-    getMaterialTypeLabel,
-    getMaterialTypeColor,
-    isMaterialClickable,
-    isExercise,
-  } from './components/material.data';
-
+  materialTypeLabels,
+  materialTypeColors,
+  getMaterialIcon,
+  getMaterialTypeLabel,
+  getMaterialTypeColor,
+  isMaterialClickable,
+  isExercise,
+} from './components/material.data';
 
 // Data Structures
 export { categories } from './dragdrop/common.data';

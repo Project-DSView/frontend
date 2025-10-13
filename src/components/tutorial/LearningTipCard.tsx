@@ -19,6 +19,3 @@ const LearningTipCard: React.FC<LearningTipCardProps> = memo(({ tip }) => {
 LearningTipCard.displayName = 'LearningTipCard';
 
 export default LearningTipCard;
-
-
-

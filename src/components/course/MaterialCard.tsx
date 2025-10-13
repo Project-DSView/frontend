@@ -2,17 +2,14 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Clock,
-  Award
-} from 'lucide-react';
+import { Clock, Award } from 'lucide-react';
 import { Material } from '@/types';
-import { 
-  getMaterialIcon, 
-  getMaterialTypeLabel, 
-  getMaterialTypeColor, 
+import {
+  getMaterialIcon,
+  getMaterialTypeLabel,
+  getMaterialTypeColor,
   isMaterialClickable,
-  isExercise 
+  isExercise,
 } from '@/data';
 import { getEmbedUrl } from '@/lib';
 
@@ -71,8 +68,8 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
 
   return (
     <>
-      <Card 
-        className={`mb-4 transition-shadow ${isClickable ? 'hover:shadow-md cursor-pointer' : ''}`}
+      <Card
+        className={`mb-4 transition-shadow ${isClickable ? 'cursor-pointer hover:shadow-md' : ''}`}
         onClick={isClickable ? handleClick : undefined}
       >
         <CardHeader className="pb-3">
@@ -83,13 +80,13 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
                 <CardTitle className="text-lg font-semibold text-gray-900">
                   {material.title}
                 </CardTitle>
-                <p className="text-sm text-gray-600 mt-1">
-                  {material.description}
-                </p>
+                <p className="mt-1 text-sm text-gray-600">{material.description}</p>
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getMaterialTypeColor(material.type)}`}>
+              <span
+                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getMaterialTypeColor(material.type)}`}
+              >
                 {getMaterialTypeLabel(material.type)}
               </span>
               <span className="inline-flex items-center rounded-full border border-gray-300 px-2.5 py-0.5 text-xs font-medium text-gray-700">
@@ -123,9 +120,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
               <div className="text-sm text-gray-600">
                 <span className="font-medium">ไฟล์:</span> {material.file_name}
                 {material.file_size && (
-                  <span className="ml-2">
-                    ({(material.file_size / 1024 / 1024).toFixed(1)} MB)
-                  </span>
+                  <span className="ml-2">({(material.file_size / 1024 / 1024).toFixed(1)} MB)</span>
                 )}
               </div>
             )}
@@ -142,20 +137,25 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
 
       {/* Video Dialog */}
       {material.type === 'video' && material.video_url && isVideoDialogOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md"
           onClick={() => setIsVideoDialogOpen(false)}
         >
-          <div 
+          <div
             className="relative mx-4 aspect-video w-full max-w-4xl md:mx-0"
             onClick={(e) => e.stopPropagation()}
           >
-            <button 
+            <button
               className="absolute -top-16 right-0 rounded-full bg-neutral-900/50 p-2 text-xl text-white ring-1 backdrop-blur-md dark:bg-neutral-100/50 dark:text-black"
               onClick={() => setIsVideoDialogOpen(false)}
             >
               <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
             <div className="relative isolate z-[1] size-full overflow-hidden rounded-2xl border-2 border-white">

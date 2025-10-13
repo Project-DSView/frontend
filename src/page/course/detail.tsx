@@ -7,14 +7,29 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
 import { useAuth } from '@/hooks';
-import { useCourse, useAnnouncements, useCourseMaterials, useMyEnrollment, useUnenrollFromCourse } from '@/query';
+import {
+  useCourse,
+  useAnnouncements,
+  useCourseMaterials,
+  useMyEnrollment,
+  useUnenrollFromCourse,
+} from '@/query';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import LatestAnnouncement from '@/components/announcements';
 import MaterialsByWeek from '@/components/course/MaterialsByWeek';
-
 
 const CourseDetailPage: React.FC = () => {
   const params = useParams();
@@ -31,9 +46,10 @@ const CourseDetailPage: React.FC = () => {
   } = useCourse(accessToken, courseId);
 
   // Fetch announcements
-  const {
-    data: announcementsData,
-  } = useAnnouncements(accessToken, courseId, { limit: 50, offset: 0 });
+  const { data: announcementsData } = useAnnouncements(accessToken, courseId, {
+    limit: 50,
+    offset: 0,
+  });
 
   // Fetch course materials
   const {
@@ -43,9 +59,7 @@ const CourseDetailPage: React.FC = () => {
   } = useCourseMaterials(accessToken, courseId, { limit: 100, offset: 0 });
 
   // Fetch enrollment status
-  const {
-    data: enrollmentData,
-  } = useMyEnrollment(accessToken, courseId);
+  const { data: enrollmentData } = useMyEnrollment(accessToken, courseId);
 
   // Unenroll mutation
   const unenrollMutation = useUnenrollFromCourse();
@@ -53,23 +67,23 @@ const CourseDetailPage: React.FC = () => {
   // Handle unenroll
   const handleUnenroll = async () => {
     if (!accessToken || !courseId) return;
-    
+
     try {
       await unenrollMutation.mutateAsync({
         token: accessToken,
         courseId: courseId,
       });
-      
+
       // Invalidate enrollment queries to refresh the cache
       await queryClient.invalidateQueries({
         queryKey: ['myEnrollment', accessToken, courseId],
       });
-      
+
       // Also invalidate any course-related queries
       await queryClient.invalidateQueries({
         queryKey: ['courses'],
       });
-      
+
       toast.success('ออกจากคอร์สสำเร็จ');
       router.push('/course');
     } catch (error) {
@@ -179,7 +193,7 @@ const CourseDetailPage: React.FC = () => {
                       variant="destructive"
                       size="sm"
                       disabled={unenrollMutation.isPending}
-                      className="flex items-center gap-2 text-white text-[16px] bg-error"
+                      className="bg-error flex items-center gap-2 text-[16px] text-white"
                     >
                       {unenrollMutation.isPending ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -193,7 +207,7 @@ const CourseDetailPage: React.FC = () => {
                     <AlertDialogHeader>
                       <AlertDialogTitle>ยืนยันการออกจากคอร์ส</AlertDialogTitle>
                       <AlertDialogDescription>
-                        คุณแน่ใจหรือไม่ว่าต้องการออกจากคอร์ส &quot;{course.name}&quot;? 
+                        คุณแน่ใจหรือไม่ว่าต้องการออกจากคอร์ส &quot;{course.name}&quot;?
                         การกระทำนี้ไม่สามารถย้อนกลับได้
                       </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -243,9 +257,7 @@ const CourseDetailPage: React.FC = () => {
             )}
           </CardHeader>
           <CardContent>
-            {!isMaterialsLoading && !materialsError && (
-              <MaterialsByWeek materials={materials} />
-            )}
+            {!isMaterialsLoading && !materialsError && <MaterialsByWeek materials={materials} />}
           </CardContent>
         </Card>
       </div>

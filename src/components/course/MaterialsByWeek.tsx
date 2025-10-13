@@ -37,10 +37,10 @@ const MaterialsByWeek: React.FC<MaterialsByWeekProps> = ({ materials }) => {
   const sortMaterials = (materials: Material[]) => {
     return materials.sort((a, b) => {
       // เรียงตามประเภท: exercise ก่อน document/video
-      const typeOrder = { 'code_exercise': 0, 'pdf_exercise': 1, 'document': 2, 'video': 3 };
+      const typeOrder = { code_exercise: 0, pdf_exercise: 1, document: 2, video: 3 };
       const aOrder = typeOrder[a.type] ?? 4;
       const bOrder = typeOrder[b.type] ?? 4;
-      
+
       if (aOrder !== bOrder) {
         return aOrder - bOrder;
       }
@@ -54,10 +54,12 @@ const MaterialsByWeek: React.FC<MaterialsByWeekProps> = ({ materials }) => {
   const getWeekStats = (weekMaterials: Material[]) => {
     const stats = {
       total: weekMaterials.length,
-      exercises: weekMaterials.filter(m => m.type === 'code_exercise' || m.type === 'pdf_exercise').length,
-      documents: weekMaterials.filter(m => m.type === 'document').length,
-      videos: weekMaterials.filter(m => m.type === 'video').length,
-      withDeadline: weekMaterials.filter(m => m.deadline).length,
+      exercises: weekMaterials.filter(
+        (m) => m.type === 'code_exercise' || m.type === 'pdf_exercise',
+      ).length,
+      documents: weekMaterials.filter((m) => m.type === 'document').length,
+      videos: weekMaterials.filter((m) => m.type === 'video').length,
+      withDeadline: weekMaterials.filter((m) => m.deadline).length,
     };
     return stats;
   };
@@ -111,10 +113,7 @@ const MaterialsByWeek: React.FC<MaterialsByWeekProps> = ({ materials }) => {
             <AccordionContent>
               <div className="space-y-4">
                 {weekMaterials.map((material) => (
-                  <MaterialCard
-                    key={material.material_id}
-                    material={material}
-                  />
+                  <MaterialCard key={material.material_id} material={material} />
                 ))}
               </div>
             </AccordionContent>

@@ -13,7 +13,7 @@ const structures = [
     icon: GitBranch,
     description: 'โครงสร้างข้อมูลแบบต้นไม้ที่ช่วยในการค้นหาอย่างมีประสิทธิภาพ',
     preview: '/landing/LearnPicture.png',
-    color: 'from-blue-500 to-cyan-500'
+    color: 'from-blue-500 to-cyan-500',
   },
   {
     id: 'graph',
@@ -21,7 +21,7 @@ const structures = [
     icon: Network,
     description: 'โครงสร้างข้อมูลแบบกราฟสำหรับแสดงความสัมพันธ์ระหว่างข้อมูล',
     preview: '/landing/Understand.png',
-    color: 'from-purple-500 to-pink-500'
+    color: 'from-purple-500 to-pink-500',
   },
   {
     id: 'linkedlist',
@@ -29,7 +29,7 @@ const structures = [
     icon: GitBranch,
     description: 'โครงสร้างข้อมูลแบบลิงก์ลิสต์ที่เชื่อมต่อข้อมูลแบบต่อเนื่อง',
     preview: '/landing/Easytouse.png',
-    color: 'from-green-500 to-emerald-500'
+    color: 'from-green-500 to-emerald-500',
   },
   {
     id: 'stack',
@@ -37,8 +37,8 @@ const structures = [
     icon: Layers,
     description: 'โครงสร้างข้อมูลแบบสแต็กที่ทำงานแบบ LIFO (Last In First Out)',
     preview: '/landing/Picture2.png',
-    color: 'from-orange-500 to-red-500'
-  }
+    color: 'from-orange-500 to-red-500',
+  },
 ];
 
 const InteractiveShowcase = () => {
@@ -46,75 +46,70 @@ const InteractiveShowcase = () => {
 
   return (
     <section className="w-full bg-gradient-to-b from-white to-[#F8F9FC] py-20">
-      <motion.div 
+      <motion.div
         className="mx-auto max-w-screen-xl px-6"
         variants={staggerContainerVariants}
         initial="initial"
         whileInView="animate"
         viewport={{ once: true }}
       >
-        <motion.div 
-          className="text-center mb-16"
-          variants={staggerItemVariants}
-        >
-          <h2 className="gradient-text text-3xl font-bold mb-4 md:text-4xl">
+        <motion.div className="mb-16 text-center" variants={staggerItemVariants}>
+          <h2 className="gradient-text mb-4 text-3xl font-bold md:text-4xl">
             ดูการทำงานแบบ Interactive
           </h2>
-          <p className="text-neutral text-lg md:text-xl max-w-2xl mx-auto">
+          <p className="text-neutral mx-auto max-w-2xl text-lg md:text-xl">
             เลือกโครงสร้างข้อมูลที่สนใจและดูการทำงานแบบภาพเคลื่อนไหว
           </p>
         </motion.div>
 
-        <motion.div 
-          className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
+        <motion.div
+          className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2"
           variants={staggerItemVariants}
         >
           {/* Structure Selection */}
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-primary mb-6">
-              เลือกโครงสร้างข้อมูล
-            </h3>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <h3 className="text-primary mb-6 text-2xl font-bold">เลือกโครงสร้างข้อมูล</h3>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {structures.map((structure) => {
                 const Icon = structure.icon;
                 const isActive = activeStructure === structure.id;
-                
+
                 return (
                   <motion.button
                     key={structure.id}
                     onClick={() => setActiveStructure(structure.id)}
-                    className={`group relative p-6 rounded-2xl border-2 transition-all duration-300 ${
-                      isActive 
-                        ? 'border-primary bg-gradient-to-br from-primary/10 to-accent/10 shadow-lg' 
-                        : 'border-white/20 bg-white/50 hover:border-primary/50 hover:bg-white/80'
+                    className={`group relative rounded-2xl border-2 p-6 transition-all duration-300 ${
+                      isActive
+                        ? 'border-primary from-primary/10 to-accent/10 bg-gradient-to-br shadow-lg'
+                        : 'hover:border-primary/50 border-white/20 bg-white/50 hover:bg-white/80'
                     }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <div className="flex items-center space-x-4">
-                      <div className={`p-3 rounded-xl bg-gradient-to-r ${structure.color} ${
-                        isActive ? 'shadow-lg' : 'shadow-md'
-                      }`}>
-                        <Icon className="w-6 h-6 text-white" />
+                      <div
+                        className={`rounded-xl bg-gradient-to-r p-3 ${structure.color} ${
+                          isActive ? 'shadow-lg' : 'shadow-md'
+                        }`}
+                      >
+                        <Icon className="h-6 w-6 text-white" />
                       </div>
                       <div className="text-left">
-                        <h4 className={`font-semibold ${
-                          isActive ? 'text-primary' : 'text-neutral'
-                        }`}>
+                        <h4
+                          className={`font-semibold ${isActive ? 'text-primary' : 'text-neutral'}`}
+                        >
                           {structure.name}
                         </h4>
-                        <p className="text-sm text-neutral/70 mt-1">
-                          {structure.description}
-                        </p>
+                        <p className="text-neutral/70 mt-1 text-sm">{structure.description}</p>
                       </div>
                     </div>
-                    
+
                     {isActive && (
                       <motion.div
-                        className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-accent/5"
+                        className="from-primary/5 to-accent/5 absolute inset-0 rounded-2xl bg-gradient-to-r"
                         layoutId="activeStructure"
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                       />
                     )}
                   </motion.button>
@@ -122,42 +117,34 @@ const InteractiveShowcase = () => {
               })}
             </div>
 
-            <motion.div 
-              className="pt-6"
-              variants={staggerItemVariants}
-            >
-              <Button 
-                className="w-full bg-gradient-to-r from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+            <motion.div className="pt-6" variants={staggerItemVariants}>
+              <Button
+                className="from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary w-full rounded-xl bg-gradient-to-r py-4 font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl"
                 size="lg"
               >
-                <Code className="w-5 h-5 mr-2" />
+                <Code className="mr-2 h-5 w-5" />
                 ลองใช้เลย
               </Button>
             </motion.div>
           </div>
 
           {/* Preview Area */}
-          <motion.div 
-            className="relative"
-            variants={staggerItemVariants}
-          >
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-white to-gray-50">
+          <motion.div className="relative" variants={staggerItemVariants}>
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white to-gray-50 shadow-2xl">
               {/* Browser Header */}
               <div className="flex items-center space-x-2 bg-gray-100 px-4 py-3">
                 <div className="flex space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                  <div className="h-3 w-3 rounded-full bg-red-400"></div>
+                  <div className="h-3 w-3 rounded-full bg-yellow-400"></div>
+                  <div className="h-3 w-3 rounded-full bg-green-400"></div>
                 </div>
                 <div className="flex-1 text-center">
-                  <span className="text-sm text-gray-600 font-medium">
-                    DSView Playground
-                  </span>
+                  <span className="text-sm font-medium text-gray-600">DSView Playground</span>
                 </div>
               </div>
-              
+
               {/* Preview Content */}
-              <div className="aspect-video bg-gradient-to-br from-gray-50 to-white p-8 flex items-center justify-center">
+              <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-gray-50 to-white p-8">
                 <motion.div
                   key={activeStructure}
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -165,39 +152,40 @@ const InteractiveShowcase = () => {
                   transition={{ duration: 0.5 }}
                   className="text-center"
                 >
-                  <div className={`w-32 h-32 mx-auto mb-4 rounded-2xl bg-gradient-to-r ${
-                    structures.find(s => s.id === activeStructure)?.color || 'from-gray-400 to-gray-600'
-                  } flex items-center justify-center shadow-lg`}>
+                  <div
+                    className={`mx-auto mb-4 h-32 w-32 rounded-2xl bg-gradient-to-r ${
+                      structures.find((s) => s.id === activeStructure)?.color ||
+                      'from-gray-400 to-gray-600'
+                    } flex items-center justify-center shadow-lg`}
+                  >
                     {(() => {
-                      const structure = structures.find(s => s.id === activeStructure);
+                      const structure = structures.find((s) => s.id === activeStructure);
                       const Icon = structure?.icon || Code;
-                      return <Icon className="w-16 h-16 text-white" />;
+                      return <Icon className="h-16 w-16 text-white" />;
                     })()}
                   </div>
-                  <h4 className="text-xl font-bold text-primary mb-2">
-                    {structures.find(s => s.id === activeStructure)?.name}
+                  <h4 className="text-primary mb-2 text-xl font-bold">
+                    {structures.find((s) => s.id === activeStructure)?.name}
                   </h4>
-                  <p className="text-neutral text-sm">
-                    คลิกเพื่อดูการทำงานแบบ Interactive
-                  </p>
+                  <p className="text-neutral text-sm">คลิกเพื่อดูการทำงานแบบ Interactive</p>
                 </motion.div>
               </div>
             </div>
 
             {/* Floating Elements */}
             <motion.div
-              className="absolute -top-4 -right-4 w-8 h-8 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-sm"
-              animate={{ 
+              className="from-primary/20 to-accent/20 absolute -top-4 -right-4 h-8 w-8 rounded-full bg-gradient-to-r blur-sm"
+              animate={{
                 scale: [1, 1.2, 1],
-                opacity: [0.5, 0.8, 0.5]
+                opacity: [0.5, 0.8, 0.5],
               }}
               transition={{ duration: 3, repeat: Infinity }}
             />
             <motion.div
-              className="absolute -bottom-4 -left-4 w-12 h-12 bg-gradient-to-r from-secondary/20 to-success/20 rounded-full blur-sm"
-              animate={{ 
+              className="from-secondary/20 to-success/20 absolute -bottom-4 -left-4 h-12 w-12 rounded-full bg-gradient-to-r blur-sm"
+              animate={{
                 scale: [1, 1.3, 1],
-                opacity: [0.3, 0.6, 0.3]
+                opacity: [0.3, 0.6, 0.3],
               }}
               transition={{ duration: 4, repeat: Infinity, delay: 1 }}
             />

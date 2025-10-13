@@ -19,7 +19,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ selectedImage, onClose }) => {
           // Trap focus within modal
           if (modalRef.current) {
             const focusableElements = modalRef.current.querySelectorAll(
-              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
             );
             const firstElement = focusableElements[0] as HTMLElement;
             const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
@@ -51,7 +51,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ selectedImage, onClose }) => {
     if (selectedImage) {
       document.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden'; // Prevent background scrolling
-      
+
       // Focus the close button when modal opens
       setTimeout(() => {
         closeButtonRef.current?.focus();
@@ -67,7 +67,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ selectedImage, onClose }) => {
   if (!selectedImage) return null;
 
   const modalContent = (
-    <div 
+    <div
       ref={modalRef}
       className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black/70"
       onClick={onClose}
@@ -75,14 +75,11 @@ const ImageModal: React.FC<ImageModalProps> = ({ selectedImage, onClose }) => {
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div 
-        className="relative max-h-[95vh] max-w-7xl p-4"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="relative max-h-[95vh] max-w-7xl p-4" onClick={(e) => e.stopPropagation()}>
         <button
           ref={closeButtonRef}
           onClick={onClose}
-          className="fixed top-4 right-4 z-20 rounded-full bg-gray-100 p-4 shadow-lg transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="fixed top-4 right-4 z-20 rounded-full bg-gray-100 p-4 shadow-lg transition-colors hover:bg-gray-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           aria-label="Close modal (Press Escape or Enter)"
         >
           <X className="h-6 w-6 text-gray-700" />
@@ -99,7 +96,10 @@ const ImageModal: React.FC<ImageModalProps> = ({ selectedImage, onClose }) => {
           />
         </div>
         <div className="mt-4 text-center text-sm text-white">
-          <p>Press <kbd className="px-2 py-1 bg-gray-800 rounded">Esc</kbd> to close or <kbd className="px-2 py-1 bg-gray-800 rounded">Tab</kbd> to navigate</p>
+          <p>
+            Press <kbd className="rounded bg-gray-800 px-2 py-1">Esc</kbd> to close or{' '}
+            <kbd className="rounded bg-gray-800 px-2 py-1">Tab</kbd> to navigate
+          </p>
         </div>
       </div>
     </div>

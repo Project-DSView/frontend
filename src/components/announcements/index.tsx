@@ -50,7 +50,7 @@ const LatestAnnouncement: React.FC<LatestAnnouncementProps> = ({ announcements }
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-500 text-center py-4">ยังไม่มีประกาศในคอร์สนี้</p>
+          <p className="py-4 text-center text-gray-500">ยังไม่มีประกาศในคอร์สนี้</p>
         </CardContent>
       </Card>
     );
@@ -68,10 +68,8 @@ const LatestAnnouncement: React.FC<LatestAnnouncementProps> = ({ announcements }
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-gray-900">
-            {latestAnnouncement.title}
-          </h3>
-          
+          <h3 className="text-lg font-semibold text-gray-900">{latestAnnouncement.title}</h3>
+
           <div className="flex items-center gap-4 text-sm text-gray-500">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
@@ -83,7 +81,7 @@ const LatestAnnouncement: React.FC<LatestAnnouncementProps> = ({ announcements }
             </div>
           </div>
 
-          <p className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+          <p className="leading-relaxed whitespace-pre-wrap text-gray-700">
             {latestAnnouncement.content}
           </p>
         </div>

@@ -100,8 +100,4 @@ export { isValidImageUrl, getCourseImageFallback } from './utils/image.utils';
 export { default as cn } from './utils/utils';
 
 // Video
-export { 
-  getEmbedUrl, 
-  isSupportedVideoPlatform, 
-  getVideoPlatform 
-} from './video';
+export { getEmbedUrl, isSupportedVideoPlatform, getVideoPlatform } from './video';
