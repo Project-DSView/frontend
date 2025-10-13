@@ -48,6 +48,8 @@ export type {
   ImageModalProps,
   PlaygroundModeCardProps,
   TutorialStepProps,
+  LearningTipCardProps,
+  DataStructureCardProps,
 } from './components/tutorial.types';
 
 // Drag Drop
@@ -240,6 +242,14 @@ export type {
   AnnouncementsResponse,
   AnnouncementsParams,
 } from './services/announcements.types';
+
+export type {
+  Material,
+  MaterialCreator,
+  MaterialsData,
+  MaterialsResponse,
+  MaterialsParams,
+} from './services/material.types';
 
 // Security
 export type {

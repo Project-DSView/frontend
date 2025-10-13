@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getMyEnrollment as apiGetMyEnrollment, enrollInCourse as apiEnrollInCourse } from '@/api';
+import { getMyEnrollment as apiGetMyEnrollment, enrollInCourse as apiEnrollInCourse, unenrollFromCourse as apiUnenrollFromCourse } from '@/api';
 import { MyEnrollmentResponse, EnrollmentRequest, EnrollmentResponse } from '@/types';
 import AuthService from '../auth/auth.service';
 
@@ -36,6 +36,21 @@ class EnrollmentService {
         const newToken = await AuthService.refreshToken();
         if (newToken) {
           return await apiEnrollInCourse(newToken, courseId, enrollmentData);
+        }
+      }
+      throw error;
+    }
+  }
+
+  // Unenroll from course
+  static async unenrollFromCourse(token: string, courseId: string): Promise<void> {
+    try {
+      return await apiUnenrollFromCourse(token, courseId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await apiUnenrollFromCourse(newToken, courseId);
         }
       }
       throw error;

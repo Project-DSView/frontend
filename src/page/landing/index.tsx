@@ -2,15 +2,19 @@
 
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { LogIn } from 'lucide-react';
+import { LogIn, ChevronDown } from 'lucide-react';
 import { memo, lazy, Suspense } from 'react';
 import { features } from '@/data';
 import useAuth from '@/hooks/auth/useAuth';
 import { AuthService } from '@/services';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { heroVariants, heroChildVariants, buttonVariants } from '@/lib/animations';
 
 // Lazy load components
 const FeatureCard = lazy(() => import('@/components/card'));
+const InteractiveShowcase = lazy(() => import('@/components/landing/InteractiveShowcase'));
+const CTASection = lazy(() => import('@/components/landing/CTASection'));
 
 const Landing = () => {
   const { profile, isInitialized } = useAuth();
@@ -34,21 +38,70 @@ const Landing = () => {
   return (
     <main className="bg-base-100 flex min-h-screen flex-col font-sans">
       {/* Hero Section */}
-      <section className="to-base-100 flex flex-grow flex-col items-center justify-center bg-gradient-to-b from-white px-6 py-16 text-center">
-        <div className="mx-auto w-full max-w-screen-lg">
-          <Image
-            src="/logo.svg"
-            alt="DSView Logo"
-            width={600}
-            height={150}
-            className="mx-auto mb-6 h-auto max-w-[240px] object-contain md:max-w-[340px] lg:max-w-[420px]"
-            priority
-            sizes="(max-width: 768px) 240px, (max-width: 1024px) 340px, 420px"
-          />
-          <p className="text-neutral mt-2 text-lg md:text-xl">
+      <section className="relative flex flex-grow flex-col items-center justify-center overflow-hidden px-6 py-20 text-center">
+        {/* Animated Gradient Background */}
+        <motion.div 
+          className="absolute inset-0 bg-gradient-to-br from-[#F8F9FC] via-[#EEF2FF] to-[#F8F9FC]"
+          variants={heroVariants}
+          initial="initial"
+          animate="animate"
+        />
+        
+        {/* Floating Elements */}
+        <motion.div 
+          className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-xl"
+          animate={{ y: [-20, 20, -20], x: [-10, 10, -10] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div 
+          className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-r from-secondary/20 to-success/20 rounded-full blur-xl"
+          animate={{ y: [20, -20, 20], x: [10, -10, 10] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        <motion.div 
+          className="relative mx-auto w-full max-w-screen-lg z-10"
+          variants={heroVariants}
+          initial="initial"
+          animate="animate"
+        >
+          <motion.div variants={heroChildVariants}>
+            <Image
+              src="/logo.svg"
+              alt="DSView Logo"
+              width={600}
+              height={150}
+              className="mx-auto mb-8 h-auto max-w-[280px] object-contain md:max-w-[380px] lg:max-w-[480px] animate-float"
+              priority
+              sizes="(max-width: 768px) 280px, (max-width: 1024px) 380px, 480px"
+            />
+          </motion.div>
+          
+          <motion.h1 
+            className="gradient-text mb-4 text-4xl font-bold md:text-5xl lg:text-6xl"
+            variants={heroChildVariants}
+          >
+            DSView
+          </motion.h1>
+          
+          <motion.p 
+            className="text-neutral mb-2 text-xl font-medium md:text-2xl"
+            variants={heroChildVariants}
+          >
             Interactive Data Structure Visualization
-          </p>
-          <div className="mt-6 flex justify-center gap-6">
+          </motion.p>
+          
+          <motion.p 
+            className="text-neutral/80 mb-12 text-lg md:text-xl max-w-2xl mx-auto"
+            variants={heroChildVariants}
+          >
+            เรียนรู้โครงสร้างข้อมูลด้วยภาพเคลื่อนไหวแบบ Interactive ที่เข้าใจง่ายและสนุกสนาน
+          </motion.p>
+          
+          <motion.div 
+            className="flex justify-center gap-6"
+            variants={heroChildVariants}
+          >
             {!isInitialized && (
               <div className="flex items-center justify-center">
                 <span className="text-neutral">กำลังตรวจสอบ...</span>
@@ -56,107 +109,107 @@ const Landing = () => {
             )}
 
             {isInitialized && !profile && (
-              <Button
-                onClick={handleLogin}
-                className="bg-secondary rounded-xl px-8 py-4 text-lg text-white shadow-lg hover:bg-orange-600"
-              >
-                เข้าสู่ระบบ
-                <LogIn size={24} />
-              </Button>
+              <motion.div variants={buttonVariants}>
+                <Button
+                  onClick={handleLogin}
+                  className="bg-gradient-to-r from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary rounded-xl px-10 py-5 text-xl text-white shadow-xl hover:shadow-2xl transition-all duration-300"
+                >
+                  เข้าสู่ระบบ
+                  <LogIn size={24} className="ml-2" />
+                </Button>
+              </motion.div>
             )}
 
             {isInitialized && profile && (
-              <Button
-                onClick={handleGoToCourse}
-                className="bg-secondary rounded-xl px-8 py-4 text-lg text-white shadow-lg hover:bg-orange-600"
-              >
-                เข้าคอร์สเรียน
-                <LogIn size={24} />
-              </Button>
+              <motion.div variants={buttonVariants}>
+                <Button
+                  onClick={handleGoToCourse}
+                  className="bg-gradient-to-r from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary rounded-xl px-10 py-5 text-xl text-white shadow-xl hover:shadow-2xl transition-all duration-300"
+                >
+                  เข้าคอร์สเรียน
+                  <LogIn size={24} className="ml-2" />
+                </Button>
+              </motion.div>
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Scroll Indicator */}
+        <motion.div 
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <ChevronDown className="text-neutral/60 w-8 h-8" />
+        </motion.div>
       </section>
 
       {/* Features Section */}
-      <section className="w-full bg-white py-16">
-        <article className="mx-auto grid max-w-screen-lg grid-cols-1 items-stretch gap-8 px-6 md:grid-cols-2 lg:grid-cols-4">
-          <Suspense
-            fallback={
-              <div className="col-span-full grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-                {Array.from({ length: 4 }).map((_, idx) => (
-                  <div key={idx} className="h-48 w-full animate-pulse rounded-lg bg-gray-200"></div>
-                ))}
-              </div>
-            }
+      <section className="w-full bg-gradient-to-b from-[#F8F9FC] to-white py-20">
+        <motion.div 
+          className="mx-auto max-w-screen-xl px-6"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+        >
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
-            {features.map((feature, idx) => (
-              <FeatureCard key={idx} feature={feature} index={idx} />
-            ))}
-          </Suspense>
-        </article>
+            <h2 className="gradient-text text-3xl font-bold mb-4 md:text-4xl">
+              ทำไมต้องเลือก DSView?
+            </h2>
+            <p className="text-neutral text-lg md:text-xl max-w-2xl mx-auto">
+              เครื่องมือที่ออกแบบมาเพื่อการเรียนรู้โครงสร้างข้อมูลอย่างมีประสิทธิภาพ
+            </p>
+          </motion.div>
+          
+          <motion.div 
+            className="grid grid-cols-1 items-stretch gap-8 md:grid-cols-2 lg:grid-cols-4"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            <Suspense
+              fallback={
+                <div className="col-span-full grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, idx) => (
+                    <div key={idx} className="h-48 w-full animate-pulse rounded-2xl bg-gradient-to-br from-white/50 to-white/20 backdrop-blur-sm border border-white/30"></div>
+                  ))}
+                </div>
+              }
+            >
+              {features.map((feature, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: idx * 0.1 }}
+                >
+                  <FeatureCard feature={feature} index={idx} />
+                </motion.div>
+              ))}
+            </Suspense>
+          </motion.div>
+        </motion.div>
       </section>
 
-      {/* DSView Content Section */}
-      <section className="bg-base-100 w-full">
-        <article className="mx-auto flex max-w-screen-xl flex-col gap-20 px-6 py-16">
-          {/* Block 1 */}
-          <div className="flex flex-col items-center gap-10 lg:flex-row">
-            {/* Image */}
-            <div className="w-full lg:w-1/2">
-              <Image
-                src="/landing/LearnPicture.png"
-                alt="เรียนรู้โครงสร้างข้อมูลด้วยภาพ"
-                width={600}
-                height={400}
-                className="mx-auto max-w-[300px] rounded-lg object-contain"
-                loading="lazy"
-                placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 300px"
-              />
-            </div>
-            {/* Text */}
-            <div className="w-full text-center lg:w-1/2 lg:text-left">
-              <h2 className="text-primary mb-4 text-xl font-bold md:text-2xl">
-                เรียนรู้โครงสร้างข้อมูลด้วยภาพ
-              </h2>
-              <p className="text-neutral text-base leading-relaxed md:text-lg">
-                ระบบ DSView ช่วยให้ผู้เรียนเข้าใจโครงสร้างข้อมูลซับซ้อนผ่านภาพและแอนิเมชันแบบ
-                Interactive ซึ่งช่วยลดความยากและทำให้การเรียนสนุกขึ้น
-              </p>
-            </div>
-          </div>
+      {/* Interactive Showcase Section */}
+      <Suspense fallback={<div className="h-96 bg-gradient-to-b from-white to-[#F8F9FC]" />}>
+        <InteractiveShowcase />
+      </Suspense>
 
-          {/* Block 2 */}
-          <div className="flex flex-col items-center gap-10 lg:flex-row-reverse">
-            {/* Image */}
-            <div className="w-full lg:w-1/2">
-              <Image
-                src="/landing/Understand.png"
-                alt="ฝึกซ้ำและตรวจสอบความเข้าใจ"
-                width={600}
-                height={400}
-                className="mx-auto max-w-[300px] rounded-lg object-contain"
-                loading="lazy"
-                placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 300px"
-              />
-            </div>
-            {/* Text */}
-            <div className="w-full text-center lg:w-1/2 lg:text-left">
-              <h2 className="text-primary mb-4 text-xl font-bold md:text-2xl">
-                ฝึกซ้ำและตรวจสอบความเข้าใจ
-              </h2>
-              <p className="text-neutral text-base leading-relaxed md:text-lg">
-                นักเรียนสามารถฝึกซ้ำได้หลายครั้ง พร้อมระบบติดตามความก้าวหน้าและการประเมินผล
-                ทำให้มั่นใจได้ว่ามีความเข้าใจจริง
-              </p>
-            </div>
-          </div>
-        </article>
-      </section>
+
+      {/* CTA Section */}
+      <Suspense fallback={<div className="h-64 bg-gradient-to-br from-primary via-accent to-secondary" />}>
+        <CTASection onGetStarted={profile ? handleGoToCourse : handleLogin} />
+      </Suspense>
     </main>
   );
 };

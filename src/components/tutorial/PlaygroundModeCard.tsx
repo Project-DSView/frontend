@@ -1,12 +1,12 @@
 'use client';
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Play, Zap } from 'lucide-react';
 import { PlaygroundModeCardProps } from '@/types';
 import TutorialStepComponent from './TutorialStep';
 
-const PlaygroundModeCard: React.FC<PlaygroundModeCardProps> = ({ mode, onImageClick }) => {
-  const getIcon = (iconName: string) => {
+const PlaygroundModeCard: React.FC<PlaygroundModeCardProps> = memo(({ mode, onImageClick }) => {
+  const getIcon = useCallback((iconName: string) => {
     switch (iconName) {
       case 'ArrowRight':
         return <ArrowRight className="h-5 w-5" />;
@@ -17,9 +17,9 @@ const PlaygroundModeCard: React.FC<PlaygroundModeCardProps> = ({ mode, onImageCl
       default:
         return <ArrowRight className="h-5 w-5" />;
     }
-  };
+  }, []);
 
-  const getHoverColor = (modeTitle: string) => {
+  const getHoverColor = useCallback((modeTitle: string) => {
     switch (modeTitle) {
       case 'Drag & Drop':
         return 'blue-400';
@@ -30,7 +30,7 @@ const PlaygroundModeCard: React.FC<PlaygroundModeCardProps> = ({ mode, onImageCl
       default:
         return 'blue-400';
     }
-  };
+  }, []);
 
   return (
     <Card className="transition-shadow hover:shadow-lg">
@@ -53,6 +53,8 @@ const PlaygroundModeCard: React.FC<PlaygroundModeCardProps> = ({ mode, onImageCl
       </CardContent>
     </Card>
   );
-};
+});
+
+PlaygroundModeCard.displayName = 'PlaygroundModeCard';
 
 export default PlaygroundModeCard;

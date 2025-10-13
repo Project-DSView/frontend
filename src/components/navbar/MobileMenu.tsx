@@ -173,7 +173,7 @@ const MobileMenu = () => {
                     variant="ghost"
                     className="mb-2 w-full justify-start rounded-lg border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50"
                   >
-                    My Course
+                    Course
                   </Button>
                 </Link>
               )}

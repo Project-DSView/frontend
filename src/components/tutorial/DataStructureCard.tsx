@@ -1,14 +1,10 @@
 'use client';
-import React from 'react';
+import React, { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LinkIcon, Layers, TreePine, Network } from 'lucide-react';
-import { DataStructure } from '@/types/components/tutorial.types';
+import { DataStructureCardProps } from '@/types';
 
-interface DataStructureCardProps {
-  structure: DataStructure;
-}
-
-const DataStructureCard: React.FC<DataStructureCardProps> = ({ structure }) => {
+const DataStructureCard: React.FC<DataStructureCardProps> = memo(({ structure }) => {
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'LinkIcon':
@@ -37,6 +33,8 @@ const DataStructureCard: React.FC<DataStructureCardProps> = ({ structure }) => {
       </CardContent>
     </Card>
   );
-};
+});
+
+DataStructureCard.displayName = 'DataStructureCard';
 
 export default DataStructureCard;

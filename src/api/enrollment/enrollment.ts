@@ -25,4 +25,11 @@ const enrollInCourse = async (
   return res.data;
 };
 
-export { getMyEnrollment, enrollInCourse };
+// Unenroll from course
+const unenrollFromCourse = async (token: string, courseId: string): Promise<void> => {
+  await api.delete(`/api/courses/${courseId}/enroll`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export { getMyEnrollment, enrollInCourse, unenrollFromCourse };

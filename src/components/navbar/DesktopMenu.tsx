@@ -81,7 +81,7 @@ const DesktopMenu = () => {
             variant="ghost"
             className="rounded-lg px-3 py-1.5 text-base font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-100"
           >
-            My Course
+           Course
           </Button>
         </Link>
       )}

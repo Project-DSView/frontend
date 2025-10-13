@@ -1,3 +1,6 @@
+// Animations
+export * from './animations';
+
 // Drag Drop
 export {
   delay,
@@ -95,3 +98,10 @@ export { ExportUtils } from './utils/export.utils';
 export { isValidImageUrl, getCourseImageFallback } from './utils/image.utils';
 
 export { default as cn } from './utils/utils';
+
+// Video
+export { 
+  getEmbedUrl, 
+  isSupportedVideoPlatform, 
+  getVideoPlatform 
+} from './video';

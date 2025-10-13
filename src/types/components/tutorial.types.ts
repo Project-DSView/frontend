@@ -48,6 +48,14 @@ interface TutorialStepProps {
   onImageClick: (imageSrc: string) => void;
 }
 
+interface LearningTipCardProps {
+  tip: LearningTip;
+}
+
+interface DataStructureCardProps {
+  structure: DataStructure;
+}
+
 export type {
   DataStructure,
   LearningTip,
@@ -57,4 +65,6 @@ export type {
   ImageModalProps,
   PlaygroundModeCardProps,
   TutorialStepProps,
+  LearningTipCardProps,
+  DataStructureCardProps,
 };

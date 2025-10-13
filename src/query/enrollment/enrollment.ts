@@ -3,7 +3,7 @@ import { EnrollmentService } from '@/services';
 import { EnrollmentRequest } from '@/types';
 
 // Get my enrollment status
-export const useMyEnrollment = (token: string | null, courseId: string) => {
+const useMyEnrollment = (token: string | null, courseId: string) => {
   return useQuery({
     queryKey: ['myEnrollment', token, courseId],
     queryFn: () => EnrollmentService.getMyEnrollment(token!, courseId),
@@ -26,7 +26,7 @@ export const useMyEnrollment = (token: string | null, courseId: string) => {
 };
 
 // Enroll in course mutation
-export const useEnrollInCourse = () => {
+const useEnrollInCourse = () => {
   return useMutation({
     mutationFn: ({
       token,
@@ -39,3 +39,18 @@ export const useEnrollInCourse = () => {
     }) => EnrollmentService.enrollInCourse(token, courseId, enrollmentData),
   });
 };
+
+// Unenroll from course mutation
+const useUnenrollFromCourse = () => {
+  return useMutation({
+    mutationFn: ({
+      token,
+      courseId,
+    }: {
+      token: string;
+      courseId: string;
+    }) => EnrollmentService.unenrollFromCourse(token, courseId),
+  });
+};
+
+export { useMyEnrollment, useEnrollInCourse, useUnenrollFromCourse };

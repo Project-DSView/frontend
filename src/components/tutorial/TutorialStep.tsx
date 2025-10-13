@@ -1,10 +1,10 @@
 'use client';
-import React from 'react';
+import React, { memo } from 'react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { TutorialStepProps } from '@/types';
 
-const TutorialStepComponent: React.FC<TutorialStepProps> = ({ step, hoverColor, onImageClick }) => {
+const TutorialStepComponent: React.FC<TutorialStepProps> = memo(({ step, hoverColor, onImageClick }) => {
   return (
     <div className="space-y-3">
       <div
@@ -29,6 +29,8 @@ const TutorialStepComponent: React.FC<TutorialStepProps> = ({ step, hoverColor, 
       </div>
     </div>
   );
-};
+});
+
+TutorialStepComponent.displayName = 'TutorialStepComponent';
 
 export default TutorialStepComponent;

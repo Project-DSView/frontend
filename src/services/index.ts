@@ -4,6 +4,7 @@ export { default as ProfileService } from './auth/profile.service';
 
 // Course
 export { default as CourseService } from './course/course.service';
+export { default as MaterialService } from './course/materials.service';
 
 // Dragdrop
 export { default as SinglyLinkedListService } from './dragdrop/SinglyLinkedList.service';

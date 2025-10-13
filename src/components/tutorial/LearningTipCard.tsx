@@ -1,13 +1,9 @@
 'use client';
-import React from 'react';
+import React, { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LearningTip } from '@/types/components/tutorial.types';
+import { LearningTipCardProps } from '@/types';
 
-interface LearningTipCardProps {
-  tip: LearningTip;
-}
-
-const LearningTipCard: React.FC<LearningTipCardProps> = ({ tip }) => {
+const LearningTipCard: React.FC<LearningTipCardProps> = memo(({ tip }) => {
   return (
     <Card className="transition-shadow hover:shadow-lg">
       <CardHeader>
@@ -18,6 +14,11 @@ const LearningTipCard: React.FC<LearningTipCardProps> = ({ tip }) => {
       </CardContent>
     </Card>
   );
-};
+});
+
+LearningTipCard.displayName = 'LearningTipCard';
 
 export default LearningTipCard;
+
+
+
