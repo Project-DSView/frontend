@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { fadeInUpVariants, buttonVariants } from '@/lib/animations';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,17 @@ interface CTASectionProps {
 }
 
 const CTASection = ({ onGetStarted }: CTASectionProps) => {
+  const [particles, setParticles] = useState<Array<{ left: string; top: string }>>([]);
+
+  useEffect(() => {
+    // Generate particles positions on client side only
+    const newParticles = Array.from({ length: 6 }, () => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+    }));
+    setParticles(newParticles);
+  }, []);
+
   return (
     <section className="relative w-full overflow-hidden">
       {/* Background */}
@@ -30,13 +42,13 @@ const CTASection = ({ onGetStarted }: CTASectionProps) => {
       />
 
       {/* Floating Particles */}
-      {[...Array(6)].map((_, i) => (
+      {particles.map((particle, i) => (
         <motion.div
           key={i}
           className="absolute w-2 h-2 bg-white/20 rounded-full"
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
+            left: particle.left,
+            top: particle.top,
           }}
           animate={{
             y: [0, -20, 0],
@@ -79,6 +91,10 @@ const CTASection = ({ onGetStarted }: CTASectionProps) => {
                 แล้วหรือยัง?
               </span>
             </h2>
+            
+            <p className="text-white/90 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+              เข้าร่วมกับนักเรียนหลายพันคนที่ใช้ DSView เพื่อเรียนรู้โครงสร้างข้อมูลอย่างมีประสิทธิภาพ
+            </p>
           </motion.div>
 
           {/* CTA Buttons */}
@@ -92,8 +108,18 @@ const CTASection = ({ onGetStarted }: CTASectionProps) => {
                 size="lg"
                 className="bg-white text-primary hover:bg-white/90 font-semibold px-8 py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 group"
               >
-                 ดูตัวอย่างการใช้งาน
+                เริ่มเรียนฟรี
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </motion.div>
+            
+            <motion.div variants={buttonVariants}>
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-white/30 text-white hover:bg-white/10 font-semibold px-8 py-4 rounded-xl backdrop-blur-sm transition-all duration-300"
+              >
+                ดูตัวอย่าง
               </Button>
             </motion.div>
           </motion.div>
@@ -117,6 +143,27 @@ const CTASection = ({ onGetStarted }: CTASectionProps) => {
                 <span className="text-sm font-medium">{feature}</span>
               </motion.div>
             ))}
+          </motion.div>
+
+          {/* Trust Indicators */}
+          <motion.div 
+            className="mt-16 pt-8 border-t border-white/20"
+            variants={fadeInUpVariants}
+          >
+            <p className="text-white/70 text-sm mb-4">
+              เชื่อถือโดยสถาบันการศึกษาชั้นนำ
+            </p>
+            <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
+              {['KMITL', 'CU', 'KU', 'TU'].map((uni, index) => (
+                <motion.div
+                  key={index}
+                  className="text-white font-semibold text-lg"
+                  whileHover={{ scale: 1.1, opacity: 1 }}
+                >
+                  {uni}
+                </motion.div>
+              ))}
+            </div>
           </motion.div>
         </motion.div>
       </div>

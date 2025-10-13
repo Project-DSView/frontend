@@ -11,12 +11,12 @@
   --font-mono: var(--font-geist-mono);
 
   --color-primary: #2D3E7C;
-  --color-secondary: #FF8C42;
+  --color-secondary: #ff8d00;
   --color-accent: #9B7EDE;
   --color-neutral: #475569;
   --color-success: #4CAF6E;
   --color-info: #3b82f6;
-  --color-error: #f55555;
+  --color-error: #D31E1F;
   --color-warning: #fbbf24;
   --color-gradient-start: #F8F9FC;
   --color-gradient-end: #EEF2FF;
