@@ -20,6 +20,34 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
   ) => {
     const [traverseIndex, setTraverseIndex] = useState(0);
     const [isTraversing, setIsTraversing] = useState(false);
+    const [highlightedNodeIndex, setHighlightedNodeIndex] = useState(-1);
+    const [isAnimating, setIsAnimating] = useState(false);
+
+    // Handle insert/delete/search operations animation
+    useEffect(() => {
+      if (isRunning && currentOperation && (currentOperation === 'insert' || currentOperation === 'delete' || currentOperation === 'search')) {
+        setIsAnimating(true);
+        setHighlightedNodeIndex(currentPosition);
+        const timer = setTimeout(() => {
+          setIsAnimating(false);
+          setHighlightedNodeIndex(-1);
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
+    }, [isRunning, currentOperation, currentPosition]);
+
+    // Simple animation when isRunning is true (fallback)
+    useEffect(() => {
+      if (isRunning && !isAnimating && nodes.length > 0) {
+        setIsAnimating(true);
+        setHighlightedNodeIndex(0); // Highlight first node
+        const timer = setTimeout(() => {
+          setIsAnimating(false);
+          setHighlightedNodeIndex(-1);
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
+    }, [isRunning, isAnimating, nodes.length]);
 
     // Handle traverse animation
     useEffect(() => {
@@ -71,44 +99,7 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
         setTraverseIndex(0);
       }
     }, [selectedStep, currentOperation, nodes.length]);
-    // Determine which node should be animated based on current operation
-    const getAnimatedNodeIndex = () => {
-      if (!isRunning || !currentStep) return -1;
 
-      // For traversal operations, animate the current node being visited
-      if (currentOperation === 'traverse_forward' || currentOperation === 'traverse_backward') {
-        if (currentStep.includes('อ่านค่า') || currentStep.includes('current.data')) {
-          const match = currentStep.match(/ค่า (.+)/);
-          if (match) {
-            const value = match[1];
-            return nodes.indexOf(value);
-          }
-        }
-      }
-
-      // For search operations, animate the current node being checked
-      if (currentOperation === 'search_value' || currentOperation === 'search_position') {
-        if (currentStep.includes('ตรวจสอบ') || currentStep.includes('current.data')) {
-          const match = currentStep.match(/ค่า (.+)/);
-          if (match) {
-            const value = match[1];
-            return nodes.indexOf(value);
-          }
-        }
-      }
-
-      // For insert operations, animate the head node
-      if (currentOperation === 'insert_beginning') {
-        return 0; // Always animate head for insert at beginning
-      }
-
-      // For delete operations, animate the node being deleted
-      if (currentOperation === 'delete_beginning') {
-        return 0; // Animate head for delete from beginning
-      }
-
-      return -1;
-    };
 
     // Get current position for head/tail pointer animation
     const getCurrentPosition = () => {
@@ -170,11 +161,10 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
       return 0; // Default to first position
     };
 
-    const animatedNodeIndex = getAnimatedNodeIndex();
     const headPosition = getCurrentHeadPosition();
 
     const renderDoublyLinkedListNode = (value: string, index: number): React.ReactNode => {
-      const isAnimated = animatedNodeIndex === index;
+      const isHighlighted = highlightedNodeIndex === index;
       const isTraverseSelected =
         selectedStep !== null &&
         selectedStep !== undefined &&
@@ -191,15 +181,21 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
             className={`flex h-16 w-40 rounded-lg border-2 transition-all duration-500 ${
               isCurrentlyTraversing
                 ? 'border-success bg-success/20 animate-pulse shadow-lg'
-                : isAnimated || isTraverseSelected
-                  ? 'border-black bg-white shadow-lg'
-                  : 'border-black bg-white hover:bg-gray-50'
+                : isHighlighted && isAnimating
+                  ? 'scale-105 animate-bounce bg-yellow-50 shadow-lg border-black'
+                  : isTraverseSelected
+                    ? 'border-black bg-white shadow-lg'
+                    : 'border-black bg-white hover:bg-gray-50'
             }`}
           >
             {/* Pre Section - Left */}
             <div
               className={`flex w-1/3 items-center justify-center rounded-l-lg ${
-                isCurrentlyTraversing ? 'bg-success/10' : 'bg-gray-100'
+                isCurrentlyTraversing 
+                  ? 'bg-success/10' 
+                  : isHighlighted && isAnimating
+                    ? 'bg-yellow-100'
+                    : 'bg-gray-100'
               }`}
             >
               {isFirstNode ? (
@@ -231,7 +227,11 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
             {/* Data Section - Center */}
             <div
               className={`flex w-1/3 items-center justify-center border-x border-x-2 ${
-                isCurrentlyTraversing ? 'border-success bg-success/10' : 'border-black bg-gray-100'
+                isCurrentlyTraversing 
+                  ? 'border-success bg-success/10' 
+                  : isHighlighted && isAnimating
+                    ? 'border-black bg-yellow-100'
+                    : 'border-black bg-white'
               }`}
             >
               <span
@@ -246,7 +246,11 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
             {/* Next Section - Right */}
             <div
               className={`flex w-1/3 items-center justify-center rounded-r-lg ${
-                isCurrentlyTraversing ? 'bg-success/10' : 'bg-gray-100'
+                isCurrentlyTraversing 
+                  ? 'bg-success/10' 
+                  : isHighlighted && isAnimating
+                    ? 'bg-yellow-100'
+                    : 'bg-gray-100'
               }`}
             >
               {isLastNode ? (
@@ -363,8 +367,51 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
                   {/* Connections to next node */}
                   {index < nodes.length - 1 && (
                     <div className="mx-2 flex items-center">
-                      <div className="h-0.5 w-6 bg-black"></div>
-                      <div className="h-0 w-0 border-t-[4px] border-b-[4px] border-l-[8px] border-t-transparent border-b-transparent border-l-black"></div>
+                      <svg width="80" height="40" viewBox="0 0 80 40">
+                        <rect width="80" height="40" fill="#ffffff" />
+                        <defs>
+                          <marker
+                            id="arrowRight"
+                            markerWidth="8"
+                            markerHeight="8"
+                            refX="6"
+                            refY="4"
+                            orient="auto"
+                          >
+                            <path d="M0,0 L8,4 L0,8 Z" fill="#000000" />
+                          </marker>
+                          <marker
+                            id="arrowLeft"
+                            markerWidth="8"
+                            markerHeight="8"
+                            refX="2"
+                            refY="4"
+                            orient="auto"
+                          >
+                            <path d="M0,0 L6,4 L0,8 Z" fill="#000000" />
+                          </marker>
+                        </defs>
+                        {/* forward (right) */}
+                        <line
+                          x1="8"
+                          y1="12"
+                          x2="72"
+                          y2="12"
+                          stroke="#000000"
+                          strokeWidth="2"
+                          markerEnd="url(#arrowRight)"
+                        />
+                        {/* backward (left) */}
+                        <line
+                          x1="72"
+                          y1="28"
+                          x2="8"
+                          y2="28"
+                          stroke="#000000"
+                          strokeWidth="2"
+                          markerEnd="url(#arrowLeft)"
+                        />
+                      </svg>
                     </div>
                   )}
                 </React.Fragment>

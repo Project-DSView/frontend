@@ -1,7 +1,6 @@
 'use client';
 import React, { memo } from 'react';
 import Image from 'next/image';
-import { Badge } from '@/components/ui/badge';
 import { TutorialStepProps } from '@/types';
 
 const TutorialStepComponent: React.FC<TutorialStepProps> = memo(
@@ -23,9 +22,6 @@ const TutorialStepComponent: React.FC<TutorialStepProps> = memo(
           />
         </div>
         <div className="flex items-start gap-2">
-          <Badge variant="outline" className="mt-1">
-            {step.stepNumber}
-          </Badge>
           <p className="text-sm">{step.description}</p>
         </div>
       </div>

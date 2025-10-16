@@ -19,7 +19,7 @@ import {
   isValidJWTFormat,
   getTokenExpirationTime,
 } from '@/lib';
-import { User, ChevronDown, BarChart3 } from 'lucide-react';
+import { ChevronDown, BarChart3 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -244,9 +244,6 @@ const AuthButtons: React.FC = () => {
         onClick={handleLogin}
         disabled={isFetching || isLoggingOut}
       >
-        <div className="flex h-5 w-5 items-center justify-center rounded-full">
-          <User size={20} />
-        </div>
         <span>Login with Google</span>
       </Button>
     );

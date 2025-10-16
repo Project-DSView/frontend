@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DragDropZoneProps } from '@/types';
 import { toast } from 'sonner';
 import {
@@ -21,6 +21,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
   onUpdateOperationNewValue,
   onUpdateOperationSourceStack,
   onUpdateOperationTargetStack,
+  onReorderOperation,
   children,
 }) => {
   // Function to validate required inputs for each operation
@@ -194,358 +195,532 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
     });
     return hasError ? 'border-error bg-error bg-error/10' : 'border-neutral';
   };
+
+  // Reordering state and handlers
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isExternalDrag, setIsExternalDrag] = useState(false);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.stopPropagation(); // Prevent triggering parent drag handlers
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.currentTarget.outerHTML);
+    e.dataTransfer.setData('application/json', JSON.stringify({ type: 'reorder', index }));
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Only handle internal reorder, ignore external drags
+    const hasJsonData = e.dataTransfer.types.includes('application/json');
+    if (!hasJsonData) {
+      return; // External drag - ignore
+    }
+
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Only handle internal reorder, ignore external drags
+    const hasJsonData = e.dataTransfer.types.includes('application/json');
+    if (!hasJsonData) {
+      return; // External drag - ignore
+    }
+
+    // Only clear if we're leaving the entire drop zone
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverIndex(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Only handle internal reorder, ignore external drags
+    const hasJsonData = e.dataTransfer.types.includes('application/json');
+    if (!hasJsonData) {
+      return; // External drag - ignore
+    }
+
+    if (draggedIndex !== null && draggedIndex !== dropIndex && onReorderOperation) {
+      onReorderOperation(draggedIndex, dropIndex);
+    }
+
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+  const handleMainDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+
+    // Check if it's internal reorder by looking for JSON data
+    const hasJsonData = e.dataTransfer.types.includes('application/json');
+
+    if (hasJsonData) {
+      // Internal reorder - don't show external drag feedback
+      setIsExternalDrag(false);
+    } else {
+      // External drag - show feedback and allow drop
+      setIsExternalDrag(true);
+      onDragOver(e);
+    }
+  };
+
+  const handleMainDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Check if it's internal reorder
+    const hasJsonData = e.dataTransfer.types.includes('application/json');
+
+    if (hasJsonData) {
+      // Internal reorder - ignore in main handler, let block handlers deal with it
+      setIsExternalDrag(false);
+      return;
+    }
+
+    // External drag - add to end
+    setIsExternalDrag(false);
+    onDrop(e);
+  };
+
+  const handleMainDragLeave = (e: React.DragEvent) => {
+    // Only clear external drag state if leaving the entire drop zone
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsExternalDrag(false);
+    }
+    onDragLeave(e);
+  };
+
   return (
     <div
-      onDragOver={onDragOver}
+      onDragOver={handleMainDragOver}
       onDragEnter={onDragEnter}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
-      className="min-h-[300px] rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4"
+      onDragLeave={handleMainDragLeave}
+      onDrop={handleMainDrop}
+      className={`min-h-[300px] rounded-lg border-2 border-dashed p-4 transition-all duration-200 ${
+        isExternalDrag ? 'border-blue-400 bg-blue-50 shadow-lg' : 'border-gray-300 bg-gray-50'
+      }`}
+      style={{ position: 'relative' }}
     >
       {operations.length === 0 ? (
         <div className="flex h-full w-full items-center justify-center text-gray-400">
           ลาก operations มาที่นี่
         </div>
+      ) : isExternalDrag ? (
+        <>
+          {/* Overlay for external drag to prevent collision with blocks */}
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-blue-50/50">
+            <div className="text-center font-medium text-blue-600">
+              <div>วางเพื่อเพิ่มต่อท้าย</div>
+            </div>
+          </div>
+          {/* Show existing blocks behind overlay */}
+          <div className="opacity-50">
+            <div
+              className={`space-y-3 ${operations.length >= 5 ? 'scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 max-h-96 overflow-y-auto' : ''}`}
+            >
+              {operations.map((op, index) => (
+                <div key={op.id} className={`${op.color} rounded-lg border p-3`}>
+                  <div className="mb-2 flex items-center space-x-3">
+                    <span className="text-sm font-medium text-gray-600">#{index + 1}</span>
+                    <span className="text-sm font-medium">{op.name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
       ) : (
-        <div className="space-y-3">
+        <div
+          className={`space-y-3 ${operations.length >= 5 ? 'scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 max-h-96 overflow-y-auto' : ''}`}
+        >
           {operations.map((op, index) => (
-            <div key={op.id} className={`${op.color} rounded-lg border p-3`}>
-              <div className="mb-2 flex items-center space-x-3">
-                <span className="text-sm font-medium text-gray-600">#{index + 1}</span>
-                <span className="text-sm font-medium">{op.name}</span>
-                <button
-                  onClick={() => onRemoveOperation(op.id)}
-                  className="text-error hover:text-error/50 ml-auto font-bold"
-                >
-                  ✕
-                </button>
-              </div>
+            <div key={op.id} className="relative">
+              {/* Drop indicator line - show above the target */}
+              {dragOverIndex === index && draggedIndex !== null && draggedIndex !== index && (
+                <div className="absolute -top-2 right-0 left-0 z-20 h-1 rounded-full bg-blue-500 shadow-lg" />
+              )}
 
-              {/* Input fields based on operation type */}
-              <div className="flex space-x-2">
-                {/* Value input for operations that need it */}
-                {[
-                  'insert_beginning',
-                  'insert_end',
-                  'insert_position',
-                  'search_value',
-                  'push',
-                  'add_vertex',
-                ].includes(op.type) && (
-                  <input
-                    type="text"
-                    placeholder="Value"
-                    value={op.value || ''}
-                    onChange={(e) => handleInputValidation(op, 'value', e.target.value)}
-                    className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'value')}`}
-                  />
+              {/* Drop indicator line - show below if dragging to last position */}
+              {dragOverIndex === index &&
+                draggedIndex !== null &&
+                draggedIndex !== index &&
+                index === operations.length - 1 && (
+                  <div className="absolute right-0 -bottom-2 left-0 z-20 h-1 rounded-full bg-blue-500 shadow-lg" />
                 )}
 
-                {/* Delete by Value Select for linked list operations */}
-                {op.type === 'delete_value' && (
-                  <Select
-                    value={op.value || ''}
-                    onValueChange={(value) => handleInputValidation(op, 'value', value)}
+              <div
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, index)}
+                onDragEnd={handleDragEnd}
+                className={`${op.color} cursor-move rounded-lg border p-3 transition-all duration-200 ${
+                  draggedIndex === index
+                    ? 'scale-95 opacity-50 shadow-lg'
+                    : dragOverIndex === index && draggedIndex !== null
+                      ? 'ring-opacity-50 ring-2 ring-blue-300'
+                      : 'hover:shadow-md'
+                }`}
+              >
+                <div className="mb-2 flex items-center space-x-3">
+                  <span className="text-sm font-medium text-gray-600">#{index + 1}</span>
+                  <span className="text-sm font-medium">{op.name}</span>
+                  <button
+                    onClick={() => onRemoveOperation(op.id)}
+                    className="text-error hover:text-error/50 ml-auto font-bold"
                   >
-                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'value')}`}>
-                      <SelectValue placeholder="Select Value" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {operations
-                        .filter(
-                          (otherOp) =>
-                            ['insert_beginning', 'insert_end', 'insert_position'].includes(
-                              otherOp.type,
-                            ) && otherOp.value,
-                        )
-                        .map((valueOp) => (
-                          <SelectItem key={valueOp.id} value={valueOp.value || ''}>
-                            {valueOp.value}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                    ✕
+                  </button>
+                </div>
 
-                {/* Remove Vertex Select */}
-                {op.type === 'remove_vertex' && (
-                  <Select
-                    value={op.value || ''}
-                    onValueChange={(value) => handleInputValidation(op, 'value', value)}
-                  >
-                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'value')}`}>
-                      <SelectValue placeholder="Select Vertex" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {operations
-                        .filter((otherOp) => otherOp.type === 'add_vertex' && otherOp.value)
-                        .map((vertexOp) => (
-                          <SelectItem key={vertexOp.id} value={vertexOp.value || ''}>
-                            {vertexOp.value}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                {/* Input fields based on operation type */}
+                <div className="flex space-x-2">
+                  {/* Value input for operations that need it */}
+                  {[
+                    'insert_beginning',
+                    'insert_end',
+                    'insert_position',
+                    'search_value',
+                    'push',
+                    'add_vertex',
+                  ].includes(op.type) && (
+                    <input
+                      type="text"
+                      placeholder="Value"
+                      value={op.value || ''}
+                      onChange={(e) => handleInputValidation(op, 'value', e.target.value)}
+                      className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'value')}`}
+                    />
+                  )}
 
-                {/* Value Select for update_value operation */}
-                {op.type === 'update_value' && (
-                  <Select
-                    value={op.value || ''}
-                    onValueChange={(value) => handleInputValidation(op, 'value', value)}
-                  >
-                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'value')}`}>
-                      <SelectValue placeholder="Select Value" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {operations
-                        .filter(
-                          (otherOp) =>
-                            ['insert_beginning', 'insert_end', 'insert_position'].includes(
-                              otherOp.type,
-                            ) && otherOp.value,
-                        )
-                        .map((valueOp) => (
-                          <SelectItem key={valueOp.id} value={valueOp.value || ''}>
-                            {valueOp.value}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                  {/* Delete by Value Select for linked list operations */}
+                  {op.type === 'delete_value' && (
+                    <Select
+                      value={op.value || ''}
+                      onValueChange={(value) => handleInputValidation(op, 'value', value)}
+                    >
+                      <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'value')}`}>
+                        <SelectValue placeholder="Select Value" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {operations
+                          .filter(
+                            (otherOp) =>
+                              ['insert_beginning', 'insert_end', 'insert_position'].includes(
+                                otherOp.type,
+                              ) && otherOp.value,
+                          )
+                          .map((valueOp) => (
+                            <SelectItem key={valueOp.id} value={valueOp.value || ''}>
+                              {valueOp.value}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  )}
 
-                {/* Number input for BST insert and search operations */}
-                {['insert', 'search'].includes(op.type) && (
-                  <input
-                    type="number"
-                    placeholder="Number"
-                    value={op.value || ''}
-                    onChange={(e) => handleInputValidation(op, 'value', e.target.value)}
-                    className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'value')}`}
-                    min="0"
-                    step="1"
-                  />
-                )}
+                  {/* Remove Vertex Select */}
+                  {op.type === 'remove_vertex' && (
+                    <Select
+                      value={op.value || ''}
+                      onValueChange={(value) => handleInputValidation(op, 'value', value)}
+                    >
+                      <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'value')}`}>
+                        <SelectValue placeholder="Select Vertex" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {operations
+                          .filter((otherOp) => otherOp.type === 'add_vertex' && otherOp.value)
+                          .map((vertexOp) => (
+                            <SelectItem key={vertexOp.id} value={vertexOp.value || ''}>
+                              {vertexOp.value}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  )}
 
-                {/* BST Delete Node Select */}
-                {op.type === 'delete' && (
-                  <Select
-                    value={op.value || ''}
-                    onValueChange={(value) => handleInputValidation(op, 'value', value)}
-                  >
-                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'value')}`}>
-                      <SelectValue placeholder="Select Node" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {operations
-                        .filter((otherOp) => otherOp.type === 'insert' && otherOp.value)
-                        .map((insertOp) => (
-                          <SelectItem key={insertOp.id} value={insertOp.value || ''}>
-                            {insertOp.value}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                  {/* Value Select for update_value operation */}
+                  {op.type === 'update_value' && (
+                    <Select
+                      value={op.value || ''}
+                      onValueChange={(value) => handleInputValidation(op, 'value', value)}
+                    >
+                      <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'value')}`}>
+                        <SelectValue placeholder="Select Value" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {operations
+                          .filter(
+                            (otherOp) =>
+                              ['insert_beginning', 'insert_end', 'insert_position'].includes(
+                                otherOp.type,
+                              ) && otherOp.value,
+                          )
+                          .map((valueOp) => (
+                            <SelectItem key={valueOp.id} value={valueOp.value || ''}>
+                              {valueOp.value}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  )}
 
-                {/* Position input for operations that need it */}
-                {[
-                  'insert_position',
-                  'delete_position',
-                  'search_position',
-                  'update_position',
-                ].includes(op.type) && (
-                  <input
-                    type="number"
-                    placeholder="Position"
-                    value={op.position || ''}
-                    onChange={(e) => handleInputValidation(op, 'position', e.target.value)}
-                    className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'position')}`}
-                  />
-                )}
+                  {/* Number input for BST insert and search operations */}
+                  {['insert', 'search'].includes(op.type) && (
+                    <input
+                      type="number"
+                      placeholder="Number"
+                      value={op.value || ''}
+                      onChange={(e) => handleInputValidation(op, 'value', e.target.value)}
+                      className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'value')}`}
+                      min="0"
+                      step="1"
+                    />
+                  )}
 
-                {/* From Vertex Select for edge operations */}
-                {['add_edge', 'remove_edge'].includes(op.type) && (
-                  <Select
-                    value={op.position || ''}
-                    onValueChange={(value) => handleInputValidation(op, 'position', value)}
-                  >
-                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'position')}`}>
-                      <SelectValue placeholder="From Vertex" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {operations
-                        .filter((otherOp) => otherOp.type === 'add_vertex' && otherOp.value)
-                        .map((vertexOp) => (
-                          <SelectItem key={vertexOp.id} value={vertexOp.value || ''}>
-                            {vertexOp.value}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                  {/* BST Delete Node Select */}
+                  {op.type === 'delete' && (
+                    <Select
+                      value={op.value || ''}
+                      onValueChange={(value) => handleInputValidation(op, 'value', value)}
+                    >
+                      <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'value')}`}>
+                        <SelectValue placeholder="Select Node" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {operations
+                          .filter((otherOp) => otherOp.type === 'insert' && otherOp.value)
+                          .map((insertOp) => (
+                            <SelectItem key={insertOp.id} value={insertOp.value || ''}>
+                              {insertOp.value}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  )}
 
-                {/* New Value input for update operations */}
-                {['update_value', 'update_position'].includes(op.type) && (
-                  <input
-                    type="text"
-                    placeholder="New Value"
-                    value={op.newValue || ''}
-                    onChange={(e) => handleInputValidation(op, 'newValue', e.target.value)}
-                    className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'newValue')}`}
-                  />
-                )}
+                  {/* Position input for operations that need it */}
+                  {[
+                    'insert_position',
+                    'delete_position',
+                    'search_position',
+                    'update_position',
+                  ].includes(op.type) && (
+                    <input
+                      type="number"
+                      placeholder="Position"
+                      value={op.position || ''}
+                      onChange={(e) => handleInputValidation(op, 'position', e.target.value)}
+                      className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'position')}`}
+                    />
+                  )}
 
-                {/* To Vertex Select for edge operations */}
-                {['add_edge', 'remove_edge'].includes(op.type) && (
-                  <Select
-                    value={op.newValue || ''}
-                    onValueChange={(value) => handleInputValidation(op, 'newValue', value)}
-                  >
-                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'newValue')}`}>
-                      <SelectValue placeholder="To Vertex" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {operations
-                        .filter((otherOp) => otherOp.type === 'add_vertex' && otherOp.value)
-                        .map((vertexOp) => (
-                          <SelectItem key={vertexOp.id} value={vertexOp.value || ''}>
-                            {vertexOp.value}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                  {/* From Vertex Select for edge operations */}
+                  {['add_edge', 'remove_edge'].includes(op.type) && (
+                    <Select
+                      value={op.position || ''}
+                      onValueChange={(value) => handleInputValidation(op, 'position', value)}
+                    >
+                      <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'position')}`}>
+                        <SelectValue placeholder="From Vertex" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {operations
+                          .filter((otherOp) => otherOp.type === 'add_vertex' && otherOp.value)
+                          .map((vertexOp) => (
+                            <SelectItem key={vertexOp.id} value={vertexOp.value || ''}>
+                              {vertexOp.value}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  )}
 
-                {/* Start Vertex Select for traversal operations */}
-                {['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(op.type) && (
-                  <Select
-                    value={op.newValue || ''}
-                    onValueChange={(value) => handleInputValidation(op, 'newValue', value)}
-                  >
-                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'newValue')}`}>
-                      <SelectValue placeholder="Start Vertex" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {operations
-                        .filter((otherOp) => otherOp.type === 'add_vertex' && otherOp.value)
-                        .map((vertexOp) => (
-                          <SelectItem key={vertexOp.id} value={vertexOp.value || ''}>
-                            {vertexOp.value}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                  {/* New Value input for update operations */}
+                  {['update_value', 'update_position'].includes(op.type) && (
+                    <input
+                      type="text"
+                      placeholder="New Value"
+                      value={op.newValue || ''}
+                      onChange={(e) => handleInputValidation(op, 'newValue', e.target.value)}
+                      className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'newValue')}`}
+                    />
+                  )}
 
-                {/* End Vertex Select for shortest_path */}
-                {op.type === 'shortest_path' && (
-                  <Select
-                    value={op.endVertex || ''}
-                    onValueChange={(value) => handleInputValidation(op, 'endVertex', value)}
-                  >
-                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'endVertex')}`}>
-                      <SelectValue placeholder="End Vertex" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {operations
-                        .filter((otherOp) => otherOp.type === 'add_vertex' && otherOp.value)
-                        .map((vertexOp) => (
-                          <SelectItem key={vertexOp.id} value={vertexOp.value || ''}>
-                            {vertexOp.value}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                  {/* To Vertex Select for edge operations */}
+                  {['add_edge', 'remove_edge'].includes(op.type) && (
+                    <Select
+                      value={op.newValue || ''}
+                      onValueChange={(value) => handleInputValidation(op, 'newValue', value)}
+                    >
+                      <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'newValue')}`}>
+                        <SelectValue placeholder="To Vertex" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {operations
+                          .filter((otherOp) => otherOp.type === 'add_vertex' && otherOp.value)
+                          .map((vertexOp) => (
+                            <SelectItem key={vertexOp.id} value={vertexOp.value || ''}>
+                              {vertexOp.value}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  )}
 
-                {/* Weight input for add_edge (integer) */}
-                {op.type === 'add_edge' && (
-                  <input
-                    type="number"
-                    placeholder="Weight"
-                    value={op.value || ''}
-                    onChange={(e) => handleInputValidation(op, 'value', e.target.value)}
-                    className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'value')}`}
-                    step="1"
-                  />
-                )}
+                  {/* Start Vertex Select for traversal operations */}
+                  {['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(op.type) && (
+                    <Select
+                      value={op.newValue || ''}
+                      onValueChange={(value) => handleInputValidation(op, 'newValue', value)}
+                    >
+                      <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'newValue')}`}>
+                        <SelectValue placeholder="Start Vertex" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {operations
+                          .filter((otherOp) => otherOp.type === 'add_vertex' && otherOp.value)
+                          .map((vertexOp) => (
+                            <SelectItem key={vertexOp.id} value={vertexOp.value || ''}>
+                              {vertexOp.value}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  )}
 
-                {/* Source Stack Select for copyStack operation */}
-                {op.type === 'copyStack' && (
-                  <Select
-                    value={op.sourceStack || ''}
-                    onValueChange={(value) => handleInputValidation(op, 'sourceStack', value)}
-                  >
-                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'sourceStack')}`}>
-                      <SelectValue placeholder="Source Stack" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="s1">Stack s1</SelectItem>
-                      <SelectItem value="s2">Stack s2</SelectItem>
-                      <SelectItem value="main">Main Stack</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
+                  {/* End Vertex Select for shortest_path */}
+                  {op.type === 'shortest_path' && (
+                    <Select
+                      value={op.endVertex || ''}
+                      onValueChange={(value) => handleInputValidation(op, 'endVertex', value)}
+                    >
+                      <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'endVertex')}`}>
+                        <SelectValue placeholder="End Vertex" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {operations
+                          .filter((otherOp) => otherOp.type === 'add_vertex' && otherOp.value)
+                          .map((vertexOp) => (
+                            <SelectItem key={vertexOp.id} value={vertexOp.value || ''}>
+                              {vertexOp.value}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  )}
 
-                {/* Target Stack Select for copyStack operation */}
-                {op.type === 'copyStack' && (
-                  <Select
-                    value={op.targetStack || ''}
-                    onValueChange={(value) => handleInputValidation(op, 'targetStack', value)}
-                  >
-                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'targetStack')}`}>
-                      <SelectValue placeholder="Target Stack" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="s1">Stack s1</SelectItem>
-                      <SelectItem value="s2">Stack s2</SelectItem>
-                      <SelectItem value="main">Main Stack</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
+                  {/* Weight input for add_edge (integer) */}
+                  {op.type === 'add_edge' && (
+                    <input
+                      type="number"
+                      placeholder="Weight"
+                      value={op.value || ''}
+                      onChange={(e) => handleInputValidation(op, 'value', e.target.value)}
+                      className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'value')}`}
+                      step="1"
+                    />
+                  )}
 
-                {/* Target Stack Select for push operation */}
-                {op.type === 'push' && (
-                  <Select
-                    value={op.targetStack || ''}
-                    onValueChange={(value) => handleInputValidation(op, 'targetStack', value)}
-                  >
-                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'targetStack')}`}>
-                      <SelectValue placeholder="Target Stack" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="s1">Stack s1</SelectItem>
-                      <SelectItem value="s2">Stack s2</SelectItem>
-                      <SelectItem value="main">Main Stack</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
+                  {/* Source Stack Select for copyStack operation */}
+                  {op.type === 'copyStack' && (
+                    <Select
+                      value={op.sourceStack || ''}
+                      onValueChange={(value) => handleInputValidation(op, 'sourceStack', value)}
+                    >
+                      <SelectTrigger
+                        className={`w-32 ${getInputValidationClass(op, 'sourceStack')}`}
+                      >
+                        <SelectValue placeholder="Source Stack" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="s1">Stack s1</SelectItem>
+                        <SelectItem value="s2">Stack s2</SelectItem>
+                        <SelectItem value="main">Main Stack</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
 
-                {op.type === 'pop' && (
-                  <Select
-                    value={op.targetStack || ''}
-                    onValueChange={(value) => handleInputValidation(op, 'targetStack', value)}
-                  >
-                    <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'targetStack')}`}>
-                      <SelectValue placeholder="Target Stack" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="s1">Stack s1</SelectItem>
-                      <SelectItem value="s2">Stack s2</SelectItem>
-                      <SelectItem value="main">Main Stack</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
+                  {/* Target Stack Select for copyStack operation */}
+                  {op.type === 'copyStack' && (
+                    <Select
+                      value={op.targetStack || ''}
+                      onValueChange={(value) => handleInputValidation(op, 'targetStack', value)}
+                    >
+                      <SelectTrigger
+                        className={`w-32 ${getInputValidationClass(op, 'targetStack')}`}
+                      >
+                        <SelectValue placeholder="Target Stack" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="s1">Stack s1</SelectItem>
+                        <SelectItem value="s2">Stack s2</SelectItem>
+                        <SelectItem value="main">Main Stack</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
 
-                {/* Show operation type */}
-                <div className="flex items-center text-xs text-gray-500">
-                  {op.category === 'insertion' && 'Insertion'}
-                  {op.category === 'deletion' && 'Deletion'}
-                  {op.category === 'traversal' && 'Traversal'}
-                  {op.category === 'searching' && 'Searching'}
-                  {op.category === 'update' && 'Update'}
-                  {op.category === 'utility' && 'Utility'}
+                  {/* Target Stack Select for push operation */}
+                  {op.type === 'push' && (
+                    <Select
+                      value={op.targetStack || ''}
+                      onValueChange={(value) => handleInputValidation(op, 'targetStack', value)}
+                    >
+                      <SelectTrigger
+                        className={`w-32 ${getInputValidationClass(op, 'targetStack')}`}
+                      >
+                        <SelectValue placeholder="Target Stack" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="s1">Stack s1</SelectItem>
+                        <SelectItem value="s2">Stack s2</SelectItem>
+                        <SelectItem value="main">Main Stack</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  {op.type === 'pop' && (
+                    <Select
+                      value={op.targetStack || ''}
+                      onValueChange={(value) => handleInputValidation(op, 'targetStack', value)}
+                    >
+                      <SelectTrigger
+                        className={`w-32 ${getInputValidationClass(op, 'targetStack')}`}
+                      >
+                        <SelectValue placeholder="Target Stack" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="s1">Stack s1</SelectItem>
+                        <SelectItem value="s2">Stack s2</SelectItem>
+                        <SelectItem value="main">Main Stack</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  {/* Show operation type */}
+                  <div className="flex items-center text-xs text-gray-500">
+                    {op.category === 'insertion' && 'Insertion'}
+                    {op.category === 'deletion' && 'Deletion'}
+                    {op.category === 'traversal' && 'Traversal'}
+                    {op.category === 'searching' && 'Searching'}
+                    {op.category === 'update' && 'Update'}
+                    {op.category === 'utility' && 'Utility'}
+                  </div>
                 </div>
               </div>
             </div>

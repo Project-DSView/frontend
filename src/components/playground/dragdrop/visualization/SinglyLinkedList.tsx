@@ -20,6 +20,34 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
   ) => {
     const [traverseIndex, setTraverseIndex] = useState(0);
     const [isTraversing, setIsTraversing] = useState(false);
+    const [highlightedNodeIndex, setHighlightedNodeIndex] = useState(-1);
+    const [isAnimating, setIsAnimating] = useState(false);
+
+    // Handle insert/delete/search operations animation
+    useEffect(() => {
+      if (isRunning && currentOperation && (currentOperation === 'insert' || currentOperation === 'delete' || currentOperation === 'search')) {
+        setIsAnimating(true);
+        setHighlightedNodeIndex(currentPosition);
+        const timer = setTimeout(() => {
+          setIsAnimating(false);
+          setHighlightedNodeIndex(-1);
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
+    }, [isRunning, currentOperation, currentPosition]);
+
+    // Simple animation when isRunning is true (fallback)
+    useEffect(() => {
+      if (isRunning && !isAnimating && nodes.length > 0) {
+        setIsAnimating(true);
+        setHighlightedNodeIndex(0); // Highlight first node
+        const timer = setTimeout(() => {
+          setIsAnimating(false);
+          setHighlightedNodeIndex(-1);
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
+    }, [isRunning, isAnimating, nodes.length]);
 
     // Handle traverse animation
     useEffect(() => {
@@ -48,44 +76,7 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
         setTraverseIndex(0);
       }
     }, [selectedStep, currentOperation, nodes.length]);
-    // Determine which node should be animated based on current operation
-    const getAnimatedNodeIndex = () => {
-      if (!isRunning || !currentStep) return -1;
-
-      // For traversal operations, animate the current node being visited
-      if (currentOperation === 'traverse') {
-        if (currentStep.includes('อ่านค่า') || currentStep.includes('current.data')) {
-          const match = currentStep.match(/ค่า (.+)/);
-          if (match) {
-            const value = match[1];
-            return nodes.indexOf(value);
-          }
-        }
-      }
-
-      // For search operations, animate the current node being checked
-      if (currentOperation === 'search_value' || currentOperation === 'search_position') {
-        if (currentStep.includes('ตรวจสอบ') || currentStep.includes('current.data')) {
-          const match = currentStep.match(/ค่า (.+)/);
-          if (match) {
-            const value = match[1];
-            return nodes.indexOf(value);
-          }
-        }
-      }
-
-      // For insert operations, animate the head node
-      if (currentOperation === 'insert_beginning') {
-        return 0; // Always animate head for insert at beginning
-      }
-
-      // For delete operations, animate the node being deleted
-      if (currentOperation === 'delete_beginning') {
-        return 0; // Animate head for delete from beginning
-      }
-
-      return -1;
-    };
+    
 
     // Get current position for head pointer animation
     const getCurrentHeadPosition = () => {
@@ -135,11 +126,10 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
       return 0; // Default to first position
     };
 
-    const animatedNodeIndex = getAnimatedNodeIndex();
     const headPosition = getCurrentHeadPosition();
 
     const renderSinglyLinkedListNode = (value: string, index: number) => {
-      const isAnimated = animatedNodeIndex === index;
+      const isHighlighted = highlightedNodeIndex === index;
       const isTraverseSelected =
         selectedStep !== null &&
         selectedStep !== undefined &&
@@ -155,9 +145,11 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
             className={`max-w-[250px] min-w-[160px] rounded-lg border-2 p-3 text-center font-bold transition-all duration-500 ${
               isCurrentlyTraversing
                 ? 'border-success bg-success/20 animate-pulse shadow-lg'
-                : isAnimated || isTraverseSelected
-                  ? 'border-black bg-white shadow-lg'
-                  : 'border-black bg-white hover:bg-gray-50'
+                : isHighlighted && isAnimating
+                  ? 'scale-105 animate-bounce bg-yellow-50 shadow-lg border-black'
+                  : isTraverseSelected
+                    ? 'border-black bg-white shadow-lg'
+                    : 'border-black bg-white hover:bg-gray-50'
             }`}
           >
             {/* Data Section - Left */}

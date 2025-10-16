@@ -5,6 +5,7 @@ import {
   UndirectedGraphNode,
   UndirectedGraphEdge,
 } from '@/types';
+import StepIndicator from '../../shared/StepIndicator';
 
 const UndirectedGraphStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -373,6 +374,16 @@ const UndirectedGraphStepthroughVisualization = forwardRef<
 
       {/* Graph Visualization */}
       <div className="relative mb-6 min-h-[400px] overflow-auto rounded-lg bg-gray-50">
+        {/* Step Indicator */}
+        {isRunning && steps.length > 0 && (
+          <StepIndicator
+            stepNumber={currentStepIndex + 1}
+            totalSteps={steps.length}
+            message={steps[currentStepIndex]?.state?.message}
+            isAutoPlaying={isRunning}
+          />
+        )}
+
         {data.nodes.length > 0 ? (
           <div className="relative h-full min-h-[400px] w-full">
             {/* Render edges first (behind nodes) */}

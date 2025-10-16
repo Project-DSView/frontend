@@ -1,6 +1,7 @@
 import React, { forwardRef, useState, useEffect, Fragment, useRef } from 'react';
 import { StepthroughVisualizationProps, LinkedListData } from '@/types';
 import ZoomableContainer from '../../shared/ZoomableContainer';
+import StepIndicator from '../../shared/StepIndicator';
 
 const DoublyLinkedListStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -166,14 +167,16 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
         <div
           className={`flex h-16 w-40 rounded-lg border-2 border-black bg-white transition-all duration-700 ease-in-out ${
             isHighlighted
-              ? 'scale-105 animate-bounce bg-blue-50 shadow-lg'
+              ? 'scale-105 animate-bounce bg-yellow-50 shadow-lg'
               : isTransitioning
                 ? 'scale-105 animate-pulse bg-blue-50'
                 : 'hover:scale-105 hover:bg-gray-50'
           } ${isTransitioning ? 'animate-pulse' : ''}`}
         >
           {/* Prev Section - Left */}
-          <div className="flex w-1/3 items-center justify-center rounded-l-lg bg-gray-100">
+          <div className={`flex w-1/3 items-center justify-center rounded-l-lg ${
+            isHighlighted ? 'bg-yellow-100' : 'bg-gray-100'
+          }`}>
             {isFirst ? (
               <div className="relative flex h-full w-full items-center justify-center">
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -187,14 +190,18 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
           </div>
 
           {/* Data Section - Center */}
-          <div className="flex w-1/3 items-center justify-center border-x border-x-2 border-black bg-gray-100">
+          <div className={`flex w-1/3 items-center justify-center border-x border-x-2 border-black ${
+            isHighlighted ? 'bg-yellow-100' : 'bg-white'
+          }`}>
             <span className={`font-bold text-black ${value.length > 6 ? 'text-sm' : 'text-lg'}`}>
               {value}
             </span>
           </div>
 
           {/* Next Section - Right */}
-          <div className="flex w-1/3 items-center justify-center rounded-r-lg bg-gray-100">
+          <div className={`flex w-1/3 items-center justify-center rounded-r-lg ${
+            isHighlighted ? 'bg-yellow-100' : 'bg-gray-100'
+          }`}>
             {isLast ? (
               <div className="relative flex h-full w-full items-center justify-center">
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -271,6 +278,16 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
         enableKeyboardZoom={true}
         showControls={true}
       >
+        {/* Step Indicator */}
+        {isRunning && steps.length > 0 && (
+          <StepIndicator
+            stepNumber={currentStepIndex + 1}
+            totalSteps={steps.length}
+            message={steps[currentStepIndex]?.state?.message}
+            isAutoPlaying={isRunning}
+          />
+        )}
+
         {nodes.length === 0 ? (
           <div className="flex h-full items-center justify-center p-6 text-gray-400">
             <div className="text-center">
@@ -362,8 +379,51 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
 
                   {index < nodes.length - 1 && (
                     <div className="mx-2 flex items-center">
-                      <div className="h-0.5 w-6 bg-black"></div>
-                      <div className="h-0 w-0 border-t-[4px] border-b-[4px] border-l-[8px] border-t-transparent border-b-transparent border-l-black"></div>
+                      <svg width="80" height="40" viewBox="0 0 80 40">
+                        <rect width="80" height="40" fill="#ffffff" />
+                        <defs>
+                          <marker
+                            id="arrowRight"
+                            markerWidth="8"
+                            markerHeight="8"
+                            refX="6"
+                            refY="4"
+                            orient="auto"
+                          >
+                            <path d="M0,0 L8,4 L0,8 Z" fill="#000000" />
+                          </marker>
+                          <marker
+                            id="arrowLeft"
+                            markerWidth="8"
+                            markerHeight="8"
+                            refX="2"
+                            refY="4"
+                            orient="auto"
+                          >
+                            <path d="M0,0 L6,4 L0,8 Z" fill="#000000" />
+                          </marker>
+                        </defs>
+                        {/* forward (right) */}
+                        <line
+                          x1="8"
+                          y1="12"
+                          x2="72"
+                          y2="12"
+                          stroke="#000000"
+                          strokeWidth="2"
+                          markerEnd="url(#arrowRight)"
+                        />
+                        {/* backward (left) */}
+                        <line
+                          x1="72"
+                          y1="28"
+                          x2="8"
+                          y2="28"
+                          stroke="#000000"
+                          strokeWidth="2"
+                          markerEnd="url(#arrowLeft)"
+                        />
+                      </svg>
                     </div>
                   )}
                 </Fragment>

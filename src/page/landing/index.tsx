@@ -2,12 +2,13 @@
 
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { LogIn, ChevronDown } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { memo, lazy, Suspense } from 'react';
 import { features } from '@/data';
 import useAuth from '@/hooks/auth/useAuth';
 import { AuthService } from '@/services';
 import { useRouter } from 'next/navigation';
+import PlaygroundDropdown from '@/components/landing/PlaygroundDropdown';
 import { motion } from 'framer-motion';
 import { heroVariants, heroChildVariants, buttonVariants } from '@/lib/utils/animations';
 
@@ -98,7 +99,10 @@ const Landing = () => {
             เรียนรู้โครงสร้างข้อมูลด้วยภาพเคลื่อนไหวแบบ Interactive ที่เข้าใจง่ายและสนุกสนาน
           </motion.p>
 
-          <motion.div className="flex justify-center gap-6" variants={heroChildVariants}>
+          <motion.div
+            className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6"
+            variants={heroChildVariants}
+          >
             {!isInitialized && (
               <div className="flex items-center justify-center">
                 <span className="text-neutral">กำลังตรวจสอบ...</span>
@@ -106,38 +110,41 @@ const Landing = () => {
             )}
 
             {isInitialized && !profile && (
-              <motion.div variants={buttonVariants}>
-                <Button
-                  onClick={handleLogin}
-                  className="from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary rounded-xl bg-gradient-to-r px-10 py-5 text-xl text-white shadow-xl transition-all duration-300 hover:shadow-2xl"
-                >
-                  เข้าสู่ระบบ
-                  <LogIn size={24} className="ml-2" />
-                </Button>
-              </motion.div>
+              <>
+                <motion.div variants={buttonVariants}>
+                  <Button
+                    onClick={handleLogin}
+                    className="from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary rounded-xl bg-gradient-to-r px-10 py-5 text-xl text-white shadow-xl transition-all duration-300 hover:shadow-2xl"
+                  >
+                    <LogIn size={24} className="ml-2" />
+                    เข้าสู่ระบบ
+                  </Button>
+                </motion.div>
+
+                <motion.div variants={buttonVariants}>
+                  <PlaygroundDropdown />
+                </motion.div>
+              </>
             )}
 
             {isInitialized && profile && (
-              <motion.div variants={buttonVariants}>
-                <Button
-                  onClick={handleGoToCourse}
-                  className="from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary rounded-xl bg-gradient-to-r px-10 py-5 text-xl text-white shadow-xl transition-all duration-300 hover:shadow-2xl"
-                >
-                  เข้าคอร์สเรียน
-                  <LogIn size={24} className="ml-2" />
-                </Button>
-              </motion.div>
+              <>
+                <motion.div variants={buttonVariants}>
+                  <Button
+                    onClick={handleGoToCourse}
+                    className="from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary rounded-xl bg-gradient-to-r px-10 py-5 text-xl text-white shadow-xl transition-all duration-300 hover:shadow-2xl"
+                  >
+                    เข้าคอร์สเรียน
+                    <LogIn size={24} className="ml-2" />
+                  </Button>
+                </motion.div>
+
+                <motion.div variants={buttonVariants}>
+                  <PlaygroundDropdown />
+                </motion.div>
+              </>
             )}
           </motion.div>
-        </motion.div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 transform"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <ChevronDown className="text-neutral/60 h-8 w-8" />
         </motion.div>
       </section>
 

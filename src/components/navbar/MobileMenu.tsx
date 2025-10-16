@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, ChevronDown, ChevronUp, Bug } from 'lucide-react';
+import { Menu, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { playgroundItems } from '@/data';
 import { SubItem } from '@/types';
@@ -189,12 +189,9 @@ const MobileMenu = () => {
               <Button
                 variant="ghost"
                 onClick={handleReportIssue}
-                className="bg-error hover:bg-error/90 mt-6 w-full justify-start rounded-lg px-4 py-3 font-medium text-white shadow-sm transition-all duration-200 hover:shadow-md"
+                className="bg-error hover:bg-error/90 mt-6 w-full justify-start rounded-lg px-4 py-3 font-medium text-white shadow-sm transition-all duration-200 hover:text-white hover:shadow-md"
               >
-                <div className="flex items-center space-x-2">
-                  <Bug size={16} />
-                  <span>Report Issue</span>
-                </div>
+                <span>Report Issue</span>
               </Button>
             </div>
           </div>

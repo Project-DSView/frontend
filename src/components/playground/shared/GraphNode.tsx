@@ -8,6 +8,7 @@ interface GraphNodeProps {
   isTraverseSelected: boolean;
   isCurrentlyTraversing: boolean;
   isRunning: boolean;
+  isAnimating?: boolean;
   onMouseDown?: (e: React.MouseEvent, nodeId: string) => void;
   position?: { x: number; y: number };
   isDragging?: boolean;
@@ -21,6 +22,7 @@ const GraphNode = memo<GraphNodeProps>(
     isTraverseSelected,
     isCurrentlyTraversing,
     isRunning,
+    isAnimating = false,
     onMouseDown,
     position,
     isDragging,
@@ -45,7 +47,7 @@ const GraphNode = memo<GraphNodeProps>(
                 : isTraverseSelected || isCurrentlyTraversing
                   ? 'scale-110 border-green-400 bg-green-200 text-green-800 shadow-lg'
                   : 'border-gray-600 bg-white text-gray-800 hover:shadow-md'
-          } ${isRunning ? 'animate-pulse' : ''} ${isDragging ? 'z-10' : ''}`}
+          } ${isRunning ? 'animate-pulse' : ''} ${isAnimating ? 'ring-4 ring-blue-400 animate-bounce' : ''} ${isDragging ? 'z-10' : ''}`}
         >
           {node.value}
           {isHighlighted && (

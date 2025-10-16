@@ -13,7 +13,6 @@ interface LearningTip {
 interface TutorialStep {
   image: string;
   alt: string;
-  stepNumber: string;
   description: string;
 }
 
@@ -56,6 +55,14 @@ interface DataStructureCardProps {
   structure: DataStructure;
 }
 
+type PlaygroundModeType = 'dragdrop' | 'stepthrough' | 'realtime';
+
+interface TutorialModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  playgroundMode: PlaygroundModeType;
+}
+
 export type {
   DataStructure,
   LearningTip,
@@ -67,4 +74,6 @@ export type {
   TutorialStepProps,
   LearningTipCardProps,
   DataStructureCardProps,
+  PlaygroundModeType,
+  TutorialModalProps,
 };

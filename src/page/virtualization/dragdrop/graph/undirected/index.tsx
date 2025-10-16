@@ -13,6 +13,8 @@ import { undirectedGraphDragComponents } from '@/data';
 import DragDropZone from '@/components/playground/shared/DragDropZone';
 import StepSelector from '@/components/playground/shared/StepSelector';
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
+import TutorialButton from '@/components/playground/shared/TutorialButton';
+import TutorialModal from '@/components/tutorial/TutorialModal';
 
 // Lazy load heavy components
 const UndirectedGraphDragDropOperations = lazy(
@@ -23,13 +25,14 @@ const UndirectedGraphDragDropVisualization = lazy(
 );
 
 const DragDropUndirectedGraph = () => {
-  const { state, addOperation, updateOperation, removeOperation, clearAll } =
+  const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
     useUndirectedGraphDragDrop();
 
   const [draggedItem, setDraggedItem] = useState<UndirectedGraphDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [isLoading] = useState(false);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -37,6 +40,8 @@ const DragDropUndirectedGraph = () => {
   const handleDragStart = (e: React.DragEvent, component: UndirectedGraphDragComponent) => {
     setDraggedItem(component);
     e.dataTransfer.effectAllowed = 'copy';
+    // Mark as external drag - no JSON data means external
+    e.dataTransfer.setData('text/plain', 'external');
   };
 
   const handleTouchStart = (e: React.TouchEvent, component: UndirectedGraphDragComponent) => {
@@ -493,38 +498,45 @@ const DragDropUndirectedGraph = () => {
   }, [selectedStep, state.operations, state.nodes, state.edges, state.stats, getStepState]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="mb-2 text-2xl font-bold text-gray-800">Drag & Drop Undirected Graph</h1>
-          <p className="text-gray-600">
-            เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
-          </p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="mb-2 text-xl font-bold text-gray-800 md:text-2xl lg:text-2xl">
+              Drag & Drop Undirected Graph
+            </h1>
+            <p className="text-sm text-gray-600 md:text-base">
+              เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
+            </p>
+          </div>
+          <TutorialButton onClick={() => setIsTutorialOpen(true)} />
         </div>
         <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Left Side - Drag Components */}
-        <Suspense
-          fallback={
-            <div className="h-64 w-full rounded-lg border bg-gray-50">
-              <div className="flex h-full items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+        <div className="sticky top-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
+          <Suspense
+            fallback={
+              <div className="h-64 w-full rounded-lg border bg-gray-50">
+                <div className="flex h-full items-center justify-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                </div>
               </div>
-            </div>
-          }
-        >
-          <UndirectedGraphDragDropOperations
-            dragComponents={undirectedGraphDragComponents}
-            onDragStart={handleDragStart}
-            onTouchStart={handleTouchStart}
-          />
-        </Suspense>
+            }
+          >
+            <UndirectedGraphDragDropOperations
+              dragComponents={undirectedGraphDragComponents}
+              onDragStart={handleDragStart}
+              onTouchStart={handleTouchStart}
+            />
+          </Suspense>
+        </div>
 
         {/* Right Side - Drop Zone */}
-        <div className="rounded-lg bg-white p-6 shadow">
+        <div className="rounded-lg bg-white p-4 shadow md:p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-800">Drop Zone</h2>
             <div className="space-x-2">
@@ -547,6 +559,7 @@ const DragDropUndirectedGraph = () => {
             onUpdateOperationValue={updateOperationValue}
             onUpdateOperationPosition={updateOperationPosition}
             onUpdateOperationNewValue={updateOperationNewValue}
+            onReorderOperation={reorderOperation}
           />
         </div>
       </div>
@@ -566,6 +579,7 @@ const DragDropUndirectedGraph = () => {
           nodes={currentVisualizationState.nodes}
           edges={currentVisualizationState.edges}
           stats={currentVisualizationState.stats}
+          isRunning={isAutoPlaying}
           currentOperation={
             selectedStep !== null ? state.operations[selectedStep]?.type : undefined
           }
@@ -595,6 +609,13 @@ const DragDropUndirectedGraph = () => {
           isAutoPlaying={isAutoPlaying}
         />
       </div>
+
+      {/* Tutorial Modal */}
+      <TutorialModal
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+        playgroundMode="dragdrop"
+      />
     </div>
   );
 };

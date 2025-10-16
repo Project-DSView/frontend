@@ -1,76 +1,71 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BSTOperationsProps, OperationCategory } from '@/types';
 import OperationCard from '../../shared/OperationCard';
-import OperationCategoryDropdown from '../../shared/OperationCategoryDropdown';
-import { categories } from '@/data';
+import OperationSearchFilter from '../../shared/OperationSearchFilter';
+import { bstCategories } from '@/data';
 
 const BSTDragDropOperations: React.FC<BSTOperationsProps> = ({
   dragComponents,
   onDragStart,
   onTouchStart,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<OperationCategory | null>(null);
-  const [showOperations, setShowOperations] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<OperationCategory | 'all'>('all');
 
-  const filteredComponents = selectedCategory
-    ? dragComponents.filter((comp) => comp.category === selectedCategory)
-    : dragComponents;
+  // Use categories from data
+  const categories = bstCategories;
 
-  const handleCategorySelect = (category: OperationCategory | null) => {
-    setSelectedCategory(category);
-    setShowOperations(true);
-  };
+  // Filter components based on search term and category
+  const filteredComponents = useMemo(() => {
+    return dragComponents.filter((component) => {
+      const matchesSearch =
+        component.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        component.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === 'all' || component.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [dragComponents, searchTerm, selectedCategory]);
 
   return (
     <div className="rounded-lg bg-white p-6 shadow">
-      <h2 className="mb-4 text-lg font-semibold text-gray-800">Drag Components</h2>
+      <h2 className="mb-4 text-lg font-semibold text-gray-800">BST Operations</h2>
 
-      {/* Category Dropdown */}
-      <div className="mb-6">
-        <OperationCategoryDropdown
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onCategorySelect={handleCategorySelect}
-        />
+      {/* Search and Filter */}
+      <OperationSearchFilter
+        onSearchChange={setSearchTerm}
+        onCategoryChange={setSelectedCategory}
+        searchTerm={searchTerm}
+        selectedCategory={selectedCategory}
+        categories={categories}
+      />
+
+      {/* Operations Grid - Show filtered operations */}
+      <div className="space-y-3">
+        {filteredComponents.length === 0 ? (
+          <div className="py-8 text-center text-gray-500">
+            <p>ไม่มี operations</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-3">
+            {filteredComponents.map((component) => (
+              <OperationCard
+                key={component.id}
+                component={{
+                  id: component.id,
+                  name: component.name,
+                  color: component.color,
+                  category: component.category,
+                }}
+                onDragStart={(e) => onDragStart(e, component)}
+                onTouchStart={(e) => onTouchStart && onTouchStart(e, component)}
+                description={component.description}
+              />
+            ))}
+          </div>
+        )}
       </div>
-
-      {/* Operations Grid - Only show after category selection */}
-      {showOperations && (
-        <div className="space-y-3">
-          {filteredComponents.length === 0 ? (
-            <div className="py-8 text-center text-gray-500">
-              <p>ไม่มี operations ในหมวดหมู่นี้</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-3">
-              {filteredComponents.map((component) => (
-                <OperationCard
-                  key={component.id}
-                  component={{
-                    id: component.id,
-                    name: component.name,
-                    color: component.color,
-                    category: component.category,
-                  }}
-                  onDragStart={(e) => onDragStart(e, component)}
-                  onTouchStart={(e) => onTouchStart && onTouchStart(e, component)}
-                  description={component.description}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Initial State - Show when no category selected */}
-      {!showOperations && (
-        <div className="py-12 text-center text-gray-500">
-          <h3 className="mb-2 text-lg font-semibold">เลือกประเภท Operation</h3>
-          <p className="text-sm">กรุณาเลือกประเภท operation จาก dropdown ด้านบน</p>
-        </div>
-      )}
     </div>
   );
 };

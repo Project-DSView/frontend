@@ -87,6 +87,8 @@ export type {
   ExecutionState,
   DataStructureStats,
   OperationCategory,
+  Category,
+  OperationSearchFilterProps,
 } from './dragdrop/common.types';
 
 export type {

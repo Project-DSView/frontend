@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState, useEffect } from 'react';
 import { StackVisualizationProps } from '@/types';
 import ZoomableContainer from '../../shared/ZoomableContainer';
 
@@ -17,42 +17,47 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
     },
     ref,
   ) => {
+    const [highlightedElementIndex, setHighlightedElementIndex] = useState(-1);
+    const [isAnimating, setIsAnimating] = useState(false);
+
     // Check if we need to show multiple stacks for push/pop operations
     const showMultipleStacks =
       ((currentOperation === 'push' || currentOperation === 'pop') &&
         ((stackS1?.length || 0) > 0 || (stackS2?.length || 0) > 0)) ||
       (currentOperation === 'copyStack' && stacks);
 
-    // Determine which element should be animated based on current operation
-    const getAnimatedElementIndex = () => {
-      if (!isRunning || !currentStep) return -1;
-
-      // For push operations, animate the top element with bounce effect
-      if (currentOperation === 'push') {
-        return elements.length - 1; // Top element
+    // Handle animation based on current operation
+    useEffect(() => {
+      if (isRunning && currentOperation && (currentOperation === 'push' || currentOperation === 'pop' || currentOperation === 'peek')) {
+        setIsAnimating(true);
+        setHighlightedElementIndex(elements.length - 1);
+        const timer = setTimeout(() => {
+          setIsAnimating(false);
+          setHighlightedElementIndex(-1);
+        }, 1000);
+        return () => clearTimeout(timer);
       }
+    }, [isRunning, currentOperation, elements.length]);
 
-      // For pop operations, animate the top element being removed
-      if (currentOperation === 'pop') {
-        return elements.length - 1; // Top element
+    // Simple animation when isRunning is true (fallback)
+    useEffect(() => {
+      if (isRunning && !isAnimating && elements.length > 0) {
+        setIsAnimating(true);
+        setHighlightedElementIndex(elements.length - 1);
+        const timer = setTimeout(() => {
+          setIsAnimating(false);
+          setHighlightedElementIndex(-1);
+        }, 1000);
+        return () => clearTimeout(timer);
       }
-
-      // For peek operations, animate the top element
-      if (currentOperation === 'peek') {
-        return elements.length - 1; // Top element
-      }
-
-      return -1;
-    };
-
-    const animatedElementIndex = getAnimatedElementIndex();
+    }, [isRunning, isAnimating, elements.length]);
 
     const renderStackElement = (
       value: string,
       index: number,
       stackLength: number,
     ): React.ReactNode => {
-      const isAnimated = animatedElementIndex === index;
+      const isHighlighted = highlightedElementIndex === index;
       const isTop = index === stackLength - 1;
 
       return (
@@ -70,7 +75,7 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
 
           {/* Stack Element */}
           <div
-            className={`bg-neutral/20 flex h-16 w-16 items-center justify-center shadow-lg transition-all duration-500 ${isAnimated ? 'border-accent scale-105 bg-blue-50' : 'hover:bg-gray-50'} ${isTop ? 'border-2 border-blue-500' : 'border-t-0'} ${isTop ? 'ring-2 ring-blue-300' : ''}`}
+            className={`bg-neutral/20 flex h-16 w-16 items-center justify-center shadow-lg transition-all duration-500 ${isHighlighted && isAnimating ? 'ring-4 ring-blue-400 scale-110 animate-bounce' : 'hover:bg-gray-50'} ${isTop ? 'border-2 border-blue-500' : 'border-t-0'} ${isTop ? 'ring-2 ring-blue-300' : ''}`}
           >
             <span className={`font-bold text-black ${value.length > 6 ? 'text-sm' : 'text-lg'}`}>
               {value}

@@ -48,6 +48,20 @@ type OperationCategory =
   | 'update'
   | 'utility';
 
+interface Category {
+  key: OperationCategory | 'all';
+  title: string;
+  color: string;
+}
+
+interface OperationSearchFilterProps {
+  onSearchChange: (searchTerm: string) => void;
+  onCategoryChange: (category: OperationCategory | 'all') => void;
+  searchTerm: string;
+  selectedCategory: OperationCategory | 'all';
+  categories: { key: OperationCategory | 'all'; title: string; color: string }[];
+}
+
 export type {
   Operation,
   DragComponent,
@@ -55,4 +69,6 @@ export type {
   DataStructureStats,
   DataStructureType,
   OperationCategory,
+  Category,
+  OperationSearchFilterProps,
 };

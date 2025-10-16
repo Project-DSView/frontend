@@ -1,12 +1,14 @@
 'use client';
 
-import React, { Suspense, useRef } from 'react';
+import React, { Suspense, useRef, useState } from 'react';
 import { SecurityStatus } from '@/types/realtime/SinglyLinkedList.types';
 import CodeEditor from '@/components/playground/shared/CodeEditor';
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 import ExportPythonButton from '@/components/playground/shared/ExportPythonButton';
 import FileUploadButton from '@/components/playground/shared/FileUploadButton';
 import CopyCodeButton from '@/components/playground/shared/CopyCodeButton';
+import TutorialButton from '@/components/playground/shared/TutorialButton';
+import TutorialModal from '@/components/tutorial/TutorialModal';
 
 interface RealtimeLayoutProps<T = unknown> {
   dataStructure: string;
@@ -35,23 +37,27 @@ const RealtimeLayout = <T,>({
   visualizationComponent: VisualizationComponent,
 }: RealtimeLayoutProps<T>) => {
   const visualizationRef = useRef<HTMLDivElement>(null);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   return (
     <div className="min-h-screen bg-gray-50 p-3 sm:p-6" suppressHydrationWarning>
       {/* Header */}
       <div className="mb-4 sm:mb-6">
         <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex-1">
-            <h1 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">
-              {dataStructure === 'singly-linked-list' && 'Real-time Singly Linked List'}
-              {dataStructure === 'doubly-linked-list' && 'Real-time Doubly Linked List'}
-              {dataStructure === 'bst' && 'Real-time Binary Search Tree'}
-              {dataStructure === 'stack' && 'Real-time Stack'}
-              {dataStructure === 'undirected-graph' && 'Real-time Undirected Graph'}
-              {dataStructure === 'directed-graph' && 'Real-time Directed Graph'}
-            </h1>
-            <p className="text-sm text-gray-600 sm:text-base">
-              เขียนโค้ด Python และดูการทำงานแบบ Real Time พร้อม visualization
-            </p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">
+                {dataStructure === 'singly-linked-list' && 'Real-time Singly Linked List'}
+                {dataStructure === 'doubly-linked-list' && 'Real-time Doubly Linked List'}
+                {dataStructure === 'bst' && 'Real-time Binary Search Tree'}
+                {dataStructure === 'stack' && 'Real-time Stack'}
+                {dataStructure === 'undirected-graph' && 'Real-time Undirected Graph'}
+                {dataStructure === 'directed-graph' && 'Real-time Directed Graph'}
+              </h1>
+              <p className="text-sm text-gray-600 sm:text-base">
+                เขียนโค้ด Python และดูการทำงานแบบ Real Time พร้อม visualization
+              </p>
+            </div>
+            <TutorialButton onClick={() => setIsTutorialOpen(true)} />
           </div>
           <div className="flex flex-col gap-4">
             {/* Export Buttons */}
@@ -184,6 +190,13 @@ const RealtimeLayout = <T,>({
           </div>
         </div>
       </div>
+
+      {/* Tutorial Modal */}
+      <TutorialModal
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+        playgroundMode="realtime"
+      />
     </div>
   );
 };

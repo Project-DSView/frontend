@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useRef, Suspense } from 'react';
+import React, { useRef, Suspense, useState } from 'react';
 import CodeEditor from '@/components/playground/shared/CodeEditor';
 import StepControl from '@/components/playground/shared/StepControl';
 import FileUploadButton from '@/components/playground/shared/FileUploadButton';
 import CopyCodeButton from '@/components/playground/shared/CopyCodeButton';
 import ExportPythonButton from '@/components/playground/shared/ExportPythonButton';
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
+import TutorialButton from '@/components/playground/shared/TutorialButton';
+import TutorialModal from '@/components/tutorial/TutorialModal';
 import { StepthroughLayoutProps, StepthroughData } from '@/types';
 
 const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
@@ -31,6 +33,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   visualizationComponent: VisualizationComponent,
   error,
 }: StepthroughLayoutProps<TData>) => {
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const visualizationRef = useRef<HTMLDivElement | null>(null);
   const stepControlRef = useRef<HTMLDivElement | null>(null);
   const [codeEditorHeight, setCodeEditorHeight] = React.useState<string>('320px');
@@ -110,18 +113,35 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
     }
   }, [currentStepIndex]);
 
+  // Auto-scroll to visualization when auto-play starts
+  React.useEffect(() => {
+    if (isAutoPlaying && visualizationRef.current) {
+      const timer = setTimeout(() => {
+        visualizationRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }, 200); // Small delay to ensure smooth transition
+
+      return () => clearTimeout(timer);
+    }
+  }, [isAutoPlaying]);
+
   return (
     <div className="min-h-screen bg-gray-50 p-3 sm:p-6" suppressHydrationWarning>
       {/* Header */}
       <div className="mb-4 sm:mb-6">
         <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex-1">
-            <h1 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">{title}</h1>
-            <p className="text-sm text-gray-600 sm:text-base">{description}</p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">{title}</h1>
+              <p className="text-sm text-gray-600 sm:text-base">{description}</p>
+            </div>
+            <TutorialButton onClick={() => setIsTutorialOpen(true)} />
           </div>
           <div className="flex flex-col gap-4">
             {/* Export Buttons */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               <FileUploadButton onFileLoad={onFileLoad} disabled={isLoading} />
               <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
               <ExportPythonButton code={code} disabled={isLoading} />
@@ -173,14 +193,14 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
               <button
                 onClick={onReset}
                 disabled={isLoading}
-                className="bg-neutral/20 hover:bg-neutral/80 rounded px-3 py-2 text-xs text-black/70 transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm"
+                className="bg-neutral/20 hover:bg-neutral/80 rounded px-3 py-2 text-xs text-black/70 transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm md:px-5 md:py-2.5 md:text-sm lg:px-6 lg:py-3 lg:text-base"
               >
                 Reset Code
               </button>
               <button
                 onClick={onExecute}
                 disabled={isLoading || !code.trim()}
-                className={`rounded px-3 py-2 text-xs text-white transition-colors sm:px-4 sm:text-sm ${
+                className={`rounded px-3 py-2 text-xs text-white transition-colors sm:px-4 sm:text-sm md:px-5 md:py-2.5 md:text-sm lg:px-6 lg:py-3 lg:text-base ${
                   isLoading || !code.trim()
                     ? 'bg-neutral/20 cursor-not-allowed'
                     : 'bg-primary hover:bg-primary/80'
@@ -243,6 +263,13 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
           />
         </div>
       </Suspense>
+
+      {/* Tutorial Modal */}
+      <TutorialModal
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+        playgroundMode="stepthrough"
+      />
     </div>
   );
 };

@@ -186,8 +186,51 @@ const DoublyLinkedListRealtime = forwardRef<HTMLDivElement, DoublyLinkedListReal
                   {/* Connections to next node */}
                   {index < nodes.length - 1 && (
                     <div className="mx-2 flex items-center">
-                      <div className="h-0.5 w-6 bg-black"></div>
-                      <div className="h-0 w-0 border-t-[4px] border-b-[4px] border-l-[8px] border-t-transparent border-b-transparent border-l-black"></div>
+                      <svg width="80" height="40" viewBox="0 0 80 40">
+                        <rect width="80" height="40" fill="#ffffff" />
+                        <defs>
+                          <marker
+                            id="arrowRight"
+                            markerWidth="8"
+                            markerHeight="8"
+                            refX="6"
+                            refY="4"
+                            orient="auto"
+                          >
+                            <path d="M0,0 L8,4 L0,8 Z" fill="#000000" />
+                          </marker>
+                          <marker
+                            id="arrowLeft"
+                            markerWidth="8"
+                            markerHeight="8"
+                            refX="2"
+                            refY="4"
+                            orient="auto"
+                          >
+                            <path d="M0,0 L6,4 L0,8 Z" fill="#000000" />
+                          </marker>
+                        </defs>
+                        {/* forward (right) */}
+                        <line
+                          x1="8"
+                          y1="12"
+                          x2="72"
+                          y2="12"
+                          stroke="#000000"
+                          strokeWidth="2"
+                          markerEnd="url(#arrowRight)"
+                        />
+                        {/* backward (left) */}
+                        <line
+                          x1="72"
+                          y1="28"
+                          x2="8"
+                          y2="28"
+                          stroke="#000000"
+                          strokeWidth="2"
+                          markerEnd="url(#arrowLeft)"
+                        />
+                      </svg>
                     </div>
                   )}
                 </React.Fragment>

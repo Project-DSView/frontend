@@ -1,6 +1,7 @@
 import React, { forwardRef, useState, useEffect, Fragment, useRef } from 'react';
 import { StepthroughVisualizationProps, LinkedListData } from '@/types';
 import ZoomableContainer from '../../shared/ZoomableContainer';
+import StepIndicator from '../../shared/StepIndicator';
 
 const SinglyLinkedListStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -231,6 +232,16 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
         enableKeyboardZoom={true}
         showControls={true}
       >
+        {/* Step Indicator */}
+        {isRunning && steps.length > 0 && (
+          <StepIndicator
+            stepNumber={currentStepIndex + 1}
+            totalSteps={steps.length}
+            message={steps[currentStepIndex]?.state?.message}
+            isAutoPlaying={isRunning}
+          />
+        )}
+
         {nodes.length === 0 ? (
           <div className="flex h-full items-center justify-center p-6 text-gray-400">
             <div className="text-center">

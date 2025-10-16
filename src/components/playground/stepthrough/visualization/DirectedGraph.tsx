@@ -7,6 +7,7 @@ import {
 } from '@/types';
 import ZoomableContainer from '../../shared/ZoomableContainer';
 import GraphEdge from '../../shared/GraphEdge';
+import StepIndicator from '../../shared/StepIndicator';
 
 const DirectedGraphStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -406,6 +407,16 @@ const DirectedGraphStepthroughVisualization = forwardRef<
         enableKeyboardZoom={true}
         showControls={true}
       >
+        {/* Step Indicator */}
+        {isRunning && steps.length > 0 && (
+          <StepIndicator
+            stepNumber={currentStepIndex + 1}
+            totalSteps={steps.length}
+            message={steps[currentStepIndex]?.state?.message}
+            isAutoPlaying={isRunning}
+          />
+        )}
+
         {data.nodes.length > 0 ? (
           <div className="relative h-full min-h-[400px] w-full p-6">
             {/* Render edges first (behind nodes) */}

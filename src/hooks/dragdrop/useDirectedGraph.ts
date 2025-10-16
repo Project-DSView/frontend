@@ -153,6 +153,7 @@ const useDirectedGraph = () => {
 
   return {
     ...baseHook,
+    reorderOperation: baseHook.reorderOperation,
     state: {
       nodes: baseHook.state.data.nodes,
       edges: baseHook.state.data.edges,

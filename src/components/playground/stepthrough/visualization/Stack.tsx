@@ -1,6 +1,7 @@
 import React, { forwardRef, useState, useEffect, useRef } from 'react';
 import { StepthroughVisualizationProps, StackData } from '@/types';
 import ZoomableContainer from '../../shared/ZoomableContainer';
+import StepIndicator from '../../shared/StepIndicator';
 
 const StackStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -221,6 +222,16 @@ const StackStepthroughVisualization = forwardRef<
         enableKeyboardZoom={true}
         showControls={true}
       >
+        {/* Step Indicator */}
+        {isRunning && steps.length > 0 && (
+          <StepIndicator
+            stepNumber={currentStepIndex + 1}
+            totalSteps={steps.length}
+            message={steps[currentStepIndex]?.state?.message}
+            isAutoPlaying={isRunning}
+          />
+        )}
+
         {showMultipleStacks ? (
           <div className="space-y-6 p-6">
             <div className="flex justify-center space-x-8">

@@ -23,10 +23,10 @@ const CopyCodeButton: React.FC<CopyAndExportButtonProps> = ({ code, disabled = f
     <button
       onClick={handleCopyCode}
       disabled={disabled}
-      className="bg-neutral/20 hover:bg-neutral/80 inline-flex items-center justify-center gap-2 rounded px-4 py-2 text-sm text-gray-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+      className="bg-neutral/20 hover:bg-neutral/80 inline-flex items-center justify-center gap-2 rounded px-3 py-2 text-xs text-gray-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm md:px-5 md:py-2.5 md:text-sm lg:px-6 lg:py-3 lg:text-base"
     >
       <svg
-        className="h-4 w-4"
+        className="h-3 w-3 sm:h-4 sm:w-4"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"

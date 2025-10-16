@@ -129,6 +129,7 @@ const useDoublyLinkedList = () => {
 
   return {
     ...baseHook,
+    reorderOperation: baseHook.reorderOperation,
     state: {
       nodes: baseHook.state.data.nodes,
       operations: baseHook.state.operations as DoublyLinkedListOperation[],

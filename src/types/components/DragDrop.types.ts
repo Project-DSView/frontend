@@ -110,6 +110,7 @@ interface DragDropZoneProps {
   onUpdateOperationNewValue: (id: number, newValue: string) => void;
   onUpdateOperationSourceStack?: (id: number, sourceStack: string) => void;
   onUpdateOperationTargetStack?: (id: number, targetStack: string) => void;
+  onReorderOperation?: (fromIndex: number, toIndex: number) => void;
   children?: React.ReactNode;
 }
 

@@ -101,6 +101,16 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
     });
   }, [initialState]);
 
+  const reorderOperation = useCallback((fromIndex: number, toIndex: number) => {
+    setState((prev) => {
+      const newOperations = [...prev.operations];
+      const [removed] = newOperations.splice(fromIndex, 1);
+      newOperations.splice(toIndex, 0, removed);
+      operationsRef.current = newOperations as TOperation[];
+      return { ...prev, operations: newOperations };
+    });
+  }, []);
+
   const updateDataState = useCallback((newData: TData, newStats: TStats) => {
     setState((prev) => ({
       ...prev,
@@ -257,6 +267,7 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
     removeOperation,
     clearOperations,
     clearAll,
+    reorderOperation,
     executeOperation,
     executeAllOperations,
     updateDataState,

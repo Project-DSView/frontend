@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { fadeInUpVariants, buttonVariants } from '@/lib';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { CTASectionProps } from '@/types';
 
@@ -104,10 +104,7 @@ const CTASection = ({}: CTASectionProps) => {
                 size="lg"
                 className="text-primary group rounded-xl bg-white px-8 py-4 font-semibold shadow-xl transition-all duration-300 hover:bg-white/90 hover:shadow-2xl"
               >
-                <Link href="/tutorial">
-                  ดูตัวอย่างการใช้งาน
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </Link>
+                <Link href="/dragdrop/linklist/singly">ใช้งานเลย!</Link>
               </Button>
             </motion.div>
           </motion.div>

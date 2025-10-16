@@ -1,6 +1,7 @@
 import React, { forwardRef, useMemo, useState, useEffect, memo, useCallback } from 'react';
 import { StepthroughVisualizationProps, BSTNode, PositionedNode, BSTData } from '@/types';
 import ZoomableContainer from '../../shared/ZoomableContainer';
+import StepIndicator from '../../shared/StepIndicator';
 
 const BSTStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -105,8 +106,27 @@ const BSTStepthroughVisualization = forwardRef<
     if (treeNames.length > 0) {
       return allTrees[treeNames[0]].root;
     }
+
+    // If no trees in current step, try to get from previous steps
+    if (steps.length > 0 && currentStepIndex < steps.length) {
+      for (let i = currentStepIndex; i >= 0; i--) {
+        const step = steps[i];
+        if (step.state && step.state.instances) {
+          const instanceEntries = Object.entries(step.state.instances);
+          for (const [, instanceData] of instanceEntries) {
+            if (instanceData && typeof instanceData === 'object' && 'root' in instanceData) {
+              const instance = instanceData as Record<string, unknown>;
+              if (instance.root) {
+                return convertToBSTNode(instance.root);
+              }
+            }
+          }
+        }
+      }
+    }
+
     return null;
-  }, [allTrees]);
+  }, [allTrees, steps, currentStepIndex, convertToBSTNode]);
 
   // Generate traversal results for a tree
   const generateTraversalResults = useCallback((node: BSTNode | null) => {
@@ -632,6 +652,16 @@ const BSTStepthroughVisualization = forwardRef<
           enableKeyboardZoom={true}
           showControls={true}
         >
+          {/* Step Indicator */}
+          {isRunning && steps.length > 0 && (
+            <StepIndicator
+              stepNumber={currentStepIndex + 1}
+              totalSteps={steps.length}
+              message={steps[currentStepIndex]?.state?.message}
+              isAutoPlaying={isRunning}
+            />
+          )}
+
           {root ? (
             <div className="relative flex h-full min-h-[400px] w-full justify-center">
               <div className="relative" style={{ minWidth: '800px', minHeight: '400px' }}>

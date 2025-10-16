@@ -85,6 +85,7 @@ const useStack = () => {
 
   return {
     ...baseHook,
+    reorderOperation: baseHook.reorderOperation,
     state: {
       elements: baseHook.state.data.elements,
       operations: baseHook.state.operations as StackOperation[],

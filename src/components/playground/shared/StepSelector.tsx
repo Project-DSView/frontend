@@ -31,10 +31,17 @@ const StepSelector: React.FC<StepSelectorProps> = ({
   return (
     <div className="mb-6 rounded-lg bg-white p-6 shadow">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-800">Step Control</h2>
-        <span className="text-sm text-gray-500">
-          Step {currentStepIndex + 1} of {operations.length}
-        </span>
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800">Step Control</h2>
+          <span className="text-sm text-gray-500">
+            Step {currentStepIndex + 1} of {operations.length}
+          </span>
+        </div>
+        {isAutoPlaying && (
+          <div className="text-xl text-green-600 font-medium animate-pulse">
+            กำลังเล่น...
+          </div>
+        )}
       </div>
 
       {/* Current Step Display */}
@@ -63,13 +70,15 @@ const StepSelector: React.FC<StepSelectorProps> = ({
           min={0}
           step={1}
           className="w-full"
+          isAnimating={isAutoPlaying}
         />
-        <div className="mt-2 mb-4 flex items-center justify-between">
+        <div className="mt-2 mb-4 flex items-center justify-center">
           <span className="text-gray-500">
             {currentStepIndex + 1} / {operations.length}
           </span>
         </div>
       </div>
+
 
       {/* Navigation Controls */}
       <div className="mb-4 flex items-center justify-center space-x-3">
@@ -105,6 +114,32 @@ const StepSelector: React.FC<StepSelectorProps> = ({
           <span>Previous</span>
         </button>
 
+        {/* Auto Play Button - Center */}
+        <button
+          onClick={onAutoPlay}
+          className={`flex items-center space-x-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 ${
+            isAutoPlaying
+              ? 'bg-error hover:bg-error/80 text-white animate-pulse'
+              : 'bg-success hover:bg-success/80 text-white'
+          }`}
+        >
+          {isAutoPlaying ? (
+            <>
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+              </svg>
+              <span>Stop</span>
+            </>
+          ) : (
+            <>
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              <span>Play</span>
+            </>
+          )}
+        </button>
+
         <button
           onClick={onNext}
           disabled={isLastStep}
@@ -130,31 +165,6 @@ const StepSelector: React.FC<StepSelectorProps> = ({
               d="M13 5l7 7-7 7M5 5l7 7-7 7"
             />
           </svg>
-        </button>
-
-        <button
-          onClick={onAutoPlay}
-          className={`flex items-center space-x-2 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
-            isAutoPlaying
-              ? 'bg-error hover:bg-error/80 text-white'
-              : 'bg-success hover:bg-success/80 text-white'
-          }`}
-        >
-          {isAutoPlaying ? (
-            <>
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-              </svg>
-              <span>Stop</span>
-            </>
-          ) : (
-            <>
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              <span>Auto Play</span>
-            </>
-          )}
         </button>
       </div>
 

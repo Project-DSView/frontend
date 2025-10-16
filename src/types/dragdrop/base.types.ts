@@ -51,6 +51,7 @@ interface BaseHookReturn<TData, TStats extends BaseStats, TOperation extends Bas
   removeOperation: (id: number) => void;
   clearOperations: () => void;
   clearAll: () => void;
+  reorderOperation: (fromIndex: number, toIndex: number) => void;
   executeOperation: (
     operation: TOperation,
     currentState: BaseState<TData, TStats>,

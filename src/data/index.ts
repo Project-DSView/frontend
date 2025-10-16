@@ -12,7 +12,7 @@ export {
   isExercise,
 } from './components/material.data';
 
-// Data Structures
+// Drag Drop
 export { categories } from './dragdrop/common.data';
 export { singlyLinkedListDragComponents } from './dragdrop/singly-linked-list.data';
 export { doublyLinkedListDragComponents } from './dragdrop/doubly-linked-list.data';
@@ -20,6 +20,12 @@ export { stackDragComponents } from './dragdrop/stack.data';
 export { bstDragComponents } from './dragdrop/bst.data';
 export { undirectedGraphDragComponents } from './dragdrop/undirected-graph.data';
 export { directedGraphDragComponents } from './dragdrop/directed-graph.data';
+export {
+  stackCategories,
+  bstCategories,
+  linkedListCategories,
+  graphCategories,
+} from './dragdrop/categories.data';
 
 // Templates
 export { singlyLinkedListCodeTemplate } from './template/code.data';

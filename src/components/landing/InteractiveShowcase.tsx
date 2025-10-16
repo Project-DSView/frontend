@@ -1,10 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { staggerContainerVariants, staggerItemVariants } from '@/lib';
 import { Button } from '@/components/ui/button';
-import { Code } from 'lucide-react';
 import { showcaseStructures } from '@/data';
 
 const InteractiveShowcase = () => {
@@ -29,7 +29,7 @@ const InteractiveShowcase = () => {
         </motion.div>
 
         <motion.div
-          className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2"
+          className="grid grid-cols-1 items-center gap-8 md:gap-10 xl:grid-cols-2 xl:gap-12"
           variants={staggerItemVariants}
         >
           {/* Structure Selection */}
@@ -84,13 +84,14 @@ const InteractiveShowcase = () => {
             </div>
 
             <motion.div className="pt-6" variants={staggerItemVariants}>
-              <Button
-                className="from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary w-full rounded-xl bg-gradient-to-r py-4 font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl"
-                size="lg"
-              >
-                <Code className="mr-2 h-5 w-5" />
-                ลองใช้เลย
-              </Button>
+              <Link href="/dragdrop/linklist/singly">
+                <Button
+                  className="from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary w-full rounded-xl bg-gradient-to-r py-4 font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl"
+                  size="lg"
+                >
+                  ลองใช้เลย
+                </Button>
+              </Link>
             </motion.div>
           </div>
 
@@ -126,8 +127,8 @@ const InteractiveShowcase = () => {
                   >
                     {(() => {
                       const structure = showcaseStructures.find((s) => s.id === activeStructure);
-                      const Icon = structure?.icon || Code;
-                      return <Icon className="h-16 w-16 text-white" />;
+                      const Icon = structure?.icon;
+                      return Icon ? <Icon className="h-16 w-16 text-white" /> : null;
                     })()}
                   </div>
                   <h4 className="text-primary mb-2 text-xl font-bold">

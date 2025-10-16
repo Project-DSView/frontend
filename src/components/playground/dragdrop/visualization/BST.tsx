@@ -9,7 +9,6 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
       stats,
       isRunning,
       currentStep,
-      highlightedNodes = [],
       searchPath = [],
       currentOperation,
       selectedStep,
@@ -19,6 +18,8 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
     const [traverseIndex, setTraverseIndex] = useState(0);
     const [isTraversing, setIsTraversing] = useState(false);
     const [traversalOrder, setTraversalOrder] = useState<string[]>([]);
+    const [highlightedNodes, setHighlightedNodes] = useState<string[]>([]);
+    const [isAnimating, setIsAnimating] = useState(false);
 
     // Generate traversal order based on current operation - memoized
     const generateTraversalOrder = useCallback((node: BSTNode | null, type: string): string[] => {
@@ -66,6 +67,37 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
 
       return result;
     }, []);
+
+    // Handle insert/delete/search operations animation
+    useEffect(() => {
+      if (isRunning && currentOperation && (currentOperation === 'insert' || currentOperation === 'delete' || currentOperation === 'search')) {
+        setIsAnimating(true);
+        // Highlight the root node for these operations
+        if (root) {
+          setHighlightedNodes([root.value]);
+        }
+        const timer = setTimeout(() => {
+          setIsAnimating(false);
+          setHighlightedNodes([]);
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
+    }, [isRunning, currentOperation, root]);
+
+    // Simple animation when isRunning is true (fallback)
+    useEffect(() => {
+      if (isRunning && !isAnimating) {
+        setIsAnimating(true);
+        if (root) {
+          setHighlightedNodes([root.value]);
+        }
+        const timer = setTimeout(() => {
+          setIsAnimating(false);
+          setHighlightedNodes([]);
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
+    }, [isRunning, isAnimating, root]);
 
     // Handle traverse animation
     useEffect(() => {
@@ -152,6 +184,7 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
       isTraverseSelected: boolean;
       isCurrentlyTraversing: boolean;
       isRunning: boolean;
+      isAnimating: boolean;
     }>(
       ({
         node,
@@ -160,6 +193,7 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
         isTraverseSelected,
         isCurrentlyTraversing,
         isRunning,
+        isAnimating,
       }) => (
         <div
           className="absolute -translate-x-1/2 -translate-y-1/2 transform"
@@ -177,7 +211,7 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
                   : isTraverseSelected || isCurrentlyTraversing
                     ? 'scale-110 border-green-400 bg-green-200 text-green-800 shadow-lg'
                     : 'border-gray-600 bg-white text-gray-800 hover:shadow-md'
-            } ${isRunning ? 'animate-pulse' : ''} `}
+            } ${isRunning ? 'animate-pulse' : ''} ${isAnimating ? 'ring-4 ring-blue-400 animate-bounce' : ''}`}
           >
             {node.value}
             {isHighlighted && (
@@ -224,6 +258,7 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
             isTraverseSelected={isTraverseSelected}
             isCurrentlyTraversing={isCurrentlyTraversing}
             isRunning={isRunning ?? false}
+            isAnimating={isAnimating}
           />
         );
       },
@@ -236,6 +271,7 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
         traverseIndex,
         traversalOrder,
         isRunning,
+        isAnimating,
         NodeComponent,
       ],
     );

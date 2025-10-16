@@ -232,3 +232,26 @@ body {
 [data-sonner-toaster] [data-sonner-toast] [data-sonner-toast-description] {
   font-family: var(--font-sans) !important;
 }
+
+/* iPad-specific responsive improvements */
+/* iPad Portrait: 768px - 834px */
+/* iPad Landscape: 1024px - 1112px */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .playground-layout {
+    padding-left: 2rem;
+    padding-top: 1.5rem;
+  }
+
+  /* Improve text readability on iPad */
+  .playground-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  /* Better spacing for touch targets */
+  .playground-button {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+  }
+}

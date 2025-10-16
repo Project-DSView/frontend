@@ -15,8 +15,6 @@ const UndirectedGraphVisualization = forwardRef<HTMLDivElement, UndirectedGraphV
       stats,
       isRunning,
       currentStep,
-      highlightedNodes = [],
-      highlightedEdges = [],
       searchPath = [],
       shortestPath = [],
       currentOperation,
@@ -32,6 +30,44 @@ const UndirectedGraphVisualization = forwardRef<HTMLDivElement, UndirectedGraphV
     const [nodePositions, setNodePositions] = useState<{ [key: string]: { x: number; y: number } }>(
       {},
     );
+    const [highlightedNodes, setHighlightedNodes] = useState<string[]>([]);
+    const [highlightedEdges, setHighlightedEdges] = useState<string[]>([]);
+    const [isAnimating, setIsAnimating] = useState(false);
+
+    // Handle operations animation
+    useEffect(() => {
+      if (isRunning && currentOperation && (currentOperation === 'add_vertex' || currentOperation === 'add_edge' || 
+          currentOperation === 'remove_vertex' || currentOperation === 'remove_edge')) {
+        setIsAnimating(true);
+        // Highlight the most recently added/modified node or edge
+        if (currentOperationData) {
+          if (currentOperation === 'add_vertex' || currentOperation === 'remove_vertex') {
+            setHighlightedNodes([currentOperationData.value || '']);
+          } else if (currentOperation === 'add_edge' || currentOperation === 'remove_edge') {
+            setHighlightedEdges([String(currentOperationData.id || '')]);
+          }
+        }
+        const timer = setTimeout(() => {
+          setIsAnimating(false);
+          setHighlightedNodes([]);
+          setHighlightedEdges([]);
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
+    }, [isRunning, currentOperation, currentOperationData]);
+
+    // Simple animation when isRunning is true (fallback)
+    useEffect(() => {
+      if (isRunning && !isAnimating && nodes.length > 0) {
+        setIsAnimating(true);
+        setHighlightedNodes([nodes[0].value]); // Highlight first node
+        const timer = setTimeout(() => {
+          setIsAnimating(false);
+          setHighlightedNodes([]);
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
+    }, [isRunning, isAnimating, nodes]);
 
     // Handle drag events
     const handleMouseDown = useCallback((e: React.MouseEvent, nodeId: string) => {
@@ -198,6 +234,7 @@ const UndirectedGraphVisualization = forwardRef<HTMLDivElement, UndirectedGraphV
             isTraverseSelected={isTraverseSelected}
             isCurrentlyTraversing={isCurrentlyTraversing}
             isRunning={isRunning ?? false}
+            isAnimating={isAnimating}
             onMouseDown={handleMouseDown}
             position={nodePositions[node.id]}
             isDragging={draggedNode === node.id}
@@ -213,6 +250,7 @@ const UndirectedGraphVisualization = forwardRef<HTMLDivElement, UndirectedGraphV
         traverseIndex,
         traversalOrder,
         isRunning,
+        isAnimating,
         handleMouseDown,
         nodePositions,
         draggedNode,

@@ -101,6 +101,7 @@ const useBST = () => {
 
   return {
     ...baseHook,
+    reorderOperation: baseHook.reorderOperation,
     state: {
       root: baseHook.state.data.root,
       operations: baseHook.state.operations as BSTOperation[],

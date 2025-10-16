@@ -5,7 +5,7 @@ import {
   TutorialSection,
 } from '@/types/components/tutorial.types';
 
-export const dataStructures: DataStructure[] = [
+const dataStructures: DataStructure[] = [
   {
     name: 'Singly Linked List',
     description: 'โครงสร้างข้อมูลแบบลิงค์ลิสต์ที่แต่ละโหนดมีเพียงตัวชี้ไปยังโหนดถัดไป',
@@ -45,7 +45,7 @@ export const dataStructures: DataStructure[] = [
   },
 ];
 
-export const learningTips: LearningTip[] = [
+const learningTips: LearningTip[] = [
   {
     title: 'เริ่มต้นด้วย Drag & Drop',
     description: 'เรียนรู้พื้นฐานการทำงานของโครงสร้างข้อมูลด้วยการลากและวาง operation ต่างๆ',
@@ -64,7 +64,7 @@ export const learningTips: LearningTip[] = [
   },
 ];
 
-export const playgroundModes: PlaygroundMode[] = [
+const playgroundModes: PlaygroundMode[] = [
   {
     title: 'Drag & Drop',
     description: 'การเรียนรู้แบบลากและวาง เหมาะสำหรับผู้เริ่มต้น',
@@ -74,25 +74,21 @@ export const playgroundModes: PlaygroundMode[] = [
       {
         image: '/tutorial/dragdrop_1.jpg',
         alt: 'Step 1: Select Operation',
-        stepNumber: 'ขั้นตอนที่ 1',
         description: 'เลือก operation ที่ต้องการใช้งาน',
       },
       {
         image: '/tutorial/dragdrop_2.jpg',
         alt: 'Step 2-3: Drag and Drop',
-        stepNumber: 'ขั้นตอนที่ 2-3',
         description: 'ลาก operation ไปวางใน drop zone',
       },
       {
         image: '/tutorial/dragdrop_3.jpg',
         alt: 'Step 4: Enter Value',
-        stepNumber: 'ขั้นตอนที่ 4',
         description: 'กรอกค่า value หาก operation ต้องการ',
       },
       {
         image: '/tutorial/dragdrop_4.jpg',
         alt: 'Step 5-6: View Results and Control',
-        stepNumber: 'ขั้นตอนที่ 5-6',
         description: 'ดูผลลัพธ์และควบคุมการทำงานของแต่ละ operation',
       },
     ],
@@ -106,19 +102,16 @@ export const playgroundModes: PlaygroundMode[] = [
       {
         image: '/tutorial/step_1.jpg',
         alt: 'Step 1-2: Edit Code and Run',
-        stepNumber: 'ขั้นตอนที่ 1-2',
         description: 'แก้ไขโค้ดและกดปุ่ม "Run Code" หรือ "Reset Code"',
       },
       {
         image: '/tutorial/step_2.jpg',
         alt: 'Step 3: Control Execution',
-        stepNumber: 'ขั้นตอนที่ 3',
         description: 'ควบคุมการทำงานด้วยตนเองผ่านปุ่มควบคุม',
       },
       {
         image: '/tutorial/step_3.jpg',
         alt: 'Step 4: View Step Results',
-        stepNumber: 'ขั้นตอนที่ 4',
         description: 'ดูผลลัพธ์ตามขั้นตอนที่ควบคุม',
       },
     ],
@@ -132,14 +125,13 @@ export const playgroundModes: PlaygroundMode[] = [
       {
         image: '/tutorial/realtime_1.jpg',
         alt: 'Step 1-2: Edit Code and See Results',
-        stepNumber: 'ขั้นตอนที่ 1-2',
         description: 'แก้ไขโค้ดและดูผลลัพธ์เปลี่ยนแปลงแบบเรียลไทม์',
       },
     ],
   },
 ];
 
-export const tutorialSections: TutorialSection[] = [
+const tutorialSections: TutorialSection[] = [
   {
     title: 'การเข้าถึง Playground',
     description: 'เข้าถึง playground ผ่านเมนู Navigation ที่ด้านบนของหน้าเว็บ',
@@ -153,3 +145,5 @@ export const tutorialSections: TutorialSection[] = [
     alt: 'Export Results',
   },
 ];
+
+export { dataStructures, learningTips, playgroundModes, tutorialSections };
