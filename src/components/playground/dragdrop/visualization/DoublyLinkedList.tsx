@@ -1,5 +1,7 @@
 import React, { forwardRef, useState, useEffect } from 'react';
+
 import { DoublyLinkedListVisualizationProps } from '@/types';
+
 import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const DoublyLinkedDragDropListVisualization = forwardRef<
@@ -25,7 +27,13 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
 
     // Handle insert/delete/search operations animation
     useEffect(() => {
-      if (isRunning && currentOperation && (currentOperation === 'insert' || currentOperation === 'delete' || currentOperation === 'search')) {
+      if (
+        isRunning &&
+        currentOperation &&
+        (currentOperation === 'insert' ||
+          currentOperation === 'delete' ||
+          currentOperation === 'search')
+      ) {
         setIsAnimating(true);
         setHighlightedNodeIndex(currentPosition);
         const timer = setTimeout(() => {
@@ -99,7 +107,6 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
         setTraverseIndex(0);
       }
     }, [selectedStep, currentOperation, nodes.length]);
-
 
     // Get current position for head/tail pointer animation
     const getCurrentPosition = () => {
@@ -182,7 +189,7 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
               isCurrentlyTraversing
                 ? 'border-success bg-success/20 animate-pulse shadow-lg'
                 : isHighlighted && isAnimating
-                  ? 'scale-105 animate-bounce bg-yellow-50 shadow-lg border-black'
+                  ? 'scale-105 animate-bounce border-black bg-yellow-50 shadow-lg'
                   : isTraverseSelected
                     ? 'border-black bg-white shadow-lg'
                     : 'border-black bg-white hover:bg-gray-50'
@@ -191,8 +198,8 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
             {/* Pre Section - Left */}
             <div
               className={`flex w-1/3 items-center justify-center rounded-l-lg ${
-                isCurrentlyTraversing 
-                  ? 'bg-success/10' 
+                isCurrentlyTraversing
+                  ? 'bg-success/10'
                   : isHighlighted && isAnimating
                     ? 'bg-yellow-100'
                     : 'bg-gray-100'
@@ -227,8 +234,8 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
             {/* Data Section - Center */}
             <div
               className={`flex w-1/3 items-center justify-center border-x border-x-2 ${
-                isCurrentlyTraversing 
-                  ? 'border-success bg-success/10' 
+                isCurrentlyTraversing
+                  ? 'border-success bg-success/10'
                   : isHighlighted && isAnimating
                     ? 'border-black bg-yellow-100'
                     : 'border-black bg-white'
@@ -246,8 +253,8 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
             {/* Next Section - Right */}
             <div
               className={`flex w-1/3 items-center justify-center rounded-r-lg ${
-                isCurrentlyTraversing 
-                  ? 'bg-success/10' 
+                isCurrentlyTraversing
+                  ? 'bg-success/10'
                   : isHighlighted && isAnimating
                     ? 'bg-yellow-100'
                     : 'bg-gray-100'

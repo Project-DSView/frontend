@@ -1,8 +1,7 @@
 'use client';
 
 import React, { forwardRef, useState, useEffect, useCallback } from 'react';
-import GraphNode from '../../shared/GraphNode';
-import GraphEdge from '../../shared/GraphEdge';
+
 import {
   RealtimeUndirectedGraphData,
   RealtimeUndirectedGraphNodeData,
@@ -10,10 +9,13 @@ import {
   UndirectedGraphRealtimeVisualizationProps,
 } from '@/types';
 
+import GraphNode from '../../shared/GraphNode';
+import GraphEdge from '../../shared/GraphEdge';
+
 const UndirectedGraphRealtimeVisualization = forwardRef<
   HTMLDivElement,
   UndirectedGraphRealtimeVisualizationProps
->(({ data, isExecuting, error, securityStatus, updateNodePosition, getNodePositions }, ref) => {
+>(({ data, isExecuting, updateNodePosition, getNodePositions }, ref) => {
   const [traverseIndex, setTraverseIndex] = useState(0);
   const [isTraversing, setIsTraversing] = useState(false);
   const [traversalOrder, setTraversalOrder] = useState<string[]>([]);
@@ -363,26 +365,6 @@ const UndirectedGraphRealtimeVisualization = forwardRef<
       </div>
 
       {/* Error Display */}
-      {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
-          <div className="text-sm font-medium text-red-800">Error:</div>
-          <div className="text-sm text-red-700">{error}</div>
-        </div>
-      )}
-
-      {/* Security Warning */}
-      {!securityStatus.isSafe && (
-        <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
-          <div className="text-sm font-medium text-yellow-800">Security Warning:</div>
-          <div className="text-sm text-yellow-700">
-            <ul className="list-inside list-disc">
-              {securityStatus.violations.map((violation, index) => (
-                <li key={index}>{violation}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
 
       {showMultipleGraphs ? (
         <div className="space-y-6">

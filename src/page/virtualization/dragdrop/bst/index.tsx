@@ -2,20 +2,21 @@
 
 import React, { useState, useRef, lazy, Suspense } from 'react';
 import { BSTDragComponent, BSTNode, BSTOperation } from '@/types';
+
 import { useBSTDragDrop } from '@/hooks';
 import { bstDragComponents } from '@/data';
+
 import DragDropZone from '@/components/playground/shared/DragDropZone';
 import StepSelector from '@/components/playground/shared/StepSelector';
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
-import StepIndicator from '@/components/playground/shared/StepIndicator';
 import TutorialButton from '@/components/playground/shared/TutorialButton';
-import TutorialModal from '@/components/tutorial/TutorialModal';
-
 // Lazy load heavy components
 const BSTDragDropOperations = lazy(() => import('@/components/playground/dragdrop/opeartion/BST'));
 const BSTDragDropVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/BST'),
 );
+const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
+const TutorialModal = lazy(() => import('@/components/tutorial/TutorialModal'));
 
 // BST helper functions - moved outside component to prevent recreation
 const insertNode = (root: BSTNode | null, value: string): BSTNode => {
@@ -465,12 +466,22 @@ const DragDropBST = () => {
       <div ref={visualizationContainerRef} className="relative">
         {/* Step Indicator */}
         {isAutoPlaying && state.operations.length > 0 && selectedStep !== null && (
-          <StepIndicator
-            stepNumber={selectedStep + 1}
-            totalSteps={state.operations.length}
-            message={getStepDescription(state.operations[selectedStep])}
-            isAutoPlaying={isAutoPlaying}
-          />
+          <Suspense
+            fallback={
+              <div className="mb-4 rounded-lg bg-blue-50 p-4">
+                <div className="flex h-6 items-center justify-center">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+                </div>
+              </div>
+            }
+          >
+            <StepIndicator
+              stepNumber={selectedStep + 1}
+              totalSteps={state.operations.length}
+              message={getStepDescription(state.operations[selectedStep])}
+              isAutoPlaying={isAutoPlaying}
+            />
+          </Suspense>
         )}
 
         <Suspense
@@ -514,11 +525,19 @@ const DragDropBST = () => {
       </div>
 
       {/* Tutorial Modal */}
-      <TutorialModal
-        isOpen={isTutorialOpen}
-        onClose={() => setIsTutorialOpen(false)}
-        playgroundMode="dragdrop"
-      />
+      <Suspense
+        fallback={
+          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+          </div>
+        }
+      >
+        <TutorialModal
+          isOpen={isTutorialOpen}
+          onClose={() => setIsTutorialOpen(false)}
+          playgroundMode="dragdrop"
+        />
+      </Suspense>
     </div>
   );
 };

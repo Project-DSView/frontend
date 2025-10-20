@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import RealtimeLayout from '@/components/playground/realtime/layout/RealtimeLayout';
-import StackRealtime from '@/components/playground/realtime/visualization/Stack';
+
 import { stackCodeTemplate } from '@/data';
 import useRealtimeStack from '@/hooks/realtime/useStack';
+
+import RealtimeLayout from '@/components/playground/realtime/layout/RealtimeLayout';
+import StackRealtime from '@/components/playground/realtime/visualization/Stack';
 
 const StackRealtimePage: React.FC = () => {
   const [code, setCode] = useState(stackCodeTemplate);

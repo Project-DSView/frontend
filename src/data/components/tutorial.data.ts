@@ -3,7 +3,7 @@ import {
   LearningTip,
   PlaygroundMode,
   TutorialSection,
-} from '@/types/components/tutorial.types';
+} from '@/types/props/tutorial.types';
 
 const dataStructures: DataStructure[] = [
   {

@@ -2,6 +2,7 @@
 
 import React, { useRef, useCallback } from 'react';
 import { toast } from 'sonner';
+
 import { FileUploadButtonProps } from '@/types';
 
 const FileUploadButton: React.FC<FileUploadButtonProps> = ({ onFileLoad, disabled = false }) => {

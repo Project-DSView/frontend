@@ -2,25 +2,11 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, User, AlertCircle } from 'lucide-react';
-import { Announcement } from '@/types';
-
-interface LatestAnnouncementProps {
-  announcements: Announcement[];
-}
+import { Calendar, AlertCircle } from 'lucide-react';
+import { LatestAnnouncementProps } from '@/types';
+import { formatDateShort } from '@/lib';
 
 const LatestAnnouncement: React.FC<LatestAnnouncementProps> = ({ announcements }) => {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('th-TH', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   // หาประกาศที่สำคัญที่สุด (ปักหมุดก่อน แล้วค่อยประกาศล่าสุด)
   const getLatestAnnouncement = () => {
     if (announcements.length === 0) return null;
@@ -73,11 +59,7 @@ const LatestAnnouncement: React.FC<LatestAnnouncementProps> = ({ announcements }
           <div className="flex items-center gap-4 text-sm text-gray-500">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              {formatDate(latestAnnouncement.created_at)}
-            </div>
-            <div className="flex items-center gap-1">
-              <User className="h-4 w-4" />
-              {latestAnnouncement.created_by}
+              {formatDateShort(latestAnnouncement.created_at)}
             </div>
           </div>
 

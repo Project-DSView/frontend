@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
+
 import { CourseService } from '@/services';
 import { CourseQueryParams } from '@/types';
 
 // Get courses with pagination and filtering
-export const useCourses = (token: string | null, params?: CourseQueryParams) => {
+const useCourses = (token: string | null, params?: CourseQueryParams) => {
   return useQuery({
     queryKey: ['courses', token, params],
     queryFn: () => CourseService.getCourses(token!, params),
@@ -26,7 +27,7 @@ export const useCourses = (token: string | null, params?: CourseQueryParams) => 
 };
 
 // Get single course by ID
-export const useCourse = (token: string | null, courseId: string) => {
+const useCourse = (token: string | null, courseId: string) => {
   return useQuery({
     queryKey: ['course', token, courseId],
     queryFn: () => CourseService.getCourse(token!, courseId),
@@ -47,3 +48,5 @@ export const useCourse = (token: string | null, courseId: string) => {
     },
   });
 };
+
+export { useCourse, useCourses };

@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, Award } from 'lucide-react';
-import { Material } from '@/types';
+import { useRouter } from 'next/navigation';
+
+import { MaterialCardProps } from '@/types';
 import {
   getMaterialIcon,
   getMaterialTypeLabel,
@@ -11,13 +11,19 @@ import {
   isMaterialClickable,
   isExercise,
 } from '@/data';
-import { getEmbedUrl } from '@/lib';
+import {
+  getEmbedUrl,
+  downloadFile,
+  shouldDownloadFile,
+  getSafeFilename,
+  formatDate,
+  isDeadlinePassed,
+} from '@/lib';
 
-interface MaterialCardProps {
-  material: Material;
-}
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
+  const router = useRouter();
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
 
   // Handle escape key to close video dialog
@@ -34,34 +40,37 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
     }
   }, [isVideoDialogOpen]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('th-TH', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   const materialIsExercise = isExercise(material.type);
   const hasDeadline = material.deadline && materialIsExercise;
+  const isExpired = hasDeadline && isDeadlinePassed(material.deadline!);
+  const isGraded = material.is_graded ?? true; // default to graded for safety
 
   // Handle click to open material
   const handleClick = () => {
-    // Open file URL for documents and PDF exercises
-    if ((material.type === 'document' || material.type === 'pdf_exercise') && material.file_url) {
-      window.open(material.file_url, '_blank', 'noopener,noreferrer');
+    // Navigate to exercise page for code exercises
+    if (material.type === 'code_exercise') {
+      router.push(`/course/${material.course_id}/exercise/${material.material_id}`);
+      return;
+    }
+    // Navigate to PDF exercise page for PDF exercises
+    if (material.type === 'pdf_exercise') {
+      router.push(`/course/${material.course_id}/pdf-exercise/${material.material_id}`);
+      return;
+    }
+    // Download image files instead of opening them
+    if (material.type === 'document' && material.file_url) {
+      if (shouldDownloadFile(material.file_url, material.mime_type)) {
+        const filename = getSafeFilename(material.file_url, material.file_name);
+        downloadFile(material.file_url, filename);
+      } else {
+        // Open other files in new tab
+        window.open(material.file_url, '_blank', 'noopener,noreferrer');
+      }
     }
     // Open video dialog for videos
     else if (material.type === 'video' && material.video_url) {
       setIsVideoDialogOpen(true);
     }
-    // For code exercises, you might want to navigate to an exercise page
-    // else if (material.type === 'code_exercise') {
-    //   // TODO: Navigate to code exercise page
-    // }
   };
 
   const isClickable = isMaterialClickable(material);
@@ -100,16 +109,20 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
             {/* Exercise specific info */}
             {materialIsExercise && (
               <div className="flex items-center gap-4 text-sm">
-                {material.total_points && (
-                  <div className="flex items-center gap-1 text-gray-600">
-                    <Award className="h-4 w-4" />
-                    <span>{material.total_points} คะแนน</span>
-                  </div>
-                )}
                 {hasDeadline && (
-                  <div className="flex items-center gap-1 text-gray-600">
-                    <Clock className="h-4 w-4" />
-                    <span>ส่งภายใน {formatDate(material.deadline!)}</span>
+                  <div
+                    className={`flex items-center gap-1 ${
+                      isExpired ? 'text-red-600' : 'text-gray-600'
+                    }`}
+                  >
+                    <span className="text-error">
+                      {isExpired ? 'หมดเวลาแล้ว' : `กำหนดส่ง ${formatDate(material.deadline!)}`}
+                    </span>
+                    {isExpired && !isGraded && (
+                      <span className="ml-1 rounded bg-yellow-100 px-1.5 py-0.5 text-xs text-yellow-800">
+                        Practice
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -129,6 +142,11 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
             {material.type === 'video' && material.video_url && (
               <div className="text-sm text-gray-600">
                 <span className="font-medium">วิดีโอ:</span> {material.video_url}
+              </div>
+            )}
+            {material.total_points && (
+              <div className="flex items-center gap-1">
+                <span>{material.total_points} คะแนน</span>
               </div>
             )}
           </div>

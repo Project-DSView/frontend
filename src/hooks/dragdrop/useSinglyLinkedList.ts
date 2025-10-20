@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import {
   SinglyLinkedListState,
   SinglyLinkedListOperation,
@@ -113,8 +114,56 @@ const useSinglyLinkedList = () => {
     SinglyLinkedListOperation
   >(defaultState, SinglyLinkedListServiceAdapter);
 
+  // SinglyLinkedList-specific validation
+  const validateLinkedListOperation = useCallback(
+    (operation: SinglyLinkedListOperation) => {
+      if (
+        (operation.type === 'insert_beginning' ||
+          operation.type === 'insert_end' ||
+          operation.type === 'insert_position') &&
+        !operation.value
+      ) {
+        throw new Error(`${operation.type} operation requires a value`);
+      }
+      if (
+        operation.type === 'insert_position' &&
+        (!operation.position || parseInt(operation.position) < 0)
+      ) {
+        throw new Error('Insert position must be a valid non-negative number');
+      }
+      if (
+        operation.type === 'delete_position' &&
+        (!operation.position || parseInt(operation.position) < 0)
+      ) {
+        throw new Error('Delete position must be a valid non-negative number');
+      }
+      if (
+        (operation.type === 'delete_beginning' ||
+          operation.type === 'delete_end' ||
+          operation.type === 'delete_value') &&
+        baseHook.state.stats.isEmpty
+      ) {
+        throw new Error('Cannot delete from empty linked list');
+      }
+    },
+    [baseHook.state.stats.isEmpty],
+  );
+
+  const addOperationWithValidation = useCallback(
+    (operation: Omit<SinglyLinkedListOperation, 'id'>) => {
+      try {
+        validateLinkedListOperation(operation as SinglyLinkedListOperation);
+        baseHook.addOperation(operation);
+      } catch (error) {
+        console.error('LinkedList operation validation failed:', error);
+      }
+    },
+    [baseHook, validateLinkedListOperation],
+  );
+
   return {
     ...baseHook,
+    addOperation: addOperationWithValidation,
     reorderOperation: baseHook.reorderOperation,
     state: {
       nodes: baseHook.state.data.nodes,

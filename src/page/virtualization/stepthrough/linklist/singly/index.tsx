@@ -1,10 +1,11 @@
 'use client';
 
 import React, { lazy } from 'react';
+
 import { useSinglyLinkedListStepthrough } from '@/hooks';
-import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 import { LinkedListData } from '@/types';
 
+import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 // Lazy load heavy components
 const SinglyLinkedListStepthroughVisualization = lazy(
   () => import('@/components/playground/stepthrough/visualization/SinglyLinkedList'),

@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+
 import { staggerContainerVariants, staggerItemVariants } from '@/lib';
-import { Button } from '@/components/ui/button';
 import { showcaseStructures } from '@/data';
+
+import { Button } from '@/components/ui/button';
 
 const InteractiveShowcase = () => {
   const [activeStructure, setActiveStructure] = useState('bst');

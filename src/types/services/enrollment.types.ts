@@ -31,4 +31,25 @@ interface EnrollmentResponse {
   };
 }
 
-export type { EnrollmentStatus, MyEnrollmentResponse, EnrollmentRequest, EnrollmentResponse };
+interface CourseEnrollmentsResponse {
+  success: boolean;
+  data: {
+    enrollments: Array<{
+      enrollment_id: string;
+      course_id: string;
+      user_id: string;
+      role: 'student' | 'ta' | 'teacher';
+      firstname: string;
+      lastname: string;
+      email: string;
+    }>;
+  };
+}
+
+export type {
+  EnrollmentStatus,
+  MyEnrollmentResponse,
+  EnrollmentRequest,
+  EnrollmentResponse,
+  CourseEnrollmentsResponse,
+};

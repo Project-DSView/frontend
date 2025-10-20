@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Key, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { EnrollmentPopoverProps } from '@/types';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Key, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { EnrollmentPopoverProps } from '@/types';
 
 const EnrollmentPopover: React.FC<EnrollmentPopoverProps> = ({
   courseId,

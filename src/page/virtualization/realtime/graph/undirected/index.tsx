@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+
+import { useRealtimeUndirectedGraph } from '@/hooks';
+import { undirectedGraphCodeTemplate } from '@/data';
+
 import RealtimeLayout from '@/components/playground/realtime/layout/RealtimeLayout';
 import UndirectedGraphRealtimeVisualization from '@/components/playground/realtime/visualization/UndirectedGraph';
-import useRealtimeUndirectedGraph from '@/hooks/realtime/useUndirectedGraph';
-import { undirectedGraphCodeTemplate } from '@/data';
 
 const Page = () => {
   const [code, setCode] = useState(undirectedGraphCodeTemplate);

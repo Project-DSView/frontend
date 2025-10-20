@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+
 import { UndirectedGraphOperationsProps, OperationCategory } from '@/types';
+import { graphCategories } from '@/data';
+
 import OperationCard from '../../shared/OperationCard';
 import OperationSearchFilter from '../../shared/OperationSearchFilter';
-import { graphCategories } from '@/data';
 
 const UndirectedGraphOperations: React.FC<UndirectedGraphOperationsProps> = ({
   dragComponents,

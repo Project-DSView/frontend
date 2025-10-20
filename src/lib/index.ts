@@ -94,10 +94,27 @@ export {
 
 // Utils
 export { ExportUtils } from './utils/export.utils';
-
 export { isValidImageUrl, getCourseImageFallback } from './utils/image.utils';
-
 export { default as cn } from './utils/utils';
-
-// Video
 export { getEmbedUrl, isSupportedVideoPlatform, getVideoPlatform } from './utils/video';
+export { getRoleBadgeStyle, getRoleDisplayName, isValidRole } from './utils/role';
+export {
+  downloadFile,
+  shouldDownloadFile,
+  getFileExtension,
+  getSafeFilename,
+} from './utils/download';
+export { formatDate, formatDateShort, formatTime, isDeadlinePassed } from './utils/date';
+export {
+  getDisplayFilename,
+  formatFileSize,
+  formatFileSizeForDisplay,
+  openFilePreview,
+  downloadFileDirect,
+} from './utils/file';
+export {
+  validatePDFFile,
+  validateFileType,
+  validateFileSize,
+  validateFile,
+} from './utils/validation';

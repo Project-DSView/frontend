@@ -1,21 +1,24 @@
 import { useMutation } from '@tanstack/react-query';
+
 import { AuthService } from '@/services';
 
-export const useGoogleAuthUrl = () => {
+const useGoogleAuthUrl = () => {
   return useMutation({
     mutationFn: AuthService.getGoogleAuthUrl,
   });
 };
 
-export const useLogout = () => {
+const useLogout = () => {
   return useMutation({
     mutationFn: AuthService.logout,
     onSuccess: () => {},
   });
 };
 
-export const useRefreshToken = () => {
+const useRefreshToken = () => {
   return useMutation({
     mutationFn: AuthService.refreshToken,
   });
 };
+
+export { useGoogleAuthUrl, useLogout, useRefreshToken };

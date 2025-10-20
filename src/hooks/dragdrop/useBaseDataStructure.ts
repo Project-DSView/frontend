@@ -25,6 +25,7 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
     searchPath: [],
     currentPosition: 0,
   });
+  const [error, setError] = useState<string | null>(null);
 
   const operationsRef = useRef<TOperation[]>([]);
 
@@ -37,86 +38,135 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
   }, []);
 
   const addOperation = useCallback((operation: Omit<TOperation, 'id'>) => {
-    const newOperation: TOperation = {
-      ...operation,
-      id: Date.now(),
-    } as TOperation;
+    try {
+      setError(null);
+      const newOperation: TOperation = {
+        ...operation,
+        id: Date.now(),
+      } as TOperation;
 
-    setState((prev) => {
-      const newOperations = [...prev.operations, newOperation];
-      operationsRef.current = newOperations as TOperation[];
-      return {
-        ...prev,
-        operations: newOperations,
-      };
-    });
+      setState((prev) => {
+        const newOperations = [...prev.operations, newOperation];
+        operationsRef.current = newOperations as TOperation[];
+        return {
+          ...prev,
+          operations: newOperations,
+        };
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to add operation';
+      setError(errorMessage);
+      console.error('Error adding operation:', error);
+    }
   }, []);
 
   const updateOperation = useCallback((id: number, updates: Partial<TOperation>) => {
-    setState((prev) => {
-      const newOperations = prev.operations.map((op) =>
-        op.id === id ? { ...op, ...updates } : op,
-      ) as TOperation[];
-      operationsRef.current = newOperations;
-      return {
-        ...prev,
-        operations: newOperations,
-      };
-    });
+    try {
+      setError(null);
+      setState((prev) => {
+        const newOperations = prev.operations.map((op) =>
+          op.id === id ? { ...op, ...updates } : op,
+        ) as TOperation[];
+        operationsRef.current = newOperations;
+        return {
+          ...prev,
+          operations: newOperations,
+        };
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update operation';
+      setError(errorMessage);
+      console.error('Error updating operation:', error);
+    }
   }, []);
 
   const removeOperation = useCallback((id: number) => {
-    setState((prev) => {
-      const newOperations = prev.operations.filter((op) => op.id !== id) as TOperation[];
-      operationsRef.current = newOperations;
-      return {
-        ...prev,
-        operations: newOperations,
-      };
-    });
+    try {
+      setError(null);
+      setState((prev) => {
+        const newOperations = prev.operations.filter((op) => op.id !== id) as TOperation[];
+        operationsRef.current = newOperations;
+        return {
+          ...prev,
+          operations: newOperations,
+        };
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to remove operation';
+      setError(errorMessage);
+      console.error('Error removing operation:', error);
+    }
   }, []);
 
   const clearOperations = useCallback(() => {
-    setState((prev) => {
-      operationsRef.current = [];
-      return {
-        ...prev,
-        operations: [],
-      };
-    });
+    try {
+      setError(null);
+      setState((prev) => {
+        operationsRef.current = [];
+        return {
+          ...prev,
+          operations: [],
+        };
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to clear operations';
+      setError(errorMessage);
+      console.error('Error clearing operations:', error);
+    }
   }, []);
 
   const clearAll = useCallback(() => {
-    setState(initialState);
-    operationsRef.current = [];
-    setHookState({
-      isRunning: false,
-      currentLine: -1,
-      currentStep: '',
-      executionHistory: [],
-      currentOperation: undefined,
-      highlightedNodes: [],
-      searchPath: [],
-      currentPosition: 0,
-    });
+    try {
+      setError(null);
+      setState(initialState);
+      operationsRef.current = [];
+      setHookState({
+        isRunning: false,
+        currentLine: -1,
+        currentStep: '',
+        executionHistory: [],
+        currentOperation: undefined,
+        highlightedNodes: [],
+        searchPath: [],
+        currentPosition: 0,
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to clear all';
+      setError(errorMessage);
+      console.error('Error clearing all:', error);
+    }
   }, [initialState]);
 
   const reorderOperation = useCallback((fromIndex: number, toIndex: number) => {
-    setState((prev) => {
-      const newOperations = [...prev.operations];
-      const [removed] = newOperations.splice(fromIndex, 1);
-      newOperations.splice(toIndex, 0, removed);
-      operationsRef.current = newOperations as TOperation[];
-      return { ...prev, operations: newOperations };
-    });
+    try {
+      setError(null);
+      setState((prev) => {
+        const newOperations = [...prev.operations];
+        const [removed] = newOperations.splice(fromIndex, 1);
+        newOperations.splice(toIndex, 0, removed);
+        operationsRef.current = newOperations as TOperation[];
+        return { ...prev, operations: newOperations };
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to reorder operation';
+      setError(errorMessage);
+      console.error('Error reordering operation:', error);
+    }
   }, []);
 
   const updateDataState = useCallback((newData: TData, newStats: TStats) => {
-    setState((prev) => ({
-      ...prev,
-      data: newData,
-      stats: newStats,
-    }));
+    try {
+      setError(null);
+      setState((prev) => ({
+        ...prev,
+        data: newData,
+        stats: newStats,
+      }));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update data state';
+      setError(errorMessage);
+      console.error('Error updating data state:', error);
+    }
   }, []);
 
   const setCurrentLine = useCallback((line: number) => {
@@ -172,10 +222,12 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
         const newServiceState = service.getState();
         return newServiceState;
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         console.error('Error executing operation:', error);
+        setError(errorMessage);
         setHookState((prev) => ({
           ...prev,
-          executionHistory: [...prev.executionHistory, `Error: ${error}`],
+          executionHistory: [...prev.executionHistory, `Error: ${errorMessage}`],
         }));
         return currentState;
       } finally {
@@ -234,10 +286,12 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
         executionHistory: [...prev.executionHistory, 'การ Execute เสร็จสิ้น'],
       }));
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       console.error('Error executing operations:', error);
+      setError(errorMessage);
       setHookState((prev) => ({
         ...prev,
-        executionHistory: [...prev.executionHistory, `Error: ${error}`],
+        executionHistory: [...prev.executionHistory, `Error: ${errorMessage}`],
       }));
     } finally {
       setHookState((prev) => ({
@@ -262,6 +316,7 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
     highlightedNodes: hookState.highlightedNodes,
     searchPath: hookState.searchPath,
     currentPosition: hookState.currentPosition,
+    error,
     addOperation,
     updateOperation,
     removeOperation,

@@ -32,6 +32,7 @@ export { default as useUndirectedGraphStepthrough } from './stepthrough/useUndir
 // Realtime
 export { default as useRealtimeSinglyLinkedList } from './realtime/useSinglyLinkedList';
 export { default as useRealtimeDoublyLinkedList } from './realtime/useDoublyLinkedList';
+export { default as useRealtimeBST } from './realtime/useBST';
 export { default as useRealtimeStack } from './realtime/useStack';
 export { default as useRealtimeUndirectedGraph } from './realtime/useUndirectedGraph';
 export { default as useRealtimeDirectedGraph } from './realtime/useDirectedGraph';

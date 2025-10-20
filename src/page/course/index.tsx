@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Search, Loader2, AlertCircle, BookOpen } from 'lucide-react';
+import { toast } from 'sonner';
+
 import { useAuth } from '@/hooks';
 import { useCourses, useEnrollInCourse } from '@/query';
+
 import CourseCardWithEnrollment from '@/components/course/CourseCardWithEnrollment';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Loader2, AlertCircle, BookOpen } from 'lucide-react';
-import { toast } from 'sonner';
 
 const CoursePage: React.FC = () => {
   const router = useRouter();

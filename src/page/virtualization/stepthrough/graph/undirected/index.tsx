@@ -2,9 +2,9 @@
 
 import React, { lazy } from 'react';
 import { useUndirectedGraphStepthrough } from '@/hooks';
-import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 import { UndirectedGraphData } from '@/types';
 
+import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 // Lazy load heavy components
 const UndirectedGraphStepthroughVisualization = lazy(
   () => import('@/components/playground/stepthrough/visualization/UndirectedGraph'),

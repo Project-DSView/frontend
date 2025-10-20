@@ -1,59 +1,3 @@
-// Components
-export type {
-  CopyAndExportButtonProps,
-  ExportPNGButtonProps,
-  FileUploadButtonProps,
-} from './components/button.types';
-
-export type { Feature, FeatureCardProps } from './components/card.types';
-
-export type {
-  CourseCardProps,
-  EnrollmentPopoverProps,
-  CourseCardWithEnrollmentProps,
-} from './components/course.types';
-
-export type {
-  CodeEditorProps,
-  OperationCardProps,
-  OperationCategoryDropdownProps,
-  VisualizationProps,
-  SinglyLinkedListOperationsProps,
-  SinglyLinkedListVisualizationProps,
-  DoublyLinkedListOperationsProps,
-  DoublyLinkedListVisualizationProps,
-  StackOperationsProps,
-  StackVisualizationProps,
-  DragDropZoneProps,
-} from './components/DragDrop.types';
-
-export type {
-  SubItem,
-  MenuItem,
-  PlaygroundItem,
-  SubMenuItemProps,
-  NestedSubMenuItemProps,
-} from './components/menu.types';
-
-export type { StepSelectorProps } from './components/StepSelector.types';
-
-export type { VirtualizedListProps } from './components/VirtualizedList.types';
-
-export type { Structure, CTASectionProps } from './components/showcase.types';
-
-export type {
-  DataStructure,
-  LearningTip,
-  TutorialStep,
-  PlaygroundMode,
-  TutorialSection,
-  ImageModalProps,
-  PlaygroundModeCardProps,
-  TutorialStepProps,
-  LearningTipCardProps,
-  DataStructureCardProps,
-} from './components/tutorial.types';
-
 // Drag Drop
 export type {
   BaseOperation,
@@ -156,6 +100,71 @@ export type {
   UndirectedGraphStateExtended,
 } from './dragdrop/UndirectedGraph.types';
 
+// Props
+export type {
+  CopyAndExportButtonProps,
+  ExportPNGButtonProps,
+  FileUploadButtonProps,
+} from './props/button.types';
+
+export type { Feature, FeatureCardProps } from './props/card.types';
+
+export type {
+  CourseCardProps,
+  EnrollmentPopoverProps,
+  CourseCardWithEnrollmentProps,
+  MembersListProps,
+  MaterialsByWeekProps,
+  MaterialCardProps,
+  UserRole,
+  LatestAnnouncementProps,
+  ExerciseEditorCardProps,
+  ExerciseProblemCardProps,
+  PDFSubmissionCardProps,
+  SubmittedPDFCardProps,
+} from './props/course.types';
+
+export type {
+  CodeEditorProps,
+  OperationCardProps,
+  OperationCategoryDropdownProps,
+  VisualizationProps,
+  SinglyLinkedListOperationsProps,
+  SinglyLinkedListVisualizationProps,
+  DoublyLinkedListOperationsProps,
+  DoublyLinkedListVisualizationProps,
+  StackOperationsProps,
+  StackVisualizationProps,
+  DragDropZoneProps,
+} from './props/DragDrop.types';
+
+export type {
+  SubItem,
+  MenuItem,
+  PlaygroundItem,
+  SubMenuItemProps,
+  NestedSubMenuItemProps,
+} from './props/menu.types';
+
+export type { StepSelectorProps } from './props/StepSelector.types';
+
+export type { VirtualizedListProps } from './props/virtualization.types';
+
+export type { Structure, CTASectionProps } from './props/showcase.types';
+
+export type {
+  DataStructure,
+  LearningTip,
+  TutorialStep,
+  PlaygroundMode,
+  TutorialSection,
+  ImageModalProps,
+  PlaygroundModeCardProps,
+  TutorialStepProps,
+  LearningTipCardProps,
+  DataStructureCardProps,
+} from './props/tutorial.types';
+
 // Realtime
 export type {
   SinglyLinkedListNode as RealtimeSinglyLinkedListNode,
@@ -238,6 +247,7 @@ export type {
   MyEnrollmentResponse,
   EnrollmentRequest,
   EnrollmentResponse,
+  CourseEnrollmentsResponse,
 } from './services/enrollment.types';
 
 export type {
@@ -253,7 +263,20 @@ export type {
   MaterialsData,
   MaterialsResponse,
   MaterialsParams,
+  MaterialResponse,
 } from './services/material.types';
+
+export type {
+  PDFSubmission,
+  SubmitPDFRequest,
+  SubmitPDFResponse,
+  SubmissionResponse,
+  SubmissionListResponse,
+  DownloadUrlResponse,
+  CancelSubmissionResponse,
+  SubmissionStatus,
+  SubmissionStatusConfig,
+} from './services/submission.types';
 
 // Security
 export type {

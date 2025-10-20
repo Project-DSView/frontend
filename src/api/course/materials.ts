@@ -1,4 +1,4 @@
-import { MaterialsResponse, MaterialsParams } from '@/types';
+import { MaterialsResponse, MaterialsParams, MaterialResponse } from '@/types';
 import { api } from '../index';
 
 // Get course materials with pagination
@@ -22,3 +22,15 @@ const getCourseMaterials = async (
 };
 
 export { getCourseMaterials };
+
+// Get single course material by ID
+export const getCourseMaterial = async (
+  token: string,
+  materialId: string,
+): Promise<MaterialResponse> => {
+  const url = `/api/course-materials/${materialId}`;
+  const res = await api.get<MaterialResponse>(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};

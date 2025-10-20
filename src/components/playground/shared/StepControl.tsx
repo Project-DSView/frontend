@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { StepthroughStepControlProps } from '@/types';
+
 import { Slider } from '@/components/ui/slider';
 
 const StepControl: React.FC<StepthroughStepControlProps> = ({
@@ -43,9 +45,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
               </p>
             </div>
             {isAutoPlaying && (
-              <div className="text-xl text-green-600 font-medium animate-pulse">
-                กำลังเล่น...
-              </div>
+              <div className="animate-pulse text-xl font-medium text-green-600">กำลังเล่น...</div>
             )}
           </div>
         </div>
@@ -237,9 +237,9 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           {/* Auto Play Button - Center */}
           <button
             onClick={onAutoPlay}
-            className={`flex items-center space-x-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 sm:px-6 sm:py-3 sm:text-base ${
+            className={`flex transform items-center space-x-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl sm:px-6 sm:py-3 sm:text-base ${
               isAutoPlaying
-                ? 'bg-error hover:bg-error/80 text-white animate-pulse'
+                ? 'bg-error hover:bg-error/80 animate-pulse text-white'
                 : 'bg-success hover:bg-success/80 text-white'
             }`}
           >

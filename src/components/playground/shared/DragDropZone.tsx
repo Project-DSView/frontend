@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { DragDropZoneProps } from '@/types';
 import { toast } from 'sonner';
+
+import { DragDropZoneProps } from '@/types';
+
 import {
   Select,
   SelectContent,

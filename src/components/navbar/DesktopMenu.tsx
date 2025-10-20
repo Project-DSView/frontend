@@ -1,7 +1,12 @@
 'use client';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+
+import { playgroundItems } from '@/data';
+import { useAuth } from '@/hooks';
+
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,9 +15,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { playgroundItems } from '@/data';
+
 import SubMenuItem from './SubMenuItem';
-import useAuth from '@/hooks/auth/useAuth';
 
 const DesktopMenu = () => {
   const [isPlaygroundOpen, setIsPlaygroundOpen] = useState(false);

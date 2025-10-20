@@ -4,10 +4,15 @@ export { useProfile, useFetchProfile } from './auth/profile.query';
 
 // Course
 export { useCourses, useCourse } from './course/course';
-export { useCourseMaterials } from './course/materials';
+export { useCourseMaterials, useCourseMaterial } from './course/materials';
 
 // Enrollment
-export { useMyEnrollment, useEnrollInCourse, useUnenrollFromCourse } from './enrollment/enrollment';
+export {
+  useMyEnrollment,
+  useEnrollInCourse,
+  useUnenrollFromCourse,
+  useCourseEnrollments,
+} from './enrollment/enrollment';
 export { useAnnouncements } from './announcements/announcements';
 
 // Stepthrough
@@ -17,3 +22,12 @@ export {
   useCurrentStepDetails,
   useStepthroughState,
 } from './stepthrough/stepthrough.query';
+
+// Submissions
+export {
+  useMySubmission,
+  useSubmission,
+  useSubmissionDownloadUrl,
+  useSubmitPDFExercise,
+  useCancelSubmission,
+} from './submissions/submissions.query';

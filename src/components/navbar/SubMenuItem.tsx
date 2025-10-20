@@ -1,4 +1,7 @@
 'use client';
+
+import { SubMenuItemProps } from '@/types';
+
 import {
   DropdownMenuItem,
   DropdownMenuSub,
@@ -7,7 +10,6 @@ import {
   DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import NestedSubMenuItem from './NestedSubMenuItem';
-import { SubMenuItemProps } from '@/types';
 
 const SubMenuItem = ({ title, description, items }: SubMenuItemProps) => (
   <DropdownMenuSub>

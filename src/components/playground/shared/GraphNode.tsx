@@ -47,7 +47,7 @@ const GraphNode = memo<GraphNodeProps>(
                 : isTraverseSelected || isCurrentlyTraversing
                   ? 'scale-110 border-green-400 bg-green-200 text-green-800 shadow-lg'
                   : 'border-gray-600 bg-white text-gray-800 hover:shadow-md'
-          } ${isRunning ? 'animate-pulse' : ''} ${isAnimating ? 'ring-4 ring-blue-400 animate-bounce' : ''} ${isDragging ? 'z-10' : ''}`}
+          } ${isRunning ? 'animate-pulse' : ''} ${isAnimating ? 'animate-bounce ring-4 ring-blue-400' : ''} ${isDragging ? 'z-10' : ''}`}
         >
           {node.value}
           {isHighlighted && (

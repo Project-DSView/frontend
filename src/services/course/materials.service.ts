@@ -1,5 +1,5 @@
-import { getCourseMaterials } from '@/api';
-import { MaterialsResponse, MaterialsParams } from '@/types';
+import { getCourseMaterials, getCourseMaterial } from '@/api';
+import { MaterialsResponse, MaterialsParams, MaterialResponse } from '@/types';
 
 const MaterialService = {
   getCourseMaterials: async (
@@ -8,6 +8,9 @@ const MaterialService = {
     params?: MaterialsParams,
   ): Promise<MaterialsResponse> => {
     return getCourseMaterials(token, courseId, params);
+  },
+  getCourseMaterial: async (token: string, materialId: string): Promise<MaterialResponse> => {
+    return getCourseMaterial(token, materialId);
   },
 };
 

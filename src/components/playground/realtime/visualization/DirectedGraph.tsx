@@ -1,6 +1,7 @@
 'use client';
 
 import React, { forwardRef, useState, useEffect, useCallback } from 'react';
+
 import {
   RealtimeDirectedGraphData,
   RealtimeDirectedGraphNodeData,
@@ -8,15 +9,13 @@ import {
   DirectedGraphRealtimeProps,
   GraphData,
 } from '@/types';
+
 import GraphNode from '../../shared/GraphNode';
 import GraphEdge from '../../shared/GraphEdge';
 import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const DirectedGraphRealtimeVisualization = forwardRef<HTMLDivElement, DirectedGraphRealtimeProps>(
-  (
-    { data, isExecuting = false, error, securityStatus, updateNodePosition, getNodePositions },
-    ref,
-  ) => {
+  ({ data, isExecuting = false, updateNodePosition, getNodePositions }, ref) => {
     const [draggedNode, setDraggedNode] = useState<string | null>(null);
     const [nodePositions, setNodePositions] = useState<{ [key: string]: { x: number; y: number } }>(
       {},
@@ -300,34 +299,6 @@ const DirectedGraphRealtimeVisualization = forwardRef<HTMLDivElement, DirectedGr
         </div>
       );
     };
-
-    // Error display
-    if (error) {
-      return (
-        <div className="flex h-full items-center justify-center">
-          <div className="text-center text-red-600">
-            <div className="text-lg font-semibold">Error</div>
-            <div className="text-sm">{error}</div>
-          </div>
-        </div>
-      );
-    }
-
-    // Security violations
-    if (!securityStatus.isSafe) {
-      return (
-        <div className="flex h-full items-center justify-center">
-          <div className="text-center text-red-600">
-            <div className="text-lg font-semibold">Security Violations</div>
-            <div className="text-sm">
-              {securityStatus.violations.map((violation: string, index: number) => (
-                <div key={index}>{violation}</div>
-              ))}
-            </div>
-          </div>
-        </div>
-      );
-    }
 
     return (
       <div

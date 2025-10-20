@@ -1,9 +1,11 @@
 import React, { forwardRef, useState, useEffect, useCallback } from 'react';
+
 import {
   UndirectedGraphVisualizationProps,
   UndirectedGraphNode,
   UndirectedGraphEdge,
 } from '@/types';
+
 import GraphNode from '../../shared/GraphNode';
 import GraphEdge from '../../shared/GraphEdge';
 
@@ -36,8 +38,14 @@ const UndirectedGraphVisualization = forwardRef<HTMLDivElement, UndirectedGraphV
 
     // Handle operations animation
     useEffect(() => {
-      if (isRunning && currentOperation && (currentOperation === 'add_vertex' || currentOperation === 'add_edge' || 
-          currentOperation === 'remove_vertex' || currentOperation === 'remove_edge')) {
+      if (
+        isRunning &&
+        currentOperation &&
+        (currentOperation === 'add_vertex' ||
+          currentOperation === 'add_edge' ||
+          currentOperation === 'remove_vertex' ||
+          currentOperation === 'remove_edge')
+      ) {
         setIsAnimating(true);
         // Highlight the most recently added/modified node or edge
         if (currentOperationData) {

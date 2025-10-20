@@ -4,12 +4,11 @@ import React, { useState, useRef, lazy, Suspense } from 'react';
 import { DoublyLinkedListDragComponent } from '@/types';
 import { useDoublyLinkedListDragDrop } from '@/hooks';
 import { doublyLinkedListDragComponents } from '@/data';
+
 import DragDropZone from '@/components/playground/shared/DragDropZone';
 import StepSelector from '@/components/playground/shared/StepSelector';
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 import TutorialButton from '@/components/playground/shared/TutorialButton';
-import TutorialModal from '@/components/tutorial/TutorialModal';
-
 // Lazy load heavy components
 const DoublyLinkedDragDropListOperations = lazy(
   () => import('@/components/playground/dragdrop/opeartion/DoublyLinkedList'),
@@ -17,6 +16,8 @@ const DoublyLinkedDragDropListOperations = lazy(
 const DoublyLinkedDragDropListVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/DoublyLinkedList'),
 );
+const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
+const TutorialModal = lazy(() => import('@/components/tutorial/TutorialModal'));
 
 const DragDropDoublyLinkList = () => {
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
@@ -391,32 +392,54 @@ const DragDropDoublyLinkList = () => {
       </div>
 
       {/* Visualization */}
-      <Suspense
-        fallback={
-          <div className="h-64 w-full rounded-lg border bg-gray-50">
-            <div className="flex h-full items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+      <div className="relative">
+        {/* Step Indicator */}
+        {isAutoPlaying && state.operations.length > 0 && selectedStep !== null && (
+          <Suspense
+            fallback={
+              <div className="mb-4 rounded-lg bg-blue-50 p-4">
+                <div className="flex h-6 items-center justify-center">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+                </div>
+              </div>
+            }
+          >
+            <StepIndicator
+              stepNumber={selectedStep + 1}
+              totalSteps={state.operations.length}
+              message={getStepDescription(state.operations[selectedStep])}
+              isAutoPlaying={isAutoPlaying}
+            />
+          </Suspense>
+        )}
+
+        <Suspense
+          fallback={
+            <div className="h-64 w-full rounded-lg border bg-gray-50">
+              <div className="flex h-full items-center justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+              </div>
             </div>
-          </div>
-        }
-      >
-        <DoublyLinkedDragDropListVisualization
-          ref={visualizationRef}
-          nodes={currentVisualizationState.nodes}
-          stats={currentVisualizationState.stats}
-          isRunning={isAutoPlaying}
-          currentOperation={
-            selectedStep !== null ? state.operations[selectedStep]?.type : undefined
           }
-          selectedStep={
-            selectedStep !== null &&
-            (state.operations[selectedStep]?.type === 'traverse_forward' ||
-              state.operations[selectedStep]?.type === 'traverse_backward')
-              ? selectedStep
-              : null
-          }
-        />
-      </Suspense>
+        >
+          <DoublyLinkedDragDropListVisualization
+            ref={visualizationRef}
+            nodes={currentVisualizationState.nodes}
+            stats={currentVisualizationState.stats}
+            isRunning={isAutoPlaying}
+            currentOperation={
+              selectedStep !== null ? state.operations[selectedStep]?.type : undefined
+            }
+            selectedStep={
+              selectedStep !== null &&
+              (state.operations[selectedStep]?.type === 'traverse_forward' ||
+                state.operations[selectedStep]?.type === 'traverse_backward')
+                ? selectedStep
+                : null
+            }
+          />
+        </Suspense>
+      </div>
 
       <div className="mt-6">
         {/* Step Selection */}
@@ -433,11 +456,19 @@ const DragDropDoublyLinkList = () => {
       </div>
 
       {/* Tutorial Modal */}
-      <TutorialModal
-        isOpen={isTutorialOpen}
-        onClose={() => setIsTutorialOpen(false)}
-        playgroundMode="dragdrop"
-      />
+      <Suspense
+        fallback={
+          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+          </div>
+        }
+      >
+        <TutorialModal
+          isOpen={isTutorialOpen}
+          onClose={() => setIsTutorialOpen(false)}
+          playgroundMode="dragdrop"
+        />
+      </Suspense>
     </div>
   );
 };

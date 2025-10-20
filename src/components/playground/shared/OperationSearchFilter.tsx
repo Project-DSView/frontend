@@ -1,5 +1,8 @@
 import React from 'react';
+import { Search, X } from 'lucide-react';
+
 import { OperationSearchFilterProps, OperationCategory } from '@/types';
+
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -9,7 +12,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Search, X } from 'lucide-react';
 
 const OperationSearchFilter: React.FC<OperationSearchFilterProps> = ({
   onSearchChange,

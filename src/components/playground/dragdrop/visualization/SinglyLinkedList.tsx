@@ -1,5 +1,7 @@
 import React, { forwardRef, useState, useEffect } from 'react';
+
 import { SinglyLinkedListVisualizationProps } from '@/types';
+
 import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const SinglyLinkedListDragDropVisualization = forwardRef<
@@ -25,7 +27,13 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
 
     // Handle insert/delete/search operations animation
     useEffect(() => {
-      if (isRunning && currentOperation && (currentOperation === 'insert' || currentOperation === 'delete' || currentOperation === 'search')) {
+      if (
+        isRunning &&
+        currentOperation &&
+        (currentOperation === 'insert' ||
+          currentOperation === 'delete' ||
+          currentOperation === 'search')
+      ) {
         setIsAnimating(true);
         setHighlightedNodeIndex(currentPosition);
         const timer = setTimeout(() => {
@@ -76,7 +84,6 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
         setTraverseIndex(0);
       }
     }, [selectedStep, currentOperation, nodes.length]);
-    
 
     // Get current position for head pointer animation
     const getCurrentHeadPosition = () => {
@@ -146,7 +153,7 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
               isCurrentlyTraversing
                 ? 'border-success bg-success/20 animate-pulse shadow-lg'
                 : isHighlighted && isAnimating
-                  ? 'scale-105 animate-bounce bg-yellow-50 shadow-lg border-black'
+                  ? 'scale-105 animate-bounce border-black bg-yellow-50 shadow-lg'
                   : isTraverseSelected
                     ? 'border-black bg-white shadow-lg'
                     : 'border-black bg-white hover:bg-gray-50'

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import ImageModal from './ImageModal';
 import TutorialStepComponent from './TutorialStep';
-import { TutorialModalProps, PlaygroundModeType } from '@/types/components/tutorial.types';
+import { TutorialModalProps, PlaygroundModeType } from '@/types/props/tutorial.types';
 import { playgroundModes, tutorialSections } from '@/data/components/tutorial.data';
 
 const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, playgroundMode }) => {
@@ -124,7 +124,7 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, playgrou
   return (
     <>
       <ImageModal selectedImage={selectedImage} onClose={handleCloseModal} />
-      
+
       <div
         ref={modalRef}
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
@@ -133,7 +133,7 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, playgrou
         aria-modal="true"
         aria-labelledby="tutorial-modal-title"
       >
-        <div 
+        <div
           className="relative max-h-[95vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >

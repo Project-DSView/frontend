@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+
+import { playgroundItems } from '@/data';
+
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,7 +14,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { playgroundItems } from '@/data';
 import SubMenuItem from '@/components/navbar/SubMenuItem';
 
 const PlaygroundDropdown = () => {

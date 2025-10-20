@@ -1,15 +1,19 @@
 'use client';
 
-import React, { useRef, Suspense, useState } from 'react';
-import CodeEditor from '@/components/playground/shared/CodeEditor';
+import React, { useRef, Suspense, useState, lazy, useEffect } from 'react';
+import { toast } from 'sonner';
+import CodeEditor from '@/components/editor/CodeEditor';
 import StepControl from '@/components/playground/shared/StepControl';
 import FileUploadButton from '@/components/playground/shared/FileUploadButton';
 import CopyCodeButton from '@/components/playground/shared/CopyCodeButton';
 import ExportPythonButton from '@/components/playground/shared/ExportPythonButton';
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 import TutorialButton from '@/components/playground/shared/TutorialButton';
-import TutorialModal from '@/components/tutorial/TutorialModal';
 import { StepthroughLayoutProps, StepthroughData } from '@/types';
+
+// Lazy load heavy components
+const TutorialModal = lazy(() => import('@/components/tutorial/TutorialModal'));
+const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
 
 const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   code,
@@ -37,6 +41,16 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   const visualizationRef = useRef<HTMLDivElement | null>(null);
   const stepControlRef = useRef<HTMLDivElement | null>(null);
   const [codeEditorHeight, setCodeEditorHeight] = React.useState<string>('320px');
+
+  // Show toast notification when error occurs
+  useEffect(() => {
+    if (error) {
+      toast.error('เกิดข้อผิดพลาดในการรันโค้ด', {
+        description: error,
+        duration: 5000,
+      });
+    }
+  }, [error]);
 
   // Update code editor height based on step control height
   React.useEffect(() => {
@@ -151,33 +165,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
         </div>
       </div>
 
-      {/* Error Alert */}
-      {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-red-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">เกิดข้อผิดพลาดในการรันโค้ด</h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p className="font-mono whitespace-pre-wrap">{error}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Error Alert removed - now using toast notification */}
 
       <div className="mb-4 grid grid-cols-1 gap-4 sm:mb-6 sm:gap-6 lg:grid-cols-2">
         {/* Left Side - Code Editor */}
@@ -244,6 +232,31 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
         </div>
       </div>
 
+      {/* Step Indicator - Sticky */}
+      {isAutoPlaying &&
+        steps.length > 0 &&
+        currentStepIndex !== null &&
+        currentStepIndex < steps.length && (
+          <div className="sticky top-4 z-40 mb-4">
+            <Suspense
+              fallback={
+                <div className="rounded-lg bg-blue-50 p-4">
+                  <div className="flex h-6 items-center justify-center">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+                  </div>
+                </div>
+              }
+            >
+              <StepIndicator
+                stepNumber={currentStepIndex + 1}
+                totalSteps={steps.length}
+                message={steps[currentStepIndex]?.state?.message || `Step ${currentStepIndex + 1}`}
+                isAutoPlaying={isAutoPlaying}
+              />
+            </Suspense>
+          </div>
+        )}
+
       <Suspense
         fallback={
           <div className="flex h-48 items-center justify-center rounded-lg border bg-gray-50 sm:h-64">
@@ -265,11 +278,19 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
       </Suspense>
 
       {/* Tutorial Modal */}
-      <TutorialModal
-        isOpen={isTutorialOpen}
-        onClose={() => setIsTutorialOpen(false)}
-        playgroundMode="stepthrough"
-      />
+      <Suspense
+        fallback={
+          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+          </div>
+        }
+      >
+        <TutorialModal
+          isOpen={isTutorialOpen}
+          onClose={() => setIsTutorialOpen(false)}
+          playgroundMode="stepthrough"
+        />
+      </Suspense>
     </div>
   );
 };

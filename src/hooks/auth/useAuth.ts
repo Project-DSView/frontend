@@ -15,6 +15,8 @@ const useAuth = (): UseAuthReturn => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Initialize CSRF protection
   useEffect(() => {
@@ -24,6 +26,9 @@ const useAuth = (): UseAuthReturn => {
   // Initialize session securely on hook mount
   useEffect(() => {
     const initializeSession = async () => {
+      setIsLoading(true);
+      setError(null);
+
       try {
         const sessionData = await secureSessionUtils.loadSession();
         const isValid = await secureSessionUtils.isSessionValid();
@@ -36,9 +41,13 @@ const useAuth = (): UseAuthReturn => {
           secureSessionUtils.clearSession();
         }
       } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to initialize session';
         console.error('Failed to initialize session:', error);
+        setError(errorMessage);
         secureSessionUtils.clearSession();
       } finally {
+        setIsLoading(false);
         setIsInitialized(true);
       }
     };
@@ -47,6 +56,9 @@ const useAuth = (): UseAuthReturn => {
   }, []);
 
   const loadSession = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
     try {
       const sessionData = await secureSessionUtils.loadSession();
       const isValid = await secureSessionUtils.isSessionValid();
@@ -58,8 +70,12 @@ const useAuth = (): UseAuthReturn => {
       }
       return null;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load session';
       console.error('Failed to load session:', error);
+      setError(errorMessage);
       return null;
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -67,8 +83,13 @@ const useAuth = (): UseAuthReturn => {
   const handleRefreshToken = useCallback(async () => {
     // Check rate limit
     if (isRateLimited(RATE_LIMIT_CONFIGS.TOKEN_REFRESH)) {
-      throw new Error('Too many token refresh attempts. Please try again later.');
+      const errorMessage = 'Too many token refresh attempts. Please try again later.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
+
+    setIsLoading(true);
+    setError(null);
 
     try {
       // Validate current token before refresh
@@ -91,16 +112,23 @@ const useAuth = (): UseAuthReturn => {
 
       return newToken;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Token refresh failed';
       logError('Refresh failed:', error);
+      setError(errorMessage);
       setProfile(null);
       setAccessToken(null);
       secureSessionUtils.clearSession();
       return null;
+    } finally {
+      setIsLoading(false);
     }
   }, [profile, accessToken]);
 
   // ฟังก์ชัน fetch profile with auto refresh and validation
   const fetchUserProfile = useCallback(async (token: string) => {
+    setIsLoading(true);
+    setError(null);
+
     try {
       // Validate token format first
       if (!token || !isValidJWTFormat(token)) {
@@ -123,34 +151,50 @@ const useAuth = (): UseAuthReturn => {
       setProfile(profileData);
       return profileData;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch profile';
       logError('Failed to fetch profile:', error);
+      setError(errorMessage);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
   const setAuthData = useCallback(async (token: string, userProfile: UserProfile) => {
-    // Validate inputs
-    if (!token || !userProfile || !userProfile.user_id) {
-      throw new Error('Invalid token or user profile data');
-    }
+    setIsLoading(true);
+    setError(null);
 
-    // Validate token format
-    if (!isValidJWTFormat(token)) {
-      throw new Error('Invalid token format');
-    }
+    try {
+      // Validate inputs
+      if (!token || !userProfile || !userProfile.user_id) {
+        throw new Error('Invalid token or user profile data');
+      }
 
-    if (isTokenExpired(token)) {
-      throw new Error('Token is expired');
-    }
+      // Validate token format
+      if (!isValidJWTFormat(token)) {
+        throw new Error('Invalid token format');
+      }
 
-    setAccessToken(token);
-    setProfile(userProfile);
-    await secureSessionUtils.saveSession(token, userProfile);
+      if (isTokenExpired(token)) {
+        throw new Error('Token is expired');
+      }
+
+      setAccessToken(token);
+      setProfile(userProfile);
+      await secureSessionUtils.saveSession(token, userProfile);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to set auth data';
+      setError(errorMessage);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   const clearAuthData = useCallback(() => {
     setAccessToken(null);
     setProfile(null);
+    setError(null);
     secureSessionUtils.clearSession();
   }, []);
 
@@ -158,6 +202,8 @@ const useAuth = (): UseAuthReturn => {
     accessToken,
     profile,
     isInitialized,
+    isLoading,
+    error,
     setIsInitialized,
     loadSession,
     handleRefreshToken,

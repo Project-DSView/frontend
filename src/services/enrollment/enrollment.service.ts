@@ -1,10 +1,17 @@
 import axios from 'axios';
+
 import {
   getMyEnrollment as apiGetMyEnrollment,
   enrollInCourse as apiEnrollInCourse,
   unenrollFromCourse as apiUnenrollFromCourse,
+  getCourseEnrollments as apiGetCourseEnrollments,
 } from '@/api';
-import { MyEnrollmentResponse, EnrollmentRequest, EnrollmentResponse } from '@/types';
+import {
+  MyEnrollmentResponse,
+  EnrollmentRequest,
+  EnrollmentResponse,
+  CourseEnrollmentsResponse,
+} from '@/types';
 import AuthService from '../auth/auth.service';
 
 class EnrollmentService {
@@ -58,6 +65,25 @@ class EnrollmentService {
         }
       }
       throw error;
+    }
+  }
+
+  // Get course enrollments
+  static async getCourseEnrollments(
+    token: string,
+    courseId: string,
+  ): Promise<CourseEnrollmentsResponse | null> {
+    try {
+      return await apiGetCourseEnrollments(token, courseId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await apiGetCourseEnrollments(newToken, courseId);
+        }
+      }
+      // Return null if error (not accessible or other errors)
+      return null;
     }
   }
 }

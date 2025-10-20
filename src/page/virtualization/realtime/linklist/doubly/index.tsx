@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+
+import { doublyLinkedListCodeTemplate } from '@/data';
+import { useRealtimeDoublyLinkedList } from '@/hooks';
+
 import RealtimeLayout from '@/components/playground/realtime/layout/RealtimeLayout';
 import DoublyLinkedListRealtime from '@/components/playground/realtime/visualization/DoublyLinkedList';
-import { doublyLinkedListCodeTemplate } from '@/data';
-import useRealtimeDoublyLinkedList from '@/hooks/realtime/useDoublyLinkedList';
 
 const DoublyLinkedListRealtimePage: React.FC = () => {
   const [code, setCode] = useState(doublyLinkedListCodeTemplate);

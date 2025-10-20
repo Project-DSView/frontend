@@ -1,17 +1,18 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { LogIn } from 'lucide-react';
 import { memo, lazy, Suspense } from 'react';
-import { features } from '@/data';
-import useAuth from '@/hooks/auth/useAuth';
-import { AuthService } from '@/services';
 import { useRouter } from 'next/navigation';
-import PlaygroundDropdown from '@/components/landing/PlaygroundDropdown';
-import { motion } from 'framer-motion';
-import { heroVariants, heroChildVariants, buttonVariants } from '@/lib/utils/animations';
 
+import { features } from '@/data';
+import { useAuth } from '@/hooks';
+import { AuthService } from '@/services';
+import { heroVariants, heroChildVariants, buttonVariants } from '@/lib';
+
+import { Button } from '@/components/ui/button';
+import PlaygroundDropdown from '@/components/landing/PlaygroundDropdown';
 // Lazy load components
 const FeatureCard = lazy(() => import('@/components/card'));
 const InteractiveShowcase = lazy(() => import('@/components/landing/InteractiveShowcase'));

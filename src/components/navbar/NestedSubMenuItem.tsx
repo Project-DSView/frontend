@@ -1,5 +1,7 @@
 'use client';
+
 import Link from 'next/link';
+import { NestedSubMenuItemProps } from '@/types';
 import {
   DropdownMenuItem,
   DropdownMenuSub,
@@ -7,7 +9,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
-import { NestedSubMenuItemProps } from '@/types';
 
 const NestedSubMenuItem = ({ item }: NestedSubMenuItemProps) => {
   if (!item.hasSubItems) {

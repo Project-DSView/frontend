@@ -1,10 +1,13 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+
 import { StackDragComponent, OperationCategory } from '@/types';
+import { stackCategories } from '@/data';
+
 import OperationCard from '../../shared/OperationCard';
 import OperationSearchFilter from '../../shared/OperationSearchFilter';
-import { stackCategories } from '@/data';
+
 interface StackOperationsProps {
   dragComponents: StackDragComponent[];
   onDragStart: (e: React.DragEvent, component: StackDragComponent) => void;

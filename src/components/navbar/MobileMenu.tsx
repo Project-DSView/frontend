@@ -1,11 +1,14 @@
 'use client';
+
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+
 import { playgroundItems } from '@/data';
 import { SubItem } from '@/types';
-import useAuth from '@/hooks/auth/useAuth';
+import { useAuth } from '@/hooks';
+
+import { Menu, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const MobileMenu = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

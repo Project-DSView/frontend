@@ -25,11 +25,19 @@ export interface Material {
   mime_type?: string;
   deadline?: string;
   total_points?: number;
+  is_graded?: boolean;
   is_public: boolean;
   created_by: string;
   created_at: string;
   updated_at: string;
   creator: MaterialCreator;
+  // Exercise-specific fields
+  example_inputs?: string[];
+  example_outputs?: string[];
+  problem_images?: string[];
+  problem_statement?: string;
+  constraints?: string;
+  hints?: string;
 }
 
 export interface MaterialsData {
@@ -43,6 +51,12 @@ export interface MaterialsResponse {
   success: boolean;
   message: string;
   data: MaterialsData;
+}
+
+export interface MaterialResponse {
+  success: boolean;
+  message: string;
+  data: Material;
 }
 
 export interface MaterialsParams {

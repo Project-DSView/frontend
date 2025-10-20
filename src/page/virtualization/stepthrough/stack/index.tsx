@@ -1,10 +1,11 @@
 'use client';
 
 import React, { lazy } from 'react';
+
 import { useStackStepthrough } from '@/hooks';
-import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 import { StackData } from '@/types';
 
+import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 // Lazy load heavy components
 const StackStepthroughVisualization = lazy(
   () => import('@/components/playground/stepthrough/visualization/Stack'),

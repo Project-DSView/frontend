@@ -1,9 +1,11 @@
 'use client';
 
 import React, { lazy, useState } from 'react';
-import RealtimeLayout from '@/components/playground/realtime/layout/RealtimeLayout';
+
 import { singlyLinkedListCodeTemplate } from '@/data';
 import { useRealtimeSinglyLinkedList } from '@/hooks';
+
+import RealtimeLayout from '@/components/playground/realtime/layout/RealtimeLayout';
 
 // Lazy load heavy components
 const SinglyLinkedListRealtimeVisualization = lazy(

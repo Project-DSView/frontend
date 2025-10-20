@@ -59,8 +59,22 @@ api.interceptors.response.use(
 // API Layer - Direct API calls only
 export { fetchProfile } from './auth/profile';
 export { getCourses, getCourse } from './course/course';
-export { getCourseMaterials } from './course/materials';
-export { getMyEnrollment, enrollInCourse, unenrollFromCourse } from './enrollment/enrollment';
+export { getCourseMaterials, getCourseMaterial } from './course/materials';
+export {
+  getMyEnrollment,
+  enrollInCourse,
+  unenrollFromCourse,
+  getCourseEnrollments,
+} from './enrollment/enrollment';
 export { getAnnouncements } from './announcements/announcements';
 export { executeStepthrough } from './stepthrough/stepthrough';
 export { getGoogleAuthUrl, logout, refreshToken } from './auth/auth';
+
+// Submissions
+export {
+  submitPDFExercise,
+  getMySubmission,
+  getSubmission,
+  getSubmissionDownloadUrl,
+  cancelSubmission,
+} from './submissions/submissions';

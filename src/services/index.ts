@@ -20,6 +20,9 @@ export { default as EnrollmentService } from './enrollment/enrollment.service';
 // Announcements
 export { default as AnnouncementsService } from './announcements/announcements.service';
 
+// Submissions
+export { default as SubmissionService } from './submissions/submissions.service';
+
 // Realtime
 export { default as SinglyLinkedListRealtimeService } from './realtime/SinglyLinkedList.service';
 export { default as DoublyLinkedListRealtimeService } from './realtime/DoublyLinkedList.service';

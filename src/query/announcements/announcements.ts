@@ -1,13 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
+
 import { AnnouncementsService } from '@/services';
 import { AnnouncementsParams } from '@/types';
 
 // Get announcements for a course
-export const useAnnouncements = (
-  token: string | null,
-  courseId: string,
-  params?: AnnouncementsParams,
-) => {
+const useAnnouncements = (token: string | null, courseId: string, params?: AnnouncementsParams) => {
   return useQuery({
     queryKey: ['announcements', token, courseId, params],
     queryFn: () => AnnouncementsService.getAnnouncements(token!, courseId, params),
@@ -28,3 +25,5 @@ export const useAnnouncements = (
     },
   });
 };
+
+export { useAnnouncements };

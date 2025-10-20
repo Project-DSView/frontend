@@ -1,9 +1,11 @@
 import React, { forwardRef, useMemo } from 'react';
+
 import { SinglyLinkedListRealtimeProps, RealtimeSinglyLinkedListNode } from '@/types';
+
 import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const SinglyLinkedListRealtime = forwardRef<HTMLDivElement, SinglyLinkedListRealtimeProps>(
-  ({ data, error, securityStatus }, ref) => {
+  ({ data }, ref) => {
     // Get nodes as array for rendering
     const nodes = useMemo(() => {
       if (!data.head) return [];
@@ -56,66 +58,6 @@ const SinglyLinkedListRealtime = forwardRef<HTMLDivElement, SinglyLinkedListReal
 
     return (
       <div ref={ref} className="rounded-lg bg-white p-6 shadow">
-        {/* Security Status */}
-        {!securityStatus.isSafe && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-4 w-4 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-2">
-                <h3 className="text-xs font-medium text-red-800">Security Violation</h3>
-                <div className="mt-1 text-xs text-red-700">
-                  <ul className="list-inside list-disc">
-                    {securityStatus.violations.map((violation, index) => (
-                      <li key={index}>{violation}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-4 w-4 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-2">
-                <h3 className="text-xs font-medium text-red-800">Error</h3>
-                <div className="mt-1 text-xs text-red-700">
-                  <p className="font-mono whitespace-pre-wrap">{error}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Linked List Visualization */}
         <ZoomableContainer
           className="min-h-[300px] rounded-lg bg-gray-50"

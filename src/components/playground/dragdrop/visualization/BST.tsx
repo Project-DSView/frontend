@@ -1,18 +1,12 @@
 import React, { forwardRef, useMemo, useState, useEffect, memo, useCallback } from 'react';
+
 import { BSTVisualizationProps, BSTNode, PositionedNode } from '@/types';
+
 import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProps>(
   (
-    {
-      root,
-      stats,
-      isRunning,
-      currentStep,
-      searchPath = [],
-      currentOperation,
-      selectedStep,
-    },
+    { root, stats, isRunning, currentStep, searchPath = [], currentOperation, selectedStep },
     ref,
   ) => {
     const [traverseIndex, setTraverseIndex] = useState(0);
@@ -70,7 +64,13 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
 
     // Handle insert/delete/search operations animation
     useEffect(() => {
-      if (isRunning && currentOperation && (currentOperation === 'insert' || currentOperation === 'delete' || currentOperation === 'search')) {
+      if (
+        isRunning &&
+        currentOperation &&
+        (currentOperation === 'insert' ||
+          currentOperation === 'delete' ||
+          currentOperation === 'search')
+      ) {
         setIsAnimating(true);
         // Highlight the root node for these operations
         if (root) {
@@ -211,7 +211,7 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
                   : isTraverseSelected || isCurrentlyTraversing
                     ? 'scale-110 border-green-400 bg-green-200 text-green-800 shadow-lg'
                     : 'border-gray-600 bg-white text-gray-800 hover:shadow-md'
-            } ${isRunning ? 'animate-pulse' : ''} ${isAnimating ? 'ring-4 ring-blue-400 animate-bounce' : ''}`}
+            } ${isRunning ? 'animate-pulse' : ''} ${isAnimating ? 'animate-bounce ring-4 ring-blue-400' : ''}`}
           >
             {node.value}
             {isHighlighted && (

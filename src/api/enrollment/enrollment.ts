@@ -1,4 +1,9 @@
-import { MyEnrollmentResponse, EnrollmentRequest, EnrollmentResponse } from '@/types';
+import {
+  MyEnrollmentResponse,
+  EnrollmentRequest,
+  EnrollmentResponse,
+  CourseEnrollmentsResponse,
+} from '@/types';
 import { api } from '../index';
 
 // Get my enrollment status
@@ -32,4 +37,15 @@ const unenrollFromCourse = async (token: string, courseId: string): Promise<void
   });
 };
 
-export { getMyEnrollment, enrollInCourse, unenrollFromCourse };
+// Get course enrollments
+const getCourseEnrollments = async (
+  token: string,
+  courseId: string,
+): Promise<CourseEnrollmentsResponse> => {
+  const res = await api.get(`/api/courses/${courseId}/enrollments`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+
+export { getMyEnrollment, enrollInCourse, unenrollFromCourse, getCourseEnrollments };

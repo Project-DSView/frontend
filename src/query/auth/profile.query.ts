@@ -1,7 +1,8 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
+
 import { ProfileService } from '@/services';
 
-export const useProfile = (token: string | null) => {
+const useProfile = (token: string | null) => {
   return useQuery({
     queryKey: ['profile', token],
     queryFn: () => ProfileService.fetchProfile(token!),
@@ -24,8 +25,10 @@ export const useProfile = (token: string | null) => {
   });
 };
 
-export const useFetchProfile = () => {
+const useFetchProfile = () => {
   return useMutation({
     mutationFn: (token: string) => ProfileService.fetchProfile(token),
   });
 };
+
+export { useProfile, useFetchProfile };

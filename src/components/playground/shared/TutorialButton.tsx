@@ -1,8 +1,9 @@
 'use client';
+
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { HelpCircle } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 interface TutorialButtonProps {
   onClick: () => void;
   className?: string;
@@ -14,7 +15,7 @@ const TutorialButton: React.FC<TutorialButtonProps> = ({ onClick, className = ''
       variant="outline"
       size="sm"
       onClick={onClick}
-      className={`flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 ${className}`}
+      className={`flex items-center gap-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 ${className}`}
       aria-label="เปิดคู่มือการใช้งาน"
     >
       <HelpCircle className="h-4 w-4" />

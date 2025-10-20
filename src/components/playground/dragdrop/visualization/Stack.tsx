@@ -1,5 +1,7 @@
 import React, { forwardRef, useState, useEffect } from 'react';
+
 import { StackVisualizationProps } from '@/types';
+
 import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualizationProps>(
@@ -28,7 +30,11 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
 
     // Handle animation based on current operation
     useEffect(() => {
-      if (isRunning && currentOperation && (currentOperation === 'push' || currentOperation === 'pop' || currentOperation === 'peek')) {
+      if (
+        isRunning &&
+        currentOperation &&
+        (currentOperation === 'push' || currentOperation === 'pop' || currentOperation === 'peek')
+      ) {
         setIsAnimating(true);
         setHighlightedElementIndex(elements.length - 1);
         const timer = setTimeout(() => {
@@ -75,7 +81,7 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
 
           {/* Stack Element */}
           <div
-            className={`bg-neutral/20 flex h-16 w-16 items-center justify-center shadow-lg transition-all duration-500 ${isHighlighted && isAnimating ? 'ring-4 ring-blue-400 scale-110 animate-bounce' : 'hover:bg-gray-50'} ${isTop ? 'border-2 border-blue-500' : 'border-t-0'} ${isTop ? 'ring-2 ring-blue-300' : ''}`}
+            className={`bg-neutral/20 flex h-16 w-16 items-center justify-center shadow-lg transition-all duration-500 ${isHighlighted && isAnimating ? 'scale-110 animate-bounce ring-4 ring-blue-400' : 'hover:bg-gray-50'} ${isTop ? 'border-2 border-blue-500' : 'border-t-0'} ${isTop ? 'ring-2 ring-blue-300' : ''}`}
           >
             <span className={`font-bold text-black ${value.length > 6 ? 'text-sm' : 'text-lg'}`}>
               {value}
@@ -120,11 +126,6 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
       <div ref={ref} className="rounded-lg bg-white p-6 shadow">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-800">Stack Visualization</h3>
-          <div className="flex space-x-4 text-sm text-gray-600">
-            <span>Size: {stats.length}</span>
-            <span>Empty: {stats.isEmpty ? 'Yes' : 'No'}</span>
-            {stats.headValue && <span>Top: {stats.headValue}</span>}
-          </div>
         </div>
 
         {/* Stack Container */}

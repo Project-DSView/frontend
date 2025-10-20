@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
+
 import { StepSelectorProps } from '@/types';
+
 import { Slider } from '@/components/ui/slider';
 
 const StepSelector: React.FC<StepSelectorProps> = ({
@@ -38,9 +40,7 @@ const StepSelector: React.FC<StepSelectorProps> = ({
           </span>
         </div>
         {isAutoPlaying && (
-          <div className="text-xl text-green-600 font-medium animate-pulse">
-            กำลังเล่น...
-          </div>
+          <div className="animate-pulse text-xl font-medium text-green-600">กำลังเล่น...</div>
         )}
       </div>
 
@@ -79,7 +79,6 @@ const StepSelector: React.FC<StepSelectorProps> = ({
         </div>
       </div>
 
-
       {/* Navigation Controls */}
       <div className="mb-4 flex items-center justify-center space-x-3">
         <button
@@ -117,9 +116,9 @@ const StepSelector: React.FC<StepSelectorProps> = ({
         {/* Auto Play Button - Center */}
         <button
           onClick={onAutoPlay}
-          className={`flex items-center space-x-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 ${
+          className={`flex transform items-center space-x-2 rounded-xl px-4 py-3 text-sm font-semibold shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl ${
             isAutoPlaying
-              ? 'bg-error hover:bg-error/80 text-white animate-pulse'
+              ? 'bg-error hover:bg-error/80 animate-pulse text-white'
               : 'bg-success hover:bg-success/80 text-white'
           }`}
         >

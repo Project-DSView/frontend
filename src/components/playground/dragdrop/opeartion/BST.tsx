@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+
 import { BSTOperationsProps, OperationCategory } from '@/types';
+import { bstCategories } from '@/data';
+
 import OperationCard from '../../shared/OperationCard';
 import OperationSearchFilter from '../../shared/OperationSearchFilter';
-import { bstCategories } from '@/data';
 
 const BSTDragDropOperations: React.FC<BSTOperationsProps> = ({
   dragComponents,

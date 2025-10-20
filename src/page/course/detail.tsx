@@ -13,8 +13,10 @@ import {
   useCourseMaterials,
   useMyEnrollment,
   useUnenrollFromCourse,
+  useCourseEnrollments,
 } from '@/query';
 import { useQueryClient } from '@tanstack/react-query';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -30,6 +32,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import LatestAnnouncement from '@/components/announcements';
 import MaterialsByWeek from '@/components/course/MaterialsByWeek';
+import MembersList from '@/components/course/MembersList';
 
 const CourseDetailPage: React.FC = () => {
   const params = useParams();
@@ -37,6 +40,9 @@ const CourseDetailPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { accessToken, profile, isInitialized } = useAuth();
   const courseId = params.id as string;
+
+  // State for active tab
+  const [activeTab, setActiveTab] = React.useState<'materials' | 'members'>('materials');
 
   // Fetch course data
   const {
@@ -60,6 +66,13 @@ const CourseDetailPage: React.FC = () => {
 
   // Fetch enrollment status
   const { data: enrollmentData } = useMyEnrollment(accessToken, courseId);
+
+  // Fetch course enrollments
+  const {
+    data: enrollmentsData,
+    isLoading: isEnrollmentsLoading,
+    error: enrollmentsError,
+  } = useCourseEnrollments(accessToken, courseId);
 
   // Unenroll mutation
   const unenrollMutation = useUnenrollFromCourse();
@@ -181,6 +194,32 @@ const CourseDetailPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Tab Switcher */}
+        <div className="mb-6">
+          <div className="flex space-x-8 border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('materials')}
+              className={`pb-3 text-lg font-medium transition-colors ${
+                activeTab === 'materials'
+                  ? 'border-secondary border-b-4 text-gray-900'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              เนื้อหาคอร์ส
+            </button>
+            <button
+              onClick={() => setActiveTab('members')}
+              className={`pb-3 text-lg font-medium transition-colors ${
+                activeTab === 'members'
+                  ? 'border-secondary border-b-4 text-gray-900'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              สมาชิก
+            </button>
+          </div>
+        </div>
+
         {/* Course Info Card */}
         <Card className="mb-8">
           <CardHeader>
@@ -239,27 +278,48 @@ const CourseDetailPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Latest/Pinned Announcement Card */}
-        <LatestAnnouncement announcements={announcements} />
+        {/* Content Section - Conditional Rendering */}
+        {activeTab === 'materials' ? (
+          <>
+            {/* Latest/Pinned Announcement Card - Only show on Materials tab */}
+            <LatestAnnouncement announcements={announcements} />
 
-        {/* Materials Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>เนื้อหาคอร์ส</CardTitle>
-            {isMaterialsLoading && (
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                กำลังโหลดเนื้อหา...
-              </div>
-            )}
-            {materialsError && (
-              <div className="text-sm text-red-500">เกิดข้อผิดพลาดในการโหลดเนื้อหา</div>
-            )}
-          </CardHeader>
-          <CardContent>
-            {!isMaterialsLoading && !materialsError && <MaterialsByWeek materials={materials} />}
-          </CardContent>
-        </Card>
+            {/* Materials Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>เนื้อหาคอร์ส</CardTitle>
+                {isMaterialsLoading && (
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    กำลังโหลดเนื้อหา...
+                  </div>
+                )}
+                {materialsError && (
+                  <div className="text-sm text-red-500">เกิดข้อผิดพลาดในการโหลดเนื้อหา</div>
+                )}
+              </CardHeader>
+              <CardContent>
+                {!isMaterialsLoading && !materialsError && (
+                  <MaterialsByWeek materials={materials} userProfile={profile} />
+                )}
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          /* Members Section */
+          <Card>
+            <CardHeader>
+              <CardTitle>สมาชิกในคอร์ส</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <MembersList
+                enrollmentsData={enrollmentsData}
+                isLoading={isEnrollmentsLoading}
+                error={enrollmentsError}
+              />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

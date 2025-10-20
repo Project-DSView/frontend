@@ -140,20 +140,31 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
     setIsPanning(false);
   }, []);
 
-  // Touch events for mobile
-  const handleTouchStart = useCallback(
-    (e: React.TouchEvent) => {
+  // Touch events are now handled by native event listeners
+
+  // Add wheel event listener
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [handleWheel]);
+
+  // Add touch event listeners with passive: false
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleTouchStartNative = (e: TouchEvent) => {
       if (!enablePan || e.touches.length !== 1) return;
 
       const touch = e.touches[0];
       setIsPanning(true);
       setLastPanPoint({ x: touch.clientX, y: touch.clientY });
-    },
-    [enablePan],
-  );
+    };
 
-  const handleTouchMove = useCallback(
-    (e: React.TouchEvent) => {
+    const handleTouchMoveNative = (e: TouchEvent) => {
       if (!isPanning || !enablePan || e.touches.length !== 1) return;
 
       e.preventDefault();
@@ -167,22 +178,22 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
       }));
 
       setLastPanPoint({ x: touch.clientX, y: touch.clientY });
-    },
-    [isPanning, enablePan, lastPanPoint],
-  );
+    };
 
-  const handleTouchEnd = useCallback(() => {
-    setIsPanning(false);
-  }, []);
+    const handleTouchEndNative = () => {
+      setIsPanning(false);
+    };
 
-  // Add wheel event listener
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    container.addEventListener('touchstart', handleTouchStartNative, { passive: true });
+    container.addEventListener('touchmove', handleTouchMoveNative, { passive: false });
+    container.addEventListener('touchend', handleTouchEndNative, { passive: true });
 
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => container.removeEventListener('wheel', handleWheel);
-  }, [handleWheel]);
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStartNative);
+      container.removeEventListener('touchmove', handleTouchMoveNative);
+      container.removeEventListener('touchend', handleTouchEndNative);
+    };
+  }, [isPanning, enablePan, lastPanPoint]);
 
   return (
     <div
@@ -192,9 +203,6 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
       style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
     >
       <div

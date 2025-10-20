@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+
 import { SinglyLinkedListOperationsProps, OperationCategory } from '@/types';
+import { linkedListCategories } from '@/data';
+
 import OperationCard from '../../shared/OperationCard';
 import OperationSearchFilter from '../../shared/OperationSearchFilter';
-import { linkedListCategories } from '@/data';
 
 const SinglyLinkedListDragDropOperations: React.FC<SinglyLinkedListOperationsProps> = ({
   dragComponents,

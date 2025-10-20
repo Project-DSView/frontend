@@ -87,14 +87,18 @@ const useBST = () => {
   // BST-specific methods
   const updateBSTState = useCallback(
     (newRoot: BSTNode | null, newStats: BSTStats) => {
-      baseHook.updateDataState(
-        { root: newRoot },
-        {
-          size: newStats.size,
-          height: newStats.height,
-          isEmpty: newStats.isEmpty,
-        },
-      );
+      try {
+        baseHook.updateDataState(
+          { root: newRoot },
+          {
+            size: newStats.size,
+            height: newStats.height,
+            isEmpty: newStats.isEmpty,
+          },
+        );
+      } catch (error) {
+        console.error('Error updating BST state:', error);
+      }
     },
     [baseHook],
   );

@@ -20,6 +20,8 @@ interface UseAuthReturn {
   accessToken: string | null;
   profile: UserProfile | null;
   isInitialized: boolean;
+  isLoading: boolean;
+  error: string | null;
   setIsInitialized: (value: boolean) => void;
   loadSession: () => Promise<{ token: string; profile: UserProfile } | null>;
   handleRefreshToken: () => Promise<string | null>;

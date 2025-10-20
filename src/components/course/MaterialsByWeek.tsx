@@ -1,22 +1,46 @@
 'use client';
 
 import React from 'react';
+
+import { MaterialsByWeekProps, Material } from '@/types';
+import { isDeadlinePassed } from '@/lib';
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Material } from '@/types';
 import MaterialCard from './MaterialCard';
 
-interface MaterialsByWeekProps {
-  materials: Material[];
-}
+const MaterialsByWeek: React.FC<MaterialsByWeekProps> = ({ materials, userProfile }) => {
+  // กรอง materials ที่หมดเวลาแล้วสำหรับ user ที่ isteacher: false
+  const filteredMaterials = materials.filter((material) => {
+    // ถ้าเป็น teacher หรือ TA ให้แสดงทุก material
+    if (userProfile?.is_teacher) {
+      return true;
+    }
 
-const MaterialsByWeek: React.FC<MaterialsByWeekProps> = ({ materials }) => {
+    // ถ้าเป็น student และ material มี deadline
+    if (material.deadline) {
+      const isExpired = isDeadlinePassed(material.deadline);
+      const isGraded = material.is_graded ?? true; // default เป็น graded
+
+      // ซ่อนเฉพาะ graded exercise ที่หมดเวลา
+      if (
+        isGraded &&
+        isExpired &&
+        (material.type === 'code_exercise' || material.type === 'pdf_exercise')
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
   // จัดกลุ่ม materials ตาม week
-  const materialsByWeek = materials.reduce(
+  const materialsByWeek = filteredMaterials.reduce(
     (acc, material) => {
       const week = material.week;
       if (!acc[week]) {
@@ -88,17 +112,17 @@ const MaterialsByWeek: React.FC<MaterialsByWeekProps> = ({ materials }) => {
                     {stats.total} รายการ
                   </span>
                   {stats.exercises > 0 && (
-                    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                    <span className="bg-error/20 text-error inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
                       {stats.exercises} แบบฝึกหัด
                     </span>
                   )}
                   {stats.documents > 0 && (
-                    <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                    <span className="bg-info/20 text-info inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
                       {stats.documents} เอกสาร
                     </span>
                   )}
                   {stats.videos > 0 && (
-                    <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
+                    <span className="bg-success/20 text-success inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
                       {stats.videos} วิดีโอ
                     </span>
                   )}

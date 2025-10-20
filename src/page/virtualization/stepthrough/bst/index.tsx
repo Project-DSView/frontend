@@ -2,9 +2,9 @@
 
 import React, { lazy } from 'react';
 import { useBSTStepthrough } from '@/hooks';
-import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 import { BSTData } from '@/types';
 
+import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 // Lazy load heavy components
 const BSTStepthroughVisualization = lazy(
   () => import('@/components/playground/stepthrough/visualization/BST'),

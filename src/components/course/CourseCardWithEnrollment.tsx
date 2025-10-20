@@ -2,9 +2,11 @@
 
 import React from 'react';
 import { Loader2 } from 'lucide-react';
-import CourseCard from './CourseCard';
+
 import { CourseCardWithEnrollmentProps } from '@/types';
 import { useMyEnrollment } from '@/query';
+
+import CourseCard from './CourseCard';
 
 const CourseCardWithEnrollment: React.FC<CourseCardWithEnrollmentProps> = ({
   course,

@@ -46,6 +46,7 @@ interface BaseHookReturn<TData, TStats extends BaseStats, TOperation extends Bas
   highlightedNodes: string[];
   searchPath: string[];
   currentPosition: number;
+  error: string | null;
   addOperation: (operation: Omit<TOperation, 'id'>) => void;
   updateOperation: (id: number, updates: Partial<TOperation>) => void;
   removeOperation: (id: number) => void;

@@ -3,7 +3,7 @@ import { executeStepthrough } from '@/api';
 import { StepthroughStep } from '@/types';
 
 // Execute stepthrough mutation
-export const useExecuteStepthrough = (dataType: string) => {
+const useExecuteStepthrough = (dataType: string) => {
   return useMutation({
     mutationFn: (code: string) =>
       executeStepthrough({
@@ -15,7 +15,7 @@ export const useExecuteStepthrough = (dataType: string) => {
 };
 
 // Stepthrough data query
-export const useStepthroughData = <TData>(
+const useStepthroughData = <TData>(
   executionId: string | null,
   steps: StepthroughStep[],
   currentStepIndex: number,
@@ -40,7 +40,7 @@ export const useStepthroughData = <TData>(
 };
 
 // Current step details query
-export const useCurrentStepDetails = (
+const useCurrentStepDetails = (
   currentStepIndex: number,
   steps: StepthroughStep[],
   isAutoPlaying: boolean,
@@ -60,7 +60,7 @@ export const useCurrentStepDetails = (
 };
 
 // Stepthrough state query
-export const useStepthroughState = <TData, TStats>(state: {
+const useStepthroughState = <TData, TStats>(state: {
   code: string;
   filename: string;
   steps: StepthroughStep[];
@@ -79,3 +79,5 @@ export const useStepthroughState = <TData, TStats>(state: {
     enabled: false,
   });
 };
+
+export { useExecuteStepthrough, useStepthroughData, useCurrentStepDetails, useStepthroughState };

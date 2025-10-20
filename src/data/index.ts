@@ -3,8 +3,6 @@ export { getSubmenuItemsWithNested, playgroundItems } from './components/menu.da
 export { default as features } from './components/card.data';
 export { structures as showcaseStructures } from './components/showcase.data';
 export {
-  materialTypeLabels,
-  materialTypeColors,
   getMaterialIcon,
   getMaterialTypeLabel,
   getMaterialTypeColor,
@@ -34,3 +32,6 @@ export { stackCodeTemplate } from './template/code.data';
 export { bstCodeTemplate } from './template/code.data';
 export { undirectedGraphCodeTemplate } from './template/code.data';
 export { directedGraphCodeTemplate } from './template/code.data';
+
+// Submissions
+export { SUBMISSION_STATUS_CONFIG } from './components/submissions';

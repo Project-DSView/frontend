@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { StepthroughCodeEditorProps } from '@/types';
 import { python } from '@codemirror/lang-python';
 import { vscodeLight } from '@uiw/codemirror-theme-vscode';
 import { highlightActiveLine, highlightActiveLineGutter, EditorView } from '@codemirror/view';
@@ -9,6 +8,8 @@ import { autocompletion, completionKeymap } from '@codemirror/autocomplete';
 import { keymap } from '@codemirror/view';
 import { linter, lintGutter } from '@codemirror/lint';
 import { Diagnostic } from '@codemirror/lint';
+
+import { StepthroughCodeEditorProps } from '@/types';
 
 // Move CodeMirror import outside component to prevent re-creation
 const CodeMirror = React.lazy(() =>
@@ -339,7 +340,6 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
   disabled = false,
   currentStep,
   height = '100%',
-  error,
 }) => {
   const [isClient, setIsClient] = useState(false);
   const [editorView, setEditorView] = useState<unknown>(null);
@@ -470,34 +470,6 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
 
   return (
     <div className="overflow-hidden" style={{ height }} suppressHydrationWarning>
-      {/* Error Message */}
-      {error && (
-        <div className="mb-2 rounded-lg border border-red-200 bg-red-50 p-2">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-3 w-3 text-red-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-2">
-              <h3 className="text-xs font-medium text-red-800">Error</h3>
-              <div className="mt-1 text-xs text-red-700">
-                <p className="font-mono whitespace-pre-wrap">{error}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       <React.Suspense
         fallback={
           <div className="flex h-full items-center justify-center bg-gray-50">

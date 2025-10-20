@@ -2,9 +2,10 @@
 
 import React, { useId } from 'react';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
+import { ChevronDown, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
+
 import { useGoogleAuth, useAuth } from '@/hooks';
 import { useLogout } from '@/query';
 import { AuthResponse } from '@/types';
@@ -19,7 +20,8 @@ import {
   isValidJWTFormat,
   getTokenExpirationTime,
 } from '@/lib';
-import { ChevronDown, BarChart3 } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,

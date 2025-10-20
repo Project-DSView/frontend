@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import {
   StackState,
   StackOperation,
@@ -83,8 +84,34 @@ const useStack = () => {
     StackServiceAdapter,
   );
 
+  // Stack-specific validation
+  const validateStackOperation = useCallback(
+    (operation: StackOperation) => {
+      if (operation.type === 'push' && !operation.value) {
+        throw new Error('Push operation requires a value');
+      }
+      if (operation.type === 'pop' && baseHook.state.stats.isEmpty) {
+        throw new Error('Cannot pop from empty stack');
+      }
+    },
+    [baseHook.state.stats.isEmpty],
+  );
+
+  const addOperationWithValidation = useCallback(
+    (operation: Omit<StackOperation, 'id'>) => {
+      try {
+        validateStackOperation(operation as StackOperation);
+        baseHook.addOperation(operation);
+      } catch (error) {
+        console.error('Stack operation validation failed:', error);
+      }
+    },
+    [baseHook, validateStackOperation],
+  );
+
   return {
     ...baseHook,
+    addOperation: addOperationWithValidation,
     reorderOperation: baseHook.reorderOperation,
     state: {
       elements: baseHook.state.data.elements,

@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+
+import { useRealtimeBST } from '@/hooks';
+import { bstCodeTemplate } from '@/data';
+
 import RealtimeLayout from '@/components/playground/realtime/layout/RealtimeLayout';
 import BSTRealtime from '@/components/playground/realtime/visualization/BST';
-import useRealtimeBST from '@/hooks/realtime/useBST';
-import { bstCodeTemplate } from '@/data/template/code.data';
 
 const BSTRealtimePage = () => {
   const [code, setCode] = useState(bstCodeTemplate);

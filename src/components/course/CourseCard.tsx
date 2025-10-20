@@ -3,6 +3,10 @@
 import React from 'react';
 import Image from 'next/image';
 import { Users, BookOpen, Calendar, User, LogIn } from 'lucide-react';
+
+import { CourseCardProps } from '@/types';
+import { isValidImageUrl, getCourseImageFallback } from '@/lib';
+
 import {
   Card,
   CardContent,
@@ -13,8 +17,6 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import EnrollmentPopover from '@/components/course/EnrollmentPopover';
-import { CourseCardProps } from '@/types';
-import { isValidImageUrl, getCourseImageFallback } from '@/lib';
 
 const CourseCard: React.FC<CourseCardProps> = ({
   course,
