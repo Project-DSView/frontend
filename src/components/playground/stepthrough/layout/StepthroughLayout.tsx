@@ -142,14 +142,16 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   }, [isAutoPlaying]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-6" suppressHydrationWarning>
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-6 dark:bg-gray-900" suppressHydrationWarning>
       {/* Header */}
       <div className="mb-4 sm:mb-6">
         <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
             <div>
-              <h1 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">{title}</h1>
-              <p className="text-sm text-gray-600 sm:text-base">{description}</p>
+              <h1 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl dark:text-gray-100">
+                {title}
+              </h1>
+              <p className="text-sm text-gray-600 sm:text-base dark:text-gray-400">{description}</p>
             </div>
             <TutorialButton onClick={() => setIsTutorialOpen(true)} />
           </div>
@@ -169,11 +171,13 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
 
       <div className="mb-4 grid grid-cols-1 gap-4 sm:mb-6 sm:gap-6 lg:grid-cols-2">
         {/* Left Side - Code Editor */}
-        <div className="rounded-lg bg-white p-3 shadow sm:p-6">
+        <div className="rounded-lg bg-white p-3 shadow sm:p-6 dark:bg-gray-800">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-              <h2 className="text-base font-semibold text-gray-800 sm:text-lg">Code Editor</h2>
-              <div className="bg-neutral/20 rounded-md px-2 py-1 font-mono text-xs text-black/70 sm:px-3 sm:text-sm">
+              <h2 className="text-base font-semibold text-gray-800 sm:text-lg dark:text-gray-100">
+                Code Editor
+              </h2>
+              <div className="bg-neutral/20 dark:bg-neutral/80 rounded-md px-2 py-1 font-mono text-xs text-black/70 sm:px-3 sm:text-sm dark:text-gray-300">
                 {filename}
               </div>
             </div>
@@ -181,7 +185,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
               <button
                 onClick={onReset}
                 disabled={isLoading}
-                className="bg-neutral/20 hover:bg-neutral/80 rounded px-3 py-2 text-xs text-black/70 transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm md:px-5 md:py-2.5 md:text-sm lg:px-6 lg:py-3 lg:text-base"
+                className="bg-neutral/20 dark:bg-neutral/80 hover:bg-neutral/80 dark:hover:bg-neutral/40 rounded px-3 py-2 text-xs text-black/70 transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm md:px-5 md:py-2.5 md:text-sm lg:px-6 lg:py-3 lg:text-base dark:text-gray-200"
               >
                 Reset Code
               </button>
@@ -218,7 +222,10 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
         </div>
 
         {/* Right Side - Step Control */}
-        <div ref={stepControlRef} className="rounded-lg bg-white p-3 shadow sm:p-6">
+        <div
+          ref={stepControlRef}
+          className="rounded-lg bg-white p-3 shadow sm:p-6 dark:bg-gray-800"
+        >
           <StepControl
             steps={steps}
             currentStepIndex={currentStepIndex}
@@ -240,9 +247,9 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
           <div className="sticky top-4 z-40 mb-4">
             <Suspense
               fallback={
-                <div className="rounded-lg bg-blue-50 p-4">
+                <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/30">
                   <div className="flex h-6 items-center justify-center">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent dark:border-blue-400"></div>
                   </div>
                 </div>
               }
@@ -259,9 +266,11 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
 
       <Suspense
         fallback={
-          <div className="flex h-48 items-center justify-center rounded-lg border bg-gray-50 sm:h-64">
+          <div className="flex h-48 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 sm:h-64 dark:border-gray-700 dark:bg-gray-800">
             <div className="text-center">
-              <div className="text-sm text-gray-500 sm:text-base">Loading visualization...</div>
+              <div className="text-sm text-gray-500 sm:text-base dark:text-gray-400">
+                Loading visualization...
+              </div>
             </div>
           </div>
         }

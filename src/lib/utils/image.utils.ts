@@ -18,6 +18,27 @@ export const isValidImageUrl = (url: string | undefined | null): boolean => {
   }
 };
 
+export const transformImageUrl = (url: string | undefined | null): string => {
+  if (!url) return '';
+
+  try {
+    const urlObj = new URL(url);
+
+    // Transform MinIO URLs to use the proxy
+    if (urlObj.hostname === 'minio' || urlObj.hostname === 'localhost') {
+      // Extract the path after /dsview/ and use it with our proxy
+      const pathMatch = urlObj.pathname.match(/\/dsview\/(.+)/);
+      if (pathMatch) {
+        return `/api/minio/dsview/${pathMatch[1]}`;
+      }
+    }
+
+    return url;
+  } catch {
+    return url;
+  }
+};
+
 export const getCourseImageFallback = (courseName: string) => {
   // Generate a simple color based on course name
   const colors = ['from-gray-50 to-gray-20'];

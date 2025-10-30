@@ -7,6 +7,7 @@ import { Loader2, AlertCircle } from 'lucide-react';
 import { isDeadlinePassed } from '@/lib';
 import { useAuth } from '@/hooks';
 import { useCourseMaterial, useMySubmission } from '@/query';
+import { PDFSubmission } from '@/types';
 
 import { Button } from '@/components/ui/button';
 import PDFExerciseCard from '@/components/course/pdf-exercise/PDFExerciseCard';
@@ -102,6 +103,11 @@ const PDFExercisePage: React.FC = () => {
   const isExpired = Boolean(material.deadline && isDeadlinePassed(material.deadline));
   const isGraded = material.is_graded ?? true;
 
+  // Type guard to check if submission is PDFSubmission
+  const isPDFSubmission = (sub: typeof submission): sub is PDFSubmission => {
+    return sub !== null && sub !== undefined && 'file_url' in sub && 'file_name' in sub;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
@@ -117,7 +123,7 @@ const PDFExercisePage: React.FC = () => {
                 <span>กำลังโหลดสถานะการส่งงาน...</span>
               </div>
             </div>
-          ) : submission && submission.submission_id ? (
+          ) : submission && submission.submission_id && isPDFSubmission(submission) ? (
             /* Show submitted status if user has submitted */
             <SubmittedPDFCard submission={submission} accessToken={accessToken!} />
           ) : (

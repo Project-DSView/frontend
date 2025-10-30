@@ -3,7 +3,8 @@ import { UserProfile } from '../services/auth.types';
 import { CourseEnrollmentsResponse } from '../services/enrollment.types';
 import { Material } from '../services/material.types';
 import { Announcement } from '../services/announcements.types';
-import { PDFSubmission } from '../services/submission.types';
+import { PDFSubmission, SubmissionResponse } from '../services/submission.types';
+import { LeaderboardResponse } from '../services/course.types';
 
 interface CourseCardProps {
   course: Course;
@@ -71,11 +72,21 @@ interface ExerciseEditorCardProps {
   onCodeChange: (code: string) => void;
   isExpired: boolean;
   isGraded: boolean;
+  submission?: SubmissionResponse | null;
+  materialId?: string;
+  token?: string | null;
 }
 
 interface SubmittedPDFCardProps {
   submission: PDFSubmission;
   accessToken: string;
+}
+
+interface LeaderboardProps {
+  leaderboardData: LeaderboardResponse | null | undefined;
+  enrollmentsData: CourseEnrollmentsResponse | null | undefined;
+  isLoading: boolean;
+  error: Error | null;
 }
 
 export type {
@@ -91,4 +102,5 @@ export type {
   ExerciseProblemCardProps,
   PDFSubmissionCardProps,
   SubmittedPDFCardProps,
+  LeaderboardProps,
 };

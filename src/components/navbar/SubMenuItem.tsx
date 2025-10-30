@@ -13,15 +13,15 @@ import NestedSubMenuItem from './NestedSubMenuItem';
 
 const SubMenuItem = ({ title, description, items }: SubMenuItemProps) => (
   <DropdownMenuSub>
-    <DropdownMenuSubTrigger className="data-[state=open]:bg-neutral/40 data-[state=open]:text-accent-foreground">
+    <DropdownMenuSubTrigger className="data-[state=open]:bg-muted data-[state=open]:text-accent-foreground">
       <div className="flex flex-col">
-        <span className="font-medium text-gray-900">{title}</span>
-        <span className="text-sm text-gray-500">{description}</span>
+        <span className="text-foreground font-medium">{title}</span>
+        <span className="text-muted-foreground text-sm">{description}</span>
       </div>
     </DropdownMenuSubTrigger>
     <DropdownMenuPortal>
       <DropdownMenuSubContent
-        className="min-w-[180px] border border-gray-200 bg-white shadow-lg"
+        className="border-border bg-background max-w-[calc(100vw-32px)] min-w-[160px] border shadow-lg"
         sideOffset={8}
         alignOffset={-4}
       >

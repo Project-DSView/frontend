@@ -1,5 +1,6 @@
 import {
   SubmitPDFResponse,
+  SubmitCodeResponse,
   SubmissionResponse,
   DownloadUrlResponse,
   CancelSubmissionResponse,
@@ -24,11 +25,33 @@ const submitPDFExercise = async (
   return res.data;
 };
 
+// Submit code exercise
+const submitCodeExercise = async (
+  token: string,
+  materialId: string,
+  code: string,
+): Promise<SubmitCodeResponse> => {
+  const res = await api.post<SubmitCodeResponse>(
+    `/api/course-materials/${materialId}/submit`,
+    { code },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+  return res.data;
+};
+
 // Get user's submission for a material
 const getMySubmission = async (token: string, materialId: string): Promise<SubmissionResponse> => {
-  const res = await api.get<SubmissionResponse>(`/api/materials/${materialId}/submissions/me`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await api.get<SubmissionResponse>(
+    `/api/course-materials/${materialId}/submissions/me`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
   return res.data;
 };
 
@@ -67,6 +90,7 @@ const cancelSubmission = async (
 
 export {
   submitPDFExercise,
+  submitCodeExercise,
   getMySubmission,
   getSubmission,
   getSubmissionDownloadUrl,

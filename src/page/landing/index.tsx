@@ -12,7 +12,7 @@ import { AuthService } from '@/services';
 import { heroVariants, heroChildVariants, buttonVariants } from '@/lib';
 
 import { Button } from '@/components/ui/button';
-import PlaygroundDropdown from '@/components/landing/PlaygroundDropdown';
+import PlaygroundCardGrid from '@/components/landing/PlaygroundCardGrid';
 // Lazy load components
 const FeatureCard = lazy(() => import('@/components/card'));
 const InteractiveShowcase = lazy(() => import('@/components/landing/InteractiveShowcase'));
@@ -43,7 +43,7 @@ const Landing = () => {
       <section className="relative flex flex-grow flex-col items-center justify-center overflow-hidden px-6 py-20 text-center">
         {/* Animated Gradient Background */}
         <motion.div
-          className="absolute inset-0 bg-gradient-to-br from-[#F8F9FC] via-[#EEF2FF] to-[#F8F9FC]"
+          className="from-gradient-start to-gradient-end absolute inset-0 bg-gradient-to-br via-[#EEF2FF] dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
           variants={heroVariants}
           initial="initial"
           animate="animate"
@@ -80,21 +80,21 @@ const Landing = () => {
           </motion.div>
 
           <motion.h1
-            className="gradient-text mb-4 text-4xl font-bold md:text-5xl lg:text-6xl"
+            className="text-primary mb-4 text-4xl font-bold md:text-5xl lg:text-6xl"
             variants={heroChildVariants}
           >
             DSView
           </motion.h1>
 
           <motion.p
-            className="text-neutral mb-2 text-xl font-medium md:text-2xl"
+            className="text-neutral mb-2 text-xl font-medium md:text-2xl dark:text-gray-300"
             variants={heroChildVariants}
           >
             Interactive Data Structure Visualization
           </motion.p>
 
           <motion.p
-            className="text-neutral/80 mx-auto mb-12 max-w-2xl text-lg md:text-xl"
+            className="text-neutral/80 mx-auto mb-12 max-w-2xl text-lg md:text-xl dark:text-gray-400"
             variants={heroChildVariants}
           >
             เรียนรู้โครงสร้างข้อมูลด้วยภาพเคลื่อนไหวแบบ Interactive ที่เข้าใจง่ายและสนุกสนาน
@@ -106,7 +106,7 @@ const Landing = () => {
           >
             {!isInitialized && (
               <div className="flex items-center justify-center">
-                <span className="text-neutral">กำลังตรวจสอบ...</span>
+                <span className="text-neutral dark:text-gray-300">กำลังตรวจสอบ...</span>
               </div>
             )}
 
@@ -120,10 +120,6 @@ const Landing = () => {
                     <LogIn size={24} className="ml-2" />
                     เข้าสู่ระบบ
                   </Button>
-                </motion.div>
-
-                <motion.div variants={buttonVariants}>
-                  <PlaygroundDropdown />
                 </motion.div>
               </>
             )}
@@ -139,18 +135,42 @@ const Landing = () => {
                     <LogIn size={24} className="ml-2" />
                   </Button>
                 </motion.div>
-
-                <motion.div variants={buttonVariants}>
-                  <PlaygroundDropdown />
-                </motion.div>
               </>
             )}
           </motion.div>
         </motion.div>
       </section>
 
+      {/* Playground Grid Section */}
+      <section className="from-gradient-start to-gradient-end relative overflow-hidden bg-gradient-to-b via-[#EEF2FF] py-16 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <motion.div
+          className="mx-auto max-w-screen-xl px-6"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.8 }}
+        >
+          <motion.div
+            className="mb-12 text-center"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <h2 className="text-primary mb-4 text-3xl font-bold md:text-4xl">
+              เลือกวิธีการเรียนรู้
+            </h2>
+            <p className="text-neutral mx-auto max-w-2xl text-lg md:text-xl dark:text-gray-300">
+              เลือกโหมดการเรียนรู้ที่เหมาะกับคุณ
+            </p>
+          </motion.div>
+
+          <PlaygroundCardGrid />
+        </motion.div>
+      </section>
+
       {/* Features Section */}
-      <section className="w-full bg-gradient-to-b from-[#F8F9FC] to-white py-20">
+      <section className="from-gradient-start to-background w-full bg-gradient-to-b py-20 dark:from-gray-900 dark:to-gray-950">
         <motion.div
           className="mx-auto max-w-screen-xl px-6"
           initial={{ opacity: 0, y: 50 }}
@@ -165,10 +185,10 @@ const Landing = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <h2 className="gradient-text mb-4 text-3xl font-bold md:text-4xl">
+            <h2 className="text-primary mb-4 text-3xl font-bold md:text-4xl">
               ทำไมต้องเลือก DSView?
             </h2>
-            <p className="text-neutral mx-auto max-w-2xl text-lg md:text-xl">
+            <p className="text-neutral mx-auto max-w-2xl text-lg md:text-xl dark:text-gray-300">
               เครื่องมือที่ออกแบบมาเพื่อการเรียนรู้โครงสร้างข้อมูลอย่างมีประสิทธิภาพ
             </p>
           </motion.div>

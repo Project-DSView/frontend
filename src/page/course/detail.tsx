@@ -14,6 +14,7 @@ import {
   useMyEnrollment,
   useUnenrollFromCourse,
   useCourseEnrollments,
+  useCourseLeaderboard,
 } from '@/query';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -33,6 +34,7 @@ import {
 import LatestAnnouncement from '@/components/announcements';
 import MaterialsByWeek from '@/components/course/MaterialsByWeek';
 import MembersList from '@/components/course/MembersList';
+import Leaderboard from '@/components/course/Leaderboard';
 
 const CourseDetailPage: React.FC = () => {
   const params = useParams();
@@ -42,7 +44,9 @@ const CourseDetailPage: React.FC = () => {
   const courseId = params.id as string;
 
   // State for active tab
-  const [activeTab, setActiveTab] = React.useState<'materials' | 'members'>('materials');
+  const [activeTab, setActiveTab] = React.useState<'materials' | 'members' | 'leaderboard'>(
+    'materials',
+  );
 
   // Fetch course data
   const {
@@ -73,6 +77,13 @@ const CourseDetailPage: React.FC = () => {
     isLoading: isEnrollmentsLoading,
     error: enrollmentsError,
   } = useCourseEnrollments(accessToken, courseId);
+
+  // Fetch course leaderboard
+  const {
+    data: leaderboardData,
+    isLoading: isLeaderboardLoading,
+    error: leaderboardError,
+  } = useCourseLeaderboard(accessToken, courseId);
 
   // Unenroll mutation
   const unenrollMutation = useUnenrollFromCourse();
@@ -217,6 +228,16 @@ const CourseDetailPage: React.FC = () => {
             >
               สมาชิก
             </button>
+            <button
+              onClick={() => setActiveTab('leaderboard')}
+              className={`pb-3 text-lg font-medium transition-colors ${
+                activeTab === 'leaderboard'
+                  ? 'border-secondary border-b-4 text-gray-900'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              กระดานคะแนน
+            </button>
           </div>
         </div>
 
@@ -305,7 +326,7 @@ const CourseDetailPage: React.FC = () => {
               </CardContent>
             </Card>
           </>
-        ) : (
+        ) : activeTab === 'members' ? (
           /* Members Section */
           <Card>
             <CardHeader>
@@ -316,6 +337,21 @@ const CourseDetailPage: React.FC = () => {
                 enrollmentsData={enrollmentsData}
                 isLoading={isEnrollmentsLoading}
                 error={enrollmentsError}
+              />
+            </CardContent>
+          </Card>
+        ) : (
+          /* Leaderboard Section */
+          <Card>
+            <CardHeader>
+              <CardTitle>กระดานคะแนน</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Leaderboard
+                leaderboardData={leaderboardData}
+                enrollmentsData={enrollmentsData}
+                isLoading={isLeaderboardLoading}
+                error={leaderboardError}
               />
             </CardContent>
           </Card>

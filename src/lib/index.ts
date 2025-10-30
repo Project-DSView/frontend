@@ -94,7 +94,7 @@ export {
 
 // Utils
 export { ExportUtils } from './utils/export.utils';
-export { isValidImageUrl, getCourseImageFallback } from './utils/image.utils';
+export { isValidImageUrl, getCourseImageFallback, transformImageUrl } from './utils/image.utils';
 export { default as cn } from './utils/utils';
 export { getEmbedUrl, isSupportedVideoPlatform, getVideoPlatform } from './utils/video';
 export { getRoleBadgeStyle, getRoleDisplayName, isValidRole } from './utils/role';
@@ -112,9 +112,8 @@ export {
   openFilePreview,
   downloadFileDirect,
 } from './utils/file';
-export {
-  validatePDFFile,
-  validateFileType,
-  validateFileSize,
-  validateFile,
-} from './utils/validation';
+
+export { getFlattenedLinks, getProcessedPlaygroundItems } from './utils/playground';
+
+// Schemas
+export { pdfSubmissionSchema } from './schemas/pdf-submission.schema';

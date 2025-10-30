@@ -17,11 +17,11 @@ const getRoleBadgeStyle = (role: 'teacher' | 'ta' | 'student'): string => {
 const getRoleDisplayName = (role: 'teacher' | 'ta' | 'student'): string => {
   switch (role) {
     case 'teacher':
-      return 'อาจารย์';
+      return 'Teacher';
     case 'ta':
-      return 'ผู้ช่วยสอน';
+      return 'TA';
     case 'student':
-      return 'นักศึกษา';
+      return 'Student';
     default:
       return role;
   }

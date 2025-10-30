@@ -64,11 +64,12 @@ const DirectedGraphDragDropVisualization = forwardRef<
       }
     }, [isRunning, currentOperation, currentOperationData]);
 
-    // Simple animation when isRunning is true (fallback)
+    // Simple animation when isRunning is true (fallback) - show latest added node
     useEffect(() => {
       if (isRunning && !isAnimating && nodes.length > 0) {
         setIsAnimating(true);
-        setHighlightedNodes([nodes[0].value]); // Highlight first node
+        // Highlight the most recently added node (last in array)
+        setHighlightedNodes([nodes[nodes.length - 1].value]);
         const timer = setTimeout(() => {
           setIsAnimating(false);
           setHighlightedNodes([]);
@@ -306,16 +307,18 @@ const DirectedGraphDragDropVisualization = forwardRef<
     return (
       <div
         ref={ref}
-        className="rounded-lg bg-white p-6 shadow"
+        className="rounded-lg bg-white p-6 shadow dark:bg-gray-800"
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-800">Directed Graph Visualization</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+            Directed Graph Visualization
+          </h2>
           {isRunning && (
-            <div className="flex items-center space-x-2 text-sm text-blue-600">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600" />
+            <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-500" />
               <span>Running...</span>
             </div>
           )}
@@ -323,15 +326,17 @@ const DirectedGraphDragDropVisualization = forwardRef<
 
         {/* Current Step Display */}
         {currentStep && (
-          <div className="mb-4 rounded-lg bg-blue-50 p-3">
-            <div className="text-sm font-medium text-blue-800">Current Step:</div>
-            <div className="text-sm text-blue-700">{currentStep}</div>
+          <div className="mb-4 rounded-lg bg-blue-50 p-3 dark:bg-blue-900/30">
+            <div className="text-sm font-medium text-blue-800 dark:text-blue-200">
+              Current Step:
+            </div>
+            <div className="text-sm text-blue-700 dark:text-blue-300">{currentStep}</div>
           </div>
         )}
 
         {/* Graph Visualization */}
         <ZoomableContainer
-          className="min-h-[400px] rounded-lg bg-gray-50"
+          className="min-h-[400px] rounded-lg bg-gray-50 dark:bg-gray-900"
           minZoom={0.3}
           maxZoom={2}
           initialZoom={1}
@@ -341,7 +346,7 @@ const DirectedGraphDragDropVisualization = forwardRef<
           showControls={true}
         >
           {nodes.length === 0 ? (
-            <div className="flex h-96 items-center justify-center text-gray-400">
+            <div className="flex h-96 items-center justify-center text-gray-400 dark:text-gray-500">
               <div className="text-center">
                 <div className="text-lg font-medium">Empty Graph</div>
                 <div className="text-sm">ลาก operations มาสร้าง Graph</div>
@@ -360,36 +365,45 @@ const DirectedGraphDragDropVisualization = forwardRef<
 
         {/* Stats Display */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div className="rounded-lg bg-gray-50 p-3 text-center">
-            <div className="text-2xl font-bold text-gray-800">{stats.vertices}</div>
-            <div className="text-xs text-gray-600">Vertices</div>
+          <div className="rounded-lg bg-gray-50 p-3 text-center dark:bg-gray-700">
+            <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+              {stats.vertices}
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Vertices</div>
           </div>
-          <div className="rounded-lg bg-gray-50 p-3 text-center">
-            <div className="text-2xl font-bold text-gray-800">{stats.edges}</div>
-            <div className="text-xs text-gray-600">Edges</div>
+          <div className="rounded-lg bg-gray-50 p-3 text-center dark:bg-gray-700">
+            <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.edges}</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Edges</div>
           </div>
-          <div className="rounded-lg bg-gray-50 p-3 text-center">
-            <div className="text-2xl font-bold text-gray-800">
+          <div className="rounded-lg bg-gray-50 p-3 text-center dark:bg-gray-700">
+            <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">
               {stats.isStronglyConnected ? 'Yes' : 'No'}
             </div>
-            <div className="text-xs text-gray-600">Strongly Connected</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Strongly Connected</div>
           </div>
-          <div className="rounded-lg bg-gray-50 p-3 text-center">
-            <div className="text-2xl font-bold text-gray-800">{stats.hasCycle ? 'Yes' : 'No'}</div>
-            <div className="text-xs text-gray-600">Has Cycle</div>
+          <div className="rounded-lg bg-gray-50 p-3 text-center dark:bg-gray-700">
+            <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+              {stats.hasCycle ? 'Yes' : 'No'}
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Has Cycle</div>
           </div>
         </div>
 
         {/* In/Out Degree Display */}
         {Object.keys(stats.inDegree).length > 0 && (
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="rounded-lg bg-gray-50 p-3">
-              <div className="mb-2 text-sm font-medium text-gray-800">In-Degree</div>
+            <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+              <div className="mb-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                In-Degree
+              </div>
               <div className="space-y-1">
                 {Object.entries(stats.inDegree).map(([nodeId, degree]) => {
                   const node = nodes.find((n) => n.id === nodeId);
                   return (
-                    <div key={nodeId} className="flex justify-between text-xs">
+                    <div
+                      key={nodeId}
+                      className="flex justify-between text-xs text-gray-700 dark:text-gray-300"
+                    >
                       <span>{node?.value || nodeId}:</span>
                       <span className="font-bold">{degree}</span>
                     </div>
@@ -397,13 +411,18 @@ const DirectedGraphDragDropVisualization = forwardRef<
                 })}
               </div>
             </div>
-            <div className="rounded-lg bg-gray-50 p-3">
-              <div className="mb-2 text-sm font-medium text-gray-800">Out-Degree</div>
+            <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+              <div className="mb-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                Out-Degree
+              </div>
               <div className="space-y-1">
                 {Object.entries(stats.outDegree).map(([nodeId, degree]) => {
                   const node = nodes.find((n) => n.id === nodeId);
                   return (
-                    <div key={nodeId} className="flex justify-between text-xs">
+                    <div
+                      key={nodeId}
+                      className="flex justify-between text-xs text-gray-700 dark:text-gray-300"
+                    >
                       <span>{node?.value || nodeId}:</span>
                       <span className="font-bold">{degree}</span>
                     </div>
@@ -416,18 +435,20 @@ const DirectedGraphDragDropVisualization = forwardRef<
 
         {/* Traversal Order Display */}
         {traversalOrder.length > 0 && (
-          <div className="mt-4 rounded-lg bg-green-50 p-3">
-            <div className="text-sm font-medium text-green-800">Traversal Order:</div>
-            <div className="text-sm text-green-700">
+          <div className="mt-4 rounded-lg bg-green-50 p-3 dark:bg-green-900/30">
+            <div className="text-sm font-medium text-green-800 dark:text-green-200">
+              Traversal Order:
+            </div>
+            <div className="text-sm text-green-700 dark:text-green-300">
               {traversalOrder.map((value, index) => (
                 <span
                   key={index}
                   className={`mx-1 inline-block rounded px-2 py-1 transition-all duration-300 ${
                     isTraversing && index === traverseIndex
-                      ? 'scale-110 bg-green-200 font-bold text-green-800'
+                      ? 'scale-110 bg-green-200 font-bold text-green-800 dark:bg-green-700 dark:text-green-100'
                       : index < traverseIndex
-                        ? 'bg-green-100 text-green-600'
-                        : 'bg-gray-100 text-gray-500'
+                        ? 'bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-300'
+                        : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                   }`}
                 >
                   {value}
@@ -439,24 +460,28 @@ const DirectedGraphDragDropVisualization = forwardRef<
 
         {/* Shortest Path Display */}
         {shortestPath.length > 0 && (
-          <div className="mt-4 rounded-lg bg-purple-50 p-3">
-            <div className="text-sm font-medium text-purple-800">Shortest Path:</div>
-            <div className="text-sm text-purple-700">{shortestPath.join(' → ')}</div>
+          <div className="mt-4 rounded-lg bg-purple-50 p-3 dark:bg-purple-900/30">
+            <div className="text-sm font-medium text-purple-800 dark:text-purple-200">
+              Shortest Path:
+            </div>
+            <div className="text-sm text-purple-700 dark:text-purple-300">
+              {shortestPath.join(' → ')}
+            </div>
           </div>
         )}
 
         {/* Legend */}
-        <div className="mt-4 flex flex-wrap gap-4 text-xs">
+        <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-700 dark:text-gray-300">
           <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 rounded-full border border-green-400 bg-green-200" />
+            <div className="h-3 w-3 rounded-full border border-green-400 bg-green-200 dark:border-green-500 dark:bg-green-700" />
             <span>Traversing</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 rounded-full border border-purple-400 bg-purple-200" />
+            <div className="h-3 w-3 rounded-full border border-purple-400 bg-purple-200 dark:border-purple-500 dark:bg-purple-700" />
             <span>Shortest Path</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 rounded-full border border-gray-600 bg-white" />
+            <div className="h-3 w-3 rounded-full border border-gray-600 bg-white dark:border-gray-400 dark:bg-gray-700" />
             <span>Normal Node</span>
           </div>
         </div>

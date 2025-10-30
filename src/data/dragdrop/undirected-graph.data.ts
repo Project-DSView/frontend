@@ -5,7 +5,7 @@ const undirectedGraphDragComponents: UndirectedGraphDragComponent[] = [
   {
     id: 'add_vertex',
     name: 'Add Vertex',
-    color: 'bg-blue-100 border-blue-300',
+    color: 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600',
     category: 'insertion',
     type: 'add_vertex',
     description: 'เพิ่ม node เข้าไปในกราฟ',
@@ -13,7 +13,7 @@ const undirectedGraphDragComponents: UndirectedGraphDragComponent[] = [
   {
     id: 'add_edge',
     name: 'Add Edge',
-    color: 'bg-blue-100 border-blue-300',
+    color: 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600',
     category: 'insertion',
     type: 'add_edge',
     description: 'เชื่อม node สองตัว (u ↔ v)',
@@ -23,7 +23,7 @@ const undirectedGraphDragComponents: UndirectedGraphDragComponent[] = [
   {
     id: 'remove_vertex',
     name: 'Remove Vertex',
-    color: 'bg-red-100 border-red-300',
+    color: 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-600',
     category: 'deletion',
     type: 'remove_vertex',
     description: 'ลบ node และ edge ที่เชื่อมกับมัน',
@@ -31,7 +31,7 @@ const undirectedGraphDragComponents: UndirectedGraphDragComponent[] = [
   {
     id: 'remove_edge',
     name: 'Remove Edge',
-    color: 'bg-red-100 border-red-300',
+    color: 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-600',
     category: 'deletion',
     type: 'remove_edge',
     description: 'ลบเส้นเชื่อมระหว่าง node สองตัว',
@@ -41,7 +41,7 @@ const undirectedGraphDragComponents: UndirectedGraphDragComponent[] = [
   {
     id: 'traversal_dfs',
     name: 'DFS Traversal',
-    color: 'bg-green-100 border-green-300',
+    color: 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-600',
     category: 'traversal',
     type: 'traversal_dfs',
     description: 'เดินกราฟด้วย Depth-First Search',
@@ -49,7 +49,7 @@ const undirectedGraphDragComponents: UndirectedGraphDragComponent[] = [
   {
     id: 'traversal_bfs',
     name: 'BFS Traversal',
-    color: 'bg-green-100 border-green-300',
+    color: 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-600',
     category: 'traversal',
     type: 'traversal_bfs',
     description: 'เดินกราฟด้วย Breadth-First Search',
@@ -57,7 +57,7 @@ const undirectedGraphDragComponents: UndirectedGraphDragComponent[] = [
   {
     id: 'shortest_path',
     name: 'Shortest Path',
-    color: 'bg-purple-100 border-purple-300',
+    color: 'bg-purple-100 dark:bg-purple-900/30 border-purple-300 dark:border-purple-600',
     category: 'traversal',
     type: 'shortest_path',
     description: 'หาเส้นทางที่สั้นที่สุดระหว่างสองจุด (Dijkstra)',

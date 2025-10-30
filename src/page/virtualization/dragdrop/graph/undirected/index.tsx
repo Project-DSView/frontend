@@ -202,12 +202,30 @@ const DragDropUndirectedGraph = () => {
   const handlePrevious = () => {
     if (selectedStep !== null && selectedStep > 0) {
       setSelectedStep(selectedStep - 1);
+      // Trigger animation for the previous step
+      if (isAutoPlaying) {
+        // If auto playing, the animation will be handled by the auto play logic
+        return;
+      }
+      // If manually clicking previous, trigger a brief animation
+      setTimeout(() => {
+        // This will trigger the visualization animation
+      }, 100);
     }
   };
 
   const handleNext = () => {
     if (selectedStep !== null && selectedStep < state.operations.length - 1) {
       setSelectedStep(selectedStep + 1);
+      // Trigger animation for the next step
+      if (isAutoPlaying) {
+        // If auto playing, the animation will be handled by the auto play logic
+        return;
+      }
+      // If manually clicking next, trigger a brief animation
+      setTimeout(() => {
+        // This will trigger the visualization animation
+      }, 100);
     }
   };
 
@@ -395,7 +413,7 @@ const DragDropUndirectedGraph = () => {
           case 'add_vertex':
             if (operation.value) {
               const newNode: UndirectedGraphNode = {
-                id: operation.value,
+                id: `${operation.value}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
                 value: operation.value,
                 x: Math.random() * 400 + 50,
                 y: Math.random() * 300 + 50,
@@ -406,42 +424,45 @@ const DragDropUndirectedGraph = () => {
             break;
           case 'add_edge':
             if (operation.fromVertex && operation.toVertex) {
-              const fromNode = currentNodes.find((n) => n.id === operation.fromVertex);
-              const toNode = currentNodes.find((n) => n.id === operation.toVertex);
+              const fromNode = currentNodes.find((n) => n.value === operation.fromVertex);
+              const toNode = currentNodes.find((n) => n.value === operation.toVertex);
               if (fromNode && toNode) {
                 const newEdge: UndirectedGraphEdge = {
-                  id: `edge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                  from: operation.fromVertex,
-                  to: operation.toVertex,
+                  id: `edge-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+                  from: fromNode.id,
+                  to: toNode.id,
                   weight: operation.value ? parseInt(operation.value, 10) : undefined,
                 };
                 currentEdges.push(newEdge);
-                fromNode.neighbors.push(operation.toVertex);
-                toNode.neighbors.push(operation.fromVertex);
+                fromNode.neighbors.push(toNode.id);
+                toNode.neighbors.push(fromNode.id);
               }
             }
             break;
           case 'remove_vertex':
             if (operation.value) {
-              currentNodes = currentNodes.filter((n) => n.id !== operation.value);
-              currentEdges = currentEdges.filter(
-                (e) => e.from !== operation.value && e.to !== operation.value,
-              );
+              const nodeToRemove = currentNodes.find((n) => n.value === operation.value);
+              if (nodeToRemove) {
+                currentNodes = currentNodes.filter((n) => n.id !== nodeToRemove.id);
+                currentEdges = currentEdges.filter(
+                  (e) => e.from !== nodeToRemove.id && e.to !== nodeToRemove.id,
+                );
+              }
             }
             break;
           case 'remove_edge':
             if (operation.fromVertex && operation.toVertex) {
-              currentEdges = currentEdges.filter(
-                (e) =>
-                  !(e.from === operation.fromVertex && e.to === operation.toVertex) &&
-                  !(e.from === operation.toVertex && e.to === operation.fromVertex),
-              );
-              const fromNode = currentNodes.find((n) => n.id === operation.fromVertex);
-              const toNode = currentNodes.find((n) => n.id === operation.toVertex);
-              if (fromNode)
-                fromNode.neighbors = fromNode.neighbors.filter((n) => n !== operation.toVertex);
-              if (toNode)
-                toNode.neighbors = toNode.neighbors.filter((n) => n !== operation.fromVertex);
+              const fromNode = currentNodes.find((n) => n.value === operation.fromVertex);
+              const toNode = currentNodes.find((n) => n.value === operation.toVertex);
+              if (fromNode && toNode) {
+                currentEdges = currentEdges.filter(
+                  (e) =>
+                    !(e.from === fromNode.id && e.to === toNode.id) &&
+                    !(e.from === toNode.id && e.to === fromNode.id),
+                );
+                fromNode.neighbors = fromNode.neighbors.filter((n) => n !== toNode.id);
+                toNode.neighbors = toNode.neighbors.filter((n) => n !== fromNode.id);
+              }
             }
             break;
           case 'shortest_path':

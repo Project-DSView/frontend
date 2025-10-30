@@ -45,10 +45,11 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
       }
     }, [isRunning, currentOperation, elements.length]);
 
-    // Simple animation when isRunning is true (fallback)
+    // Simple animation when isRunning is true (fallback) - show latest added element
     useEffect(() => {
       if (isRunning && !isAnimating && elements.length > 0) {
         setIsAnimating(true);
+        // Highlight the most recently added element (top of stack)
         setHighlightedElementIndex(elements.length - 1);
         const timer = setTimeout(() => {
           setIsAnimating(false);
@@ -72,42 +73,44 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
           {isTop && (
             <div className="mb-1 flex flex-col items-center">
               {/* เส้นตั้งตรงกลาง */}
-              <div className="h-4 w-0.5 bg-blue-500"></div>
+              <div className="h-4 w-0.5 bg-blue-500 dark:bg-blue-600"></div>
               {/* สามเหลี่ยมชี้ลง */}
-              <div className="mt-0.5 h-0 w-0 border-t-[8px] border-r-[6px] border-l-[6px] border-t-blue-500 border-r-transparent border-l-transparent"></div>
-              <span className="mt-1 text-xs font-bold text-blue-600">Top</span>
+              <div className="mt-0.5 h-0 w-0 border-t-[8px] border-r-[6px] border-l-[6px] border-t-blue-500 border-r-transparent border-l-transparent dark:border-t-blue-600"></div>
+              <span className="mt-1 text-xs font-bold text-blue-600 dark:text-blue-400">Top</span>
             </div>
           )}
 
           {/* Stack Element */}
           <div
-            className={`bg-neutral/20 flex h-16 w-16 items-center justify-center shadow-lg transition-all duration-500 ${isHighlighted && isAnimating ? 'scale-110 animate-bounce ring-4 ring-blue-400' : 'hover:bg-gray-50'} ${isTop ? 'border-2 border-blue-500' : 'border-t-0'} ${isTop ? 'ring-2 ring-blue-300' : ''}`}
+            className={`flex h-16 w-16 items-center justify-center bg-gray-100 shadow-lg transition-all duration-500 dark:bg-gray-700 ${isHighlighted && isAnimating ? 'scale-110 ring-4 ring-blue-400 dark:ring-blue-500' : 'hover:bg-gray-50 dark:hover:bg-gray-600'} ${isTop ? 'border-2 border-blue-500 dark:border-blue-400' : 'border-t-0'} ${isTop ? 'ring-2 ring-blue-300 dark:ring-blue-600' : ''}`}
           >
-            <span className={`font-bold text-black ${value.length > 6 ? 'text-sm' : 'text-lg'}`}>
+            <span
+              className={`font-bold text-gray-900 dark:text-gray-100 ${value.length > 6 ? 'text-sm' : 'text-lg'}`}
+            >
               {value}
             </span>
           </div>
 
           {/* Index indicator */}
-          <div className="mt-1 text-center text-xs text-gray-500">[{index}]</div>
+          <div className="mt-1 text-center text-xs text-gray-500 dark:text-gray-400">[{index}]</div>
         </div>
       );
     };
 
     const renderSingleStack = (stackElements: string[], title: string, stackId: string) => (
       <div className="flex flex-col items-center">
-        <h3 className="mb-2 text-sm font-semibold text-gray-700">{title}</h3>
+        <h3 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{title}</h3>
         <div className="flex min-h-[200px] flex-col items-center justify-end">
           {stackElements.length === 0 ? (
-            <div className="flex h-24 w-32 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50">
-              <div className="text-center text-gray-500">
+            <div className="flex h-24 w-32 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+              <div className="text-center text-gray-500 dark:text-gray-400">
                 <div className="text-xs font-semibold">Empty</div>
               </div>
             </div>
           ) : (
             <div className="relative w-32">
               {/* Stack Frame */}
-              <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black"></div>
+              <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black dark:border-gray-300"></div>
               {/* Stack Elements */}
               <div className="flex flex-col-reverse">
                 {stackElements.map((element, index) => (
@@ -123,14 +126,16 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
     );
 
     return (
-      <div ref={ref} className="rounded-lg bg-white p-6 shadow">
+      <div ref={ref} className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800">Stack Visualization</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+            Stack Visualization
+          </h3>
         </div>
 
         {/* Stack Container */}
         <ZoomableContainer
-          className="min-h-[300px] rounded-lg bg-gray-50"
+          className="min-h-[300px] rounded-lg bg-gray-50 dark:bg-gray-900"
           minZoom={0.5}
           maxZoom={2}
           initialZoom={1}
@@ -150,8 +155,8 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
           ) : (
             <div className="flex min-h-[200px] flex-col items-center justify-end p-6">
               {elements.length === 0 ? (
-                <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50">
-                  <div className="text-center text-gray-500">
+                <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+                  <div className="text-center text-gray-500 dark:text-gray-400">
                     <div className="font-semibold">Stack is Empty</div>
                     <div className="text-sm">Add elements using Push operation</div>
                   </div>
@@ -159,7 +164,7 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
               ) : (
                 <div className="relative w-36">
                   {/* Stack Frame - กรอบสี่เหลี่ยมไม่มีเส้นด้านบน */}
-                  <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black"></div>
+                  <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black dark:border-gray-300"></div>
 
                   {/* Stack Elements - อยู่ติดกันไม่มีช่องว่าง */}
                   <div className="flex flex-col-reverse">
@@ -176,38 +181,46 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
         </ZoomableContainer>
 
         {/* Stack Info */}
-        <div className="mt-4 rounded-lg bg-gray-50 p-4">
-          <h4 className="mb-2 font-semibold text-gray-700">Stack Information</h4>
+        <div className="mt-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
+          <h4 className="mb-2 font-semibold text-gray-700 dark:text-gray-200">Stack Information</h4>
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>
-              <span className="font-medium text-gray-600">Elements:</span>
-              <span className="ml-2 text-gray-800">
+              <span className="font-medium text-gray-600 dark:text-gray-400">Elements:</span>
+              <span className="ml-2 text-gray-800 dark:text-gray-200">
                 {elements.length === 0 ? 'None' : elements.join(', ')}
               </span>
             </div>
             <div>
-              <span className="font-medium text-gray-600">Top Element:</span>
-              <span className="ml-2 text-gray-800">{stats.headValue || 'None'}</span>
+              <span className="font-medium text-gray-600 dark:text-gray-400">Top Element:</span>
+              <span className="ml-2 text-gray-800 dark:text-gray-200">
+                {stats.headValue || 'None'}
+              </span>
             </div>
             <div>
-              <span className="font-medium text-gray-600">Bottom Element:</span>
-              <span className="ml-2 text-gray-800">{stats.tailValue || 'None'}</span>
+              <span className="font-medium text-gray-600 dark:text-gray-400">Bottom Element:</span>
+              <span className="ml-2 text-gray-800 dark:text-gray-200">
+                {stats.tailValue || 'None'}
+              </span>
             </div>
             <div>
-              <span className="font-medium text-gray-600">Is Empty:</span>
-              <span className="ml-2 text-gray-800">{stats.isEmpty ? 'Yes' : 'No'}</span>
+              <span className="font-medium text-gray-600 dark:text-gray-400">Is Empty:</span>
+              <span className="ml-2 text-gray-800 dark:text-gray-200">
+                {stats.isEmpty ? 'Yes' : 'No'}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Current Operation Status */}
         {isRunning && currentStep && (
-          <div className="mt-4 rounded-lg bg-blue-50 p-4">
+          <div className="mt-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/30">
             <div className="mb-2 flex items-center space-x-2">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500"></div>
-              <span className="font-semibold text-blue-800">Executing: {currentOperation}</span>
+              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500 dark:bg-blue-400"></div>
+              <span className="font-semibold text-blue-800 dark:text-blue-200">
+                Executing: {currentOperation}
+              </span>
             </div>
-            <p className="text-sm text-blue-700">{currentStep}</p>
+            <p className="text-sm text-blue-700 dark:text-blue-300">{currentStep}</p>
           </div>
         )}
       </div>

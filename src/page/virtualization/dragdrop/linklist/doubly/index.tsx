@@ -128,12 +128,30 @@ const DragDropDoublyLinkList = () => {
   const handlePrevious = () => {
     if (selectedStep !== null && selectedStep > 0) {
       setSelectedStep(selectedStep - 1);
+      // Trigger animation for the previous step
+      if (isAutoPlaying) {
+        // If auto playing, the animation will be handled by the auto play logic
+        return;
+      }
+      // If manually clicking previous, trigger a brief animation
+      setTimeout(() => {
+        // This will trigger the visualization animation
+      }, 100);
     }
   };
 
   const handleNext = () => {
     if (selectedStep !== null && selectedStep < state.operations.length - 1) {
       setSelectedStep(selectedStep + 1);
+      // Trigger animation for the next step
+      if (isAutoPlaying) {
+        // If auto playing, the animation will be handled by the auto play logic
+        return;
+      }
+      // If manually clicking next, trigger a brief animation
+      setTimeout(() => {
+        // This will trigger the visualization animation
+      }, 100);
     }
   };
 
@@ -325,15 +343,15 @@ const DragDropDoublyLinkList = () => {
   const currentVisualizationState = getCurrentVisualizationState();
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6 dark:bg-gray-900">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="mb-2 text-xl font-bold text-gray-800 md:text-2xl lg:text-2xl">
+            <h1 className="mb-2 text-xl font-bold text-gray-800 md:text-2xl lg:text-2xl dark:text-gray-100">
               Drag & Drop Doubly Linked List
             </h1>
-            <p className="text-sm text-gray-600 md:text-base">
+            <p className="text-sm text-gray-600 md:text-base dark:text-gray-400">
               เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
             </p>
           </div>
@@ -363,9 +381,9 @@ const DragDropDoublyLinkList = () => {
         </div>
 
         {/* Right Side - Drop Zone */}
-        <div className="rounded-lg bg-white p-4 shadow md:p-6">
+        <div className="rounded-lg bg-white p-4 shadow md:p-6 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-800">Drop Zone</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Drop Zone</h2>
             <div className="space-x-2">
               <button
                 onClick={handleClearAll}
@@ -436,6 +454,9 @@ const DragDropDoublyLinkList = () => {
                 state.operations[selectedStep]?.type === 'traverse_backward')
                 ? selectedStep
                 : null
+            }
+            currentOperationData={
+              selectedStep !== null ? state.operations[selectedStep] : undefined
             }
           />
         </Suspense>

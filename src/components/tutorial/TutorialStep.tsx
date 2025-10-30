@@ -8,7 +8,7 @@ const TutorialStepComponent: React.FC<TutorialStepProps> = memo(
     return (
       <div className="space-y-3">
         <div
-          className={`relative h-32 w-full cursor-pointer overflow-hidden rounded-lg border hover:border-${hoverColor} transition-colors`}
+          className={`relative h-32 w-full cursor-pointer overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600 hover:border-${hoverColor} dark:hover:border-${hoverColor} transition-colors`}
           onClick={() => onImageClick(step.image)}
         >
           <Image
@@ -22,7 +22,7 @@ const TutorialStepComponent: React.FC<TutorialStepProps> = memo(
           />
         </div>
         <div className="flex items-start gap-2">
-          <p className="text-sm">{step.description}</p>
+          <p className="text-sm text-gray-900 dark:text-gray-100">{step.description}</p>
         </div>
       </div>
     );

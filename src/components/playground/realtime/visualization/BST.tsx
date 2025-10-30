@@ -45,14 +45,14 @@ const BSTRealtime = forwardRef<HTMLDivElement, BSTRealtimeProps>(({ data }, ref)
 
     return (
       <g key={`node-${node.value}-${node.x}-${node.y}`}>
-        {/* Connection lines (black) */}
+        {/* Connection lines */}
         {node.left && node.left.x && node.left.y && (
           <line
             x1={node.x}
             y1={node.y + 24}
             x2={node.left.x}
             y2={node.left.y - 24}
-            stroke="#000000"
+            className="stroke-gray-900 dark:stroke-gray-300"
             strokeWidth="2"
           />
         )}
@@ -62,20 +62,27 @@ const BSTRealtime = forwardRef<HTMLDivElement, BSTRealtimeProps>(({ data }, ref)
             y1={node.y + 24}
             x2={node.right.x}
             y2={node.right.y - 24}
-            stroke="#000000"
+            className="stroke-gray-900 dark:stroke-gray-300"
             strokeWidth="2"
           />
         )}
 
-        {/* Node circle (no fill, black border) */}
-        <circle cx={node.x} cy={node.y} r="24" fill="none" stroke="#000000" strokeWidth="2" />
+        {/* Node circle (no fill, border) */}
+        <circle
+          cx={node.x}
+          cy={node.y}
+          r="24"
+          fill="none"
+          className="stroke-gray-900 dark:stroke-gray-300"
+          strokeWidth="2"
+        />
 
         {/* Node value */}
         <text
           x={node.x}
           y={node.y + 5}
           textAnchor="middle"
-          className="text-sm font-bold text-gray-800"
+          className="text-sm font-bold text-gray-800 dark:text-gray-100"
         >
           {node.value}
         </text>
@@ -107,8 +114,8 @@ const BSTRealtime = forwardRef<HTMLDivElement, BSTRealtimeProps>(({ data }, ref)
   const renderSingleTree = (root: RealtimeBSTNodeData | null, treeName: string) => {
     if (!root) {
       return (
-        <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-          <div className="text-center text-gray-500">
+        <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+          <div className="text-center text-gray-500 dark:text-gray-400">
             <div className="text-lg font-semibold">Tree is Empty</div>
             <div className="text-sm">Add nodes using Insert operation</div>
           </div>
@@ -125,9 +132,9 @@ const BSTRealtime = forwardRef<HTMLDivElement, BSTRealtimeProps>(({ data }, ref)
 
     return (
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-700">{treeName}</h3>
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">{treeName}</h3>
         <ZoomableContainer
-          className="min-h-[400px] rounded-lg bg-gray-50"
+          className="min-h-[400px] rounded-lg bg-gray-50 dark:bg-gray-800"
           minZoom={0.3}
           maxZoom={2}
           initialZoom={1}
@@ -155,42 +162,57 @@ const BSTRealtime = forwardRef<HTMLDivElement, BSTRealtimeProps>(({ data }, ref)
               Object.entries(data.allTrees)
                 .filter(([, treeData]) => !treeData.isEmpty)
                 .map(([treeName, treeData]) => (
-                  <div key={treeName} className="rounded-lg border bg-white p-4">
+                  <div
+                    key={treeName}
+                    className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+                  >
                     {renderSingleTree(treeData.root || null, `Tree ${treeName}`)}
 
                     {/* Tree Information */}
-                    <div className="mt-4 rounded-lg bg-gray-50 p-3">
-                      <h5 className="mb-2 font-medium text-gray-700">
+                    <div className="mt-4 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+                      <h5 className="mb-2 font-medium text-gray-700 dark:text-gray-300">
                         Tree {treeName} Information
                       </h5>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
-                          <span className="font-medium text-gray-600">Size:</span>
-                          <span className="ml-2 text-gray-800">{treeData.size}</span>
+                          <span className="font-medium text-gray-600 dark:text-gray-400">
+                            Size:
+                          </span>
+                          <span className="ml-2 text-gray-800 dark:text-gray-200">
+                            {treeData.size}
+                          </span>
                         </div>
                         <div>
-                          <span className="font-medium text-gray-600">Is Empty:</span>
-                          <span className="ml-2 text-gray-800">
+                          <span className="font-medium text-gray-600 dark:text-gray-400">
+                            Is Empty:
+                          </span>
+                          <span className="ml-2 text-gray-800 dark:text-gray-200">
                             {treeData.isEmpty ? 'Yes' : 'No'}
                           </span>
                         </div>
                         {treeData.traversalResults && (
                           <>
                             <div>
-                              <span className="font-medium text-gray-600">Preorder:</span>
-                              <span className="ml-2 text-gray-800">
+                              <span className="font-medium text-gray-600 dark:text-gray-400">
+                                Preorder:
+                              </span>
+                              <span className="ml-2 text-gray-800 dark:text-gray-200">
                                 {treeData.traversalResults.preorder.join(', ') || 'None'}
                               </span>
                             </div>
                             <div>
-                              <span className="font-medium text-gray-600">Inorder:</span>
-                              <span className="ml-2 text-gray-800">
+                              <span className="font-medium text-gray-600 dark:text-gray-400">
+                                Inorder:
+                              </span>
+                              <span className="ml-2 text-gray-800 dark:text-gray-200">
                                 {treeData.traversalResults.inorder.join(', ') || 'None'}
                               </span>
                             </div>
                             <div>
-                              <span className="font-medium text-gray-600">Postorder:</span>
-                              <span className="ml-2 text-gray-800">
+                              <span className="font-medium text-gray-600 dark:text-gray-400">
+                                Postorder:
+                              </span>
+                              <span className="ml-2 text-gray-800 dark:text-gray-200">
                                 {treeData.traversalResults.postorder.join(', ') || 'None'}
                               </span>
                             </div>
@@ -207,25 +229,37 @@ const BSTRealtime = forwardRef<HTMLDivElement, BSTRealtimeProps>(({ data }, ref)
           {renderSingleTree(data.root || null, 'Binary Search Tree')}
 
           {/* Tree Information */}
-          <div className="rounded-lg bg-gray-50 p-4">
-            <h4 className="mb-2 font-semibold text-gray-700">Tree Information</h4>
+          <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+            <h4 className="mb-2 font-semibold text-gray-700 dark:text-gray-300">
+              Tree Information
+            </h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <span className="font-medium text-gray-600">Size:</span>
-                <span className="ml-2 text-gray-800">{data.count}</span>
+                <span className="font-medium text-gray-600 dark:text-gray-400">Size:</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">{data.count}</span>
               </div>
               <div>
-                <span className="font-medium text-gray-600">Is Empty:</span>
-                <span className="ml-2 text-gray-800">{data.root === null ? 'Yes' : 'No'}</span>
+                <span className="font-medium text-gray-600 dark:text-gray-400">Is Empty:</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">
+                  {data.root === null ? 'Yes' : 'No'}
+                </span>
               </div>
               <div>
-                <span className="font-medium text-gray-600">Current Operation:</span>
-                <span className="ml-2 text-gray-800">{data.currentOperation || 'None'}</span>
+                <span className="font-medium text-gray-600 dark:text-gray-400">
+                  Current Operation:
+                </span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">
+                  {data.currentOperation || 'None'}
+                </span>
               </div>
               {data.currentTraversal && (
                 <div>
-                  <span className="font-medium text-gray-600">Traversal Mode:</span>
-                  <span className="ml-2 text-gray-800 capitalize">{data.currentTraversal}</span>
+                  <span className="font-medium text-gray-600 dark:text-gray-400">
+                    Traversal Mode:
+                  </span>
+                  <span className="ml-2 text-gray-800 capitalize dark:text-gray-200">
+                    {data.currentTraversal}
+                  </span>
                 </div>
               )}
             </div>
@@ -233,8 +267,12 @@ const BSTRealtime = forwardRef<HTMLDivElement, BSTRealtimeProps>(({ data }, ref)
             {/* Traversal Results */}
             {data.elements.length > 0 && (
               <div className="mt-3">
-                <span className="font-medium text-gray-600">Traversal Result:</span>
-                <div className="mt-1 text-gray-800">{data.elements.join(' → ')}</div>
+                <span className="font-medium text-gray-600 dark:text-gray-400">
+                  Traversal Result:
+                </span>
+                <div className="mt-1 text-gray-800 dark:text-gray-200">
+                  {data.elements.join(' → ')}
+                </div>
               </div>
             )}
           </div>

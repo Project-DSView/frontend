@@ -53,13 +53,13 @@ const RealtimeLayout = <T,>({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-6" suppressHydrationWarning>
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-6 dark:bg-gray-900" suppressHydrationWarning>
       {/* Header */}
       <div className="mb-4 sm:mb-6">
         <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
             <div>
-              <h1 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">
+              <h1 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl dark:text-gray-100">
                 {dataStructure === 'singly-linked-list' && 'Real-time Singly Linked List'}
                 {dataStructure === 'doubly-linked-list' && 'Real-time Doubly Linked List'}
                 {dataStructure === 'bst' && 'Real-time Binary Search Tree'}
@@ -67,7 +67,7 @@ const RealtimeLayout = <T,>({
                 {dataStructure === 'undirected-graph' && 'Real-time Undirected Graph'}
                 {dataStructure === 'directed-graph' && 'Real-time Directed Graph'}
               </h1>
-              <p className="text-sm text-gray-600 sm:text-base">
+              <p className="text-sm text-gray-600 sm:text-base dark:text-gray-400">
                 เขียนโค้ด Python และดูการทำงานแบบ Real Time พร้อม visualization
               </p>
             </div>
@@ -89,11 +89,11 @@ const RealtimeLayout = <T,>({
 
       {/* Security Status */}
       {!securityStatus.isSafe && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/30">
           <div className="flex items-start">
             <div className="flex-shrink-0">
               <svg
-                className="h-5 w-5 text-red-400"
+                className="h-5 w-5 text-red-400 dark:text-red-500"
                 viewBox="0 0 20 20"
                 fill="currentColor"
                 aria-hidden="true"
@@ -106,8 +106,10 @@ const RealtimeLayout = <T,>({
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Security Warning</h3>
-              <div className="mt-2 text-sm text-red-700">
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                Security Warning
+              </h3>
+              <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                 <ul className="list-inside list-disc">
                   {securityStatus.violations.map((violation, index) => (
                     <li key={index}>{violation}</li>
@@ -121,11 +123,13 @@ const RealtimeLayout = <T,>({
 
       <div className="flex h-[calc(100vh-200px)] flex-col gap-4 lg:flex-row">
         {/* Left Side - Code Editor */}
-        <div className="w-full rounded-lg bg-white p-3 shadow sm:p-6 lg:w-1/2">
+        <div className="w-full rounded-lg bg-white p-3 shadow sm:p-6 lg:w-1/2 dark:bg-gray-800">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-              <h2 className="text-base font-semibold text-gray-800 sm:text-lg">Code Editor</h2>
-              <div className="bg-neutral/20 rounded-md px-2 py-1 font-mono text-xs text-black/70 sm:px-3 sm:text-sm">
+              <h2 className="text-base font-semibold text-gray-800 sm:text-lg dark:text-gray-100">
+                Code Editor
+              </h2>
+              <div className="bg-neutral/20 dark:bg-neutral/80 rounded-md px-2 py-1 font-mono text-xs text-black/70 sm:px-3 sm:text-sm dark:text-gray-300">
                 playground.py
               </div>
             </div>
@@ -143,9 +147,9 @@ const RealtimeLayout = <T,>({
         </div>
 
         {/* Right Side - Visualization */}
-        <div className="w-full rounded-lg bg-white p-3 shadow sm:p-6 lg:w-1/2">
+        <div className="w-full rounded-lg bg-white p-3 shadow sm:p-6 lg:w-1/2 dark:bg-gray-800">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-base font-semibold text-gray-800 sm:text-lg">
+            <h2 className="text-base font-semibold text-gray-800 sm:text-lg dark:text-gray-100">
               {dataStructure === 'singly-linked-list' && 'Singly Linked List Visualization'}
               {dataStructure === 'doubly-linked-list' && 'Doubly Linked List Visualization'}
               {dataStructure === 'bst' && 'Binary Search Tree Visualization'}
@@ -158,11 +162,13 @@ const RealtimeLayout = <T,>({
           <div ref={visualizationRef} className="h-[300px] overflow-auto lg:h-[calc(100%-60px)]">
             <Suspense
               fallback={
-                <div className="h-[300px] w-full rounded-lg border bg-gray-50 lg:h-[calc(100%-60px)]">
+                <div className="h-[300px] w-full rounded-lg border border-gray-200 bg-gray-50 lg:h-[calc(100%-60px)] dark:border-gray-700 dark:bg-gray-800">
                   <div className="flex h-full items-center justify-center">
                     <div className="text-center">
-                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-                      <p className="mt-2 text-sm text-gray-600">Loading visualization...</p>
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent dark:border-blue-400"></div>
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        Loading visualization...
+                      </p>
                     </div>
                   </div>
                 </div>

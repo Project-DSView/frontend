@@ -41,13 +41,13 @@ const GraphNode = memo<GraphNodeProps>(
         <div
           className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-500 ${
             isHighlighted
-              ? 'scale-110 border-yellow-400 bg-yellow-200 text-yellow-800 shadow-lg'
+              ? 'scale-110 border-yellow-400 bg-yellow-200 text-yellow-900 shadow-lg dark:border-yellow-500 dark:bg-yellow-700 dark:text-yellow-100'
               : isInSearchPath
-                ? 'scale-105 border-blue-400 bg-blue-200 text-blue-800 shadow-md'
+                ? 'scale-105 border-blue-400 bg-blue-200 text-blue-900 shadow-md dark:border-blue-500 dark:bg-blue-700 dark:text-blue-100'
                 : isTraverseSelected || isCurrentlyTraversing
-                  ? 'scale-110 border-green-400 bg-green-200 text-green-800 shadow-lg'
-                  : 'border-gray-600 bg-white text-gray-800 hover:shadow-md'
-          } ${isRunning ? 'animate-pulse' : ''} ${isAnimating ? 'animate-bounce ring-4 ring-blue-400' : ''} ${isDragging ? 'z-10' : ''}`}
+                  ? 'scale-110 border-green-400 bg-green-200 text-green-900 shadow-lg dark:border-green-500 dark:bg-green-700 dark:text-green-100'
+                  : 'border-gray-600 bg-white text-gray-800 hover:shadow-md dark:border-gray-400 dark:bg-gray-700 dark:text-gray-100'
+          } ${isRunning ? 'animate-pulse' : ''} ${isAnimating ? 'animate-bounce ring-4 ring-blue-400 dark:ring-blue-500' : ''} ${isDragging ? 'z-10' : ''}`}
         >
           {node.value}
           {isHighlighted && (

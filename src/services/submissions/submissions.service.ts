@@ -1,5 +1,6 @@
 import {
   submitPDFExercise,
+  submitCodeExercise,
   getMySubmission,
   getSubmission,
   getSubmissionDownloadUrl,
@@ -7,6 +8,7 @@ import {
 } from '@/api';
 import {
   SubmitPDFResponse,
+  SubmitCodeResponse,
   SubmissionResponse,
   DownloadUrlResponse,
   CancelSubmissionResponse,
@@ -20,6 +22,15 @@ const SubmissionService = {
     file: File,
   ): Promise<SubmitPDFResponse> => {
     return submitPDFExercise(token, materialId, file);
+  },
+
+  // Submit code exercise
+  submitCodeExercise: async (
+    token: string,
+    materialId: string,
+    code: string,
+  ): Promise<SubmitCodeResponse> => {
+    return submitCodeExercise(token, materialId, code);
   },
 
   // Get user's submission for a material

@@ -19,78 +19,70 @@ class SinglyLinkedListStepthroughService
     }
 
     const step = steps[stepIndex];
-    const message = step.state.message || '';
 
-    // Extract nodes from message (e.g., "-> Mika -> Ako -> Yaoyao -> Saori")
-    const nodeMatch = message.match(/->\s*([^->]+(?:\s*->\s*[^->]+)*)/);
-    let nodes: string[] = [];
-
-    if (nodeMatch) {
-      nodes = nodeMatch[1]
-        .split('->')
-        .map((node: string) => node.trim())
-        .filter((node: string) => node.length > 0);
+    // First, try to extract nodes from instances field if available
+    if (
+      step.state.instances &&
+      step.state.instances.mylist &&
+      Array.isArray(step.state.instances.mylist)
+    ) {
+      return { nodes: step.state.instances.mylist };
     }
 
-    // If no nodes found in current step, build from all steps up to current step
-    if (nodes.length === 0) {
-      // Look for all insert operations from the beginning up to current step
-      for (let i = 0; i <= stepIndex; i++) {
-        const currentStep = steps[i];
-        const currentMessage = currentStep.state.message || '';
+    // If instances not available, build from step_detail and operation data
+    let nodes: string[] = [];
 
-        // Check for insert operations
-        if (
-          currentMessage.includes('Inserted') ||
-          currentMessage.includes('insertFront') ||
-          currentMessage.includes('insertLast') ||
-          currentMessage.includes('insertBefore')
-        ) {
-          // Extract value from insert message
-          const insertMatch = currentMessage.match(/['"]([^'"]+)['"]/);
-          if (insertMatch) {
-            const value = insertMatch[1];
-            // Add to nodes if not already present
-            if (!nodes.includes(value)) {
-              // Check if it's insertFront or insertLast
-              if (currentMessage.includes('insertFront') || currentMessage.includes('at front')) {
-                nodes.unshift(value); // Add to beginning for insertFront
-              } else if (
-                currentMessage.includes('insertLast') ||
-                currentMessage.includes('at end')
-              ) {
-                nodes.push(value); // Add to end for insertLast
-              } else if (currentMessage.includes('insertBefore')) {
-                // Extract target node from insertBefore message
-                const beforeMatch = currentMessage.match(/before\s+['"]([^'"]+)['"]/);
-                if (beforeMatch) {
-                  const targetNode = beforeMatch[1];
-                  const targetIndex = nodes.indexOf(targetNode);
-                  if (targetIndex > -1) {
-                    nodes.splice(targetIndex, 0, value); // Insert before target node
-                  } else {
-                    nodes.unshift(value); // Default to beginning if target not found
-                  }
-                } else {
-                  nodes.unshift(value); // Default to beginning
-                }
+    // Build nodes by simulating the operations up to current step
+    for (let i = 0; i <= stepIndex; i++) {
+      const currentStep = steps[i];
+      const stepDetail = currentStep.state.step_detail;
+
+      if (stepDetail && stepDetail.operation) {
+        const operation = stepDetail.operation;
+
+        if (operation === 'instantiate') {
+          // Initialize empty list
+          nodes = [];
+        } else if (operation === 'method_call') {
+          const methodName = stepDetail.method_name;
+          const parameters = stepDetail.parameters || '';
+
+          if (methodName === 'insertFront') {
+            // Extract value from parameters (e.g., "Tony")
+            const valueMatch = parameters.match(/['"]([^'"]+)['"]/);
+            if (valueMatch) {
+              const value = valueMatch[1];
+              nodes.unshift(value);
+            }
+          } else if (methodName === 'insertLast') {
+            // Extract value from parameters
+            const valueMatch = parameters.match(/['"]([^'"]+)['"]/);
+            if (valueMatch) {
+              const value = valueMatch[1];
+              nodes.push(value);
+            }
+          } else if (methodName === 'insertBefore') {
+            // Extract both values from parameters (e.g., "John", "Ako")
+            const paramMatch = parameters.match(/['"]([^'"]+)['"],\s*['"]([^'"]+)['"]/);
+            if (paramMatch) {
+              const targetNode = paramMatch[1]; // Node to insert before
+              const newValue = paramMatch[2]; // Value to insert
+              const targetIndex = nodes.indexOf(targetNode);
+              if (targetIndex > -1) {
+                nodes.splice(targetIndex, 0, newValue);
               } else {
-                nodes.unshift(value); // Default to beginning
+                nodes.unshift(newValue); // Default to beginning if target not found
               }
             }
-          }
-        }
-
-        // Check for delete operations
-        if (currentMessage.includes('Deleted') || currentMessage.includes('delete')) {
-          // Extract value from delete message
-          const deleteMatch = currentMessage.match(/['"]([^'"]+)['"]/);
-          if (deleteMatch) {
-            const value = deleteMatch[1];
-            // Remove from nodes if present
-            const index = nodes.indexOf(value);
-            if (index > -1) {
-              nodes.splice(index, 1);
+          } else if (methodName === 'delete') {
+            // Extract value from parameters
+            const valueMatch = parameters.match(/['"]([^'"]+)['"]/);
+            if (valueMatch) {
+              const value = valueMatch[1];
+              const index = nodes.indexOf(value);
+              if (index > -1) {
+                nodes.splice(index, 1);
+              }
             }
           }
         }

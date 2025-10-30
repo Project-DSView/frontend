@@ -14,7 +14,7 @@ const NestedSubMenuItem = ({ item }: NestedSubMenuItemProps) => {
   if (!item.hasSubItems) {
     return (
       <Link href={item.href ?? '#'}>
-        <DropdownMenuItem className="cursor-pointer focus:bg-gray-50 data-[highlighted]:bg-gray-50">
+        <DropdownMenuItem className="focus:bg-muted data-[highlighted]:bg-muted cursor-pointer">
           {item.label}
         </DropdownMenuItem>
       </Link>
@@ -23,18 +23,18 @@ const NestedSubMenuItem = ({ item }: NestedSubMenuItemProps) => {
 
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger className="data-[state=open]:bg-neutral/40 data-[state=open]:text-accent-foreground">
-        <span className="font-medium text-gray-900">{item.label}</span>
+      <DropdownMenuSubTrigger className="data-[state=open]:bg-muted data-[state=open]:text-accent-foreground">
+        <span className="text-foreground font-medium">{item.label}</span>
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent
-          className="min-w-[200px] border border-gray-200 bg-white shadow-lg"
+          className="border-border bg-background max-w-[calc(100vw-32px)] min-w-[160px] border shadow-lg"
           sideOffset={8}
           alignOffset={-4}
         >
           {item.subItems?.map((subItem) => (
             <Link key={subItem.href} href={subItem.href}>
-              <DropdownMenuItem className="cursor-pointer focus:bg-gray-50 data-[highlighted]:bg-gray-50">
+              <DropdownMenuItem className="focus:bg-muted data-[highlighted]:bg-muted cursor-pointer">
                 {subItem.label}
               </DropdownMenuItem>
             </Link>

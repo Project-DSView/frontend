@@ -3,13 +3,29 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
-    domains: ['lh3.googleusercontent.com', 'example.com'],
+    domains: ['lh3.googleusercontent.com', 'example.com', 'localhost'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**',
       },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '9000',
+        pathname: '/dsview/**',
+      },
     ],
+  },
+
+  // Proxy configuration for MinIO images
+  async rewrites() {
+    return [
+      {
+        source: '/api/minio/:path*',
+        destination: 'http://localhost:9000/:path*',
+      },
+    ];
   },
 
   // Bundle optimization

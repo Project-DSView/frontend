@@ -51,6 +51,12 @@ interface SinglyLinkedListVisualizationProps {
   currentStep?: string;
   currentPosition?: number;
   selectedStep?: number | null;
+  currentOperationData?: {
+    type: string;
+    value?: string | null;
+    position?: string | null;
+    newValue?: string | null;
+  };
 }
 
 interface DoublyLinkedListOperationsProps {
@@ -67,6 +73,12 @@ interface DoublyLinkedListVisualizationProps {
   currentStep?: string;
   currentPosition?: number;
   selectedStep?: number | null;
+  currentOperationData?: {
+    type: string;
+    value?: string | null;
+    position?: string | null;
+    newValue?: string | null;
+  };
 }
 
 interface StackOperationsProps {

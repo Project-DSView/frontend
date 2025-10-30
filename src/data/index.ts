@@ -1,5 +1,10 @@
 // Components
-export { getSubmenuItemsWithNested, playgroundItems } from './components/menu.data';
+export {
+  getSubmenuItemsWithNested,
+  playgroundItems,
+  playgroundIcons,
+  PARTICLE_POSITIONS,
+} from './components/menu.data';
 export { default as features } from './components/card.data';
 export { structures as showcaseStructures } from './components/showcase.data';
 export {

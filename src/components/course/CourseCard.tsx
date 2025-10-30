@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Users, BookOpen, Calendar, User, LogIn } from 'lucide-react';
 
 import { CourseCardProps } from '@/types';
-import { isValidImageUrl, getCourseImageFallback } from '@/lib';
+import { isValidImageUrl, getCourseImageFallback, transformImageUrl } from '@/lib';
 
 import {
   Card,
@@ -44,7 +44,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           {isValidImageUrl(course.image_url) ? (
             <div className="h-48 w-full overflow-hidden rounded-lg">
               <Image
-                src={course.image_url!}
+                src={transformImageUrl(course.image_url!)}
                 alt={course.name}
                 width={300}
                 height={192}
@@ -88,7 +88,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           <div className="text-neutral flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4" />
-              <span>นักเรียน {course.enrollment_count} คน</span>
+              <span>นักเรียน {course.enrollment_count || 0} คน</span>
             </div>
           </div>
 

@@ -79,10 +79,10 @@ const ImageModal: React.FC<ImageModalProps> = ({ selectedImage, onClose }) => {
         <button
           ref={closeButtonRef}
           onClick={onClose}
-          className="fixed top-4 right-4 z-20 rounded-full bg-gray-100 p-4 shadow-lg transition-colors hover:bg-gray-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="fixed top-4 right-4 z-20 rounded-full bg-gray-100 p-4 shadow-lg transition-colors hover:bg-gray-200 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-800 dark:hover:bg-gray-700"
           aria-label="Close modal (Press Escape or Enter)"
         >
-          <X className="h-6 w-6 text-gray-700" />
+          <X className="h-6 w-6 text-gray-700 dark:text-gray-300" />
         </button>
         <div className="relative h-full w-full">
           <Image

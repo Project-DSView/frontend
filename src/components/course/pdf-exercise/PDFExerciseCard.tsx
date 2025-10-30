@@ -54,7 +54,7 @@ const PDFExerciseCard: React.FC<MaterialCardProps> = ({ material }) => {
                   isExpired ? 'text-red-600' : 'text-gray-600'
                 }`}
               >
-                <span>
+                <span className="text-error text-base font-medium">
                   {isExpired ? 'หมดเวลาแล้ว' : `ส่งภายใน ${formatDate(material.deadline!)}`}
                 </span>
                 {isExpired && !isGraded && (

@@ -65,7 +65,7 @@ const GraphEdge = memo<GraphEdgeProps>(
     return (
       <div>
         <div
-          className="pointer-events-none absolute"
+          className="pointer-events-none absolute dark:bg-gray-400"
           style={{
             left: `${startX + offsetX}px`,
             top: `${startY + offsetY}px`,
@@ -100,7 +100,7 @@ const GraphEdge = memo<GraphEdgeProps>(
 
         {typeof edge.weight === 'number' && !isNaN(edge.weight) && (
           <div
-            className="absolute -translate-x-1/2 -translate-y-1/2 rounded bg-white px-1 text-xs text-gray-700"
+            className="absolute -translate-x-1/2 -translate-y-1/2 rounded bg-white px-1 text-xs text-gray-700 dark:bg-gray-700 dark:text-gray-300"
             style={{ left: `${midX}px`, top: `${midY}px`, zIndex: 2 }}
           >
             {edge.weight}

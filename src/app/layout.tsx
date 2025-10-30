@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { ReactQueryProvider } from '@/providers';
+import { ReactQueryProvider, ThemeProvider } from '@/providers';
 import { Toaster } from '@/components/ui/sonner';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
@@ -42,13 +42,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased`}>
-        <main>
-          <ReactQueryProvider>{children}</ReactQueryProvider>
-          <Toaster position="top-center" />
-          <SpeedInsights />
-        </main>
+        <ThemeProvider>
+          <ReactQueryProvider>
+            {children}
+            <Toaster position="top-center" />
+            <SpeedInsights />
+          </ReactQueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

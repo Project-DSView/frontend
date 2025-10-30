@@ -233,8 +233,8 @@ const AuthButtons: React.FC = () => {
   if (!isMounted || !isInitialized) {
     return (
       <div className="flex items-center space-x-2">
-        <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
-        <span className="text-sm text-gray-600">Loading...</span>
+        <div className="border-muted-foreground/30 border-t-foreground h-4 w-4 animate-spin rounded-full border-2"></div>
+        <span className="text-muted-foreground text-sm">Loading...</span>
       </div>
     );
   }
@@ -242,7 +242,7 @@ const AuthButtons: React.FC = () => {
   if (!profile) {
     return (
       <Button
-        className="flex items-center space-x-2 rounded-lg bg-gray-900 px-3 py-1.5 text-white shadow-sm transition-all duration-200 hover:bg-gray-800 hover:shadow-md sm:px-4"
+        className="bg-primary hover:bg-primary/90 flex items-center space-x-2 rounded-lg px-3 py-1.5 text-white shadow-sm transition-all duration-200 hover:shadow-md sm:px-4"
         onClick={handleLogin}
         disabled={isFetching || isLoggingOut}
       >
@@ -256,7 +256,7 @@ const AuthButtons: React.FC = () => {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="flex items-center space-x-2 rounded-lg px-3 py-1.5 hover:bg-gray-100"
+          className="hover:bg-muted flex items-center space-x-2 rounded-lg px-3 py-1.5"
           id={`user-menu-trigger-${dropdownId}`}
         >
           <div className="flex items-center space-x-2">
@@ -269,23 +269,23 @@ const AuthButtons: React.FC = () => {
                 height={32}
               />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
-                <span className="text-sm font-medium text-gray-600">
+              <div className="bg-muted flex h-8 w-8 items-center justify-center rounded-full">
+                <span className="text-muted-foreground text-sm font-medium">
                   {profile.firstname.charAt(0)}
                   {profile.lastname.charAt(0)}
                 </span>
               </div>
             )}
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-foreground text-sm font-medium">
               {profile.firstname} {profile.lastname}
             </span>
           </div>
-          <ChevronDown className="h-4 w-4 text-gray-500" />
+          <ChevronDown className="text-muted-foreground h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56" id={`user-menu-content-${dropdownId}`}>
-        <div className="px-2 py-1.5 text-sm text-gray-500">
-          Signed in as <span className="font-medium text-gray-900">{profile.email}</span>
+        <div className="text-muted-foreground px-2 py-1.5 text-sm">
+          Signed in as <span className="text-foreground font-medium">{profile.email}</span>
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" onClick={handleViewScore}>

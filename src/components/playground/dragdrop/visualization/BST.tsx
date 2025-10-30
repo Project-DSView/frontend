@@ -6,7 +6,16 @@ import ZoomableContainer from '../../shared/ZoomableContainer';
 
 const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProps>(
   (
-    { root, stats, isRunning, currentStep, searchPath = [], currentOperation, selectedStep },
+    {
+      root,
+      stats,
+      isRunning,
+      currentStep,
+      searchPath = [],
+      currentOperation,
+      selectedStep,
+      currentOperationData,
+    },
     ref,
   ) => {
     const [traverseIndex, setTraverseIndex] = useState(0);
@@ -84,20 +93,39 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
       }
     }, [isRunning, currentOperation, root]);
 
-    // Simple animation when isRunning is true (fallback)
+    // Simple animation when isRunning is true (fallback) - show correct node based on operation
     useEffect(() => {
       if (isRunning && !isAnimating) {
         setIsAnimating(true);
-        if (root) {
+
+        // Calculate the correct node to highlight based on operation type
+        let targetNode: string | null = null;
+
+        if (currentOperationData) {
+          if (currentOperationData.type === 'insert' && currentOperationData.value) {
+            targetNode = currentOperationData.value;
+          } else if (currentOperationData.type === 'delete' && currentOperationData.value) {
+            targetNode = currentOperationData.value;
+          } else if (currentOperationData.type === 'search' && currentOperationData.value) {
+            targetNode = currentOperationData.value;
+          }
+        }
+
+        // If we found a target node, highlight it; otherwise highlight root
+        if (targetNode) {
+          setHighlightedNodes([targetNode]);
+        } else if (root) {
+          // Fallback to root node if no specific target
           setHighlightedNodes([root.value]);
         }
+
         const timer = setTimeout(() => {
           setIsAnimating(false);
           setHighlightedNodes([]);
         }, 1000);
         return () => clearTimeout(timer);
       }
-    }, [isRunning, isAnimating, root]);
+    }, [isRunning, isAnimating, currentOperationData, root]);
 
     // Handle traverse animation
     useEffect(() => {
@@ -205,13 +233,13 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
           <div
             className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-500 ${
               isHighlighted
-                ? 'scale-110 border-yellow-400 bg-yellow-200 text-yellow-800 shadow-lg'
+                ? 'scale-110 border-yellow-400 bg-yellow-200 text-yellow-900 shadow-lg dark:border-yellow-500 dark:bg-yellow-700 dark:text-yellow-100'
                 : isInSearchPath
-                  ? 'scale-105 border-blue-400 bg-blue-200 text-blue-800 shadow-md'
+                  ? 'scale-105 border-blue-400 bg-blue-200 text-blue-900 shadow-md dark:border-blue-500 dark:bg-blue-700 dark:text-blue-100'
                   : isTraverseSelected || isCurrentlyTraversing
-                    ? 'scale-110 border-green-400 bg-green-200 text-green-800 shadow-lg'
-                    : 'border-gray-600 bg-white text-gray-800 hover:shadow-md'
-            } ${isRunning ? 'animate-pulse' : ''} ${isAnimating ? 'animate-bounce ring-4 ring-blue-400' : ''}`}
+                    ? 'scale-110 border-green-400 bg-green-200 text-green-900 shadow-lg dark:border-green-500 dark:bg-green-700 dark:text-green-100'
+                    : 'border-gray-600 bg-white text-gray-800 hover:shadow-md dark:border-gray-400 dark:bg-gray-700 dark:text-gray-100'
+            } ${isRunning ? 'animate-pulse' : ''} ${isAnimating ? 'ring-4 ring-blue-400 dark:ring-blue-500' : ''}`}
           >
             {node.value}
             {isHighlighted && (
@@ -229,7 +257,6 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
 
     const renderNode = useCallback(
       (node: PositionedNode): React.ReactNode => {
-        const isHighlighted = highlightedNodes.includes(node.value);
         const isInSearchPath = searchPath.includes(node.value);
 
         // Check if this node should be animated during traversal
@@ -248,6 +275,8 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
             traverseIndex < traversalOrder.length &&
             node.value === traversalOrder[traverseIndex],
         );
+
+        const isHighlighted = highlightedNodes.includes(node.value) && !isCurrentlyTraversing;
 
         return (
           <NodeComponent
@@ -313,7 +342,7 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
         connections.push(
           <div
             key={`${parent.id}-${child.id}`}
-            className="pointer-events-none absolute"
+            className="pointer-events-none absolute dark:bg-gray-400"
             style={{
               left: `calc(50% + ${startX}px)`, // Match the node positioning
               top: `${startY}px`,
@@ -340,12 +369,14 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
     }, [root, positionedNodes]);
 
     return (
-      <div ref={ref} className="rounded-lg bg-white p-6 shadow">
+      <div ref={ref} className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-800">BST Visualization</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+            BST Visualization
+          </h2>
           {isRunning && (
-            <div className="flex items-center space-x-2 text-sm text-blue-600">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600" />
+            <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-500" />
               <span>Running...</span>
             </div>
           )}
@@ -353,15 +384,17 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
 
         {/* Current Step Display */}
         {currentStep && (
-          <div className="mb-4 rounded-lg bg-blue-50 p-3">
-            <div className="text-sm font-medium text-blue-800">Current Step:</div>
-            <div className="text-sm text-blue-700">{currentStep}</div>
+          <div className="mb-4 rounded-lg bg-blue-50 p-3 dark:bg-blue-900/30">
+            <div className="text-sm font-medium text-blue-800 dark:text-blue-200">
+              Current Step:
+            </div>
+            <div className="text-sm text-blue-700 dark:text-blue-300">{currentStep}</div>
           </div>
         )}
 
         {/* Tree Visualization */}
         <ZoomableContainer
-          className="min-h-[400px] rounded-lg bg-gray-50"
+          className="min-h-[400px] rounded-lg bg-gray-50 dark:bg-gray-900"
           minZoom={0.3}
           maxZoom={2}
           initialZoom={1}
@@ -379,7 +412,7 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
               {positionedNodes.map(renderNode)}
             </div>
           ) : (
-            <div className="flex h-96 items-center justify-center text-gray-400">
+            <div className="flex h-96 items-center justify-center text-gray-400 dark:text-gray-500">
               <div className="text-center">
                 <div className="text-lg font-medium">Empty BST</div>
                 <div className="text-sm">ลาก operations มาสร้าง BST</div>
@@ -390,30 +423,34 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
 
         {/* Stats Display */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
-          <div className="rounded-lg bg-gray-50 p-3 text-center">
-            <div className="text-2xl font-bold text-gray-800">{stats.size}</div>
-            <div className="text-xs text-gray-600">Size</div>
+          <div className="rounded-lg bg-gray-50 p-3 text-center dark:bg-gray-700">
+            <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.size}</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Size</div>
           </div>
-          <div className="rounded-lg bg-gray-50 p-3 text-center">
-            <div className="text-2xl font-bold text-gray-800">{stats.height}</div>
-            <div className="text-xs text-gray-600">Height</div>
+          <div className="rounded-lg bg-gray-50 p-3 text-center dark:bg-gray-700">
+            <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+              {stats.height}
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Height</div>
           </div>
         </div>
 
         {/* Traversal Order Display */}
         {traversalOrder.length > 0 && (
-          <div className="mt-4 rounded-lg bg-green-50 p-3">
-            <div className="text-sm font-medium text-green-800">Traversal Order:</div>
-            <div className="text-sm text-green-700">
+          <div className="mt-4 rounded-lg bg-green-50 p-3 dark:bg-green-900/30">
+            <div className="text-sm font-medium text-green-800 dark:text-green-200">
+              Traversal Order:
+            </div>
+            <div className="text-sm text-green-700 dark:text-green-300">
               {traversalOrder.map((value, index) => (
                 <span
                   key={index}
                   className={`mx-1 inline-block rounded px-2 py-1 transition-all duration-300 ${
                     isTraversing && index === traverseIndex
-                      ? 'scale-110 bg-green-200 font-bold text-green-800'
+                      ? 'scale-110 bg-green-200 font-bold text-green-800 dark:bg-green-700 dark:text-green-100'
                       : index < traverseIndex
-                        ? 'bg-green-100 text-green-600'
-                        : 'bg-gray-100 text-gray-500'
+                        ? 'bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-300'
+                        : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                   }`}
                 >
                   {value}
@@ -424,14 +461,18 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
         )}
 
         {/* Legend */}
-        <div className="mt-4 flex flex-wrap gap-4 text-xs">
+        <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-700 dark:text-gray-300">
           <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 rounded-full border border-green-400 bg-green-200" />
+            <div className="h-3 w-3 rounded-full border border-green-400 bg-green-200 dark:border-green-500 dark:bg-green-700" />
             <span>Traversing</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 rounded-full border border-gray-600 bg-white" />
+            <div className="h-3 w-3 rounded-full border border-gray-600 bg-white dark:border-gray-400 dark:bg-gray-700" />
             <span>Normal Node</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="h-3 w-3 rounded-full border border-yellow-400 bg-yellow-200 dark:border-yellow-500 dark:bg-yellow-700" />
+            <span>Highlighted</span>
           </div>
         </div>
       </div>

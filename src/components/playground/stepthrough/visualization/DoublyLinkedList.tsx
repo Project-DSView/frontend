@@ -35,10 +35,19 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
     if (steps.length > 0 && currentStepIndex < steps.length) {
       const currentStep = steps[currentStepIndex];
       const message = currentStep.state?.message || '';
+      const code = currentStep.code || '';
 
       // Check if this is a traverse operation
-      if (message.includes('traverse') || message.includes('current.data')) {
-        if (message.includes('traverseReverse') || message.includes('reverse')) {
+      if (
+        message.includes('traverse') ||
+        message.includes('current.data') ||
+        code.includes('traverse()')
+      ) {
+        if (
+          message.includes('traverseReverse') ||
+          message.includes('reverse') ||
+          code.includes('traverseReverse()')
+        ) {
           // Reverse traverse
           setIsReverseTraversing(true);
           setIsTraversing(false);
@@ -158,6 +167,7 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
   // Render a single node
   const renderNode = (value: string, index: number) => {
     const isHighlighted = highlightedNodeIndex === index;
+    const isCurrentNode = index === traverseIndex && (isTraversing || isReverseTraversing);
     const isFirst = index === 0;
     const isLast = index === nodes.length - 1;
 
@@ -165,58 +175,92 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
       <div className="flex items-center" key={index}>
         {/* Node Container - 3 Section Layout like in dragdrop */}
         <div
-          className={`flex h-16 w-40 rounded-lg border-2 border-black bg-white transition-all duration-700 ease-in-out ${
-            isHighlighted
-              ? 'scale-105 animate-bounce bg-yellow-50 shadow-lg'
-              : isTransitioning
-                ? 'scale-105 animate-pulse bg-blue-50'
-                : 'hover:scale-105 hover:bg-gray-50'
+          className={`flex h-16 w-40 rounded-lg border-2 transition-all duration-700 ease-in-out ${
+            isCurrentNode
+              ? 'scale-105 animate-pulse border-blue-500 bg-blue-50 shadow-lg'
+              : isHighlighted
+                ? 'scale-105 animate-bounce border-black bg-yellow-50 shadow-lg'
+                : isTransitioning
+                  ? 'scale-105 animate-pulse border-black bg-blue-50'
+                  : 'border-black bg-white hover:scale-105 hover:bg-gray-50'
           } ${isTransitioning ? 'animate-pulse' : ''}`}
         >
           {/* Prev Section - Left */}
           <div
-            className={`flex w-1/3 items-center justify-center rounded-l-lg ${
-              isHighlighted ? 'bg-yellow-100' : 'bg-gray-100'
+            className={`flex w-1/3 items-center justify-center rounded-l-lg bg-white ${
+              isCurrentNode ? 'bg-blue-100' : isHighlighted ? 'bg-yellow-100' : 'bg-gray-100'
             }`}
           >
             {isFirst ? (
               <div className="relative flex h-full w-full items-center justify-center">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-0.5 w-8 rotate-45 transform bg-black"></div>
-                  <div className="absolute h-0.5 w-8 -rotate-45 transform bg-black"></div>
+                  <div
+                    className={`h-0.5 w-8 rotate-45 transform ${
+                      isCurrentNode ? 'bg-blue-500' : 'bg-black'
+                    }`}
+                  ></div>
+                  <div
+                    className={`absolute h-0.5 w-8 -rotate-45 transform ${
+                      isCurrentNode ? 'bg-blue-500' : 'bg-black'
+                    }`}
+                  ></div>
                 </div>
               </div>
             ) : (
-              <span className="text-xs font-bold text-black">Prev</span>
+              <span
+                className={`text-xs font-bold ${isCurrentNode ? 'text-blue-700' : 'text-black'}`}
+              >
+                Prev
+              </span>
             )}
           </div>
 
           {/* Data Section - Center */}
           <div
-            className={`flex w-1/3 items-center justify-center border-x border-x-2 border-black ${
-              isHighlighted ? 'bg-yellow-100' : 'bg-white'
+            className={`flex w-1/3 items-center justify-center border-x border-x-2 ${
+              isCurrentNode
+                ? 'border-blue-500 bg-blue-100'
+                : isHighlighted
+                  ? 'border-black bg-yellow-100'
+                  : 'border-black bg-white'
             }`}
           >
-            <span className={`font-bold text-black ${value.length > 6 ? 'text-sm' : 'text-lg'}`}>
+            <span
+              className={`font-bold ${
+                isCurrentNode ? 'text-blue-700' : 'text-black'
+              } ${value.length > 6 ? 'text-sm' : 'text-lg'}`}
+            >
               {value}
             </span>
           </div>
 
           {/* Next Section - Right */}
           <div
-            className={`flex w-1/3 items-center justify-center rounded-r-lg ${
-              isHighlighted ? 'bg-yellow-100' : 'bg-gray-100'
+            className={`flex w-1/3 items-center justify-center rounded-r-lg bg-white ${
+              isCurrentNode ? 'bg-blue-100' : isHighlighted ? 'bg-yellow-100' : 'bg-gray-100'
             }`}
           >
             {isLast ? (
               <div className="relative flex h-full w-full items-center justify-center">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-0.5 w-8 rotate-45 transform bg-black"></div>
-                  <div className="absolute h-0.5 w-8 -rotate-45 transform bg-black"></div>
+                  <div
+                    className={`h-0.5 w-8 rotate-45 transform ${
+                      isCurrentNode ? 'bg-blue-500' : 'bg-black'
+                    }`}
+                  ></div>
+                  <div
+                    className={`absolute h-0.5 w-8 -rotate-45 transform ${
+                      isCurrentNode ? 'bg-blue-500' : 'bg-black'
+                    }`}
+                  ></div>
                 </div>
               </div>
             ) : (
-              <span className="text-xs font-bold text-black">Next</span>
+              <span
+                className={`text-xs font-bold ${isCurrentNode ? 'text-blue-700' : 'text-black'}`}
+              >
+                Next
+              </span>
             )}
           </div>
         </div>
@@ -287,6 +331,10 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
                 steps.length > 0 && currentStepIndex < steps.length
                   ? steps[currentStepIndex].state?.message || ''
                   : '';
+              const code =
+                steps.length > 0 && currentStepIndex < steps.length
+                  ? steps[currentStepIndex].code || ''
+                  : '';
               return (
                 <Fragment key={index}>
                   <div className="relative">
@@ -310,6 +358,8 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
                     {index === traverseIndex &&
                       (message.includes('traverse') ||
                         message.includes('current.data') ||
+                        code.includes('traverse()') ||
+                        code.includes('traverseReverse()') ||
                         isTraversing ||
                         isReverseTraversing) && (
                         <div

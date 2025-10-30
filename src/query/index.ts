@@ -3,8 +3,18 @@ export { useGoogleAuthUrl, useLogout, useRefreshToken } from './auth/auth.query'
 export { useProfile, useFetchProfile } from './auth/profile.query';
 
 // Course
-export { useCourses, useCourse } from './course/course';
-export { useCourseMaterials, useCourseMaterial } from './course/materials';
+export { useCourses, useCourse } from './course/course.query';
+export { useCourseMaterials, useCourseMaterial } from './course/materials.query';
+export { useCourseLeaderboard } from './course/leaderboard.query';
+export {
+  useMySubmission,
+  useSubmission,
+  useSubmissionDownloadUrl,
+  useSubmitCodeExercise,
+  useSubmitPDFExercise,
+  useCancelSubmission,
+} from './course/submissions.query';
+export { useAnnouncements } from './course/announcements.query';
 
 // Enrollment
 export {
@@ -12,8 +22,7 @@ export {
   useEnrollInCourse,
   useUnenrollFromCourse,
   useCourseEnrollments,
-} from './enrollment/enrollment';
-export { useAnnouncements } from './announcements/announcements';
+} from './enrollment/enrollment.query';
 
 // Stepthrough
 export {
@@ -23,11 +32,10 @@ export {
   useStepthroughState,
 } from './stepthrough/stepthrough.query';
 
-// Submissions
+// Queue
 export {
-  useMySubmission,
-  useSubmission,
-  useSubmissionDownloadUrl,
-  useSubmitPDFExercise,
-  useCancelSubmission,
-} from './submissions/submissions.query';
+  useRequestApproval,
+  useQueueJobs,
+  useClaimQueueJob,
+  useCompleteReview,
+} from './queue/queue.query';

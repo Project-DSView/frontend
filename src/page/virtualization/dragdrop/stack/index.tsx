@@ -373,15 +373,15 @@ const DragDropStack = () => {
   const currentVisualizationState = getCurrentVisualizationState();
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6 dark:bg-gray-900">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="mb-2 text-xl font-bold text-gray-800 md:text-2xl lg:text-2xl">
+            <h1 className="mb-2 text-xl font-bold text-gray-800 md:text-2xl lg:text-2xl dark:text-gray-100">
               Drag & Drop Stack
             </h1>
-            <p className="text-sm text-gray-600 md:text-base">
+            <p className="text-sm text-gray-600 md:text-base dark:text-gray-400">
               ลาก operations ไปยัง Drop Zone และเลือก stack ที่ต้องการ
             </p>
           </div>
@@ -395,7 +395,7 @@ const DragDropStack = () => {
         <div className="sticky top-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
           <Suspense
             fallback={
-              <div className="h-64 w-full rounded-lg border bg-gray-50">
+              <div className="h-64 w-full rounded-lg border bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
                 <div className="flex h-full items-center justify-center">
                   <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
                 </div>
@@ -411,9 +411,9 @@ const DragDropStack = () => {
         </div>
 
         {/* Right Side - Drop Zone */}
-        <div className="rounded-lg bg-white p-4 shadow md:p-6">
+        <div className="rounded-lg bg-white p-4 shadow md:p-6 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-800">Drop Zone</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Drop Zone</h2>
             <div className="space-x-2">
               <button
                 onClick={handleClearAll}
@@ -447,7 +447,7 @@ const DragDropStack = () => {
         {isAutoPlaying && state.operations.length > 0 && selectedStep !== null && (
           <Suspense
             fallback={
-              <div className="mb-4 rounded-lg bg-blue-50 p-4">
+              <div className="mb-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/30">
                 <div className="flex h-6 items-center justify-center">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
                 </div>
@@ -465,7 +465,7 @@ const DragDropStack = () => {
 
         <Suspense
           fallback={
-            <div className="h-64 w-full rounded-lg border bg-gray-50">
+            <div className="h-64 w-full rounded-lg border bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
               <div className="flex h-full items-center justify-center">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
               </div>

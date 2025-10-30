@@ -23,6 +23,9 @@ export { default as AnnouncementsService } from './announcements/announcements.s
 // Submissions
 export { default as SubmissionService } from './submissions/submissions.service';
 
+// Queue
+export { default as QueueService } from './queue/queue.service';
+
 // Realtime
 export { default as SinglyLinkedListRealtimeService } from './realtime/SinglyLinkedList.service';
 export { default as DoublyLinkedListRealtimeService } from './realtime/DoublyLinkedList.service';

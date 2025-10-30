@@ -176,8 +176,8 @@ const DirectedGraphRealtimeVisualization = forwardRef<HTMLDivElement, DirectedGr
     const renderSingleGraph = (graphData: RealtimeDirectedGraphData, graphName: string) => {
       if (graphData.nodes.length === 0) {
         return (
-          <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-            <div className="text-center text-gray-500">
+          <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+            <div className="text-center text-gray-500 dark:text-gray-400">
               <div className="text-lg font-semibold">Graph is Empty</div>
               <div className="text-sm">Add vertices and edges using operations</div>
             </div>
@@ -275,9 +275,9 @@ const DirectedGraphRealtimeVisualization = forwardRef<HTMLDivElement, DirectedGr
 
       return (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-700">{graphName}</h3>
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">{graphName}</h3>
           <ZoomableContainer
-            className="min-h-[400px] rounded-lg bg-gray-50"
+            className="min-h-[400px] rounded-lg bg-gray-50 dark:bg-gray-800"
             minZoom={0.3}
             maxZoom={2}
             initialZoom={1}
@@ -315,7 +315,10 @@ const DirectedGraphRealtimeVisualization = forwardRef<HTMLDivElement, DirectedGr
                 Object.entries(data.allGraphs)
                   .filter(([, graphData]) => (graphData as GraphData).vertices > 0)
                   .map(([graphName, graphData]) => (
-                    <div key={graphName} className="rounded-lg border bg-white p-4">
+                    <div
+                      key={graphName}
+                      className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+                    >
                       {renderSingleGraph(
                         {
                           ...data,
@@ -332,32 +335,40 @@ const DirectedGraphRealtimeVisualization = forwardRef<HTMLDivElement, DirectedGr
                       )}
 
                       {/* Graph Information */}
-                      <div className="mt-4 rounded-lg bg-gray-50 p-3">
-                        <h5 className="mb-2 font-medium text-gray-700">
+                      <div className="mt-4 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+                        <h5 className="mb-2 font-medium text-gray-700 dark:text-gray-300">
                           Graph {graphName} Information
                         </h5>
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div>
-                            <span className="font-medium text-gray-600">Vertices:</span>
-                            <span className="ml-2 text-gray-800">
+                            <span className="font-medium text-gray-600 dark:text-gray-400">
+                              Vertices:
+                            </span>
+                            <span className="ml-2 text-gray-800 dark:text-gray-200">
                               {(graphData as GraphData).vertices}
                             </span>
                           </div>
                           <div>
-                            <span className="font-medium text-gray-600">Edges:</span>
-                            <span className="ml-2 text-gray-800">
+                            <span className="font-medium text-gray-600 dark:text-gray-400">
+                              Edges:
+                            </span>
+                            <span className="ml-2 text-gray-800 dark:text-gray-200">
                               {(graphData as GraphData).edgeCount}
                             </span>
                           </div>
                           <div>
-                            <span className="font-medium text-gray-600">Strongly Connected:</span>
-                            <span className="ml-2 text-gray-800">
+                            <span className="font-medium text-gray-600 dark:text-gray-400">
+                              Strongly Connected:
+                            </span>
+                            <span className="ml-2 text-gray-800 dark:text-gray-200">
                               {(graphData as GraphData).isStronglyConnected ? 'Yes' : 'No'}
                             </span>
                           </div>
                           <div>
-                            <span className="font-medium text-gray-600">Has Cycle:</span>
-                            <span className="ml-2 text-gray-800">
+                            <span className="font-medium text-gray-600 dark:text-gray-400">
+                              Has Cycle:
+                            </span>
+                            <span className="ml-2 text-gray-800 dark:text-gray-200">
                               {(graphData as GraphData).hasCycle ? 'Yes' : 'No'}
                             </span>
                           </div>
@@ -372,35 +383,49 @@ const DirectedGraphRealtimeVisualization = forwardRef<HTMLDivElement, DirectedGr
             {renderSingleGraph(data, 'Directed Graph')}
 
             {/* Graph Information */}
-            <div className="rounded-lg bg-gray-50 p-4">
-              <h4 className="mb-2 font-semibold text-gray-700">Graph Information</h4>
+            <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+              <h4 className="mb-2 font-semibold text-gray-700 dark:text-gray-300">
+                Graph Information
+              </h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="font-medium text-gray-600">Vertices:</span>
-                  <span className="ml-2 text-gray-800">{data.vertices}</span>
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Vertices:</span>
+                  <span className="ml-2 text-gray-800 dark:text-gray-200">{data.vertices}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Edges:</span>
-                  <span className="ml-2 text-gray-800">{data.edgeCount}</span>
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Edges:</span>
+                  <span className="ml-2 text-gray-800 dark:text-gray-200">{data.edgeCount}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Strongly Connected:</span>
-                  <span className="ml-2 text-gray-800">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">
+                    Strongly Connected:
+                  </span>
+                  <span className="ml-2 text-gray-800 dark:text-gray-200">
                     {data.isStronglyConnected ? 'Yes' : 'No'}
                   </span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Has Cycle:</span>
-                  <span className="ml-2 text-gray-800">{data.hasCycle ? 'Yes' : 'No'}</span>
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Has Cycle:</span>
+                  <span className="ml-2 text-gray-800 dark:text-gray-200">
+                    {data.hasCycle ? 'Yes' : 'No'}
+                  </span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Current Operation:</span>
-                  <span className="ml-2 text-gray-800">{data.currentOperation || 'None'}</span>
+                  <span className="font-medium text-gray-600 dark:text-gray-400">
+                    Current Operation:
+                  </span>
+                  <span className="ml-2 text-gray-800 dark:text-gray-200">
+                    {data.currentOperation || 'None'}
+                  </span>
                 </div>
                 {data.currentTraversal && (
                   <div>
-                    <span className="font-medium text-gray-600">Traversal Mode:</span>
-                    <span className="ml-2 text-gray-800 capitalize">{data.currentTraversal}</span>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">
+                      Traversal Mode:
+                    </span>
+                    <span className="ml-2 text-gray-800 capitalize dark:text-gray-200">
+                      {data.currentTraversal}
+                    </span>
                   </div>
                 )}
               </div>
@@ -410,24 +435,30 @@ const DirectedGraphRealtimeVisualization = forwardRef<HTMLDivElement, DirectedGr
                 <div className="mt-3 space-y-2">
                   {data.traversalResults.dfs.length > 0 && (
                     <div>
-                      <span className="font-medium text-gray-600">DFS Result:</span>
-                      <div className="mt-1 text-gray-800">
+                      <span className="font-medium text-gray-600 dark:text-gray-400">
+                        DFS Result:
+                      </span>
+                      <div className="mt-1 text-gray-800 dark:text-gray-200">
                         {data.traversalResults.dfs.join(' → ')}
                       </div>
                     </div>
                   )}
                   {data.traversalResults.bfs.length > 0 && (
                     <div>
-                      <span className="font-medium text-gray-600">BFS Result:</span>
-                      <div className="mt-1 text-gray-800">
+                      <span className="font-medium text-gray-600 dark:text-gray-400">
+                        BFS Result:
+                      </span>
+                      <div className="mt-1 text-gray-800 dark:text-gray-200">
                         {data.traversalResults.bfs.join(' → ')}
                       </div>
                     </div>
                   )}
                   {data.traversalResults.topological.length > 0 && (
                     <div>
-                      <span className="font-medium text-gray-600">Topological Sort:</span>
-                      <div className="mt-1 text-gray-800">
+                      <span className="font-medium text-gray-600 dark:text-gray-400">
+                        Topological Sort:
+                      </span>
+                      <div className="mt-1 text-gray-800 dark:text-gray-200">
                         {data.traversalResults.topological.join(' → ')}
                       </div>
                     </div>
@@ -438,8 +469,12 @@ const DirectedGraphRealtimeVisualization = forwardRef<HTMLDivElement, DirectedGr
               {/* Shortest Path */}
               {data.shortestPath && data.shortestPath.length > 0 && (
                 <div className="mt-3">
-                  <span className="font-medium text-gray-600">Shortest Path:</span>
-                  <div className="mt-1 text-gray-800">{data.shortestPath.join(' → ')}</div>
+                  <span className="font-medium text-gray-600 dark:text-gray-400">
+                    Shortest Path:
+                  </span>
+                  <div className="mt-1 text-gray-800 dark:text-gray-200">
+                    {data.shortestPath.join(' → ')}
+                  </div>
                 </div>
               )}
             </div>

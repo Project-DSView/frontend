@@ -56,7 +56,7 @@ const FileUploadButton: React.FC<FileUploadButtonProps> = ({ onFileLoad, disable
       <button
         onClick={handleClick}
         disabled={disabled}
-        className="bg-neutral/20 hover:bg-neutral/80 inline-flex items-center justify-center gap-2 rounded px-3 py-2 text-xs text-gray-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm md:px-5 md:py-2.5 md:text-sm lg:px-6 lg:py-3 lg:text-base"
+        className="bg-neutral/20 dark:bg-neutral/80 hover:bg-neutral/80 dark:hover:bg-neutral/40 inline-flex items-center justify-center gap-2 rounded px-3 py-2 text-xs text-gray-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm md:px-5 md:py-2.5 md:text-sm lg:px-6 lg:py-3 lg:text-base dark:text-gray-200"
       >
         <svg
           className="h-3 w-3 sm:h-4 sm:w-4"

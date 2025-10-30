@@ -255,8 +255,8 @@ const UndirectedGraphRealtimeVisualization = forwardRef<
   const renderSingleGraph = (graphData: RealtimeUndirectedGraphData, graphName: string) => {
     if (graphData.nodes.length === 0) {
       return (
-        <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-          <div className="text-center text-gray-500">
+        <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+          <div className="text-center text-gray-500 dark:text-gray-400">
             <div className="text-lg font-semibold">Graph is Empty</div>
             <div className="text-sm">Add vertices and edges using operations</div>
           </div>
@@ -334,8 +334,8 @@ const UndirectedGraphRealtimeVisualization = forwardRef<
 
     return (
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-700">{graphName}</h3>
-        <div className="relative min-h-[400px] overflow-auto rounded-lg bg-gray-50">
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">{graphName}</h3>
+        <div className="relative min-h-[400px] overflow-auto rounded-lg bg-gray-50 dark:bg-gray-800">
           <div className="flex h-full min-h-[400px] items-center justify-center p-8">
             <div className="relative h-full min-h-[400px] w-full">
               {graphData.edges.map((edge) => renderEdgeLocal(edge))}
@@ -350,7 +350,7 @@ const UndirectedGraphRealtimeVisualization = forwardRef<
   return (
     <div
       ref={ref}
-      className="rounded-lg bg-white p-6 shadow"
+      className="rounded-lg bg-white p-6 shadow dark:bg-gray-800"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
@@ -372,7 +372,10 @@ const UndirectedGraphRealtimeVisualization = forwardRef<
             {allGraphsEntries
               .filter(([, g]) => g.vertices > 0)
               .map(([graphName, g]) => (
-                <div key={graphName} className="rounded-lg border bg-white p-4">
+                <div
+                  key={graphName}
+                  className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+                >
                   {renderSingleGraph(
                     {
                       ...data,
@@ -387,26 +390,36 @@ const UndirectedGraphRealtimeVisualization = forwardRef<
                   )}
 
                   {/* Graph Information */}
-                  <div className="mt-4 rounded-lg bg-gray-50 p-3">
-                    <h5 className="mb-2 font-medium text-gray-700">
+                  <div className="mt-4 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+                    <h5 className="mb-2 font-medium text-gray-700 dark:text-gray-300">
                       Graph {graphName} Information
                     </h5>
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
-                        <span className="font-medium text-gray-600">Vertices:</span>
-                        <span className="ml-2 text-gray-800">{g.vertices}</span>
+                        <span className="font-medium text-gray-600 dark:text-gray-400">
+                          Vertices:
+                        </span>
+                        <span className="ml-2 text-gray-800 dark:text-gray-200">{g.vertices}</span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-600">Edges:</span>
-                        <span className="ml-2 text-gray-800">{g.edgeCount}</span>
+                        <span className="font-medium text-gray-600 dark:text-gray-400">Edges:</span>
+                        <span className="ml-2 text-gray-800 dark:text-gray-200">{g.edgeCount}</span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-600">Connected:</span>
-                        <span className="ml-2 text-gray-800">{g.isConnected ? 'Yes' : 'No'}</span>
+                        <span className="font-medium text-gray-600 dark:text-gray-400">
+                          Connected:
+                        </span>
+                        <span className="ml-2 text-gray-800 dark:text-gray-200">
+                          {g.isConnected ? 'Yes' : 'No'}
+                        </span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-600">Has Cycle:</span>
-                        <span className="ml-2 text-gray-800">{g.hasCycle ? 'Yes' : 'No'}</span>
+                        <span className="font-medium text-gray-600 dark:text-gray-400">
+                          Has Cycle:
+                        </span>
+                        <span className="ml-2 text-gray-800 dark:text-gray-200">
+                          {g.hasCycle ? 'Yes' : 'No'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -417,9 +430,9 @@ const UndirectedGraphRealtimeVisualization = forwardRef<
       ) : (
         <>
           {/* Graph Visualization */}
-          <div className="relative mb-6 min-h-[400px] overflow-auto rounded-lg bg-gray-50">
+          <div className="relative mb-6 min-h-[400px] overflow-auto rounded-lg bg-gray-50 dark:bg-gray-800">
             {data.nodes.length === 0 ? (
-              <div className="flex h-96 items-center justify-center text-gray-400">
+              <div className="flex h-96 items-center justify-center text-gray-400 dark:text-gray-500">
                 <div className="text-center">
                   <div className="text-lg font-medium">Empty Graph</div>
                   <div className="text-sm">เขียนโค้ดเพื่อสร้างกราฟ</div>
@@ -434,33 +447,47 @@ const UndirectedGraphRealtimeVisualization = forwardRef<
           </div>
 
           {/* Graph Information */}
-          <div className="rounded-lg bg-gray-50 p-4">
-            <h4 className="mb-2 font-semibold text-gray-700">Graph myGraph Information</h4>
+          <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+            <h4 className="mb-2 font-semibold text-gray-700 dark:text-gray-300">
+              Graph myGraph Information
+            </h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <span className="font-medium text-gray-600">Vertices:</span>
-                <span className="ml-2 text-gray-800">{data.vertices}</span>
+                <span className="font-medium text-gray-600 dark:text-gray-400">Vertices:</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">{data.vertices}</span>
               </div>
               <div>
-                <span className="font-medium text-gray-600">Edges:</span>
-                <span className="ml-2 text-gray-800">{data.edgeCount}</span>
+                <span className="font-medium text-gray-600 dark:text-gray-400">Edges:</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">{data.edgeCount}</span>
               </div>
               <div>
-                <span className="font-medium text-gray-600">Connected:</span>
-                <span className="ml-2 text-gray-800">{data.isConnected ? 'Yes' : 'No'}</span>
+                <span className="font-medium text-gray-600 dark:text-gray-400">Connected:</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">
+                  {data.isConnected ? 'Yes' : 'No'}
+                </span>
               </div>
               <div>
-                <span className="font-medium text-gray-600">Has Cycle:</span>
-                <span className="ml-2 text-gray-800">{data.hasCycle ? 'Yes' : 'No'}</span>
+                <span className="font-medium text-gray-600 dark:text-gray-400">Has Cycle:</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">
+                  {data.hasCycle ? 'Yes' : 'No'}
+                </span>
               </div>
               <div>
-                <span className="font-medium text-gray-600">Current Operation:</span>
-                <span className="ml-2 text-gray-800">{data.currentOperation || 'None'}</span>
+                <span className="font-medium text-gray-600 dark:text-gray-400">
+                  Current Operation:
+                </span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">
+                  {data.currentOperation || 'None'}
+                </span>
               </div>
               {data.currentTraversal && (
                 <div>
-                  <span className="font-medium text-gray-600">Traversal Mode:</span>
-                  <span className="ml-2 text-gray-800 capitalize">{data.currentTraversal}</span>
+                  <span className="font-medium text-gray-600 dark:text-gray-400">
+                    Traversal Mode:
+                  </span>
+                  <span className="ml-2 text-gray-800 capitalize dark:text-gray-200">
+                    {data.currentTraversal}
+                  </span>
                 </div>
               )}
             </div>
@@ -470,16 +497,20 @@ const UndirectedGraphRealtimeVisualization = forwardRef<
               <div className="mt-3 space-y-2">
                 {data.traversalResults.dfs && data.traversalResults.dfs.length > 0 && (
                   <div>
-                    <span className="font-medium text-gray-600">DFS Result:</span>
-                    <div className="mt-1 text-gray-800">
+                    <span className="font-medium text-gray-600 dark:text-gray-400">
+                      DFS Result:
+                    </span>
+                    <div className="mt-1 text-gray-800 dark:text-gray-200">
                       {data.traversalResults.dfs.join(' → ')}
                     </div>
                   </div>
                 )}
                 {data.traversalResults.bfs && data.traversalResults.bfs.length > 0 && (
                   <div>
-                    <span className="font-medium text-gray-600">BFS Result:</span>
-                    <div className="mt-1 text-gray-800">
+                    <span className="font-medium text-gray-600 dark:text-gray-400">
+                      BFS Result:
+                    </span>
+                    <div className="mt-1 text-gray-800 dark:text-gray-200">
                       {data.traversalResults.bfs.join(' → ')}
                     </div>
                   </div>

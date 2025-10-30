@@ -53,6 +53,21 @@ interface CourseQueryParams {
   search?: string;
 }
 
+// Leaderboard types
+interface LeaderboardEntry {
+  UserID: string;
+  CourseID: string;
+  TotalScore: number;
+  LastUpdated: string;
+  CreatedAt: string;
+}
+
+interface LeaderboardResponse {
+  success: boolean;
+  message: string;
+  data: LeaderboardEntry[];
+}
+
 export type {
   Course,
   CourseCreator,
@@ -60,4 +75,6 @@ export type {
   CourseListResponse,
   CourseResponse,
   CourseQueryParams,
+  LeaderboardEntry,
+  LeaderboardResponse,
 };

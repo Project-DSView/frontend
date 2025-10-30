@@ -80,6 +80,12 @@ interface BSTVisualizationProps {
   selectedStep?: number | null;
   highlightedNodes?: string[];
   searchPath?: string[];
+  currentOperationData?: {
+    type: string;
+    value?: string | null;
+    position?: string | null;
+    newValue?: string | null;
+  };
 }
 
 interface PositionedNode extends BSTNode {

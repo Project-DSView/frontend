@@ -134,23 +134,26 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, playgrou
         aria-labelledby="tutorial-modal-title"
       >
         <div
-          className="relative max-h-[95vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white shadow-2xl"
+          className="relative max-h-[95vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white shadow-2xl dark:bg-gray-800"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white p-6">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
             <div>
-              <h2 id="tutorial-modal-title" className="text-2xl font-bold text-gray-900">
+              <h2
+                id="tutorial-modal-title"
+                className="text-2xl font-bold text-gray-900 dark:text-gray-100"
+              >
                 คู่มือการใช้งาน {modeTitle}
               </h2>
-              <p className="mt-1 text-gray-600">{modeDescription}</p>
+              <p className="mt-1 text-gray-600 dark:text-gray-400">{modeDescription}</p>
             </div>
             <Button
               ref={closeButtonRef}
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="rounded-full p-2 hover:bg-gray-100"
+              className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
               aria-label="ปิด modal"
             >
               <X className="h-5 w-5" />
@@ -161,7 +164,7 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, playgrou
           <div className="p-6">
             {/* Playground Mode Steps */}
             <div className="mb-8">
-              <h3 className="mb-6 text-xl font-semibold text-gray-900">
+              <h3 className="mb-6 text-xl font-semibold text-gray-900 dark:text-gray-100">
                 ขั้นตอนการใช้งาน {modeTitle}
               </h3>
               <div className="space-y-6">
@@ -200,7 +203,7 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, playgrou
                     blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                   />
                 </div>
-                <p className="mt-4 text-sm text-gray-600">
+                <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
                   คลิกที่เมนู &quot;Playground&quot; เพื่อเข้าถึงเครื่องมือการเรียนรู้ทั้งหมด
                 </p>
               </CardContent>
@@ -217,7 +220,7 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, playgrou
               </CardHeader>
               <CardContent>
                 <div
-                  className="relative h-48 w-full cursor-pointer overflow-hidden rounded-lg border-2 border-gray-200 transition-colors hover:border-green-400"
+                  className="relative h-48 w-full cursor-pointer overflow-hidden rounded-lg border-2 border-gray-200 transition-colors hover:border-green-400 dark:border-gray-600 dark:hover:border-green-600"
                   onClick={() => handleImageClick(tutorialSections[1].image)}
                 >
                   <Image
@@ -229,7 +232,7 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, playgrou
                     blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                   />
                 </div>
-                <p className="mt-4 text-sm text-gray-600">
+                <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
                   กดปุ่ม Export เพื่อส่งออกผลลัพธ์ในรูปแบบต่างๆ สำหรับการบันทึกหรือแชร์
                 </p>
               </CardContent>
@@ -237,9 +240,9 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, playgrou
           </div>
 
           {/* Footer */}
-          <div className="sticky bottom-0 border-t bg-gray-50 px-6 py-4">
+          <div className="sticky bottom-0 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800">
             <div className="flex justify-end">
-              <Button onClick={onClose} className="px-6">
+              <Button onClick={onClose} className="px-6 text-white">
                 ปิด
               </Button>
             </div>

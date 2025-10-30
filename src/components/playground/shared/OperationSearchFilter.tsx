@@ -75,15 +75,15 @@ const OperationSearchFilter: React.FC<OperationSearchFilterProps> = ({
 
       {/* Active Filters Display */}
       {(searchTerm || selectedCategory !== 'all') && (
-        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <span>กรองแล้ว:</span>
           {searchTerm && (
-            <span className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800">
+            <span className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800 dark:bg-blue-900/30 dark:text-blue-200">
               `{searchTerm}`
             </span>
           )}
           {selectedCategory !== 'all' && (
-            <span className="rounded-full bg-green-100 px-2 py-1 text-xs text-green-800">
+            <span className="rounded-full bg-green-100 px-2 py-1 text-xs text-green-800 dark:bg-green-900/30 dark:text-green-200">
               {categories.find((c) => c.key === selectedCategory)?.title}
             </span>
           )}

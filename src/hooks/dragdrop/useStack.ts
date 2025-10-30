@@ -44,9 +44,18 @@ class StackServiceAdapter {
   }
 
   async executeOperation(operation: StackOperation) {
+    // Validate operation before executing
+    if (operation.type === 'push' && (!operation.value || operation.value.trim() === '')) {
+      throw new Error('Push operation requires a value');
+    }
+
+    if (operation.type === 'pop' && this.service.getState().stats.isEmpty) {
+      throw new Error('Cannot pop from empty stack');
+    }
+
     switch (operation.type) {
       case 'push':
-        if (operation.value) {
+        if (operation.value && operation.value.trim() !== '') {
           return await this.service.push(operation.value);
         }
         break;
@@ -84,29 +93,12 @@ const useStack = () => {
     StackServiceAdapter,
   );
 
-  // Stack-specific validation
-  const validateStackOperation = useCallback(
-    (operation: StackOperation) => {
-      if (operation.type === 'push' && !operation.value) {
-        throw new Error('Push operation requires a value');
-      }
-      if (operation.type === 'pop' && baseHook.state.stats.isEmpty) {
-        throw new Error('Cannot pop from empty stack');
-      }
-    },
-    [baseHook.state.stats.isEmpty],
-  );
-
   const addOperationWithValidation = useCallback(
     (operation: Omit<StackOperation, 'id'>) => {
-      try {
-        validateStackOperation(operation as StackOperation);
-        baseHook.addOperation(operation);
-      } catch (error) {
-        console.error('Stack operation validation failed:', error);
-      }
+      // Don't validate immediately when adding - validation happens during execution
+      baseHook.addOperation(operation);
     },
-    [baseHook, validateStackOperation],
+    [baseHook],
   );
 
   return {

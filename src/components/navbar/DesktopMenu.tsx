@@ -32,9 +32,9 @@ const DesktopMenu = () => {
   if (!isMounted) {
     return (
       <div className="hidden items-center space-x-1 md:flex">
-        <div className="h-8 w-20 animate-pulse rounded bg-gray-200"></div>
-        <div className="h-8 w-16 animate-pulse rounded bg-gray-200"></div>
-        <div className="h-8 w-16 animate-pulse rounded bg-gray-200"></div>
+        <div className="bg-muted h-8 w-20 animate-pulse rounded"></div>
+        <div className="bg-muted h-8 w-16 animate-pulse rounded"></div>
+        <div className="bg-muted h-8 w-16 animate-pulse rounded"></div>
       </div>
     );
   }
@@ -45,18 +45,18 @@ const DesktopMenu = () => {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="flex items-center space-x-1 rounded-lg border-0 px-3 py-1.5 text-base font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-100 data-[state=open]:bg-gray-100"
+            className="text-foreground hover:bg-muted data-[state=open]:bg-muted flex items-center space-x-1 rounded-lg border-0 px-3 py-1.5 text-base font-semibold transition-all duration-200"
           >
             <span>Playground</span>
             {isPlaygroundOpen ? (
-              <ChevronUp size={16} className="text-gray-500" />
+              <ChevronUp size={16} className="text-muted-foreground" />
             ) : (
-              <ChevronDown size={16} className="text-gray-500" />
+              <ChevronDown size={16} className="text-muted-foreground" />
             )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
-          className="min-w-[280px] border border-gray-200 bg-white shadow-lg"
+          className="border-border bg-background min-w-[280px] border shadow-lg"
           sideOffset={8}
           align="start"
         >
@@ -66,8 +66,8 @@ const DesktopMenu = () => {
                 {item.href ? (
                   <Link href={item.href} className="block">
                     <div className="flex flex-col p-2">
-                      <span className="font-medium text-gray-900">{item.title}</span>
-                      <span className="text-sm text-gray-500">{item.description}</span>
+                      <span className="text-foreground font-medium">{item.title}</span>
+                      <span className="text-muted-foreground text-sm">{item.description}</span>
                     </div>
                   </Link>
                 ) : (
@@ -83,7 +83,7 @@ const DesktopMenu = () => {
         <Link href="/course">
           <Button
             variant="ghost"
-            className="rounded-lg px-3 py-1.5 text-base font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-100"
+            className="text-foreground hover:bg-muted rounded-lg px-3 py-1.5 text-base font-semibold transition-all duration-200"
           >
             Course
           </Button>
@@ -93,7 +93,7 @@ const DesktopMenu = () => {
       <Link href="/about">
         <Button
           variant="ghost"
-          className="rounded-lg px-3 py-1.5 text-base font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-100"
+          className="text-foreground hover:bg-muted rounded-lg px-3 py-1.5 text-base font-semibold transition-all duration-200"
         >
           About us
         </Button>

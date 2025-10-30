@@ -31,32 +31,42 @@ const StepSelector: React.FC<StepSelectorProps> = ({
   const currentOperation = operations[currentStepIndex];
 
   return (
-    <div className="mb-6 rounded-lg bg-white p-6 shadow">
+    <div className="mb-6 rounded-lg bg-white p-6 shadow dark:bg-gray-800">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-800">Step Control</h2>
-          <span className="text-sm text-gray-500">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Step Control</h2>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             Step {currentStepIndex + 1} of {operations.length}
           </span>
         </div>
         {isAutoPlaying && (
-          <div className="animate-pulse text-xl font-medium text-green-600">กำลังเล่น...</div>
+          <div className="animate-pulse text-xl font-medium text-green-600 dark:text-green-500">
+            กำลังเล่น...
+          </div>
         )}
       </div>
 
       {/* Current Step Display */}
-      <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900">
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700">Step {currentStepIndex + 1}</span>
-          <span className="text-xs text-gray-500">{currentOperation?.category || 'Unknown'}</span>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Step {currentStepIndex + 1}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {currentOperation?.category || 'Unknown'}
+          </span>
         </div>
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 dark:text-gray-300">
           {currentOperation?.name || 'Unknown Operation'}
           {currentOperation?.value && (
-            <span className="ml-1 font-medium text-gray-800">({currentOperation.value})</span>
+            <span className="ml-1 font-medium text-gray-800 dark:text-gray-200">
+              ({currentOperation.value})
+            </span>
           )}
           {currentOperation?.position && (
-            <span className="ml-1 text-gray-500">at position {currentOperation.position}</span>
+            <span className="ml-1 text-gray-500 dark:text-gray-400">
+              at position {currentOperation.position}
+            </span>
           )}
         </div>
       </div>
@@ -73,7 +83,7 @@ const StepSelector: React.FC<StepSelectorProps> = ({
           isAnimating={isAutoPlaying}
         />
         <div className="mt-2 mb-4 flex items-center justify-center">
-          <span className="text-gray-500">
+          <span className="text-gray-500 dark:text-gray-400">
             {currentStepIndex + 1} / {operations.length}
           </span>
         </div>
@@ -84,7 +94,7 @@ const StepSelector: React.FC<StepSelectorProps> = ({
         <button
           onClick={() => onStepSelect(0)}
           disabled={isFirstStep}
-          className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -100,7 +110,7 @@ const StepSelector: React.FC<StepSelectorProps> = ({
         <button
           onClick={onPrevious}
           disabled={isFirstStep}
-          className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -142,7 +152,7 @@ const StepSelector: React.FC<StepSelectorProps> = ({
         <button
           onClick={onNext}
           disabled={isLastStep}
-          className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
         >
           <span>Next</span>
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,7 +163,7 @@ const StepSelector: React.FC<StepSelectorProps> = ({
         <button
           onClick={() => onStepSelect(operations.length - 1)}
           disabled={isLastStep}
-          className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
         >
           <span>Last</span>
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,9 +178,11 @@ const StepSelector: React.FC<StepSelectorProps> = ({
       </div>
 
       {/* Selected Step Description */}
-      <div className="border-accent/20 bg-accent/10 mt-4 rounded-lg border p-4">
-        <h3 className="text-accent mb-2 font-semibold">คำอธิบาย Step {currentStepIndex + 1}</h3>
-        <p className="text-black">
+      <div className="mt-4 rounded-lg border border-blue-300 bg-blue-100 p-4 dark:border-blue-700 dark:bg-blue-900/50">
+        <h3 className="mb-2 font-semibold text-blue-900 dark:text-blue-300">
+          คำอธิบาย Step {currentStepIndex + 1}
+        </h3>
+        <p className="text-gray-900 dark:text-gray-50">
           {currentOperation ? getStepDescription(currentOperation) : 'No operation selected'}
         </p>
       </div>

@@ -72,7 +72,7 @@ const MembersList: React.FC<MembersListProps> = ({ enrollmentsData, isLoading, e
       {/* Header with count */}
       <div className="flex items-center gap-2 text-sm text-gray-600">
         <Users className="h-4 w-4" />
-        <span>สมาชิกทั้งหมด {enrollments.length} คน</span>
+        <span>ทั้งหมด {enrollments.length} คน</span>
         {filteredEnrollments.length !== enrollments.length && (
           <span className="text-gray-500">(แสดง {filteredEnrollments.length} คน)</span>
         )}
@@ -83,7 +83,7 @@ const MembersList: React.FC<MembersListProps> = ({ enrollmentsData, isLoading, e
         <div className="relative max-w-md flex-1">
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="ค้นหาชื่อหรืออีเมล..."
+            placeholder="Search by email or name"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -95,28 +95,28 @@ const MembersList: React.FC<MembersListProps> = ({ enrollmentsData, isLoading, e
             size="sm"
             onClick={() => setRoleFilter('all')}
           >
-            ทั้งหมด
+            All
           </Button>
           <Button
             variant={roleFilter === 'student' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setRoleFilter('student')}
           >
-            นักศึกษา
+            Student
           </Button>
           <Button
             variant={roleFilter === 'ta' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setRoleFilter('ta')}
           >
-            ผู้ช่วยสอน
+            TA
           </Button>
           <Button
             variant={roleFilter === 'teacher' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setRoleFilter('teacher')}
           >
-            อาจารย์
+            Teacher
           </Button>
         </div>
       </div>

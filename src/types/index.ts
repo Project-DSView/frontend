@@ -114,6 +114,7 @@ export type {
   EnrollmentPopoverProps,
   CourseCardWithEnrollmentProps,
   MembersListProps,
+  LeaderboardProps,
   MaterialsByWeekProps,
   MaterialCardProps,
   UserRole,
@@ -240,6 +241,8 @@ export type {
   CourseListResponse,
   CourseResponse,
   CourseQueryParams,
+  LeaderboardEntry,
+  LeaderboardResponse,
 } from './services/course.types';
 
 export type {
@@ -268,8 +271,12 @@ export type {
 
 export type {
   PDFSubmission,
+  CodeSubmission,
+  TestCaseResult,
   SubmitPDFRequest,
+  SubmitCodeRequest,
   SubmitPDFResponse,
+  SubmitCodeResponse,
   SubmissionResponse,
   SubmissionListResponse,
   DownloadUrlResponse,
@@ -277,6 +284,30 @@ export type {
   SubmissionStatus,
   SubmissionStatusConfig,
 } from './services/submission.types';
+
+// Queue
+export type {
+  QueueJob,
+  QueueJobUser,
+  QueueJobStatus,
+  RequestApprovalRequest,
+  RequestApprovalResponse,
+  QueueJobsResponse,
+  ClaimJobResponse,
+  CompleteReviewRequest,
+  CompleteReviewResponse,
+  QueueJobFilters,
+} from './services/queue.types';
+
+export type {
+  RequestApprovalDialogProps,
+  QueueStatusCardProps,
+  ApprovalStatusBadgeProps,
+  TACommentCardProps,
+  QueueJobCardProps,
+  QueueJobListProps,
+  ReviewDialogProps,
+} from './props/queue.types';
 
 // Security
 export type {
@@ -321,3 +352,6 @@ export type { LinkedListData } from './stepthrough/LinkedList.types';
 export type { StackData, StackInstanceData, StackStepDetail } from './stepthrough/Stack.types';
 
 export type { UndirectedGraphData } from './stepthrough/UndirectedGraph.types';
+
+// Schemas
+export type { PDFSubmissionFormData, PDFSubmissionFormState } from './schemas/pdf-submission.types';

@@ -1,4 +1,9 @@
-import { CourseListResponse, CourseResponse, CourseQueryParams } from '@/types';
+import {
+  CourseListResponse,
+  CourseResponse,
+  CourseQueryParams,
+  LeaderboardResponse,
+} from '@/types';
 import { api } from '../index';
 
 // Get courses with pagination and filtering
@@ -29,4 +34,23 @@ const getCourse = async (token: string, courseId: string): Promise<CourseRespons
   return res.data;
 };
 
-export { getCourses, getCourse };
+// Get course leaderboard
+const getCourseLeaderboard = async (
+  token: string,
+  courseId: string,
+  limit: number = 100,
+): Promise<LeaderboardResponse> => {
+  const queryParams = new URLSearchParams();
+  queryParams.append('course_id', courseId);
+  queryParams.append('limit', limit.toString());
+
+  const res = await api.get<LeaderboardResponse>(
+    `/api/course-scores/leaderboard?${queryParams.toString()}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+  return res.data;
+};
+
+export { getCourses, getCourse, getCourseLeaderboard };

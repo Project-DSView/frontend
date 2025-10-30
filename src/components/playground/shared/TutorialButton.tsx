@@ -15,7 +15,7 @@ const TutorialButton: React.FC<TutorialButtonProps> = ({ onClick, className = ''
       variant="outline"
       size="sm"
       onClick={onClick}
-      className={`flex items-center gap-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 ${className}`}
+      className={`flex items-center gap-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:border-gray-500 dark:hover:bg-gray-800 ${className}`}
       aria-label="เปิดคู่มือการใช้งาน"
     >
       <HelpCircle className="h-4 w-4" />

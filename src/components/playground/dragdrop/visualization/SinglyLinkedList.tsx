@@ -1,4 +1,4 @@
-import React, { forwardRef, useState, useEffect } from 'react';
+import React, { forwardRef, useState, useEffect, useMemo } from 'react';
 
 import { SinglyLinkedListVisualizationProps } from '@/types';
 
@@ -17,6 +17,7 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
       currentStep,
       currentPosition = 0,
       selectedStep,
+      currentOperationData,
     },
     ref,
   ) => {
@@ -25,37 +26,122 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
     const [highlightedNodeIndex, setHighlightedNodeIndex] = useState(-1);
     const [isAnimating, setIsAnimating] = useState(false);
 
+    // Memoize operation data to prevent unnecessary re-renders
+    const operationData = useMemo(
+      () => ({
+        type: currentOperationData?.type,
+        value: currentOperationData?.value,
+        position: currentOperationData?.position,
+        newValue: currentOperationData?.newValue,
+      }),
+      [
+        currentOperationData?.type,
+        currentOperationData?.value,
+        currentOperationData?.position,
+        currentOperationData?.newValue,
+      ],
+    );
+
     // Handle insert/delete/search operations animation
     useEffect(() => {
       if (
         isRunning &&
         currentOperation &&
-        (currentOperation === 'insert' ||
-          currentOperation === 'delete' ||
-          currentOperation === 'search')
+        (currentOperation === 'insert_beginning' ||
+          currentOperation === 'insert_end' ||
+          currentOperation === 'insert_position' ||
+          currentOperation === 'delete_beginning' ||
+          currentOperation === 'delete_end' ||
+          currentOperation === 'delete_value' ||
+          currentOperation === 'delete_position' ||
+          currentOperation === 'search' ||
+          currentOperation === 'update_value' ||
+          currentOperation === 'update_position')
       ) {
         setIsAnimating(true);
-        setHighlightedNodeIndex(currentPosition);
+
+        // Calculate the correct position based on operation type
+        let targetPosition = -1;
+
+        if (operationData.type) {
+          if (currentOperation === 'insert_beginning' || currentOperation === 'delete_beginning') {
+            targetPosition = 0; // Head position
+          } else if (currentOperation === 'insert_end' || currentOperation === 'delete_end') {
+            targetPosition = nodes.length - 1; // Tail position
+          } else if (
+            currentOperation === 'insert_position' ||
+            currentOperation === 'delete_position' ||
+            currentOperation === 'update_position'
+          ) {
+            // Use the position from operation data
+            const position = parseInt(operationData.position || '0');
+            targetPosition = Math.min(Math.max(0, position), nodes.length - 1);
+          } else if (
+            currentOperation === 'delete_value' ||
+            currentOperation === 'search' ||
+            currentOperation === 'update_value'
+          ) {
+            // Find the node with the matching value
+            const targetValue = operationData.value;
+            targetPosition = nodes.findIndex((node) => node === targetValue);
+          }
+        }
+
+        setHighlightedNodeIndex(targetPosition);
         const timer = setTimeout(() => {
           setIsAnimating(false);
           setHighlightedNodeIndex(-1);
         }, 1000);
         return () => clearTimeout(timer);
       }
-    }, [isRunning, currentOperation, currentPosition]);
+    }, [isRunning, currentOperation, operationData, nodes]);
 
-    // Simple animation when isRunning is true (fallback)
+    // Simple animation when isRunning is true (fallback) - show correct position based on operation
     useEffect(() => {
       if (isRunning && !isAnimating && nodes.length > 0) {
         setIsAnimating(true);
-        setHighlightedNodeIndex(0); // Highlight first node
+
+        // Calculate the correct position based on operation type for fallback
+        let targetPosition = -1;
+
+        if (operationData.type) {
+          if (currentOperation === 'insert_beginning' || currentOperation === 'delete_beginning') {
+            targetPosition = 0; // Head position
+          } else if (currentOperation === 'insert_end' || currentOperation === 'delete_end') {
+            targetPosition = nodes.length - 1; // Tail position
+          } else if (
+            currentOperation === 'insert_position' ||
+            currentOperation === 'delete_position' ||
+            currentOperation === 'update_position'
+          ) {
+            // Use the position from operation data
+            const position = parseInt(operationData.position || '0');
+            targetPosition = Math.min(Math.max(0, position), nodes.length - 1);
+          } else if (
+            currentOperation === 'delete_value' ||
+            currentOperation === 'search' ||
+            currentOperation === 'update_value'
+          ) {
+            // Find the node with the matching value
+            const targetValue = operationData.value;
+            targetPosition = nodes.findIndex((node) => node === targetValue);
+          } else {
+            // Default to last node for other operations
+            targetPosition = nodes.length - 1;
+          }
+        } else {
+          // Default to last node if no operation data
+          targetPosition = nodes.length - 1;
+        }
+
+        setHighlightedNodeIndex(targetPosition);
         const timer = setTimeout(() => {
           setIsAnimating(false);
           setHighlightedNodeIndex(-1);
         }, 1000);
         return () => clearTimeout(timer);
       }
-    }, [isRunning, isAnimating, nodes.length]);
+    }, [isRunning, isAnimating, nodes.length, currentOperation, operationData, nodes]);
 
     // Handle traverse animation
     useEffect(() => {
@@ -136,13 +222,13 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
     const headPosition = getCurrentHeadPosition();
 
     const renderSinglyLinkedListNode = (value: string, index: number) => {
-      const isHighlighted = highlightedNodeIndex === index;
       const isTraverseSelected =
         selectedStep !== null &&
         selectedStep !== undefined &&
         currentOperation === 'traverse' &&
         index === headPosition;
       const isCurrentlyTraversing = isTraversing && index === traverseIndex;
+      const isHighlighted = highlightedNodeIndex === index && !isCurrentlyTraversing;
       const isLastNode = index === nodes.length - 1;
 
       return (
@@ -151,23 +237,27 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
           <div
             className={`max-w-[250px] min-w-[160px] rounded-lg border-2 p-3 text-center font-bold transition-all duration-500 ${
               isCurrentlyTraversing
-                ? 'border-success bg-success/20 animate-pulse shadow-lg'
+                ? 'animate-pulse border-green-500 bg-green-100 shadow-lg dark:border-green-400 dark:bg-green-900/30'
                 : isHighlighted && isAnimating
-                  ? 'scale-105 animate-bounce border-black bg-yellow-50 shadow-lg'
+                  ? 'scale-105 border-gray-900 bg-yellow-50 shadow-lg dark:border-gray-300 dark:bg-yellow-900/20'
                   : isTraverseSelected
-                    ? 'border-black bg-white shadow-lg'
-                    : 'border-black bg-white hover:bg-gray-50'
+                    ? 'border-gray-900 bg-white shadow-lg dark:border-gray-300 dark:bg-gray-700'
+                    : 'border-gray-900 bg-white hover:bg-gray-50 dark:border-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600'
             }`}
           >
             {/* Data Section - Left */}
             <div
               className={`inline-block w-1/2 border-r-2 pr-2 ${
-                isCurrentlyTraversing ? 'border-success' : 'border-black'
+                isCurrentlyTraversing
+                  ? 'border-green-500 dark:border-green-400'
+                  : 'border-gray-900 dark:border-gray-300'
               }`}
             >
               <div
                 className={`font-bold break-words ${
-                  isCurrentlyTraversing ? 'text-success' : 'text-black'
+                  isCurrentlyTraversing
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-gray-900 dark:text-gray-100'
                 } ${value.length > 15 ? 'text-xs' : value.length > 8 ? 'text-sm' : 'text-base'}`}
               >
                 {value}
@@ -180,19 +270,23 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div
                       className={`mb-2 h-0.5 w-8 rotate-45 transform ${
-                        isCurrentlyTraversing ? 'bg-success' : 'bg-black'
+                        isCurrentlyTraversing
+                          ? 'bg-green-600 dark:bg-green-400'
+                          : 'bg-gray-900 dark:bg-gray-300'
                       }`}
                     ></div>
                     <div
                       className={`absolute mb-2 h-0.5 w-8 -rotate-45 transform ${
-                        isCurrentlyTraversing ? 'bg-success' : 'bg-black'
+                        isCurrentlyTraversing
+                          ? 'bg-green-600 dark:bg-green-400'
+                          : 'bg-gray-900 dark:bg-gray-300'
                       }`}
                     ></div>
                   </div>
                 </div>
               ) : (
                 <div
-                  className={`text-xs ${isCurrentlyTraversing ? 'text-success' : 'text-gray-600'}`}
+                  className={`text-xs ${isCurrentlyTraversing ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'}`}
                 >
                   next
                 </div>
@@ -204,14 +298,14 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
     };
 
     return (
-      <div ref={ref} className="mb-6 rounded-lg bg-white p-6 shadow">
-        <h2 className="mb-4 text-lg font-semibold text-gray-800">
+      <div ref={ref} className="mb-6 rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+        <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-100">
           Singly Linked List Visualization
         </h2>
 
         {/* Linked List Visualization */}
         <ZoomableContainer
-          className="min-h-[220px] rounded-lg bg-gray-50"
+          className="min-h-[220px] rounded-lg bg-gray-50 dark:bg-gray-900"
           minZoom={0.5}
           maxZoom={2}
           initialZoom={1}
@@ -221,7 +315,7 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
           showControls={true}
         >
           {nodes.length === 0 ? (
-            <div className="p-6 text-gray-400 italic">Empty linked list</div>
+            <div className="p-6 text-gray-400 italic dark:text-gray-500">Empty linked list</div>
           ) : (
             <div className="flex items-center justify-start space-x-2 p-6 pt-20">
               {/* Nodes with Head Pointer */}
@@ -231,10 +325,12 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
                     {/* Head Label - Always show on first node */}
                     {index === 0 && (
                       <div className="absolute -top-16 left-1/2 z-10 -translate-x-1/2 transform">
-                        <div className="px-2 py-1 text-lg font-semibold text-gray-600">head</div>
+                        <div className="px-2 py-1 text-lg font-semibold text-gray-600 dark:text-gray-400">
+                          head
+                        </div>
                         <div className="flex flex-col items-center">
-                          <div className="h-4 w-0.5 bg-black"></div>
-                          <div className="h-0 w-0 border-t-[6px] border-r-[4px] border-l-[4px] border-t-black border-r-transparent border-l-transparent"></div>
+                          <div className="h-4 w-0.5 bg-black dark:bg-gray-300"></div>
+                          <div className="h-0 w-0 border-t-[6px] border-r-[4px] border-l-[4px] border-t-black border-r-transparent border-l-transparent dark:border-t-gray-300"></div>
                         </div>
                       </div>
                     )}
@@ -246,13 +342,15 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
                       >
                         <div className="flex flex-col items-center">
                           <div
-                            className={`border-b-success h-0 w-0 border-r-[4px] border-b-[6px] border-l-[4px] border-r-transparent border-l-transparent ${isTraversing ? 'animate-pulse' : ''}`}
+                            className={`h-0 w-0 border-r-[4px] border-b-[6px] border-l-[4px] border-r-transparent border-b-green-600 border-l-transparent dark:border-b-green-400 ${isTraversing ? 'animate-pulse' : ''}`}
                           ></div>
                           <div
-                            className={`bg-success h-4 w-0.5 ${isTraversing ? 'animate-pulse' : ''}`}
+                            className={`h-4 w-0.5 bg-green-600 dark:bg-green-400 ${isTraversing ? 'animate-pulse' : ''}`}
                           ></div>
                         </div>
-                        <div className="text-success px-2 py-1 text-lg font-semibold">current</div>
+                        <div className="px-2 py-1 text-lg font-semibold text-green-600 dark:text-green-400">
+                          current
+                        </div>
                       </div>
                     )}
 
@@ -262,8 +360,8 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
 
                   {index < nodes.length - 1 && (
                     <div className="mx-2 flex items-center">
-                      <div className="h-0.5 w-6 bg-black"></div>
-                      <div className="h-0 w-0 border-t-[4px] border-b-[4px] border-l-[8px] border-t-transparent border-b-transparent border-l-black"></div>
+                      <div className="h-0.5 w-6 bg-black dark:bg-gray-300"></div>
+                      <div className="h-0 w-0 border-t-[4px] border-b-[4px] border-l-[8px] border-t-transparent border-b-transparent border-l-black dark:border-l-gray-300"></div>
                     </div>
                   )}
                 </React.Fragment>
@@ -273,7 +371,7 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
         </ZoomableContainer>
 
         {/* Stats */}
-        <div className="mt-4 flex space-x-6 text-sm text-gray-600">
+        <div className="mt-4 flex space-x-6 text-sm text-gray-600 dark:text-gray-400">
           <div>
             <span className="font-semibold">จำนวน Nodes:</span> {stats.length}
           </div>

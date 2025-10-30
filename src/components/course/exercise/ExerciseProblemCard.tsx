@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 
 import { ExerciseProblemCardProps } from '@/types';
-import { formatDate } from '@/lib';
+import { formatDate, transformImageUrl } from '@/lib';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -35,7 +35,7 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
                 isExpired ? 'bg-red-50 text-red-600' : 'text-error'
               }`}
             >
-              <span className="text-base font-medium">
+              <span className="text-error text-base font-medium">
                 {isExpired ? 'หมดเวลาแล้ว' : `ส่งภายใน ${formatDate(material.deadline)}`}
               </span>
               {isExpired && !isGraded && (
@@ -52,7 +52,12 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {problemImages.map((src: string, idx: number) => (
               <div key={idx} className="relative aspect-video overflow-hidden rounded-md border">
-                <Image src={src} alt={`problem-${idx + 1}`} fill className="object-cover" />
+                <Image
+                  src={transformImageUrl(src)}
+                  alt={`problem-${idx + 1}`}
+                  fill
+                  className="object-cover"
+                />
               </div>
             ))}
           </div>

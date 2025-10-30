@@ -6,7 +6,7 @@ import { cardVariants, iconVariants } from '@/lib/utils/animations';
 
 const FeatureCard = memo(({ feature, index }: FeatureCardProps) => (
   <motion.div
-    className="group relative h-full overflow-hidden rounded-2xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 p-8 text-center shadow-lg backdrop-blur-md transition-all duration-500 hover:shadow-2xl"
+    className="group border-border/20 from-card/10 to-card/5 relative h-full overflow-hidden rounded-2xl border bg-gradient-to-br p-8 text-center shadow-lg backdrop-blur-md transition-all duration-500 hover:shadow-2xl"
     variants={cardVariants}
     initial="initial"
     whileInView="animate"
@@ -40,7 +40,7 @@ const FeatureCard = memo(({ feature, index }: FeatureCardProps) => (
       <h3 className="gradient-text group-hover:text-primary mb-4 text-xl font-bold transition-colors duration-300">
         {feature.title}
       </h3>
-      <p className="text-neutral group-hover:text-neutral/80 text-sm leading-relaxed transition-colors duration-300">
+      <p className="text-neutral group-hover:text-neutral/80 text-sm leading-relaxed transition-colors duration-300 dark:text-gray-300 dark:group-hover:text-gray-400">
         {feature.desc}
       </p>
     </div>

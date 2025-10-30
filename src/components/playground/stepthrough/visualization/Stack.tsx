@@ -100,32 +100,34 @@ const StackStepthroughVisualization = forwardRef<
         {isTop && (
           <div className="mb-1 flex flex-col items-center">
             {/* เส้นตั้งตรงกลาง */}
-            <div className="h-4 w-0.5 bg-blue-500"></div>
+            <div className="h-4 w-0.5 bg-blue-500 dark:bg-blue-400"></div>
             {/* สามเหลี่ยมชี้ลง */}
-            <div className="mt-0.5 h-0 w-0 border-t-[8px] border-r-[6px] border-l-[6px] border-t-blue-500 border-r-transparent border-l-transparent"></div>
-            <span className="mt-1 text-xs font-bold text-blue-600">Top</span>
+            <div className="mt-0.5 h-0 w-0 border-t-[8px] border-r-[6px] border-l-[6px] border-t-blue-500 border-r-transparent border-l-transparent dark:border-t-blue-400"></div>
+            <span className="mt-1 text-xs font-bold text-blue-600 dark:text-blue-400">Top</span>
           </div>
         )}
 
         {/* Stack Element */}
         <div
-          className={`bg-neutral/20 flex h-16 w-16 items-center justify-center shadow-lg transition-all duration-700 ease-in-out ${
+          className={`flex h-16 w-16 items-center justify-center bg-gray-100 shadow-lg transition-all duration-700 ease-in-out dark:bg-gray-700 ${
             isHighlighted && isAnimating
-              ? 'border-accent scale-110 animate-bounce bg-blue-50'
+              ? 'border-accent scale-110 animate-bounce bg-blue-50 dark:bg-blue-900/30'
               : isTransitioning
-                ? 'scale-105 animate-pulse bg-blue-50'
-                : 'hover:scale-105 hover:bg-gray-50'
-          } ${isTop ? 'border-2 border-blue-500' : 'border-t-0'} ${isTop ? 'ring-2 ring-blue-300' : ''} ${
+                ? 'scale-105 animate-pulse bg-blue-50 dark:bg-blue-900/30'
+                : 'hover:scale-105 hover:bg-gray-50 dark:hover:bg-gray-600'
+          } ${isTop ? 'border-2 border-blue-500 dark:border-blue-400' : 'border-t-0'} ${isTop ? 'ring-2 ring-blue-300 dark:ring-blue-600' : ''} ${
             isTransitioning ? 'animate-pulse' : ''
           }`}
         >
-          <span className={`font-bold text-black ${value.length > 6 ? 'text-sm' : 'text-lg'}`}>
+          <span
+            className={`font-bold text-gray-900 dark:text-gray-100 ${value.length > 6 ? 'text-sm' : 'text-lg'}`}
+          >
             {value}
           </span>
         </div>
 
         {/* Index indicator */}
-        <div className="mt-1 text-center text-xs text-gray-500">[{index}]</div>
+        <div className="mt-1 text-center text-xs text-gray-500 dark:text-gray-400">[{index}]</div>
       </div>
     );
   };
@@ -133,11 +135,11 @@ const StackStepthroughVisualization = forwardRef<
   const renderSingleStack = (stackData: string[], stackName: string, stackId: string) => {
     return (
       <div key={stackId} className="flex flex-col items-center">
-        <h4 className="mb-2 text-sm font-semibold text-gray-700">{stackName}</h4>
+        <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{stackName}</h4>
         <div className="flex min-h-[200px] flex-col items-center justify-end">
           {stackData.length === 0 ? (
-            <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50">
-              <div className="text-center text-gray-500">
+            <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+              <div className="text-center text-gray-500 dark:text-gray-400">
                 <div className="font-semibold">Empty</div>
                 <div className="text-sm">No elements</div>
               </div>
@@ -163,12 +165,18 @@ const StackStepthroughVisualization = forwardRef<
   };
 
   return (
-    <div ref={ref} className="rounded-lg bg-white p-6 shadow" suppressHydrationWarning>
+    <div
+      ref={ref}
+      className="rounded-lg bg-white p-6 shadow dark:bg-gray-800"
+      suppressHydrationWarning
+    >
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-800">Stack Visualization</h2>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+          Stack Visualization
+        </h2>
         {isRunning && (
-          <div className="flex items-center space-x-2 text-sm text-blue-600">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600" />
+          <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-400" />
             <span>Running...</span>
           </div>
         )}
@@ -176,8 +184,8 @@ const StackStepthroughVisualization = forwardRef<
 
       {/* Current Step Info */}
       {steps.length > 0 && currentStepIndex < steps.length && !error && (
-        <div className="bg-info/10 mb-4 rounded-lg p-3">
-          <div className="text-info/90 text-sm font-medium">
+        <div className="mb-4 rounded-lg bg-blue-50 p-3 dark:bg-blue-900/30">
+          <div className="text-sm font-medium text-blue-800 dark:text-blue-200">
             Step {steps[currentStepIndex].stepNumber}: {steps[currentStepIndex].state.message}
           </div>
         </div>
@@ -185,7 +193,7 @@ const StackStepthroughVisualization = forwardRef<
 
       {/* Stack Container */}
       <ZoomableContainer
-        className="min-h-[300px] rounded-lg bg-gray-50"
+        className="min-h-[300px] rounded-lg bg-gray-50 dark:bg-gray-800"
         minZoom={0.5}
         maxZoom={2}
         initialZoom={1}
@@ -218,8 +226,8 @@ const StackStepthroughVisualization = forwardRef<
         ) : (
           <div className="flex min-h-[200px] flex-col items-center justify-end p-6">
             {elements.length === 0 ? (
-              <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50">
-                <div className="text-center text-gray-500">
+              <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+                <div className="text-center text-gray-500 dark:text-gray-400">
                   <div className="font-semibold">Stack is Empty</div>
                   <div className="text-sm">Add elements using Push operation</div>
                 </div>
@@ -244,34 +252,46 @@ const StackStepthroughVisualization = forwardRef<
       </ZoomableContainer>
 
       {/* Stack Info */}
-      <div className="mt-4 rounded-lg bg-gray-50 p-4">
-        <h4 className="mb-2 font-semibold text-gray-700">Stack Information</h4>
+      <div className="mt-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+        <h4 className="mb-2 font-semibold text-gray-700 dark:text-gray-300">Stack Information</h4>
         {showMultipleStacks ? (
           <div className="space-y-4">
             {data.allStacks &&
               Object.entries(data.allStacks)
                 .filter(([, stackData]) => stackData.data.length > 0)
                 .map(([stackName, stackData]) => (
-                  <div key={stackName} className="rounded-lg bg-white p-3">
-                    <h5 className="mb-2 font-medium text-gray-700">Stack {stackName}</h5>
+                  <div key={stackName} className="rounded-lg bg-white p-3 dark:bg-gray-700">
+                    <h5 className="mb-2 font-medium text-gray-700 dark:text-gray-300">
+                      Stack {stackName}
+                    </h5>
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
-                        <span className="font-medium text-gray-600">Elements:</span>
-                        <span className="ml-2 text-gray-800">
+                        <span className="font-medium text-gray-600 dark:text-gray-400">
+                          Elements:
+                        </span>
+                        <span className="ml-2 text-gray-800 dark:text-gray-200">
                           {stackData.data.length === 0 ? 'None' : stackData.data.join(', ')}
                         </span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-600">Count:</span>
-                        <span className="ml-2 text-gray-800">{stackData.size}</span>
+                        <span className="font-medium text-gray-600 dark:text-gray-400">Count:</span>
+                        <span className="ml-2 text-gray-800 dark:text-gray-200">
+                          {stackData.size}
+                        </span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-600">Top Element:</span>
-                        <span className="ml-2 text-gray-800">{stackData.top || 'None'}</span>
+                        <span className="font-medium text-gray-600 dark:text-gray-400">
+                          Top Element:
+                        </span>
+                        <span className="ml-2 text-gray-800 dark:text-gray-200">
+                          {stackData.top || 'None'}
+                        </span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-600">Is Empty:</span>
-                        <span className="ml-2 text-gray-800">
+                        <span className="font-medium text-gray-600 dark:text-gray-400">
+                          Is Empty:
+                        </span>
+                        <span className="ml-2 text-gray-800 dark:text-gray-200">
                           {stackData.isEmpty ? 'Yes' : 'No'}
                         </span>
                       </div>
@@ -282,37 +302,41 @@ const StackStepthroughVisualization = forwardRef<
         ) : (
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>
-              <span className="font-medium text-gray-600">Elements:</span>
-              <span className="ml-2 text-gray-800">
+              <span className="font-medium text-gray-600 dark:text-gray-400">Elements:</span>
+              <span className="ml-2 text-gray-800 dark:text-gray-200">
                 {elements.length === 0 ? 'None' : elements.join(', ')}
               </span>
             </div>
             <div>
-              <span className="font-medium text-gray-600">Count:</span>
-              <span className="ml-2 text-gray-800">{data.count || elements.length}</span>
+              <span className="font-medium text-gray-600 dark:text-gray-400">Count:</span>
+              <span className="ml-2 text-gray-800 dark:text-gray-200">
+                {data.count || elements.length}
+              </span>
             </div>
             <div>
-              <span className="font-medium text-gray-600">Top Element:</span>
-              <span className="ml-2 text-gray-800">
+              <span className="font-medium text-gray-600 dark:text-gray-400">Top Element:</span>
+              <span className="ml-2 text-gray-800 dark:text-gray-200">
                 {elements.length > 0 ? elements[elements.length - 1] : 'None'}
               </span>
             </div>
             <div>
-              <span className="font-medium text-gray-600">Bottom Element:</span>
-              <span className="ml-2 text-gray-800">
+              <span className="font-medium text-gray-600 dark:text-gray-400">Bottom Element:</span>
+              <span className="ml-2 text-gray-800 dark:text-gray-200">
                 {elements.length > 0 ? elements[0] : 'None'}
               </span>
             </div>
             <div>
-              <span className="font-medium text-gray-600">Is Empty:</span>
-              <span className="ml-2 text-gray-800">{elements.length === 0 ? 'Yes' : 'No'}</span>
+              <span className="font-medium text-gray-600 dark:text-gray-400">Is Empty:</span>
+              <span className="ml-2 text-gray-800 dark:text-gray-200">
+                {elements.length === 0 ? 'Yes' : 'No'}
+              </span>
             </div>
           </div>
         )}
       </div>
 
       {/* Stats */}
-      <div className="mt-4 flex space-x-6 text-sm text-gray-600">
+      <div className="mt-4 flex space-x-6 text-sm text-gray-600 dark:text-gray-400">
         <div>
           <span className="font-semibold">จำนวน Elements:</span> {data.count || elements.length}
         </div>
@@ -327,14 +351,16 @@ const StackStepthroughVisualization = forwardRef<
 
       {/* Current Operation Status */}
       {isRunning && steps.length > 0 && currentStepIndex < steps.length && (
-        <div className="mt-4 rounded-lg bg-blue-50 p-4">
+        <div className="mt-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/30">
           <div className="mb-2 flex items-center space-x-2">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500"></div>
-            <span className="font-semibold text-blue-800">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500 dark:bg-blue-400"></div>
+            <span className="font-semibold text-blue-800 dark:text-blue-200">
               Executing: {steps[currentStepIndex].code}
             </span>
           </div>
-          <p className="text-sm text-blue-700">{steps[currentStepIndex].state.message}</p>
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            {steps[currentStepIndex].state.message}
+          </p>
         </div>
       )}
     </div>

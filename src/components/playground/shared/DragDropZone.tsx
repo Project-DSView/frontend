@@ -311,32 +311,36 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
       onDragEnter={onDragEnter}
       onDragLeave={handleMainDragLeave}
       onDrop={handleMainDrop}
-      className={`min-h-[300px] rounded-lg border-2 border-dashed p-4 transition-all duration-200 ${
-        isExternalDrag ? 'border-blue-400 bg-blue-50 shadow-lg' : 'border-gray-300 bg-gray-50'
+      className={`min-h-[300px] w-full rounded-lg border-2 border-dashed p-4 transition-all duration-200 ${
+        isExternalDrag
+          ? 'border-blue-400 bg-blue-50 shadow-lg dark:border-blue-600 dark:bg-blue-900/30'
+          : 'border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800'
       }`}
       style={{ position: 'relative' }}
     >
       {operations.length === 0 ? (
-        <div className="flex h-full w-full items-center justify-center text-gray-400">
+        <div className="flex h-full w-full items-center justify-center text-gray-500 dark:text-gray-400">
           ลาก operations มาที่นี่
         </div>
       ) : isExternalDrag ? (
         <>
           {/* Overlay for external drag to prevent collision with blocks */}
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-blue-50/50">
-            <div className="text-center font-medium text-blue-600">
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-blue-50/50 dark:bg-blue-900/20">
+            <div className="text-center font-medium text-blue-600 dark:text-blue-400">
               <div>วางเพื่อเพิ่มต่อท้าย</div>
             </div>
           </div>
           {/* Show existing blocks behind overlay */}
           <div className="opacity-50">
             <div
-              className={`space-y-3 ${operations.length >= 5 ? 'scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 max-h-96 overflow-y-auto' : ''}`}
+              className={`space-y-3 ${operations.length >= 5 ? 'scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 max-h-96 overflow-y-auto' : ''}`}
             >
               {operations.map((op, index) => (
                 <div key={op.id} className={`${op.color} rounded-lg border p-3`}>
                   <div className="mb-2 flex items-center space-x-3">
-                    <span className="text-sm font-medium text-gray-600">#{index + 1}</span>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      #{index + 1}
+                    </span>
                     <span className="text-sm font-medium">{op.name}</span>
                   </div>
                 </div>
@@ -346,13 +350,13 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
         </>
       ) : (
         <div
-          className={`space-y-3 ${operations.length >= 5 ? 'scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 max-h-96 overflow-y-auto' : ''}`}
+          className={`space-y-3 ${operations.length >= 5 ? 'scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 max-h-96 overflow-y-auto' : ''}`}
         >
           {operations.map((op, index) => (
             <div key={op.id} className="relative">
               {/* Drop indicator line - show above the target */}
               {dragOverIndex === index && draggedIndex !== null && draggedIndex !== index && (
-                <div className="absolute -top-2 right-0 left-0 z-20 h-1 rounded-full bg-blue-500 shadow-lg" />
+                <div className="absolute -top-2 right-0 left-0 z-20 h-1 rounded-full bg-blue-500 shadow-lg dark:bg-blue-600" />
               )}
 
               {/* Drop indicator line - show below if dragging to last position */}
@@ -360,7 +364,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                 draggedIndex !== null &&
                 draggedIndex !== index &&
                 index === operations.length - 1 && (
-                  <div className="absolute right-0 -bottom-2 left-0 z-20 h-1 rounded-full bg-blue-500 shadow-lg" />
+                  <div className="absolute right-0 -bottom-2 left-0 z-20 h-1 rounded-full bg-blue-500 shadow-lg dark:bg-blue-600" />
                 )}
 
               <div
@@ -374,12 +378,14 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                   draggedIndex === index
                     ? 'scale-95 opacity-50 shadow-lg'
                     : dragOverIndex === index && draggedIndex !== null
-                      ? 'ring-opacity-50 ring-2 ring-blue-300'
+                      ? 'ring-opacity-50 ring-2 ring-blue-300 dark:ring-blue-600'
                       : 'hover:shadow-md'
                 }`}
               >
                 <div className="mb-2 flex items-center space-x-3">
-                  <span className="text-sm font-medium text-gray-600">#{index + 1}</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    #{index + 1}
+                  </span>
                   <span className="text-sm font-medium">{op.name}</span>
                   <button
                     onClick={() => onRemoveOperation(op.id)}
@@ -405,7 +411,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                       placeholder="Value"
                       value={op.value || ''}
                       onChange={(e) => handleInputValidation(op, 'value', e.target.value)}
-                      className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'value')}`}
+                      className={`w-24 rounded border bg-white px-2 py-1 text-center text-sm placeholder:text-gray-500 dark:bg-gray-700 dark:placeholder:text-gray-400 ${getInputValidationClass(op, 'value')}`}
                     />
                   )}
 
@@ -489,7 +495,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                       placeholder="Number"
                       value={op.value || ''}
                       onChange={(e) => handleInputValidation(op, 'value', e.target.value)}
-                      className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'value')}`}
+                      className={`w-24 rounded border bg-white px-2 py-1 text-center text-sm placeholder:text-gray-500 dark:bg-gray-700 dark:placeholder:text-gray-400 ${getInputValidationClass(op, 'value')}`}
                       min="0"
                       step="1"
                     />
@@ -516,19 +522,45 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                     </Select>
                   )}
 
-                  {/* Position input for operations that need it */}
-                  {[
-                    'insert_position',
-                    'delete_position',
-                    'search_position',
-                    'update_position',
-                  ].includes(op.type) && (
+                  {/* Position Select for insert_position */}
+                  {op.type === 'insert_position' && (
+                    <Select
+                      value={op.position || ''}
+                      onValueChange={(value) => handleInputValidation(op, 'position', value)}
+                    >
+                      <SelectTrigger className={`w-32 ${getInputValidationClass(op, 'position')}`}>
+                        <SelectValue placeholder="Select Position" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from(
+                          {
+                            length: Math.max(
+                              1,
+                              operations.filter((o) =>
+                                ['insert_beginning', 'insert_end', 'insert_position'].includes(
+                                  o.type,
+                                ),
+                              ).length + 1,
+                            ),
+                          },
+                          (_, i) => (
+                            <SelectItem key={i} value={i.toString()}>
+                              Position {i}
+                            </SelectItem>
+                          ),
+                        )}
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  {/* Position input for other operations that need it */}
+                  {['delete_position', 'search_position', 'update_position'].includes(op.type) && (
                     <input
                       type="number"
                       placeholder="Position"
                       value={op.position || ''}
                       onChange={(e) => handleInputValidation(op, 'position', e.target.value)}
-                      className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'position')}`}
+                      className={`w-24 rounded border bg-white px-2 py-1 text-center text-sm placeholder:text-gray-500 dark:bg-gray-700 dark:placeholder:text-gray-400 ${getInputValidationClass(op, 'position')}`}
                     />
                   )}
 
@@ -560,7 +592,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                       placeholder="New Value"
                       value={op.newValue || ''}
                       onChange={(e) => handleInputValidation(op, 'newValue', e.target.value)}
-                      className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'newValue')}`}
+                      className={`w-24 rounded border bg-white px-2 py-1 text-center text-sm placeholder:text-gray-500 dark:bg-gray-700 dark:placeholder:text-gray-400 ${getInputValidationClass(op, 'newValue')}`}
                     />
                   )}
 
@@ -634,7 +666,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                       placeholder="Weight"
                       value={op.value || ''}
                       onChange={(e) => handleInputValidation(op, 'value', e.target.value)}
-                      className={`w-24 rounded border px-2 py-1 text-center text-sm ${getInputValidationClass(op, 'value')}`}
+                      className={`w-24 rounded border bg-white px-2 py-1 text-center text-sm placeholder:text-gray-500 dark:bg-gray-700 dark:placeholder:text-gray-400 ${getInputValidationClass(op, 'value')}`}
                       step="1"
                     />
                   )}
@@ -715,7 +747,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                   )}
 
                   {/* Show operation type */}
-                  <div className="flex items-center text-xs text-gray-500">
+                  <div className="flex items-center text-xs text-gray-700 dark:text-gray-300">
                     {op.category === 'insertion' && 'Insertion'}
                     {op.category === 'deletion' && 'Deletion'}
                     {op.category === 'traversal' && 'Traversal'}

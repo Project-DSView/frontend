@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import SubmissionService from '@/services/submissions/submissions.service';
+import { SubmissionService } from '@/services';
 
 // Get user's submission for a material
 const useMySubmission = (token: string | null, materialId: string) => {
@@ -9,9 +9,9 @@ const useMySubmission = (token: string | null, materialId: string) => {
     queryKey: ['my-submission', token, materialId],
     queryFn: () => SubmissionService.getMySubmission(token!, materialId),
     enabled: !!token && !!materialId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
+    staleTime: 0, // Always refetch to get latest data
+    gcTime: 2 * 60 * 1000, // 2 minutes
+    refetchOnWindowFocus: true, // Refetch when window gains focus
     refetchOnMount: true,
     retry: (failureCount, error) => {
       if (error && typeof error === 'object' && 'response' in error) {
@@ -58,6 +58,41 @@ const useSubmissionDownloadUrl = (token: string | null, submissionId: string) =>
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     retry: 1,
+  });
+};
+
+// Submit code exercise mutation
+const useSubmitCodeExercise = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      token,
+      materialId,
+      code,
+    }: {
+      token: string;
+      materialId: string;
+      code: string;
+    }) => SubmissionService.submitCodeExercise(token, materialId, code),
+    onSuccess: (data, variables) => {
+      // Invalidate and refetch submission data
+      queryClient.invalidateQueries({
+        queryKey: ['my-submission', variables.token, variables.materialId],
+      });
+
+      // Show success message
+      toast.success('ส่งโค้ดสำเร็จ');
+    },
+    onError: (error: unknown) => {
+      console.error('Submit code exercise error:', error);
+
+      // Show error message
+      const errorMessage =
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'เกิดข้อผิดพลาดในการส่งโค้ด';
+      toast.error(errorMessage);
+    },
   });
 };
 
@@ -124,6 +159,7 @@ export {
   useMySubmission,
   useSubmission,
   useSubmissionDownloadUrl,
+  useSubmitCodeExercise,
   useSubmitPDFExercise,
   useCancelSubmission,
 };

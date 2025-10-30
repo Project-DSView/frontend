@@ -15,13 +15,15 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
 }) => {
   if (steps.length === 0) {
     return (
-      <div className="h-full rounded-lg bg-white p-3 shadow sm:p-6">
+      <div className="h-full rounded-lg bg-white p-3 shadow sm:p-6 dark:bg-gray-800">
         <div className="flex h-full items-center justify-center">
           <div className="text-center">
-            <h3 className="mb-2 text-base font-semibold text-gray-600 sm:text-lg">
+            <h3 className="mb-2 text-base font-semibold text-gray-600 sm:text-lg dark:text-gray-300">
               No Steps Available
             </h3>
-            <p className="text-xs text-gray-500 sm:text-sm">Run your code to see execution steps</p>
+            <p className="text-xs text-gray-500 sm:text-sm dark:text-gray-400">
+              Run your code to see execution steps
+            </p>
           </div>
         </div>
       </div>
@@ -39,13 +41,17 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
         <div className="mb-3 sm:mb-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-semibold text-gray-800 sm:text-lg">Step Control</h3>
-              <p className="text-xs text-gray-600 sm:text-sm">
+              <h3 className="text-base font-semibold text-gray-800 sm:text-lg dark:text-gray-100">
+                Step Control
+              </h3>
+              <p className="text-xs text-gray-600 sm:text-sm dark:text-gray-400">
                 Step {currentStepIndex + 1} of {steps.length}
               </p>
             </div>
             {isAutoPlaying && (
-              <div className="animate-pulse text-xl font-medium text-green-600">กำลังเล่น...</div>
+              <div className="animate-pulse text-xl font-medium text-green-600 dark:text-green-500">
+                กำลังเล่น...
+              </div>
             )}
           </div>
         </div>
@@ -55,18 +61,22 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           {currentStep && (
             <div className="space-y-3 sm:space-y-4">
               {/* Combined Step Information Card */}
-              <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+              <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-800">
                 {/* Step Header */}
-                <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3">
+                <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-700">
                   <div className="flex items-center space-x-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                       <span className="text-sm font-semibold">
                         {currentStep.stepNumber || currentStepIndex + 1}
                       </span>
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-gray-900">Step Information</h4>
-                      <p className="text-xs text-gray-500">Line {currentStep.line || 'N/A'}</p>
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        Step Information
+                      </h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Line {currentStep.line || 'N/A'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -74,9 +84,11 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
                 {/* Code Section */}
                 {currentStep.code && (
                   <div className="mb-4">
-                    <div className="mb-2 text-xs font-semibold text-gray-700">Code:</div>
-                    <div className="rounded-md bg-gray-50 p-3">
-                      <pre className="text-xs break-words whitespace-pre-wrap text-gray-800 sm:text-sm">
+                    <div className="mb-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                      Code:
+                    </div>
+                    <div className="rounded-md bg-gray-50 p-3 dark:bg-gray-900">
+                      <pre className="text-xs break-words whitespace-pre-wrap text-gray-800 sm:text-sm dark:text-gray-200">
                         {currentStep.code}
                       </pre>
                     </div>
@@ -85,8 +97,10 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
 
                 {/* Message/Description */}
                 <div className="mb-4">
-                  <div className="mb-2 text-xs font-semibold text-gray-700">Description:</div>
-                  <div className="text-sm text-gray-600">
+                  <div className="mb-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                    Description:
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
                     {currentStep.state?.message || 'No description available'}
                   </div>
                 </div>
@@ -94,36 +108,44 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
                 {/* Step Details */}
                 {currentStep.state?.step_detail && (
                   <div>
-                    <div className="mb-2 text-xs font-semibold text-gray-700">
+                    <div className="mb-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
                       Operation Details:
                     </div>
                     <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2 sm:text-sm">
                       <div className="flex">
-                        <span className="w-20 font-medium text-gray-600">Operation:</span>
-                        <span className="text-gray-800">
+                        <span className="w-20 font-medium text-gray-600 dark:text-gray-400">
+                          Operation:
+                        </span>
+                        <span className="text-gray-800 dark:text-gray-200">
                           {currentStep.state.step_detail.operation}
                         </span>
                       </div>
                       {currentStep.state.step_detail.method_name && (
                         <div className="flex">
-                          <span className="w-20 font-medium text-gray-600">Method:</span>
-                          <span className="text-gray-800">
+                          <span className="w-20 font-medium text-gray-600 dark:text-gray-400">
+                            Method:
+                          </span>
+                          <span className="text-gray-800 dark:text-gray-200">
                             {currentStep.state.step_detail.method_name}
                           </span>
                         </div>
                       )}
                       {currentStep.state.step_detail.detected_behavior && (
                         <div className="flex">
-                          <span className="w-20 font-medium text-gray-600">Behavior:</span>
-                          <span className="text-gray-800">
+                          <span className="w-20 font-medium text-gray-600 dark:text-gray-400">
+                            Behavior:
+                          </span>
+                          <span className="text-gray-800 dark:text-gray-200">
                             {currentStep.state.step_detail.detected_behavior}
                           </span>
                         </div>
                       )}
                       {currentStep.state.step_detail.parameters && (
                         <div className="col-span-full flex">
-                          <span className="w-20 font-medium text-gray-600">Parameters:</span>
-                          <span className="text-gray-800">
+                          <span className="w-20 font-medium text-gray-600 dark:text-gray-400">
+                            Parameters:
+                          </span>
+                          <span className="text-gray-800 dark:text-gray-200">
                             {currentStep.state.step_detail.parameters}
                           </span>
                         </div>
@@ -135,11 +157,11 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
 
               {/* Print Output - Separate Section */}
               {currentStep.state?.print_output && currentStep.state.print_output.length > 0 && (
-                <div className="bg-accent/20 border-accent rounded-lg border p-4 sm:p-6">
+                <div className="bg-accent/20 dark:bg-accent/10 border-accent dark:border-accent/50 rounded-lg border p-4 sm:p-6">
                   <div className="mb-3 flex items-center">
-                    <div className="bg-accent/20 mr-2 flex h-6 w-6 items-center justify-center rounded-full">
+                    <div className="bg-accent/20 dark:bg-accent/10 mr-2 flex h-6 w-6 items-center justify-center rounded-full">
                       <svg
-                        className="text-accent h-4 w-4"
+                        className="text-accent dark:text-accent h-4 w-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -152,13 +174,13 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
                         />
                       </svg>
                     </div>
-                    <h4 className="text-accent text-sm font-semibold">Output</h4>
+                    <h4 className="text-accent dark:text-accent text-sm font-semibold">Output</h4>
                   </div>
                   <div className="space-y-2">
                     {currentStep.state.print_output.map((output, index) => (
                       <div
                         key={index}
-                        className="border-accent rounded-md border bg-white p-3 font-mono text-xs text-gray-800 shadow-sm sm:text-sm"
+                        className="border-accent dark:border-accent/50 rounded-md border bg-white p-3 font-mono text-xs text-gray-800 shadow-sm sm:text-sm dark:bg-gray-800 dark:text-gray-200"
                       >
                         {output}
                       </div>
@@ -184,7 +206,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
             isAnimating={isAutoPlaying}
           />
           <div className="mt-2 mb-2 flex items-center justify-center">
-            <span className="text-xs text-gray-500 sm:text-sm">
+            <span className="text-xs text-gray-500 sm:text-sm dark:text-gray-400">
               {currentStepIndex + 1} / {steps.length}
             </span>
           </div>
@@ -195,7 +217,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           <button
             onClick={() => onStepSelect(0)}
             disabled={isFirstStep}
-            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm"
+            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             <svg
               className="h-3 w-3 sm:h-4 sm:w-4"
@@ -216,7 +238,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           <button
             onClick={onPrevious}
             disabled={isFirstStep}
-            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm"
+            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             <svg
               className="h-3 w-3 sm:h-4 sm:w-4"
@@ -263,7 +285,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           <button
             onClick={onNext}
             disabled={isLastStep}
-            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm"
+            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             <span className="hidden sm:inline">Next</span>
 
@@ -280,7 +302,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           <button
             onClick={() => onStepSelect(steps.length - 1)}
             disabled={isLastStep}
-            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm"
+            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             <span className="hidden sm:inline">Last</span>
 

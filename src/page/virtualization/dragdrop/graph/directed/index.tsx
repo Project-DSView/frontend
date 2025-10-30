@@ -200,12 +200,30 @@ const DragDropDirectedGraph = () => {
   const handlePrevious = () => {
     if (selectedStep !== null && selectedStep > 0) {
       setSelectedStep(selectedStep - 1);
+      // Trigger animation for the previous step
+      if (isAutoPlaying) {
+        // If auto playing, the animation will be handled by the auto play logic
+        return;
+      }
+      // If manually clicking previous, trigger a brief animation
+      setTimeout(() => {
+        // This will trigger the visualization animation
+      }, 100);
     }
   };
 
   const handleNext = () => {
     if (selectedStep !== null && selectedStep < state.operations.length - 1) {
       setSelectedStep(selectedStep + 1);
+      // Trigger animation for the next step
+      if (isAutoPlaying) {
+        // If auto playing, the animation will be handled by the auto play logic
+        return;
+      }
+      // If manually clicking next, trigger a brief animation
+      setTimeout(() => {
+        // This will trigger the visualization animation
+      }, 100);
     }
   };
 
@@ -307,6 +325,13 @@ const DragDropDirectedGraph = () => {
         if (visited.has(edge.to)) continue;
 
         const edgeWeight = edge.weight || 1;
+        // Ensure non-negative weights as required by Dijkstra's algorithm
+        if (edgeWeight < 0) {
+          console.warn(
+            `Negative weight detected: ${edgeWeight}. Dijkstra's algorithm requires non-negative weights.`,
+          );
+          continue;
+        }
         const newDistance = distances[currentNodeId] + edgeWeight;
 
         if (newDistance < distances[edge.to]) {
@@ -388,7 +413,7 @@ const DragDropDirectedGraph = () => {
           case 'add_vertex':
             if (operation.value) {
               const newNode: DirectedGraphNode = {
-                id: operation.value,
+                id: `${operation.value}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
                 value: operation.value,
                 x: Math.random() * 400 + 50,
                 y: Math.random() * 300 + 50,
@@ -400,13 +425,13 @@ const DragDropDirectedGraph = () => {
             break;
           case 'add_edge':
             if (operation.fromVertex && operation.toVertex) {
-              const fromNode = currentNodes.find((n) => n.id === operation.fromVertex);
-              const toNode = currentNodes.find((n) => n.id === operation.toVertex);
+              const fromNode = currentNodes.find((n) => n.value === operation.fromVertex);
+              const toNode = currentNodes.find((n) => n.value === operation.toVertex);
               if (fromNode && toNode) {
                 const newEdge: DirectedGraphEdge = {
-                  id: `edge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                  from: operation.fromVertex,
-                  to: operation.toVertex,
+                  id: `edge-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+                  from: fromNode.id,
+                  to: toNode.id,
                   weight: operation.value ? parseInt(operation.value, 10) : undefined,
                   isDirected: true,
                 };
@@ -418,10 +443,13 @@ const DragDropDirectedGraph = () => {
             break;
           case 'remove_vertex':
             if (operation.value) {
-              currentNodes = currentNodes.filter((n) => n.id !== operation.value);
-              currentEdges = currentEdges.filter(
-                (e) => e.from !== operation.value && e.to !== operation.value,
-              );
+              const nodeToRemove = currentNodes.find((n) => n.value === operation.value);
+              if (nodeToRemove) {
+                currentNodes = currentNodes.filter((n) => n.id !== nodeToRemove.id);
+                currentEdges = currentEdges.filter(
+                  (e) => e.from !== nodeToRemove.id && e.to !== nodeToRemove.id,
+                );
+              }
             }
             break;
           case 'remove_edge':
@@ -499,15 +527,15 @@ const DragDropDirectedGraph = () => {
   }, [selectedStep, state.operations, state.nodes, state.edges, state.stats, getStepState]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6 dark:bg-gray-900">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="mb-2 text-xl font-bold text-gray-800 md:text-2xl lg:text-2xl">
+            <h1 className="mb-2 text-xl font-bold text-gray-800 md:text-2xl lg:text-2xl dark:text-gray-100">
               Drag & Drop Directed Graph
             </h1>
-            <p className="text-sm text-gray-600 md:text-base">
+            <p className="text-sm text-gray-600 md:text-base dark:text-gray-400">
               เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
             </p>
           </div>

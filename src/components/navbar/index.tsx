@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button';
 import DesktopMenu from './DesktopMenu';
 import AuthButtonsWrapper from './AuthButtonsWrapper';
 import MobileMenu from './MobileMenu';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 const Navbar = () => {
   return (
-    <nav className="border-b border-gray-100 bg-white/80 px-4 py-2 shadow-md backdrop-blur-md md:px-6 lg:px-8">
+    <nav className="border-border bg-background/80 border-b px-4 py-2 shadow-md backdrop-blur-md md:px-6 lg:px-8">
       <div className="flex h-12 w-full items-center justify-between">
         {/* Left side */}
         <div className="flex items-center space-x-4 md:space-x-6 lg:space-x-8">
@@ -37,6 +38,9 @@ const Navbar = () => {
             </Button>
           </a>
           <AuthButtonsWrapper />
+          <div className="hidden md:flex">
+            <ThemeToggle />
+          </div>
           <MobileMenu />
         </div>
       </div>

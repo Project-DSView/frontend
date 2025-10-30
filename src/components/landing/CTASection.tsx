@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
@@ -12,10 +12,11 @@ import { Button } from '@/components/ui/button';
 
 const CTASection = ({}: CTASectionProps) => {
   const [particles, setParticles] = useState<Array<{ left: string; top: string }>>([]);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
-    // Generate particles positions on client side only
-    const newParticles = Array.from({ length: 6 }, () => ({
+    // Reduce particles from 6 to 4 for better performance
+    const newParticles = Array.from({ length: 4 }, () => ({
       left: `${Math.random() * 100}%`,
       top: `${Math.random() * 100}%`,
     }));
@@ -25,7 +26,7 @@ const CTASection = ({}: CTASectionProps) => {
   return (
     <section className="relative w-full overflow-hidden">
       {/* Background */}
-      <div className="from-primary via-accent to-secondary absolute inset-0 bg-gradient-to-br" />
+      <div className="from-primary dark:to-primary absolute inset-0 bg-gradient-to-br via-blue-600 to-purple-600 dark:from-blue-600 dark:via-purple-600" />
 
       {/* Animated Background Elements */}
       <motion.div
@@ -41,27 +42,28 @@ const CTASection = ({}: CTASectionProps) => {
         transition={{ duration: 8, repeat: Infinity }}
       />
 
-      {/* Floating Particles */}
-      {particles.map((particle, i) => (
-        <motion.div
-          key={i}
-          className="absolute h-2 w-2 rounded-full bg-white/20"
-          style={{
-            left: particle.left,
-            top: particle.top,
-          }}
-          animate={{
-            y: [0, -20, 0],
-            opacity: [0.2, 0.8, 0.2],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 3 + Math.random() * 2,
-            repeat: Infinity,
-            delay: Math.random() * 2,
-          }}
-        />
-      ))}
+      {/* Floating Particles - Disabled if user prefers reduced motion */}
+      {!shouldReduceMotion &&
+        particles.map((particle, i) => (
+          <motion.div
+            key={i}
+            className="absolute h-2 w-2 rounded-full bg-white/30 shadow-lg"
+            style={{
+              left: particle.left,
+              top: particle.top,
+            }}
+            animate={{
+              y: [0, -30, 0],
+              opacity: [0.3, 1, 0.3],
+              scale: [1, 1.5, 1],
+            }}
+            transition={{
+              duration: 3 + Math.random() * 2,
+              repeat: Infinity,
+              delay: Math.random() * 2,
+            }}
+          />
+        ))}
 
       <div className="relative z-10 px-6 py-20">
         <motion.div
@@ -84,7 +86,7 @@ const CTASection = ({}: CTASectionProps) => {
             <h2 className="mb-6 text-4xl font-bold text-white md:text-5xl lg:text-6xl">
               พร้อมเริ่มเรียนรู้
               <br />
-              <span className="bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-yellow-200 via-yellow-100 to-white bg-clip-text text-transparent">
                 แล้วหรือยัง?
               </span>
             </h2>
@@ -104,7 +106,7 @@ const CTASection = ({}: CTASectionProps) => {
               <Button
                 asChild
                 size="lg"
-                className="text-primary group rounded-xl bg-white px-8 py-4 font-semibold shadow-xl transition-all duration-300 hover:bg-white/90 hover:shadow-2xl"
+                className="group text-primary rounded-xl bg-white px-8 py-4 font-semibold shadow-xl transition-all duration-300 hover:scale-105 hover:bg-white hover:shadow-2xl dark:text-blue-600"
               >
                 <Link href="/dragdrop/linklist/singly">ใช้งานเลย!</Link>
               </Button>

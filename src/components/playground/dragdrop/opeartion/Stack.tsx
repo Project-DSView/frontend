@@ -37,8 +37,10 @@ const StackDragDropOperations: React.FC<StackOperationsProps> = ({
   }, [dragComponents, searchTerm, selectedCategory]);
 
   return (
-    <div className="rounded-lg bg-white p-6 shadow">
-      <h2 className="mb-4 text-lg font-semibold text-gray-800">Stack Operations</h2>
+    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+      <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-100">
+        Stack Operations
+      </h2>
 
       {/* Search and Filter */}
       <OperationSearchFilter
@@ -52,7 +54,7 @@ const StackDragDropOperations: React.FC<StackOperationsProps> = ({
       {/* Operations Grid - Show filtered operations */}
       <div className="space-y-3">
         {filteredComponents.length === 0 ? (
-          <div className="py-8 text-center text-gray-500">
+          <div className="py-8 text-center text-gray-500 dark:text-gray-400">
             <p>ไม่มี operations</p>
           </div>
         ) : (
