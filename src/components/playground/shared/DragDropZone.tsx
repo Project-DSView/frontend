@@ -48,6 +48,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
         'search_value',
         'update_value',
         'push',
+        'enqueue',
         'add_vertex',
       ].includes(op.type)
     ) {
@@ -404,6 +405,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                     'insert_position',
                     'search_value',
                     'push',
+                    'enqueue',
                     'add_vertex',
                   ].includes(op.type) && (
                     <input

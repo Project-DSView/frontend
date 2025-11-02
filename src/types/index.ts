@@ -86,6 +86,17 @@ export type {
 } from './dragdrop/Stack.types';
 
 export type {
+  QueueElement,
+  QueueState,
+  QueueOperation,
+  QueueDragComponent,
+  QueueExecutionStep,
+  QueueCodeTemplate,
+  QueueStatsExtended,
+  QueueStateExtended,
+} from './dragdrop/Queue.types';
+
+export type {
   UndirectedGraphNode,
   UndirectedGraphEdge,
   UndirectedGraphStats,
@@ -136,6 +147,8 @@ export type {
   DoublyLinkedListVisualizationProps,
   StackOperationsProps,
   StackVisualizationProps,
+  QueueOperationsProps,
+  QueueVisualizationProps,
   DragDropZoneProps,
 } from './props/DragDrop.types';
 
@@ -198,6 +211,16 @@ export type {
   Operation as RealtimeStackOperation,
   ExecutionResult as StackExecutionResult,
 } from './realtime/Stack.types';
+
+export type {
+  QueueData as RealtimeQueueData,
+  QueueStats as RealtimeQueueStats,
+  QueueRealtimeProps,
+  SecurityStatus as QueueSecurityStatus,
+  ParsedCode as QueueParsedCode,
+  Operation as RealtimeQueueOperation,
+  ExecutionResult as QueueExecutionResult,
+} from './realtime/Queue.types';
 
 export type {
   UndirectedGraphData as RealtimeUndirectedGraphData,
@@ -350,6 +373,8 @@ export type { DirectedGraphData } from './stepthrough/DirectedGraph.types';
 export type { LinkedListData } from './stepthrough/LinkedList.types';
 
 export type { StackData, StackInstanceData, StackStepDetail } from './stepthrough/Stack.types';
+
+export type { QueueData, QueueStats } from './stepthrough/Queue.types';
 
 export type { UndirectedGraphData } from './stepthrough/UndirectedGraph.types';
 

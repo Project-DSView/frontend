@@ -26,6 +26,13 @@ const dataStructures: DataStructure[] = [
     iconColor: 'text-green-600',
   },
   {
+    name: 'Queue',
+    description:
+      'โครงสร้างข้อมูลแบบ FIFO (First In First Out) เหมาะสำหรับการจัดการข้อมูลแบบคิว',
+    iconName: 'Layers',
+    iconColor: 'text-cyan-600',
+  },
+  {
     name: 'Binary Search Tree',
     description: 'โครงสร้างข้อมูลแบบต้นไม้ที่แต่ละโหนดมีลูกได้มากสุด 2 โหนด และเรียงลำดับตามค่า',
     iconName: 'TreePine',

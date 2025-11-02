@@ -8,7 +8,7 @@ import {
   BaseState,
 } from '@/types';
 import { StackService } from '@/services';
-import { useBaseDataStructure } from './useBaseDataStructure';
+import { useBaseDataStructure } from './useBaseDataStructureDragDrop';
 class StackServiceAdapter {
   private service: StackService;
 

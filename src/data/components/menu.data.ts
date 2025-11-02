@@ -48,6 +48,7 @@ const getSubmenuItemsWithNested = (basePath: string): MenuItem[] => [
     ],
   },
   { href: `${basePath}/stack`, label: 'Stack', hasSubItems: false },
+  { href: `${basePath}/queue`, label: 'Queue', hasSubItems: false },
   { href: `${basePath}/bst`, label: 'Binary Search Tree', hasSubItems: false },
   {
     href: null,

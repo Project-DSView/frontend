@@ -6,6 +6,7 @@ import {
   SinglyLinkedListDragComponent,
   DoublyLinkedListDragComponent,
   StackDragComponent,
+  QueueDragComponent,
   Operation,
 } from '@/types';
 
@@ -110,6 +111,21 @@ interface StackVisualizationProps {
   stackS2?: string[];
 }
 
+interface QueueOperationsProps {
+  dragComponents: QueueDragComponent[];
+  onDragStart?: (e: React.DragEvent, component: QueueDragComponent) => void;
+  onTouchStart?: (e: React.TouchEvent, component: QueueDragComponent) => void;
+}
+
+interface QueueVisualizationProps {
+  dequeuedElement?: string | null;
+  elements: string[];
+  stats: DataStructureStats;
+  isRunning?: boolean;
+  currentOperation?: string;
+  currentStep?: string;
+}
+
 interface DragDropZoneProps {
   operations: Operation[];
   onDragOver: (e: React.DragEvent) => void;
@@ -137,5 +153,7 @@ export type {
   DoublyLinkedListVisualizationProps,
   StackOperationsProps,
   StackVisualizationProps,
+  QueueOperationsProps,
+  QueueVisualizationProps,
   DragDropZoneProps,
 };

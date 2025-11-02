@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { python } from '@codemirror/lang-python';
-import { vscodeLight } from '@uiw/codemirror-theme-vscode';
+import { vscodeLight, vscodeDark } from '@uiw/codemirror-theme-vscode';
 import { highlightActiveLine, highlightActiveLineGutter, EditorView } from '@codemirror/view';
 import { autocompletion, completionKeymap } from '@codemirror/autocomplete';
 import { keymap } from '@codemirror/view';
@@ -10,6 +10,7 @@ import { linter, lintGutter } from '@codemirror/lint';
 import { Diagnostic } from '@codemirror/lint';
 
 import { StepthroughCodeEditorProps } from '@/types';
+import { useTheme } from '@/providers/ThemeProvider';
 
 // Move CodeMirror import outside component to prevent re-creation
 const CodeMirror = React.lazy(() =>
@@ -343,6 +344,7 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
 }) => {
   const [isClient, setIsClient] = useState(false);
   const [editorView, setEditorView] = useState<unknown>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     setIsClient(true);
@@ -449,9 +451,21 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
   if (!isClient) {
     // Fallback for SSR
     return (
-      <div className="rounded-lg bg-white shadow" style={{ height }} suppressHydrationWarning>
-        <div className="flex h-12 items-center justify-between border-b border-gray-200 px-4">
-          <h2 className="text-lg font-semibold text-gray-800">Code Editor</h2>
+      <div
+        className={`rounded-lg shadow ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
+        style={{ height }}
+        suppressHydrationWarning
+      >
+        <div
+          className={`flex h-12 items-center justify-between border-b px-4 ${
+            theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+          }`}
+        >
+          <h2
+            className={`text-lg font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}
+          >
+            Code Editor
+          </h2>
           <button
             disabled
             className="rounded-lg bg-gray-400 px-4 py-2 text-sm font-medium text-white"
@@ -460,8 +474,16 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
           </button>
         </div>
         <div className="p-4">
-          <div className="h-64 rounded border bg-gray-50 p-4">
-            <div className="text-gray-500">Loading code editor...</div>
+          <div
+            className={`h-64 rounded border p-4 ${
+              theme === 'dark'
+                ? 'border-gray-700 bg-gray-900'
+                : 'border-gray-200 bg-gray-50'
+            }`}
+          >
+            <div className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
+              Loading code editor...
+            </div>
           </div>
         </div>
       </div>
@@ -472,8 +494,14 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
     <div className="overflow-hidden" style={{ height }} suppressHydrationWarning>
       <React.Suspense
         fallback={
-          <div className="flex h-full items-center justify-center bg-gray-50">
-            <div className="text-gray-500">Loading code editor...</div>
+          <div
+            className={`flex h-full items-center justify-center ${
+              theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'
+            }`}
+          >
+            <div className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
+              Loading code editor...
+            </div>
           </div>
         }
       >
@@ -481,7 +509,7 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
           value={code}
           onChange={onCodeChange}
           height={typeof height === 'number' ? `${height}px` : height}
-          theme={vscodeLight}
+          theme={theme === 'dark' ? vscodeDark : vscodeLight}
           editable={!disabled}
           basicSetup={{
             lineNumbers: true,

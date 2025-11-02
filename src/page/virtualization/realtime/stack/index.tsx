@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 import { stackCodeTemplate } from '@/data';
-import useRealtimeStack from '@/hooks/realtime/useStack';
+import useRealtimeStack from '@/hooks/realtime/useStackRealtime';
 
 import RealtimeLayout from '@/components/playground/realtime/layout/RealtimeLayout';
 import StackRealtime from '@/components/playground/realtime/visualization/Stack';

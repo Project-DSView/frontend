@@ -1,40 +1,42 @@
 import { useCallback } from 'react';
 import {
-  UndirectedGraphState,
-  UndirectedGraphOperation,
-  UndirectedGraphNode,
-  UndirectedGraphEdge,
-  UndirectedGraphStats,
-  UndirectedGraphData,
-  UndirectedGraphStatsExtended,
-  UndirectedGraphStateExtended,
+  DirectedGraphState,
+  DirectedGraphOperation,
+  DirectedGraphNode,
+  DirectedGraphEdge,
+  DirectedGraphStats,
+  DirectedGraphData,
+  DirectedGraphStatsExtended,
+  DirectedGraphStateExtended,
   BaseState,
 } from '@/types';
-import { UndirectedGraphService } from '@/services';
-import { useBaseDataStructure } from './useBaseDataStructure';
+import { DirectedGraphService } from '@/services';
+import { useBaseDataStructure } from './useBaseDataStructureDragDrop';
 
-// UndirectedGraph Service Adapter
-class UndirectedGraphServiceAdapter {
-  private service: UndirectedGraphService;
+// DirectedGraph Service Adapter
+class DirectedGraphServiceAdapter {
+  private service: DirectedGraphService;
 
-  constructor(state: BaseState<UndirectedGraphData, UndirectedGraphStatsExtended>) {
-    const graphState: UndirectedGraphState = {
+  constructor(state: BaseState<DirectedGraphData, DirectedGraphStatsExtended>) {
+    const graphState: DirectedGraphState = {
       nodes: state.data.nodes,
       edges: state.data.edges,
-      operations: state.operations as UndirectedGraphOperation[],
+      operations: state.operations as DirectedGraphOperation[],
       stats: {
         size: state.stats.size,
         isEmpty: state.stats.isEmpty,
         vertices: state.stats.vertices,
         edges: state.stats.edges,
-        isConnected: state.stats.isConnected,
+        isStronglyConnected: state.stats.isStronglyConnected,
         hasCycle: state.stats.hasCycle,
+        inDegree: state.stats.inDegree,
+        outDegree: state.stats.outDegree,
       },
     };
-    this.service = new UndirectedGraphService(graphState);
+    this.service = new DirectedGraphService(graphState);
   }
 
-  getState(): BaseState<UndirectedGraphData, UndirectedGraphStatsExtended> {
+  getState(): BaseState<DirectedGraphData, DirectedGraphStatsExtended> {
     const graphState = this.service.getState();
     return {
       data: {
@@ -47,13 +49,15 @@ class UndirectedGraphServiceAdapter {
         isEmpty: graphState.stats.isEmpty,
         vertices: graphState.stats.vertices,
         edges: graphState.stats.edges,
-        isConnected: graphState.stats.isConnected,
+        isStronglyConnected: graphState.stats.isStronglyConnected,
         hasCycle: graphState.stats.hasCycle,
+        inDegree: graphState.stats.inDegree,
+        outDegree: graphState.stats.outDegree,
       },
     };
   }
 
-  async executeOperation(operation: UndirectedGraphOperation) {
+  async executeOperation(operation: DirectedGraphOperation) {
     switch (operation.type) {
       case 'add_vertex':
         if (operation.value) {
@@ -98,7 +102,7 @@ class UndirectedGraphServiceAdapter {
   }
 }
 
-const defaultState: UndirectedGraphStateExtended = {
+const defaultState: DirectedGraphStateExtended = {
   data: {
     nodes: [],
     edges: [],
@@ -109,24 +113,26 @@ const defaultState: UndirectedGraphStateExtended = {
     isEmpty: true,
     vertices: 0,
     edges: 0,
-    isConnected: true,
+    isStronglyConnected: true,
     hasCycle: false,
+    inDegree: {},
+    outDegree: {},
   },
 };
 
-const useUndirectedGraph = () => {
+const useDirectedGraph = () => {
   const baseHook = useBaseDataStructure<
-    UndirectedGraphData,
-    UndirectedGraphStatsExtended,
-    UndirectedGraphOperation
-  >(defaultState, UndirectedGraphServiceAdapter);
+    DirectedGraphData,
+    DirectedGraphStatsExtended,
+    DirectedGraphOperation
+  >(defaultState, DirectedGraphServiceAdapter);
 
   // Graph-specific methods
   const updateGraphState = useCallback(
     (
-      newNodes: UndirectedGraphNode[],
-      newEdges: UndirectedGraphEdge[],
-      newStats: UndirectedGraphStats,
+      newNodes: DirectedGraphNode[],
+      newEdges: DirectedGraphEdge[],
+      newStats: DirectedGraphStats,
     ) => {
       baseHook.updateDataState(
         { nodes: newNodes, edges: newEdges },
@@ -135,8 +141,10 @@ const useUndirectedGraph = () => {
           isEmpty: newStats.isEmpty,
           vertices: newStats.vertices,
           edges: newStats.edges,
-          isConnected: newStats.isConnected,
+          isStronglyConnected: newStats.isStronglyConnected,
           hasCycle: newStats.hasCycle,
+          inDegree: newStats.inDegree,
+          outDegree: newStats.outDegree,
         },
       );
     },
@@ -149,18 +157,20 @@ const useUndirectedGraph = () => {
     state: {
       nodes: baseHook.state.data.nodes,
       edges: baseHook.state.data.edges,
-      operations: baseHook.state.operations as UndirectedGraphOperation[],
+      operations: baseHook.state.operations as DirectedGraphOperation[],
       stats: {
         size: baseHook.state.stats.size,
         isEmpty: baseHook.state.stats.isEmpty,
         vertices: baseHook.state.stats.vertices,
         edges: baseHook.state.stats.edges,
-        isConnected: baseHook.state.stats.isConnected,
+        isStronglyConnected: baseHook.state.stats.isStronglyConnected,
         hasCycle: baseHook.state.stats.hasCycle,
+        inDegree: baseHook.state.stats.inDegree,
+        outDegree: baseHook.state.stats.outDegree,
       },
     },
     updateGraphState,
   };
 };
 
-export default useUndirectedGraph;
+export default useDirectedGraph;

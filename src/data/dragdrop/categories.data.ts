@@ -28,4 +28,10 @@ const graphCategories: Category[] = [
   { key: 'traversal', title: 'Traversal', color: 'bg-green-200 dark:bg-green-700' },
 ];
 
-export { stackCategories, bstCategories, linkedListCategories, graphCategories };
+// Queue categories
+const queueCategories: Category[] = [
+  { key: 'insertion', title: 'Insertion', color: 'bg-blue-200 dark:bg-blue-700' },
+  { key: 'deletion', title: 'Deletion', color: 'bg-red-200 dark:bg-red-700' },
+];
+
+export { stackCategories, bstCategories, linkedListCategories, graphCategories, queueCategories };

@@ -37,6 +37,7 @@ type DataStructureType =
   | 'singly-linked-list'
   | 'doubly-linked-list'
   | 'stack'
+  | 'queue'
   | 'binary-search-tree'
   | 'graph';
 

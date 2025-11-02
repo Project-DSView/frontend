@@ -1,5 +1,6 @@
 import { LinkedListData } from './LinkedList.types';
 import { StackData } from './Stack.types';
+import { QueueData } from './Queue.types';
 import { BSTData } from './BST.types';
 import { DirectedGraphData } from './DirectedGraph.types';
 import { UndirectedGraphData } from './UndirectedGraph.types';
@@ -8,6 +9,7 @@ import { UndirectedGraphData } from './UndirectedGraph.types';
 type StepthroughData =
   | LinkedListData
   | StackData
+  | QueueData
   | BSTData
   | DirectedGraphData
   | UndirectedGraphData;
