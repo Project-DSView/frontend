@@ -20,6 +20,7 @@ export {
   useParallax,
   useIntersectionObserver,
   useScrollProgress,
+  useScrollPosition,
 } from './landing/useScrollAnimation';
 
 // Stepthrough

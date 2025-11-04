@@ -23,4 +23,3 @@ const queueDragComponents: QueueDragComponent[] = [
 ];
 
 export { queueDragComponents };
-

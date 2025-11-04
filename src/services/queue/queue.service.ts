@@ -44,17 +44,3 @@ const QueueService = {
 
 export default QueueService;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -18,6 +18,7 @@ const DoublyLinkedListRealtimePage: React.FC = () => {
       dataStructure="doubly-linked-list"
       code={code}
       onCodeChange={setCode}
+      onReset={() => setCode(doublyLinkedListCodeTemplate)}
       data={data}
       isExecuting={isExecuting}
       error={error}

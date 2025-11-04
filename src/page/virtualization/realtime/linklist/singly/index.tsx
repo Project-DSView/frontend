@@ -21,6 +21,7 @@ const RealtimeSinglyLinkedList: React.FC = () => {
       dataStructure="singly-linked-list"
       code={code}
       onCodeChange={setCode}
+      onReset={() => setCode(singlyLinkedListCodeTemplate)}
       data={data}
       isExecuting={isExecuting}
       error={error}

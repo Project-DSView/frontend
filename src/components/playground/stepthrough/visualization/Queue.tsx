@@ -5,7 +5,11 @@ import { QueueData } from '@/types/stepthrough/Queue.types';
 
 import ZoomableContainer from '../../shared/ZoomableContainer';
 
-const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({ steps, currentStepIndex, data }) => {
+const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
+  steps,
+  currentStepIndex,
+  data,
+}) => {
   const currentStep = steps[currentStepIndex];
   const queueData = data as QueueData;
 
@@ -14,12 +18,19 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({ 
     if (currentStep?.state?.instances) {
       const instanceEntries = Object.entries(currentStep.state.instances);
       if (instanceEntries.length > 0) {
-        const firstInstance = instanceEntries[0][1] as any;
-        if (firstInstance?.data && Array.isArray(firstInstance.data)) {
-          return firstInstance.data;
+        const firstInstance = instanceEntries[0][1];
+        // Type guard: check if it's an object with data property
+        if (
+          firstInstance &&
+          typeof firstInstance === 'object' &&
+          'data' in firstInstance &&
+          Array.isArray((firstInstance as { data: unknown }).data)
+        ) {
+          return (firstInstance as { data: string[] }).data;
         }
+        // Type guard: check if it's directly an array
         if (Array.isArray(firstInstance)) {
-          return firstInstance;
+          return firstInstance as string[];
         }
       }
     }
@@ -31,7 +42,10 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({ 
   // Get dequeued element from step state (look for variables.dequeued from response)
   const getDequeuedElement = (): string | null => {
     // First priority: Check variables.dequeued from step state (from backend response)
-    if (currentStep?.state?.variables?.dequeued !== undefined && currentStep.state.variables.dequeued !== null) {
+    if (
+      currentStep?.state?.variables?.dequeued !== undefined &&
+      currentStep.state.variables.dequeued !== null
+    ) {
       return String(currentStep.state.variables.dequeued);
     }
 
@@ -47,12 +61,19 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({ 
         if (previousStep?.state?.instances) {
           const instanceEntries = Object.entries(previousStep.state.instances);
           if (instanceEntries.length > 0) {
-            const firstInstance = instanceEntries[0][1] as any;
-            if (firstInstance?.data && Array.isArray(firstInstance.data)) {
-              return firstInstance.data;
+            const firstInstance = instanceEntries[0][1];
+            // Type guard: check if it's an object with data property
+            if (
+              firstInstance &&
+              typeof firstInstance === 'object' &&
+              'data' in firstInstance &&
+              Array.isArray((firstInstance as { data: unknown }).data)
+            ) {
+              return (firstInstance as { data: string[] }).data;
             }
+            // Type guard: check if it's directly an array
             if (Array.isArray(firstInstance)) {
-              return firstInstance;
+              return firstInstance as string[];
             }
           }
         }
@@ -91,7 +112,7 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({ 
       <div key={`${value}-${index}`} className="relative flex flex-col items-center">
         {/* Queue Element - connected horizontally, no gaps, same height */}
         <div
-          className={`flex h-16 w-16 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg transition-all duration-500 dark:from-gray-700 dark:to-gray-800 hover:shadow-xl dark:hover:bg-gray-600 ${isFront ? 'border-l-2 border-t-2 border-b-2 border-green-500 rounded-l-lg dark:border-green-400' : ''} ${isBack ? 'border-r-2 border-t-2 border-b-2 border-blue-500 rounded-r-lg dark:border-blue-400' : ''} ${!isFront && !isBack ? 'border-t-2 border-b-2 border-gray-300 dark:border-gray-600' : ''} ${isFront || isBack ? 'ring-2' : ''} ${isFront ? 'ring-green-300 dark:ring-green-600' : isBack ? 'ring-blue-300 dark:ring-blue-600' : ''}`}
+          className={`flex h-16 w-16 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg transition-all duration-500 hover:shadow-xl dark:from-gray-700 dark:to-gray-800 dark:hover:bg-gray-600 ${isFront ? 'rounded-l-lg border-t-2 border-b-2 border-l-2 border-green-500 dark:border-green-400' : ''} ${isBack ? 'rounded-r-lg border-t-2 border-r-2 border-b-2 border-blue-500 dark:border-blue-400' : ''} ${!isFront && !isBack ? 'border-t-2 border-b-2 border-gray-300 dark:border-gray-600' : ''} ${isFront || isBack ? 'ring-2' : ''} ${isFront ? 'ring-green-300 dark:ring-green-600' : isBack ? 'ring-blue-300 dark:ring-blue-600' : ''}`}
         >
           <span
             className={`font-bold text-gray-900 dark:text-gray-100 ${value.length > 6 ? 'text-sm' : 'text-lg'}`}
@@ -152,8 +173,8 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({ 
               </div>
               {dequeuedElement ? (
                 <div className="flex items-center justify-center">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-gradient-to-br from-red-100 to-red-200 shadow-lg dark:from-red-900/30 dark:to-red-800/30 border-2 border-red-400 dark:border-red-500">
-                    <span className="font-bold text-gray-900 dark:text-gray-100 text-lg">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-red-400 bg-gradient-to-br from-red-100 to-red-200 shadow-lg dark:border-red-500 dark:from-red-900/30 dark:to-red-800/30">
+                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
                       {dequeuedElement}
                     </span>
                   </div>
@@ -182,11 +203,15 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({ 
           </div>
           <div>
             <span className="font-medium text-gray-600 dark:text-gray-400">Front Element:</span>
-            <span className="ml-2 text-gray-800 dark:text-gray-200">{stats.headValue || 'None'}</span>
+            <span className="ml-2 text-gray-800 dark:text-gray-200">
+              {stats.headValue || 'None'}
+            </span>
           </div>
           <div>
             <span className="font-medium text-gray-600 dark:text-gray-400">Back Element:</span>
-            <span className="ml-2 text-gray-800 dark:text-gray-200">{stats.tailValue || 'None'}</span>
+            <span className="ml-2 text-gray-800 dark:text-gray-200">
+              {stats.tailValue || 'None'}
+            </span>
           </div>
           <div>
             <span className="font-medium text-gray-600 dark:text-gray-400">Size:</span>

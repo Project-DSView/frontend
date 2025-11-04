@@ -2,11 +2,16 @@
 export {
   getSubmenuItemsWithNested,
   playgroundItems,
+} from './components/menu.data';
+export {
+  features,
+  structures,
+  visualizationModes,
+  AUTO_SWITCH_INTERVAL,
+  IMAGE_SWITCH_INTERVAL,
   playgroundIcons,
   PARTICLE_POSITIONS,
-} from './components/menu.data';
-export { default as features } from './components/card.data';
-export { structures as showcaseStructures } from './components/showcase.data';
+} from './components/landing.data';
 export {
   getMaterialIcon,
   getMaterialTypeLabel,

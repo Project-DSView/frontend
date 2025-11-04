@@ -27,8 +27,7 @@ const dataStructures: DataStructure[] = [
   },
   {
     name: 'Queue',
-    description:
-      'โครงสร้างข้อมูลแบบ FIFO (First In First Out) เหมาะสำหรับการจัดการข้อมูลแบบคิว',
+    description: 'โครงสร้างข้อมูลแบบ FIFO (First In First Out) เหมาะสำหรับการจัดการข้อมูลแบบคิว',
     iconName: 'Layers',
     iconColor: 'text-cyan-600',
   },

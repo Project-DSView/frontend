@@ -70,7 +70,13 @@ class QueueRealtimeService {
 
   // Method to set allQueues from execution result
   setAllQueues(allQueues: {
-    [queueName: string]: { data: string[]; size: number; isEmpty: boolean; front: string | null; back: string | null };
+    [queueName: string]: {
+      data: string[];
+      size: number;
+      isEmpty: boolean;
+      front: string | null;
+      back: string | null;
+    };
   }): RealtimeQueueData {
     this.data.allQueues = allQueues;
     return this.getState();
@@ -231,7 +237,13 @@ class QueueRealtimeService {
 
     // Build allQueues object
     const allQueues: {
-      [queueName: string]: { data: string[]; size: number; isEmpty: boolean; front: string | null; back: string | null };
+      [queueName: string]: {
+        data: string[];
+        size: number;
+        isEmpty: boolean;
+        front: string | null;
+        back: string | null;
+      };
     } = {};
     Object.keys(queues).forEach((varName) => {
       const queueState = queues[varName].getState();
@@ -265,4 +277,3 @@ class QueueRealtimeService {
 }
 
 export { QueueRealtimeService };
-

@@ -30,6 +30,8 @@ interface StepthroughStep {
     print_output?: string[];
     linkedlist?: unknown[];
     nodes?: Record<string, unknown>;
+    variables?: Record<string, unknown>;
+    returnValue?: unknown;
     step_detail?: {
       operation: string;
       method_name?: string;

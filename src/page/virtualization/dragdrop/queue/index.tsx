@@ -71,7 +71,9 @@ const DragDropQueue = () => {
       const newOperation = {
         type: draggedItem.type,
         name: draggedItem.name,
-        value: ['dequeue', 'front', 'back', 'is_empty', 'size'].includes(draggedItem.type) ? null : '',
+        value: ['dequeue', 'front', 'back', 'is_empty', 'size'].includes(draggedItem.type)
+          ? null
+          : '',
         position: null,
         newValue: null,
         color: draggedItem.color,

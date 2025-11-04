@@ -1,5 +1,11 @@
 // Queue job status types
-export type QueueJobStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'waiting_approval';
+export type QueueJobStatus =
+  | 'pending'
+  | 'processing'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
+  | 'waiting_approval';
 
 // Queue job user information
 export interface QueueJobUser {

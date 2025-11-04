@@ -33,7 +33,11 @@ const QueueDragDropVisualization = forwardRef<HTMLDivElement, QueueVisualization
       }
     }, [isRunning, currentOperation, elements.length]);
 
-    const renderQueueElement = (value: string, index: number, queueLength: number): React.ReactNode => {
+    const renderQueueElement = (
+      value: string,
+      index: number,
+      queueLength: number,
+    ): React.ReactNode => {
       const isHighlighted = highlightedElementIndex === index;
       const isFront = index === 0;
       const isBack = index === queueLength - 1;
@@ -42,7 +46,7 @@ const QueueDragDropVisualization = forwardRef<HTMLDivElement, QueueVisualization
         <div key={`${value}-${index}`} className="relative flex flex-col items-center">
           {/* Queue Element - connected horizontally, no gaps, same height */}
           <div
-            className={`flex h-16 w-16 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg transition-all duration-500 dark:from-gray-700 dark:to-gray-800 ${isHighlighted && isAnimating ? 'ring-4 ring-yellow-400 shadow-xl dark:ring-yellow-500 z-10 bg-yellow-100 dark:bg-yellow-900/30 animate-pulse' : 'hover:shadow-xl dark:hover:bg-gray-600'} ${isFront ? 'border-l-2 border-t-2 border-b-2 border-green-500 rounded-l-lg dark:border-green-400' : ''} ${isBack ? 'border-r-2 border-t-2 border-b-2 border-blue-500 rounded-r-lg dark:border-blue-400' : ''} ${!isFront && !isBack ? 'border-t-2 border-b-2 border-gray-300 dark:border-gray-600' : ''} ${isFront || isBack ? 'ring-2' : ''} ${isFront ? 'ring-green-300 dark:ring-green-600' : isBack ? 'ring-blue-300 dark:ring-blue-600' : ''}`}
+            className={`flex h-16 w-16 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg transition-all duration-500 dark:from-gray-700 dark:to-gray-800 ${isHighlighted && isAnimating ? 'z-10 animate-pulse bg-yellow-100 shadow-xl ring-4 ring-yellow-400 dark:bg-yellow-900/30 dark:ring-yellow-500' : 'hover:shadow-xl dark:hover:bg-gray-600'} ${isFront ? 'rounded-l-lg border-t-2 border-b-2 border-l-2 border-green-500 dark:border-green-400' : ''} ${isBack ? 'rounded-r-lg border-t-2 border-r-2 border-b-2 border-blue-500 dark:border-blue-400' : ''} ${!isFront && !isBack ? 'border-t-2 border-b-2 border-gray-300 dark:border-gray-600' : ''} ${isFront || isBack ? 'ring-2' : ''} ${isFront ? 'ring-green-300 dark:ring-green-600' : isBack ? 'ring-blue-300 dark:ring-blue-600' : ''}`}
           >
             <span
               className={`font-bold text-gray-900 dark:text-gray-100 ${value.length > 6 ? 'text-sm' : 'text-lg'}`}
@@ -103,8 +107,8 @@ const QueueDragDropVisualization = forwardRef<HTMLDivElement, QueueVisualization
                 </div>
                 {dequeuedElement ? (
                   <div className="flex items-center justify-center">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-gradient-to-br from-red-100 to-red-200 shadow-lg dark:from-red-900/30 dark:to-red-800/30 border-2 border-red-400 dark:border-red-500">
-                      <span className="font-bold text-gray-900 dark:text-gray-100 text-lg">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-red-400 bg-gradient-to-br from-red-100 to-red-200 shadow-lg dark:border-red-500 dark:from-red-900/30 dark:to-red-800/30">
+                      <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
                         {dequeuedElement}
                       </span>
                     </div>
@@ -145,9 +149,7 @@ const QueueDragDropVisualization = forwardRef<HTMLDivElement, QueueVisualization
             </div>
             <div>
               <span className="font-medium text-gray-600 dark:text-gray-400">Size:</span>
-              <span className="ml-2 text-gray-800 dark:text-gray-200">
-                {elements.length}
-              </span>
+              <span className="ml-2 text-gray-800 dark:text-gray-200">{elements.length}</span>
             </div>
             <div>
               <span className="font-medium text-gray-600 dark:text-gray-400">Is Empty:</span>
@@ -173,7 +175,7 @@ const QueueDragDropVisualization = forwardRef<HTMLDivElement, QueueVisualization
             <span>Dequeue</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 rounded-full border border-yellow-400 bg-yellow-200 dark:border-yellow-500 dark:bg-yellow-700 animate-pulse" />
+            <div className="h-3 w-3 animate-pulse rounded-full border border-yellow-400 bg-yellow-200 dark:border-yellow-500 dark:bg-yellow-700" />
             <span>Highlight</span>
           </div>
         </div>
@@ -197,4 +199,3 @@ const QueueDragDropVisualization = forwardRef<HTMLDivElement, QueueVisualization
 QueueDragDropVisualization.displayName = 'QueueDragDropVisualization';
 
 export default QueueDragDropVisualization;
-

@@ -131,17 +131,3 @@ const QueueStatusCard: React.FC<QueueStatusCardProps> = ({
 
 export default QueueStatusCard;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-

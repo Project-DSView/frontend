@@ -1,4 +1,4 @@
-import { QueueState, QueueOperation, BaseExecutionStep } from '@/types';
+import { QueueState, BaseExecutionStep } from '@/types';
 import { createExecutionStep } from '@/lib';
 
 class QueueService {
@@ -33,7 +33,11 @@ class QueueService {
     );
 
     steps.push(
-      createExecutionStep(`เพิ่ม ${value} ลงใน queue (ท้ายสุด)`, `queue.items.append(${value})`, 800),
+      createExecutionStep(
+        `เพิ่ม ${value} ลงใน queue (ท้ายสุด)`,
+        `queue.items.append(${value})`,
+        800,
+      ),
     );
 
     // Update state
@@ -56,12 +60,20 @@ class QueueService {
     const steps: BaseExecutionStep[] = [];
 
     steps.push(
-      createExecutionStep(`กำลัง Dequeue element หน้าสุดจาก queue`, `เรียกใช้ queue.dequeue()`, 1000),
+      createExecutionStep(
+        `กำลัง Dequeue element หน้าสุดจาก queue`,
+        `เรียกใช้ queue.dequeue()`,
+        1000,
+      ),
     );
 
     if (this.state.elements.length === 0) {
       steps.push(
-        createExecutionStep(`Queue ว่าง ไม่สามารถ dequeue ได้`, `Queue is empty, cannot dequeue`, 800),
+        createExecutionStep(
+          `Queue ว่าง ไม่สามารถ dequeue ได้`,
+          `Queue is empty, cannot dequeue`,
+          800,
+        ),
       );
       return steps;
     }
@@ -95,7 +107,9 @@ class QueueService {
   }
 
   back(): string | null {
-    return this.state.elements.length > 0 ? this.state.elements[this.state.elements.length - 1] : null;
+    return this.state.elements.length > 0
+      ? this.state.elements[this.state.elements.length - 1]
+      : null;
   }
 
   isEmpty(): boolean {
@@ -110,7 +124,8 @@ class QueueService {
     this.state.stats = {
       length: this.state.elements.length,
       headValue: this.state.elements.length > 0 ? this.state.elements[0] : null,
-      tailValue: this.state.elements.length > 0 ? this.state.elements[this.state.elements.length - 1] : null,
+      tailValue:
+        this.state.elements.length > 0 ? this.state.elements[this.state.elements.length - 1] : null,
       isEmpty: this.state.elements.length === 0,
     };
   }

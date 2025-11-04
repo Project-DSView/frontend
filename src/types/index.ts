@@ -166,6 +166,8 @@ export type { VirtualizedListProps } from './props/virtualization.types';
 
 export type { Structure, CTASectionProps } from './props/showcase.types';
 
+export type { VisualizationMode } from './props/landing.types';
+
 export type {
   DataStructure,
   LearningTip,
@@ -380,3 +382,6 @@ export type { UndirectedGraphData } from './stepthrough/UndirectedGraph.types';
 
 // Schemas
 export type { PDFSubmissionFormData, PDFSubmissionFormState } from './schemas/pdf-submission.types';
+
+// Utils
+export type { ExportOptions } from './schemas/utils.types';

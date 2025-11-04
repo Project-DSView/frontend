@@ -14,7 +14,6 @@ const QueueStepthroughPage: React.FC = () => {
   const {
     state,
     setCode: setCodeState,
-    setFilename,
     loadCodeFromFile,
     executeCode,
     setCurrentStep,
@@ -55,4 +54,3 @@ const QueueStepthroughPage: React.FC = () => {
 };
 
 export default QueueStepthroughPage;
-

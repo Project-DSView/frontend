@@ -10,8 +10,4 @@ interface QueueStats {
   back: string | null;
 }
 
-export type {
-  QueueData,
-  QueueStats,
-};
-
+export type { QueueData, QueueStats };

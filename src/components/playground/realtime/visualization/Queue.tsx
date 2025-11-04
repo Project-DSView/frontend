@@ -25,8 +25,8 @@ const QueueRealtime = forwardRef<HTMLDivElement, QueueRealtimeProps>(({ data }, 
   // But we can show it if available in data
   const dequeuedElement = useMemo(() => {
     // If data has dequeuedElement field, use it
-    if ((data as any).dequeuedElement !== undefined) {
-      return (data as any).dequeuedElement;
+    if (data.dequeuedElement !== undefined) {
+      return data.dequeuedElement;
     }
     return null;
   }, [data]);
@@ -42,7 +42,7 @@ const QueueRealtime = forwardRef<HTMLDivElement, QueueRealtimeProps>(({ data }, 
       <div key={`${value}-${index}`} className="relative flex flex-col items-center">
         {/* Queue Element - connected horizontally, no gaps, same height */}
         <div
-          className={`flex h-16 w-16 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg transition-all duration-500 dark:from-gray-700 dark:to-gray-800 hover:shadow-xl dark:hover:bg-gray-600 ${isFront ? 'border-l-2 border-t-2 border-b-2 border-green-500 rounded-l-lg dark:border-green-400' : ''} ${isBack ? 'border-r-2 border-t-2 border-b-2 border-blue-500 rounded-r-lg dark:border-blue-400' : ''} ${!isFront && !isBack ? 'border-t-2 border-b-2 border-gray-300 dark:border-gray-600' : ''} ${isFront || isBack ? 'ring-2' : ''} ${isFront ? 'ring-green-300 dark:ring-green-600' : isBack ? 'ring-blue-300 dark:ring-blue-600' : ''}`}
+          className={`flex h-16 w-16 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg transition-all duration-500 hover:shadow-xl dark:from-gray-700 dark:to-gray-800 dark:hover:bg-gray-600 ${isFront ? 'rounded-l-lg border-t-2 border-b-2 border-l-2 border-green-500 dark:border-green-400' : ''} ${isBack ? 'rounded-r-lg border-t-2 border-r-2 border-b-2 border-blue-500 dark:border-blue-400' : ''} ${!isFront && !isBack ? 'border-t-2 border-b-2 border-gray-300 dark:border-gray-600' : ''} ${isFront || isBack ? 'ring-2' : ''} ${isFront ? 'ring-green-300 dark:ring-green-600' : isBack ? 'ring-blue-300 dark:ring-blue-600' : ''}`}
         >
           <span
             className={`font-bold text-gray-900 dark:text-gray-100 ${value.length > 6 ? 'text-sm' : 'text-lg'}`}
@@ -54,7 +54,12 @@ const QueueRealtime = forwardRef<HTMLDivElement, QueueRealtimeProps>(({ data }, 
     );
   };
 
-  const renderSingleQueue = (queueElements: string[], title: string, queueId: string, queueDequeuedElement?: string | null) => {
+  const renderSingleQueue = (
+    queueElements: string[],
+    title: string,
+    queueId: string,
+    queueDequeuedElement?: string | null,
+  ) => {
     const queueStats = {
       headValue: queueElements.length > 0 ? queueElements[0] : null,
       tailValue: queueElements.length > 0 ? queueElements[queueElements.length - 1] : null,
@@ -84,7 +89,10 @@ const QueueRealtime = forwardRef<HTMLDivElement, QueueRealtimeProps>(({ data }, 
                   {/* Queue Elements - horizontal layout, no gaps, aligned on same baseline */}
                   <div className="z-10 flex items-center">
                     {queueElements.map((element, index) => (
-                      <div key={`${queueId}-${element}-${index}`} className="relative flex items-center">
+                      <div
+                        key={`${queueId}-${element}-${index}`}
+                        className="relative flex items-center"
+                      >
                         {renderQueueElement(element, index, queueElements.length)}
                       </div>
                     ))}
@@ -101,8 +109,8 @@ const QueueRealtime = forwardRef<HTMLDivElement, QueueRealtimeProps>(({ data }, 
             </div>
             {queueDequeuedElement ? (
               <div className="flex items-center justify-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-gradient-to-br from-red-100 to-red-200 shadow-lg dark:from-red-900/30 dark:to-red-800/30 border-2 border-red-400 dark:border-red-500">
-                  <span className="font-bold text-gray-900 dark:text-gray-100 text-lg">
+                <div className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-red-400 bg-gradient-to-br from-red-100 to-red-200 shadow-lg dark:border-red-500 dark:from-red-900/30 dark:to-red-800/30">
+                  <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
                     {queueDequeuedElement}
                   </span>
                 </div>
@@ -119,7 +127,9 @@ const QueueRealtime = forwardRef<HTMLDivElement, QueueRealtimeProps>(({ data }, 
 
         {/* Queue Info for this queue */}
         <div className="mt-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
-          <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Queue Information</h4>
+          <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+            Queue Information
+          </h4>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
               <span className="font-medium text-gray-600 dark:text-gray-400">Elements:</span>
@@ -190,8 +200,14 @@ const QueueRealtime = forwardRef<HTMLDivElement, QueueRealtimeProps>(({ data }, 
               {data.allQueues &&
                 Object.entries(data.allQueues).map(([queueName, queueData]) => {
                   // For multiple queues, use main dequeuedElement if this is the first/main queue
-                  const queueDequeued = queueName === Object.keys(data.allQueues || {})[0] ? dequeuedElement : null;
-                  return renderSingleQueue(queueData.data, `Queue: ${queueName}`, queueName, queueDequeued);
+                  const queueDequeued =
+                    queueName === Object.keys(data.allQueues || {})[0] ? dequeuedElement : null;
+                  return renderSingleQueue(
+                    queueData.data,
+                    `Queue: ${queueName}`,
+                    queueName,
+                    queueDequeued,
+                  );
                 })}
             </div>
           </div>
@@ -233,8 +249,8 @@ const QueueRealtime = forwardRef<HTMLDivElement, QueueRealtimeProps>(({ data }, 
                 </div>
                 {dequeuedElement ? (
                   <div className="flex items-center justify-center">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-gradient-to-br from-red-100 to-red-200 shadow-lg dark:from-red-900/30 dark:to-red-800/30 border-2 border-red-400 dark:border-red-500">
-                      <span className="font-bold text-gray-900 dark:text-gray-100 text-lg">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-red-400 bg-gradient-to-br from-red-100 to-red-200 shadow-lg dark:border-red-500 dark:from-red-900/30 dark:to-red-800/30">
+                      <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
                         {dequeuedElement}
                       </span>
                     </div>
@@ -256,7 +272,9 @@ const QueueRealtime = forwardRef<HTMLDivElement, QueueRealtimeProps>(({ data }, 
         <>
           {/* Queue Info */}
           <div className="mt-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
-            <h4 className="mb-2 font-semibold text-gray-700 dark:text-gray-200">Queue Information</h4>
+            <h4 className="mb-2 font-semibold text-gray-700 dark:text-gray-200">
+              Queue Information
+            </h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
                 <span className="font-medium text-gray-600 dark:text-gray-400">Elements:</span>
@@ -266,11 +284,15 @@ const QueueRealtime = forwardRef<HTMLDivElement, QueueRealtimeProps>(({ data }, 
               </div>
               <div>
                 <span className="font-medium text-gray-600 dark:text-gray-400">Front Element:</span>
-                <span className="ml-2 text-gray-800 dark:text-gray-200">{stats.headValue || 'None'}</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">
+                  {stats.headValue || 'None'}
+                </span>
               </div>
               <div>
                 <span className="font-medium text-gray-600 dark:text-gray-400">Back Element:</span>
-                <span className="ml-2 text-gray-800 dark:text-gray-200">{stats.tailValue || 'None'}</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">
+                  {stats.tailValue || 'None'}
+                </span>
               </div>
               <div>
                 <span className="font-medium text-gray-600 dark:text-gray-400">Size:</span>

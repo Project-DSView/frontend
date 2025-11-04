@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 
 import { staggerContainerVariants, staggerItemVariants } from '@/lib';
-import { showcaseStructures } from '@/data';
+import { structures } from '@/data';
 
 import { Button } from '@/components/ui/button';
 
@@ -43,7 +43,7 @@ const InteractiveShowcase = () => {
             <h3 className="text-foreground mb-6 text-2xl font-bold">เลือกโครงสร้างข้อมูล</h3>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {showcaseStructures.map((structure) => {
+              {structures.map((structure) => {
                 const Icon = structure.icon;
                 const isActive = activeStructure === structure.id;
 
@@ -131,18 +131,18 @@ const InteractiveShowcase = () => {
                 >
                   <div
                     className={`mx-auto mb-4 h-32 w-32 rounded-2xl bg-gradient-to-r ${
-                      showcaseStructures.find((s) => s.id === activeStructure)?.color ||
+                      structures.find((s) => s.id === activeStructure)?.color ||
                       'from-gray-400 to-gray-600'
                     } flex items-center justify-center shadow-lg`}
                   >
                     {(() => {
-                      const structure = showcaseStructures.find((s) => s.id === activeStructure);
+                      const structure = structures.find((s) => s.id === activeStructure);
                       const Icon = structure?.icon;
                       return Icon ? <Icon className="h-16 w-16 text-white" /> : null;
                     })()}
                   </div>
                   <h4 className="text-foreground mb-2 text-xl font-bold">
-                    {showcaseStructures.find((s) => s.id === activeStructure)?.name}
+                    {structures.find((s) => s.id === activeStructure)?.name}
                   </h4>
                   <p className="text-muted-foreground text-sm">
                     คลิกเพื่อดูการทำงานแบบ Interactive

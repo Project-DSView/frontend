@@ -17,6 +17,7 @@ const BSTRealtimePage = () => {
       dataStructure="bst"
       code={code}
       onCodeChange={setCode}
+      onReset={() => setCode(bstCodeTemplate)}
       data={data}
       isExecuting={isExecuting}
       error={error}

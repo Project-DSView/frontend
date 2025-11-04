@@ -17,6 +17,7 @@ interface RealtimeLayoutProps<T = unknown> {
   dataStructure: string;
   code: string;
   onCodeChange: (code: string) => void;
+  onReset: () => void;
   data: T;
   isExecuting: boolean;
   error: string | null;
@@ -33,6 +34,7 @@ const RealtimeLayout = <T,>({
   dataStructure,
   code,
   onCodeChange,
+  onReset,
   data,
   isExecuting,
   error,
@@ -132,6 +134,15 @@ const RealtimeLayout = <T,>({
               <div className="bg-neutral/20 dark:bg-neutral/80 rounded-md px-2 py-1 font-mono text-xs text-black/70 sm:px-3 sm:text-sm dark:text-gray-300">
                 playground.py
               </div>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-2">
+              <button
+                onClick={onReset}
+                disabled={false}
+                className="bg-neutral/20 dark:bg-neutral/80 hover:bg-neutral/80 dark:hover:bg-neutral/40 rounded px-3 py-2 text-xs text-black/70 transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm md:px-5 md:py-2.5 md:text-sm lg:px-6 lg:py-3 lg:text-base dark:text-gray-200"
+              >
+                Reset Code
+              </button>
             </div>
           </div>
 

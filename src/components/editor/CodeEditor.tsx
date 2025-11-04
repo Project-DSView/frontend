@@ -476,9 +476,7 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
         <div className="p-4">
           <div
             className={`h-64 rounded border p-4 ${
-              theme === 'dark'
-                ? 'border-gray-700 bg-gray-900'
-                : 'border-gray-200 bg-gray-50'
+              theme === 'dark' ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'
             }`}
           >
             <div className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>

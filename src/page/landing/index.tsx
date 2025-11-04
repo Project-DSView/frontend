@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { LogIn } from 'lucide-react';
-import { memo, lazy, Suspense } from 'react';
+import { memo, lazy, Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { features } from '@/data';
@@ -17,10 +17,28 @@ import PlaygroundCardGrid from '@/components/landing/PlaygroundCardGrid';
 const FeatureCard = lazy(() => import('@/components/card'));
 const InteractiveShowcase = lazy(() => import('@/components/landing/InteractiveShowcase'));
 const CTASection = lazy(() => import('@/components/landing/CTASection'));
+const VisualizationCarousel = lazy(() => import('@/components/landing/VisualizationCarousel'));
 
 const Landing = () => {
   const { profile, isInitialized } = useAuth();
   const router = useRouter();
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    handleScroll(); // Initial check
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Animation values based on scroll (clamp between 0 and 150)
+  const scrollProgress = Math.min(scrollY / 150, 1);
+  const logoScale = 1 - scrollProgress * 0.6; // Scale down to 40%
+  const logoOpacity = Math.max(0, 1 - scrollProgress * 1.2); // Fade out faster
+  const logoY = -scrollProgress * 30; // Move up slightly
 
   const handleLogin = async () => {
     try {
@@ -67,7 +85,18 @@ const Landing = () => {
           initial="initial"
           animate="animate"
         >
-          <motion.div variants={heroChildVariants}>
+          <motion.div
+            variants={heroChildVariants}
+            animate={{
+              scale: logoScale,
+              opacity: logoOpacity,
+              y: logoY,
+            }}
+            transition={{
+              duration: 0.1,
+              ease: 'easeOut',
+            }}
+          >
             <Image
               src="/logo.svg"
               alt="DSView Logo"
@@ -140,6 +169,11 @@ const Landing = () => {
           </motion.div>
         </motion.div>
       </section>
+
+      {/* Visualization Carousel Section */}
+      <Suspense fallback={<div className="h-96 bg-gradient-to-b from-white to-[#F8F9FC]" />}>
+        <VisualizationCarousel />
+      </Suspense>
 
       {/* Playground Grid Section */}
       <section className="from-gradient-start to-gradient-end relative overflow-hidden bg-gradient-to-b via-[#EEF2FF] py-16 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">

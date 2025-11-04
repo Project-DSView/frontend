@@ -18,6 +18,7 @@ const StackRealtimePage: React.FC = () => {
       dataStructure="stack"
       code={code}
       onCodeChange={setCode}
+      onReset={() => setCode(stackCodeTemplate)}
       data={data}
       isExecuting={isExecuting}
       error={error}

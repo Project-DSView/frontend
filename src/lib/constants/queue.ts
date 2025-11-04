@@ -31,17 +31,3 @@ export const QUEUE_STATUS_COLORS: Record<string, string> = {
   not_started: 'bg-gray-100 text-gray-800',
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-

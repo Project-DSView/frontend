@@ -76,3 +76,24 @@ export const useScrollProgress = () => {
 
   return scrollProgress;
 };
+
+export const useScrollPosition = (threshold = 150) => {
+  const [scrollY, setScrollY] = useState(0);
+  const [hasScrolled, setHasScrolled] = useState(false);
+
+  useEffect(() => {
+    const updateScrollPosition = () => {
+      const currentScrollY = window.scrollY;
+      setScrollY(currentScrollY);
+      setHasScrolled(currentScrollY > threshold);
+    };
+
+    // Initial check
+    updateScrollPosition();
+
+    window.addEventListener('scroll', updateScrollPosition, { passive: true });
+    return () => window.removeEventListener('scroll', updateScrollPosition);
+  }, [threshold]);
+
+  return { scrollY, hasScrolled };
+};

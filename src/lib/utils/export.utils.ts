@@ -1,10 +1,7 @@
 // @ts-expect-error - dom-to-image doesn't have types
 import * as domtoimage from 'dom-to-image';
 
-export interface ExportOptions {
-  filename?: string;
-  quality?: number;
-}
+import { ExportOptions } from '@/types';
 
 export class ExportUtils {
   /**

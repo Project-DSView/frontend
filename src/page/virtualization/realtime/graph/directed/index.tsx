@@ -17,6 +17,7 @@ const Page = () => {
       dataStructure="directed-graph"
       code={code}
       onCodeChange={setCode}
+      onReset={() => setCode(directedGraphCodeTemplate)}
       data={data}
       isExecuting={isExecuting}
       error={error}

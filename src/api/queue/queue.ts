@@ -79,17 +79,3 @@ export const completeReview = async (
   return res.data;
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-

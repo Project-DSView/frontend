@@ -18,6 +18,7 @@ const QueueRealtimePage: React.FC = () => {
       dataStructure="queue"
       code={code}
       onCodeChange={setCode}
+      onReset={() => setCode(queueCodeTemplate)}
       data={data}
       isExecuting={isExecuting}
       error={error}
@@ -28,4 +29,3 @@ const QueueRealtimePage: React.FC = () => {
 };
 
 export default QueueRealtimePage;
-

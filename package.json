@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "NODE_ENV=development bun run next dev --turbopack --experimental-https",
-    "build": "bun run next build",
+    "build": "bun run next build && bun run next-sitemap",
+    "sitemap": "bun run next-sitemap",
     "start": "bun run next start",
     "lint": "bun run eslint",
     "format": "bun run prettier --write .",
@@ -42,6 +43,7 @@
     "lucide-react": "^0.544.0",
     "motion": "^12.23.24",
     "next": "15.5.3",
+    "next-sitemap": "^4.2.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-intersection-observer": "^9.16.0",
