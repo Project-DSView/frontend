@@ -6,11 +6,11 @@ import {
   DoublyLinkedListStateExtended,
   BaseState,
 } from '@/types';
-import { DoublyLinkedListService } from '@/services';
+import { DoublyLinkedListDragDropService } from '@/services';
 import { useBaseDataStructure } from './useBaseDataStructureDragDrop';
 
 class DoublyLinkedListServiceAdapter {
-  private service: DoublyLinkedListService;
+  private service: DoublyLinkedListDragDropService;
 
   constructor(state: BaseState<DoublyLinkedListData, DoublyLinkedListStatsExtended>) {
     const doublyLinkedListState: DoublyLinkedListState = {
@@ -23,7 +23,7 @@ class DoublyLinkedListServiceAdapter {
         isEmpty: state.stats.isEmpty,
       },
     };
-    this.service = new DoublyLinkedListService(doublyLinkedListState);
+    this.service = new DoublyLinkedListDragDropService(doublyLinkedListState);
   }
 
   getState(): BaseState<DoublyLinkedListData, DoublyLinkedListStatsExtended> {
@@ -120,7 +120,7 @@ const defaultState: DoublyLinkedListStateExtended = {
   },
 };
 
-const useDoublyLinkedList = () => {
+const useDragDropDoublyLinkedList = () => {
   const baseHook = useBaseDataStructure<
     DoublyLinkedListData,
     DoublyLinkedListStatsExtended,
@@ -143,4 +143,4 @@ const useDoublyLinkedList = () => {
   };
 };
 
-export default useDoublyLinkedList;
+export { useDragDropDoublyLinkedList };

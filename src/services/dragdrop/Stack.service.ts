@@ -1,7 +1,7 @@
 import { StackState, StackExecutionStep } from '@/types';
 import { createExecutionStep } from '@/lib';
 
-class StackService {
+class StackDragDropService {
   private state: StackState;
 
   constructor(initialState: StackState) {
@@ -94,4 +94,4 @@ class StackService {
   }
 }
 
-export default StackService;
+export { StackDragDropService };

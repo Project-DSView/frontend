@@ -10,12 +10,12 @@ import {
   UndirectedGraphStateExtended,
   BaseState,
 } from '@/types';
-import { UndirectedGraphService } from '@/services';
+import { UndirectedGraphDragDropService } from '@/services';
 import { useBaseDataStructure } from './useBaseDataStructureDragDrop';
 
 // UndirectedGraph Service Adapter
 class UndirectedGraphServiceAdapter {
-  private service: UndirectedGraphService;
+  private service: UndirectedGraphDragDropService;
 
   constructor(state: BaseState<UndirectedGraphData, UndirectedGraphStatsExtended>) {
     const graphState: UndirectedGraphState = {
@@ -31,7 +31,7 @@ class UndirectedGraphServiceAdapter {
         hasCycle: state.stats.hasCycle,
       },
     };
-    this.service = new UndirectedGraphService(graphState);
+    this.service = new UndirectedGraphDragDropService(graphState);
   }
 
   getState(): BaseState<UndirectedGraphData, UndirectedGraphStatsExtended> {
@@ -114,7 +114,7 @@ const defaultState: UndirectedGraphStateExtended = {
   },
 };
 
-const useUndirectedGraph = () => {
+const useDragDropUndirectedGraph = () => {
   const baseHook = useBaseDataStructure<
     UndirectedGraphData,
     UndirectedGraphStatsExtended,
@@ -163,4 +163,4 @@ const useUndirectedGraph = () => {
   };
 };
 
-export default useUndirectedGraph;
+export { useDragDropUndirectedGraph };

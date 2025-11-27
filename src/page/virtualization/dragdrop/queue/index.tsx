@@ -3,7 +3,7 @@
 import React, { useState, useRef, lazy, Suspense } from 'react';
 
 import { QueueDragComponent } from '@/types';
-import { useQueueDragDrop } from '@/hooks';
+import { useDragDropQueue } from '@/hooks';
 import { queueDragComponents } from '@/data';
 
 import DragDropZone from '@/components/playground/shared/DragDropZone';
@@ -22,7 +22,7 @@ const TutorialModal = lazy(() => import('@/components/tutorial/TutorialModal'));
 
 const DragDropQueue = () => {
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
-    useQueueDragDrop();
+    useDragDropQueue();
 
   const [draggedItem, setDraggedItem] = useState<QueueDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);

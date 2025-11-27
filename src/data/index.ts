@@ -1,8 +1,5 @@
 // Components
-export {
-  getSubmenuItemsWithNested,
-  playgroundItems,
-} from './components/menu.data';
+export { getSubmenuItemsWithNested, playgroundItems } from './components/menu.data';
 export {
   features,
   structures,
@@ -48,3 +45,11 @@ export { directedGraphCodeTemplate } from './template/code.data';
 
 // Submissions
 export { SUBMISSION_STATUS_CONFIG } from './components/submissions';
+
+// Queue
+export {
+  LAB_ROOMS,
+  TABLE_NUMBERS,
+  QUEUE_STATUS_LABELS,
+  QUEUE_STATUS_COLORS,
+} from './components/queue.data';

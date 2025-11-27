@@ -9,7 +9,7 @@ import {
   DirectedGraphEdge,
   Operation,
 } from '@/types';
-import { useDirectedGraphDragDrop } from '@/hooks';
+import { useDragDropDirectedGraph } from '@/hooks';
 import { directedGraphDragComponents } from '@/data';
 
 import DragDropZone from '@/components/playground/shared/DragDropZone';
@@ -28,7 +28,7 @@ const TutorialModal = lazy(() => import('@/components/tutorial/TutorialModal'));
 
 const DragDropDirectedGraph = () => {
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
-    useDirectedGraphDragDrop();
+    useDragDropDirectedGraph();
 
   const [draggedItem, setDraggedItem] = useState<DirectedGraphDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);

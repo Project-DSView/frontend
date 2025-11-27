@@ -1,7 +1,7 @@
 'use client';
 
 import React, { lazy } from 'react';
-import { useBSTStepthrough } from '@/hooks';
+import { useStepthroughBST } from '@/hooks';
 import { BSTData } from '@/types';
 
 import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
@@ -23,7 +23,7 @@ const StepthroughBST: React.FC = () => {
     reset,
     isLoading,
     linkedListData,
-  } = useBSTStepthrough();
+  } = useStepthroughBST();
 
   return (
     <StepthroughLayout<BSTData>

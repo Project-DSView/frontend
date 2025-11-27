@@ -7,12 +7,20 @@ import { Loader2, AlertCircle } from 'lucide-react';
 import { isDeadlinePassed } from '@/lib';
 import { useAuth } from '@/hooks';
 import { useCourseMaterial, useMySubmission } from '@/query';
-import { PDFSubmission } from '@/types';
+import { PDFSubmission, CodeSubmission } from '@/types';
 
 import { Button } from '@/components/ui/button';
-import PDFExerciseCard from '@/components/course/pdf-exercise/PDFExerciseCard';
-import PDFSubmissionCard from '@/components/course/pdf-exercise/PDFSubmissionCard';
-import SubmittedPDFCard from '@/components/course/pdf-exercise/SubmittedPDFCard';
+import PDFExerciseCard from '@/components/course/[id]/exercise/PDFExerciseCard';
+import PDFSubmissionCard from '@/components/course/[id]/exercise/PDFSubmissionCard';
+import SubmittedPDFCard from '@/components/course/[id]/exercise/SubmittedPDFCard';
+
+// Type guard to check if submission is PDFSubmission
+const isPDFSubmission = (
+  sub: PDFSubmission | CodeSubmission | null | undefined,
+): sub is PDFSubmission => {
+  if (!sub || !sub.submission_id) return false;
+  return 'file_url' in sub && 'file_name' in sub;
+};
 
 const PDFExercisePage: React.FC = () => {
   const router = useRouter();
@@ -43,6 +51,14 @@ const PDFExercisePage: React.FC = () => {
     }
   }, [isInitialized, profile, router]);
 
+  // Debug: Log submission data
+  React.useEffect(() => {
+    if (submission) {
+      console.log('Submission data:', submission);
+      console.log('Is PDF submission:', isPDFSubmission(submission));
+    }
+  }, [submission]);
+
   // Show loading state
   if (!isInitialized) {
     return (
@@ -58,11 +74,11 @@ const PDFExercisePage: React.FC = () => {
   // Show error state for material
   if (materialError) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-500" />
-          <h2 className="mt-4 text-lg font-semibold text-gray-900">เกิดข้อผิดพลาด</h2>
-          <p className="mt-2 text-gray-600">ไม่สามารถโหลดข้อมูลโจทย์ได้</p>
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500 dark:text-red-400" />
+          <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">เกิดข้อผิดพลาด</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">ไม่สามารถโหลดข้อมูลโจทย์ได้</p>
           <Button onClick={() => router.back()} className="mt-4">
             กลับ
           </Button>
@@ -86,11 +102,11 @@ const PDFExercisePage: React.FC = () => {
   // Check if this is actually a PDF exercise
   if (material.type !== 'pdf_exercise') {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-500" />
-          <h2 className="mt-4 text-lg font-semibold text-gray-900">ไม่พบแบบฝึกหัด</h2>
-          <p className="mt-2 text-gray-600">หน้านี้ใช้สำหรับแบบฝึกหัดที่เป็นเอกสารเท่านั้น</p>
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500 dark:text-red-400" />
+          <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">ไม่พบแบบฝึกหัด</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">หน้านี้ใช้สำหรับแบบฝึกหัดที่เป็นเอกสารเท่านั้น</p>
           <Button onClick={() => router.back()} className="mt-4">
             กลับ
           </Button>
@@ -103,13 +119,8 @@ const PDFExercisePage: React.FC = () => {
   const isExpired = Boolean(material.deadline && isDeadlinePassed(material.deadline));
   const isGraded = material.is_graded ?? true;
 
-  // Type guard to check if submission is PDFSubmission
-  const isPDFSubmission = (sub: typeof submission): sub is PDFSubmission => {
-    return sub !== null && sub !== undefined && 'file_url' in sub && 'file_name' in sub;
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="container mx-auto px-4">
         {/* PDF Exercise Card - Problem Document */}
         <PDFExerciseCard material={material} />
@@ -120,12 +131,16 @@ const PDFExercisePage: React.FC = () => {
             <div className="flex items-center justify-center py-8">
               <div className="flex items-center gap-2">
                 <Loader2 className="h-6 w-6 animate-spin" />
-                <span>กำลังโหลดสถานะการส่งงาน...</span>
+                <span className="text-gray-700 dark:text-gray-300">กำลังโหลดสถานะการส่งงาน...</span>
               </div>
             </div>
           ) : submission && submission.submission_id && isPDFSubmission(submission) ? (
             /* Show submitted status if user has submitted */
-            <SubmittedPDFCard submission={submission} accessToken={accessToken!} />
+            <SubmittedPDFCard
+              submission={submission}
+              accessToken={accessToken!}
+              material={material}
+            />
           ) : (
             /* Show submission form if user hasn't submitted */
             <PDFSubmissionCard

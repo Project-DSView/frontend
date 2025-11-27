@@ -9,7 +9,7 @@ import {
   UndirectedGraphEdge,
   Operation,
 } from '@/types';
-import { useUndirectedGraphDragDrop } from '@/hooks';
+import { useDragDropUndirectedGraph } from '@/hooks';
 import { undirectedGraphDragComponents } from '@/data';
 
 import DragDropZone from '@/components/playground/shared/DragDropZone';
@@ -28,7 +28,7 @@ const TutorialModal = lazy(() => import('@/components/tutorial/TutorialModal'));
 
 const DragDropUndirectedGraph = () => {
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
-    useUndirectedGraphDragDrop();
+    useDragDropUndirectedGraph();
 
   const [draggedItem, setDraggedItem] = useState<UndirectedGraphDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);

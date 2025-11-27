@@ -134,4 +134,4 @@ const useRealtimeDirectedGraph = (code: string) => {
   };
 };
 
-export default useRealtimeDirectedGraph;
+export { useRealtimeDirectedGraph };

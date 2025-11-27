@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { executeStepthrough } from '@/api';
 import { StepthroughState, StepthroughHookReturn, QueueData } from '@/types';
 
-const useQueueStepthrough = (initialCode: string = ''): StepthroughHookReturn<QueueData> => {
+const useStepthroughQueue = (initialCode: string = ''): StepthroughHookReturn<QueueData> => {
   const [state, setState] = useState<StepthroughState<QueueData>>({
     code: initialCode,
     filename: 'playground.py',
@@ -201,4 +201,4 @@ const useQueueStepthrough = (initialCode: string = ''): StepthroughHookReturn<Qu
   };
 };
 
-export default useQueueStepthrough;
+export { useStepthroughQueue };

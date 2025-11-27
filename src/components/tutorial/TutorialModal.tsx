@@ -6,10 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import ImageModal from './ImageModal';
 import TutorialStepComponent from './TutorialStep';
-import { TutorialModalProps, PlaygroundModeType } from '@/types/props/tutorial.types';
+import { TutorialDialogProps, PlaygroundModeType } from '@/types';
 import { playgroundModes, tutorialSections } from '@/data/components/tutorial.data';
 
-const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, playgroundMode }) => {
+const TutorialModal: React.FC<TutorialDialogProps> = ({ isOpen, onClose, playgroundMode }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);

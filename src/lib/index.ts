@@ -8,7 +8,7 @@ export {
   addToExecutionHistory,
   validateOperationInput,
   formatExecutionMessage,
-} from './dragdrop/execution.utils';
+} from './dragdrop/execution';
 
 // Query
 export { devUtils, devToolsConfig } from './query/dev-tools';
@@ -16,13 +16,19 @@ export { devUtils, devToolsConfig } from './query/dev-tools';
 export { createQueryClient } from './query/query-client';
 
 // Security
+export { sessionUtils, clearAllCookies, removeQueryParams } from './security/auth';
+
+// Error
 export {
-  sessionUtils,
-  clearAllCookies,
-  removeQueryParams,
   getErrorMessage,
+  getStatusErrorMessage,
+  getErrorDetails,
+  isNetworkError,
+  isAuthError,
+  isValidationError,
+  formatErrorForDisplay,
   logError,
-} from './security/auth.utils';
+} from './error/error';
 
 export {
   setCookie,
@@ -31,7 +37,7 @@ export {
   clearAllCookies as clearAllCookiesSecure,
   areCookiesEnabled,
   getAllCookies,
-} from './security/cookie.utils';
+} from './security/cookie';
 
 export {
   getSafeHeaders,
@@ -42,7 +48,7 @@ export {
   generateCORSHeaders,
   handleCORSPreflight,
   DEFAULT_CORS_CONFIG,
-} from './security/cors.utils';
+} from './security/cors';
 
 export {
   generateCSRFToken,
@@ -53,7 +59,7 @@ export {
   initializeCSRFProtection,
   getCSRFHeaders,
   getMinimalHeaders,
-} from './security/csrf.utils';
+} from './security/csrf';
 
 export {
   decodeJWT,
@@ -63,7 +69,7 @@ export {
   getUserIdFromToken,
   getTokenExpirationTime,
   getTimeUntilExpiration,
-} from './security/jwt.utils';
+} from './security/jwt';
 
 export {
   isRateLimited,
@@ -74,15 +80,15 @@ export {
   RATE_LIMIT_CONFIGS,
   withRateLimit,
   cleanupExpiredEntries,
-} from './security/rate-limit.utils';
+} from './security/rate-limit';
 
-export { secureSessionUtils } from './security/secure-session.utils';
+export { secureSessionUtils } from './security/secure-session';
 
 export {
   validateCodeSecurity,
   validatePythonCodeSecurity,
   validateJSCodeSecurity,
-} from './security/code-validation.utils';
+} from './security/code-validation';
 
 export {
   executeCodeSafely,
@@ -90,11 +96,16 @@ export {
   executeCodeWithService,
   executeCodeBatch,
   executeCodeWithTimeout,
-} from './security/code-execution.utils';
+} from './security/code-execution';
 
 // Utils
-export { ExportUtils } from './utils/export.utils';
-export { isValidImageUrl, getCourseImageFallback, transformImageUrl } from './utils/image.utils';
+export { ExportUtils } from './utils/export';
+export {
+  isValidImageUrl,
+  getCourseImageFallback,
+  transformImageUrl,
+  transformFileUrl,
+} from './utils/image';
 export { default as cn } from './utils/utils';
 export { getEmbedUrl, isSupportedVideoPlatform, getVideoPlatform } from './utils/video';
 export { getRoleBadgeStyle, getRoleDisplayName, isValidRole } from './utils/role';
@@ -117,3 +128,12 @@ export { getFlattenedLinks, getProcessedPlaygroundItems } from './utils/playgrou
 
 // Schemas
 export { pdfSubmissionSchema } from './schemas/pdf-submission.schema';
+export { gradingSchema } from './schemas/grading.schema';
+export { courseSchema } from './schemas/course.schema';
+export {
+  materialSchema,
+  documentMaterialSchema,
+  videoMaterialSchema,
+  codeExerciseMaterialSchema,
+  pdfExerciseMaterialSchema,
+} from './schemas/material.schema';

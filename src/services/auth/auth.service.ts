@@ -1,5 +1,6 @@
-import { getGoogleAuthUrl, logout, refreshToken } from '@/api';
-import { AuthResponse } from '@/types';
+import axios from 'axios';
+import { getGoogleAuthUrl, logout, refreshToken, fetchProfile } from '@/api';
+import { AuthResponse, UserProfile } from '@/types';
 
 class AuthService {
   static async getGoogleAuthUrl(): Promise<AuthResponse> {
@@ -15,4 +16,20 @@ class AuthService {
   }
 }
 
-export default AuthService;
+class ProfileService {
+  static async fetchProfile(token: string): Promise<UserProfile> {
+    try {
+      return await fetchProfile(token);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await fetchProfile(newToken);
+        }
+      }
+      throw error;
+    }
+  }
+}
+
+export { AuthService, ProfileService };

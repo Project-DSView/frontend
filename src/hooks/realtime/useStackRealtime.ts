@@ -113,4 +113,4 @@ const useRealtimeStack = (code: string) => {
   };
 };
 
-export default useRealtimeStack;
+export { useRealtimeStack };

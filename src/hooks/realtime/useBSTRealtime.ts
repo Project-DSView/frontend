@@ -111,4 +111,4 @@ const useRealtimeBST = (code: string) => {
   };
 };
 
-export default useRealtimeBST;
+export { useRealtimeBST };

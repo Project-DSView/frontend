@@ -148,7 +148,7 @@ const defaultState: BaseStepthroughState<StackData, StackStatsExtended> = {
   },
 };
 
-const useStackStepthrough = () => {
+const useStepthroughStack = () => {
   const baseHook = useBaseStepthrough<StackData, StackStatsExtended, StackStepthroughService>(
     defaultState,
     StackStepthroughService,
@@ -178,4 +178,4 @@ const useStackStepthrough = () => {
   };
 };
 
-export default useStackStepthrough;
+export { useStepthroughStack };

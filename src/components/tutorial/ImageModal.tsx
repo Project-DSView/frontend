@@ -3,9 +3,9 @@ import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { X } from 'lucide-react';
-import { ImageModalProps } from '@/types/props/tutorial.types';
+import { ImageDialogProps } from '@/types';
 
-const ImageModal: React.FC<ImageModalProps> = ({ selectedImage, onClose }) => {
+const ImageModal: React.FC<ImageDialogProps> = ({ selectedImage, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 

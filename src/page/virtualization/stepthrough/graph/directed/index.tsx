@@ -2,7 +2,7 @@
 
 import React, { lazy } from 'react';
 
-import { useDirectedGraphStepthrough } from '@/hooks';
+import { useStepthroughDirectedGraph } from '@/hooks';
 import { DirectedGraphData } from '@/types';
 
 import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
@@ -24,7 +24,7 @@ const StepthroughDirectedGraph: React.FC = () => {
     reset,
     isLoading,
     graphData,
-  } = useDirectedGraphStepthrough();
+  } = useStepthroughDirectedGraph();
 
   return (
     <StepthroughLayout<DirectedGraphData>

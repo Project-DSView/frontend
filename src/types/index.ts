@@ -111,35 +111,76 @@ export type {
   UndirectedGraphStateExtended,
 } from './dragdrop/UndirectedGraph.types';
 
-// Props
+// Props - All props in one file
 export type {
+  // Button
   CopyAndExportButtonProps,
   ExportPNGButtonProps,
   FileUploadButtonProps,
-} from './props/button.types';
-
-export type { Feature, FeatureCardProps } from './props/card.types';
-
-export type {
+  // Card
+  Feature,
+  FeatureCardProps,
   CourseCardProps,
-  EnrollmentPopoverProps,
   CourseCardWithEnrollmentProps,
-  MembersListProps,
-  LeaderboardProps,
-  MaterialsByWeekProps,
   MaterialCardProps,
-  UserRole,
-  LatestAnnouncementProps,
-  ExerciseEditorCardProps,
   ExerciseProblemCardProps,
   PDFSubmissionCardProps,
   SubmittedPDFCardProps,
-} from './props/course.types';
-
-export type {
-  CodeEditorProps,
-  OperationCardProps,
+  TestCaseResultCardProps,
+  QueueStatusCardProps,
+  QueueJobCardProps,
+  TACommentCardProps,
+  PlaygroundModeCardProps,
+  LearningTipCardProps,
+  DataStructureCardProps,
+  // Table
+  GradingTableProps,
+  QueueTableProps,
+  // Dialog
+  GradingDialogProps,
+  ReviewScoreDialogProps,
+  ReviewDialogProps,
+  RequestApprovalDialogProps,
+  ImageDialogProps,
+  TutorialDialogProps,
+  // UI Components
+  ApprovalStatusBadgeProps,
   OperationCategoryDropdownProps,
+  EnrollmentPopoverProps,
+  ProgressChartProps,
+  // Editor
+  CodeEditorProps,
+  ExerciseEditorCardProps,
+  // List
+  QueueJobListProps,
+  MembersListProps,
+  VirtualizedListProps,
+  // Menu
+  SubItem,
+  MenuItem,
+  PlaygroundItem,
+  SubMenuItemProps,
+  NestedSubMenuItemProps,
+  // Step Selector
+  StepSelectorProps,
+  // Showcase
+  Structure,
+  CTASectionProps,
+  // Landing
+  VisualizationMode,
+  // Tutorial
+  DataStructure,
+  LearningTip,
+  TutorialStep,
+  PlaygroundMode,
+  TutorialSection,
+  TutorialStepProps,
+  PlaygroundModeType,
+  // Section
+  MaterialsByWeekProps,
+  LatestAnnouncementProps,
+  // DragDrop
+  OperationCardProps,
   VisualizationProps,
   SinglyLinkedListOperationsProps,
   SinglyLinkedListVisualizationProps,
@@ -150,36 +191,7 @@ export type {
   QueueOperationsProps,
   QueueVisualizationProps,
   DragDropZoneProps,
-} from './props/DragDrop.types';
-
-export type {
-  SubItem,
-  MenuItem,
-  PlaygroundItem,
-  SubMenuItemProps,
-  NestedSubMenuItemProps,
-} from './props/menu.types';
-
-export type { StepSelectorProps } from './props/StepSelector.types';
-
-export type { VirtualizedListProps } from './props/virtualization.types';
-
-export type { Structure, CTASectionProps } from './props/showcase.types';
-
-export type { VisualizationMode } from './props/landing.types';
-
-export type {
-  DataStructure,
-  LearningTip,
-  TutorialStep,
-  PlaygroundMode,
-  TutorialSection,
-  ImageModalProps,
-  PlaygroundModeCardProps,
-  TutorialStepProps,
-  LearningTipCardProps,
-  DataStructureCardProps,
-} from './props/tutorial.types';
+} from './props/props.types';
 
 // Realtime
 export type {
@@ -257,47 +269,47 @@ export type {
   BSTRealtimeProps,
 } from './realtime/BST.types';
 
-// Services
-export type { AuthResponse, UserProfile, UseAuthReturn } from './services/auth.types';
+// Services - All service types in one file
 export type {
+  // Auth
+  AuthResponse,
+  UserProfile,
+  UseAuthReturn,
+  // Course
   Course,
   CourseCreator,
   CoursePagination,
   CourseListResponse,
   CourseResponse,
   CourseQueryParams,
-  LeaderboardEntry,
-  LeaderboardResponse,
-} from './services/course.types';
-
-export type {
+  // Enrollment
   EnrollmentStatus,
   MyEnrollmentResponse,
   EnrollmentRequest,
   EnrollmentResponse,
   CourseEnrollmentsResponse,
-} from './services/enrollment.types';
-
-export type {
-  Announcement,
-  AnnouncementsData,
-  AnnouncementsResponse,
-  AnnouncementsParams,
-} from './services/announcements.types';
-
-export type {
+  // Invitation
+  InvitationResponse,
+  CreateInvitationResponse,
+  GetInvitationsResponse,
+  // Material
   Material,
   MaterialCreator,
   MaterialsData,
   MaterialsResponse,
   MaterialsParams,
   MaterialResponse,
-} from './services/material.types';
-
-export type {
-  PDFSubmission,
-  CodeSubmission,
+  // Announcement
+  Announcement,
+  AnnouncementsData,
+  AnnouncementsResponse,
+  AnnouncementsParams,
+  // Submission
+  SubmissionStatus,
+  SubmissionStatusConfig,
   TestCaseResult,
+  CodeSubmission,
+  PDFSubmission,
   SubmitPDFRequest,
   SubmitCodeRequest,
   SubmitPDFResponse,
@@ -306,15 +318,15 @@ export type {
   SubmissionListResponse,
   DownloadUrlResponse,
   CancelSubmissionResponse,
-  SubmissionStatus,
-  SubmissionStatusConfig,
-} from './services/submission.types';
-
-// Queue
-export type {
-  QueueJob,
-  QueueJobUser,
+  CoursePDFSubmission,
+  CoursePDFSubmissionsResponse,
+  ApprovePDFSubmissionRequest,
+  ApprovePDFSubmissionResponse,
+  // Queue
   QueueJobStatus,
+  QueueJobUser,
+  QueueJobMaterial,
+  QueueJob,
   RequestApprovalRequest,
   RequestApprovalResponse,
   QueueJobsResponse,
@@ -322,17 +334,13 @@ export type {
   CompleteReviewRequest,
   CompleteReviewResponse,
   QueueJobFilters,
-} from './services/queue.types';
-
-export type {
-  RequestApprovalDialogProps,
-  QueueStatusCardProps,
-  ApprovalStatusBadgeProps,
-  TACommentCardProps,
-  QueueJobCardProps,
-  QueueJobListProps,
-  ReviewDialogProps,
-} from './props/queue.types';
+  // Score
+  CourseScore,
+  CourseScoreResponse,
+  // Progress
+  StudentProgress,
+  SelfProgressResponse,
+} from './services/services.types';
 
 // Security
 export type {
@@ -380,8 +388,9 @@ export type { QueueData, QueueStats } from './stepthrough/Queue.types';
 
 export type { UndirectedGraphData } from './stepthrough/UndirectedGraph.types';
 
-// Schemas
-export type { PDFSubmissionFormData, PDFSubmissionFormState } from './schemas/pdf-submission.types';
-
-// Utils
-export type { ExportOptions } from './schemas/utils.types';
+// Schemas - All schema types in one file
+export type {
+  PDFSubmissionFormData,
+  PDFSubmissionFormState,
+  ExportOptions,
+} from './schemas/schemas.types';

@@ -1,7 +1,7 @@
 import { SinglyLinkedListState, SinglyLinkedListExecutionStep } from '@/types';
 import { createExecutionStep } from '@/lib';
 
-class SinglyLinkedListService {
+class SinglyLinkedListDragDropService {
   private state: SinglyLinkedListState;
 
   constructor(initialState: SinglyLinkedListState) {
@@ -661,4 +661,4 @@ class SinglyLinkedListService {
   }
 }
 
-export default SinglyLinkedListService;
+export { SinglyLinkedListDragDropService };

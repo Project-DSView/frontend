@@ -2,13 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Loader2, AlertCircle, BookOpen } from 'lucide-react';
+import { Search, Loader2, AlertCircle, BookOpen, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useAuth } from '@/hooks';
-import { useCourses, useEnrollInCourse } from '@/query';
+import { useCourses, useEnrollInCourse, useUpdateCourse } from '@/query';
+import { Course } from '@/types';
 
 import CourseCardWithEnrollment from '@/components/course/CourseCardWithEnrollment';
+import EnrollmentChecker from '@/components/course/EnrollmentChecker';
+import CreateCourseDialog from '@/components/course/CreateCourseDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -18,6 +21,10 @@ const CoursePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isEnrolling, setIsEnrolling] = useState<string | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isArchiving, setIsArchiving] = useState<string | null>(null);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<string>>(new Set());
 
   // Query parameters
   const queryParams = {
@@ -32,12 +39,50 @@ const CoursePage: React.FC = () => {
   // Enrollment mutation
   const enrollMutation = useEnrollInCourse();
 
+  // Update course mutation
+  const updateCourseMutation = useUpdateCourse();
+
+  // Handler to update enrolled course IDs
+  const handleEnrollmentStatusChange = React.useCallback(
+    (courseId: string, isEnrolled: boolean) => {
+      setEnrolledCourseIds((prev) => {
+        const newSet = new Set(prev);
+        if (isEnrolled) {
+          newSet.add(courseId);
+        } else {
+          newSet.delete(courseId);
+        }
+        return newSet;
+      });
+    },
+    [],
+  );
+
   // Redirect if not authenticated
   useEffect(() => {
     if (isInitialized && !profile) {
       router.push('/');
     }
   }, [isInitialized, profile, router]);
+
+  // Debug: Check profile and is_teacher
+  useEffect(() => {
+    if (profile) {
+      console.log('[Course Page] Profile:', profile);
+      console.log('[Course Page] is_teacher:', profile.is_teacher);
+      console.log('[Course Page] Should show button:', profile.is_teacher === true);
+    } else {
+      console.log('[Course Page] Profile is null or undefined');
+    }
+  }, [profile]);
+
+  // Debug: Check profile and is_teacher
+  useEffect(() => {
+    if (profile) {
+      console.log('Profile:', profile);
+      console.log('is_teacher:', profile.is_teacher);
+    }
+  }, [profile]);
 
   // Handle enrollment
   const handleEnroll = async (courseId: string, enrollKey: string) => {
@@ -125,6 +170,44 @@ const CoursePage: React.FC = () => {
     window.location.href = `/course/${courseId}`;
   };
 
+  // Handle archive course
+  const handleArchive = async (courseId: string) => {
+    if (!accessToken) {
+      toast.error('กรุณาเข้าสู่ระบบก่อน');
+      return;
+    }
+
+    // Find course to check current status
+    const course = courses.find((c) => c.course_id === courseId);
+    if (!course) {
+      toast.error('ไม่พบคอร์ส');
+      return;
+    }
+
+    const newStatus = course.status === 'archived' ? 'active' : 'archived';
+    setIsArchiving(courseId);
+
+    try {
+      await updateCourseMutation.mutateAsync({
+        token: accessToken,
+        courseId,
+        updates: { status: newStatus },
+      });
+      // Refresh courses data
+      refetch();
+    } catch (error: unknown) {
+      console.error('Archive course error:', error);
+      toast.error('เกิดข้อผิดพลาดในการเก็บคอร์ส');
+    } finally {
+      setIsArchiving(null);
+    }
+  };
+
+  // Handle edit course
+  const handleEdit = (course: Course) => {
+    setEditingCourse(course);
+  };
+
   // Show loading state
   if (!isInitialized) {
     return (
@@ -154,9 +237,9 @@ const CoursePage: React.FC = () => {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-500" />
-          <h2 className="mt-4 text-lg font-semibold text-gray-900">เกิดข้อผิดพลาด</h2>
-          <p className="mt-2 text-gray-600">ไม่สามารถโหลดข้อมูลคอร์สได้</p>
+          <AlertCircle className="text-destructive mx-auto h-12 w-12" />
+          <h2 className="text-foreground mt-4 text-lg font-semibold">เกิดข้อผิดพลาด</h2>
+          <p className="text-muted-foreground mt-2">ไม่สามารถโหลดข้อมูลคอร์สได้</p>
           <Button onClick={() => refetch()} className="mt-4">
             ลองใหม่
           </Button>
@@ -168,20 +251,34 @@ const CoursePage: React.FC = () => {
   const courses = coursesData?.data.courses || [];
   const pagination = coursesData?.data.pagination;
 
+  // Separate courses into enrolled and all courses
+  const enrolledCourses = courses.filter((course) => enrolledCourseIds.has(course.course_id));
+  const allCourses = courses;
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="bg-background min-h-screen py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">คอร์สเรียนทั้งหมด</h1>
-          <p className="mt-2 text-gray-600">เลือกคอร์สที่คุณสนใจและลงทะเบียนเรียนได้เลย</p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-foreground text-3xl font-bold">คอร์สเรียนทั้งหมด</h1>
+            <p className="text-muted-foreground mt-2">
+              เลือกคอร์สที่คุณสนใจและลงทะเบียนเรียนได้เลย
+            </p>
+          </div>
+          {profile?.is_teacher === true && (
+            <Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              เพิ่มคอร์สเรียน
+            </Button>
+          )}
         </div>
 
         {/* Search */}
         <div className="mb-8">
           <form onSubmit={handleSearch} className="flex gap-4">
             <div className="relative flex-1">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <Input
                 type="text"
                 placeholder="ค้นหาคอร์ส..."
@@ -196,88 +293,153 @@ const CoursePage: React.FC = () => {
           </form>
         </div>
 
-        {/* Courses Grid */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="flex items-center gap-2">
-              <Loader2 className="h-6 w-6 animate-spin" />
-              <span>กำลังโหลดคอร์ส...</span>
-            </div>
-          </div>
-        ) : courses.length === 0 ? (
-          <div className="py-12 text-center">
-            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gray-100">
-              <BookOpen className="h-12 w-12 text-gray-400" />
-            </div>
-            <h3 className="mt-4 text-lg font-semibold text-gray-900">ไม่พบคอร์ส</h3>
-            <p className="mt-2 text-gray-600">
-              {searchTerm ? 'ไม่พบคอร์สที่ตรงกับเงื่อนไขการค้นหา' : 'ยังไม่มีคอร์สในระบบ'}
-            </p>
-            {searchTerm && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchTerm('');
-                  setCurrentPage(1);
-                }}
-                className="mt-4"
-              >
-                ล้างการค้นหา
-              </Button>
-            )}
-          </div>
-        ) : (
-          <>
+        {/* Enrollment Checkers - Hidden components to check enrollment status */}
+        {courses.map((course) => (
+          <EnrollmentChecker
+            key={`checker-${course.course_id}`}
+            courseId={course.course_id}
+            accessToken={accessToken}
+            onEnrollmentStatusChange={handleEnrollmentStatusChange}
+          />
+        ))}
+
+        {/* My Courses Section */}
+        {enrolledCourses.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-foreground mb-6 text-2xl font-semibold">คอร์สของฉัน</h2>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {courses.map((course) => (
+              {enrolledCourses.map((course) => (
                 <CourseCardWithEnrollment
                   key={course.course_id}
                   course={course}
                   onEnroll={handleEnroll}
                   isEnrolling={isEnrolling === course.course_id}
                   onEnterCourse={handleEnterCourse}
+                  onArchive={handleArchive}
+                  isArchiving={isArchiving === course.course_id}
+                  onEdit={handleEdit}
                   accessToken={accessToken}
+                  userProfile={profile}
                 />
               ))}
             </div>
-
-            {/* Pagination */}
-            {pagination && pagination.total_pages > 1 && (
-              <div className="mt-8 flex items-center justify-center gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1 || isLoading}
-                >
-                  ก่อนหน้า
-                </Button>
-
-                <div className="flex gap-1">
-                  {Array.from({ length: pagination.total_pages }, (_, i) => i + 1).map((page) => (
-                    <Button
-                      key={page}
-                      variant={currentPage === page ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => handlePageChange(page)}
-                      disabled={isLoading}
-                    >
-                      {page}
-                    </Button>
-                  ))}
-                </div>
-
-                <Button
-                  variant="outline"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === pagination.total_pages || isLoading}
-                >
-                  ถัดไป
-                </Button>
-              </div>
-            )}
-          </>
+          </div>
         )}
+
+        {/* Divider */}
+        {enrolledCourses.length > 0 && <div className="my-8 border-t border-gray-300"></div>}
+
+        {/* All Courses Section */}
+        <div>
+          <h2 className="text-foreground mb-6 text-2xl font-semibold">คอร์สทั้งหมด</h2>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-6 w-6 animate-spin" />
+                <span>กำลังโหลดคอร์ส...</span>
+              </div>
+            </div>
+          ) : allCourses.length === 0 ? (
+            <div className="py-12 text-center">
+              <div className="bg-muted mx-auto flex h-24 w-24 items-center justify-center rounded-full">
+                <BookOpen className="text-muted-foreground h-12 w-12" />
+              </div>
+              <h3 className="text-foreground mt-4 text-lg font-semibold">ไม่พบคอร์ส</h3>
+              <p className="text-muted-foreground mt-2">
+                {searchTerm ? 'ไม่พบคอร์สที่ตรงกับเงื่อนไขการค้นหา' : 'ยังไม่มีคอร์สในระบบ'}
+              </p>
+              {searchTerm && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setCurrentPage(1);
+                  }}
+                  className="mt-4"
+                >
+                  ล้างการค้นหา
+                </Button>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {allCourses.map((course) => (
+                  <CourseCardWithEnrollment
+                    key={course.course_id}
+                    course={course}
+                    onEnroll={handleEnroll}
+                    isEnrolling={isEnrolling === course.course_id}
+                    onEnterCourse={handleEnterCourse}
+                    onArchive={handleArchive}
+                    isArchiving={isArchiving === course.course_id}
+                    onEdit={handleEdit}
+                    accessToken={accessToken}
+                    userProfile={profile}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {pagination && pagination.total_pages > 1 && (
+                <div className="mt-8 flex items-center justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1 || isLoading}
+                  >
+                    ก่อนหน้า
+                  </Button>
+
+                  <div className="flex gap-1">
+                    {Array.from({ length: pagination.total_pages }, (_, i) => i + 1).map((page) => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                        disabled={isLoading}
+                      >
+                        {page}
+                      </Button>
+                    ))}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === pagination.total_pages || isLoading}
+                  >
+                    ถัดไป
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Create Course Dialog */}
+      <CreateCourseDialog
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        accessToken={accessToken}
+        onSuccess={() => {
+          refetch();
+        }}
+      />
+
+      {/* Edit Course Dialog */}
+      <CreateCourseDialog
+        isOpen={!!editingCourse}
+        onClose={() => setEditingCourse(null)}
+        accessToken={accessToken}
+        course={editingCourse}
+        onSuccess={() => {
+          refetch();
+          setEditingCourse(null);
+        }}
+      />
     </div>
   );
 };

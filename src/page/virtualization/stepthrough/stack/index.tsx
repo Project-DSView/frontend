@@ -2,7 +2,7 @@
 
 import React, { lazy } from 'react';
 
-import { useStackStepthrough } from '@/hooks';
+import { useStepthroughStack } from '@/hooks';
 import { StackData } from '@/types';
 
 import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
@@ -24,7 +24,7 @@ const StepthroughStack: React.FC = () => {
     reset,
     isLoading,
     stackData,
-  } = useStackStepthrough();
+  } = useStepthroughStack();
 
   return (
     <StepthroughLayout<StackData>

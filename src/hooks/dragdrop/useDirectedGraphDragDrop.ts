@@ -10,12 +10,12 @@ import {
   DirectedGraphStateExtended,
   BaseState,
 } from '@/types';
-import { DirectedGraphService } from '@/services';
+import { DirectedGraphDragDropService } from '@/services';
 import { useBaseDataStructure } from './useBaseDataStructureDragDrop';
 
 // DirectedGraph Service Adapter
 class DirectedGraphServiceAdapter {
-  private service: DirectedGraphService;
+  private service: DirectedGraphDragDropService;
 
   constructor(state: BaseState<DirectedGraphData, DirectedGraphStatsExtended>) {
     const graphState: DirectedGraphState = {
@@ -33,7 +33,7 @@ class DirectedGraphServiceAdapter {
         outDegree: state.stats.outDegree,
       },
     };
-    this.service = new DirectedGraphService(graphState);
+    this.service = new DirectedGraphDragDropService(graphState);
   }
 
   getState(): BaseState<DirectedGraphData, DirectedGraphStatsExtended> {
@@ -120,7 +120,7 @@ const defaultState: DirectedGraphStateExtended = {
   },
 };
 
-const useDirectedGraph = () => {
+const useDragDropDirectedGraph = () => {
   const baseHook = useBaseDataStructure<
     DirectedGraphData,
     DirectedGraphStatsExtended,
@@ -173,4 +173,4 @@ const useDirectedGraph = () => {
   };
 };
 
-export default useDirectedGraph;
+export { useDragDropDirectedGraph };

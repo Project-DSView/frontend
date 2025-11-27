@@ -1,6 +1,6 @@
 import { BSTState, BSTNode, BSTStats, BSTExecutionStep } from '@/types';
 
-class BSTService {
+class BSTDragDropService {
   private state: BSTState;
 
   constructor(initialState: BSTState) {
@@ -317,4 +317,4 @@ class BSTService {
   }
 }
 
-export default BSTService;
+export { BSTDragDropService };

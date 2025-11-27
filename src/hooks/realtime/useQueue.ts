@@ -113,4 +113,4 @@ const useRealtimeQueue = (code: string) => {
   };
 };
 
-export default useRealtimeQueue;
+export { useRealtimeQueue };

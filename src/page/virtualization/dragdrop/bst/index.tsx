@@ -3,7 +3,7 @@
 import React, { useState, useRef, lazy, Suspense } from 'react';
 import { BSTDragComponent, BSTNode, BSTOperation } from '@/types';
 
-import { useBSTDragDrop } from '@/hooks';
+import { useDragDropBST } from '@/hooks';
 import { bstDragComponents } from '@/data';
 
 import DragDropZone from '@/components/playground/shared/DragDropZone';
@@ -101,7 +101,7 @@ const DragDropBST = () => {
     clearAll,
     updateBSTState,
     reorderOperation,
-  } = useBSTDragDrop();
+  } = useDragDropBST();
 
   const [draggedItem, setDraggedItem] = useState<BSTDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);

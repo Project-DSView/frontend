@@ -7,7 +7,7 @@ import {
 } from '@/types';
 import { createExecutionStep } from '@/lib';
 
-class DirectedGraphService {
+class DirectedGraphDragDropService {
   private state: DirectedGraphState;
 
   constructor(initialState: DirectedGraphState) {
@@ -725,4 +725,4 @@ class DirectedGraphService {
   }
 }
 
-export default DirectedGraphService;
+export { DirectedGraphDragDropService };

@@ -184,7 +184,7 @@ const defaultState: BaseStepthroughState<BSTData, BSTStatsExtended> = {
   },
 };
 
-const useBSTStepthrough = () => {
+const useStepthroughBST = () => {
   const baseHook = useBaseStepthrough<BSTData, BSTStatsExtended, BSTStepthroughService>(
     defaultState,
     BSTStepthroughService,
@@ -225,4 +225,4 @@ const useBSTStepthrough = () => {
   };
 };
 
-export default useBSTStepthrough;
+export { useStepthroughBST };

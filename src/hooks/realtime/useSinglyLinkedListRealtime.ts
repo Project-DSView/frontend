@@ -104,4 +104,4 @@ const useRealtimeSinglyLinkedList = (code: string) => {
   };
 };
 
-export default useRealtimeSinglyLinkedList;
+export { useRealtimeSinglyLinkedList };

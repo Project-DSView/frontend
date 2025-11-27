@@ -138,7 +138,7 @@ const defaultState: BaseStepthroughState<SinglyLinkedListData, SinglyLinkedListS
   },
 };
 
-const useSinglyLinkedList = () => {
+const useStepthroughSinglyLinkedList = () => {
   const baseHook = useBaseStepthrough<
     SinglyLinkedListData,
     SinglyLinkedListStatsExtended,
@@ -166,4 +166,4 @@ const useSinglyLinkedList = () => {
   };
 };
 
-export default useSinglyLinkedList;
+export { useStepthroughSinglyLinkedList };

@@ -151,7 +151,7 @@ const defaultState: BaseStepthroughState<DoublyLinkedListData, DoublyLinkedListS
   },
 };
 
-const useDoublyLinkedListStepthrough = () => {
+const useStepthroughDoublyLinkedList = () => {
   const baseHook = useBaseStepthrough<
     DoublyLinkedListData,
     DoublyLinkedListStatsExtended,
@@ -179,4 +179,4 @@ const useDoublyLinkedListStepthrough = () => {
   };
 };
 
-export default useDoublyLinkedListStepthrough;
+export { useStepthroughDoublyLinkedList };

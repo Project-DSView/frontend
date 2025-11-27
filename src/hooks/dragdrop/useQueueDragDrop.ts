@@ -89,7 +89,7 @@ const defaultState: QueueStateExtended = {
   },
 };
 
-const useQueueDragDrop = () => {
+const useDragDropQueue = () => {
   const baseHook = useBaseDataStructure<QueueData, QueueStatsExtended, QueueOperation>(
     defaultState,
     QueueServiceAdapter,
@@ -119,4 +119,4 @@ const useQueueDragDrop = () => {
   };
 };
 
-export default useQueueDragDrop;
+export { useDragDropQueue };

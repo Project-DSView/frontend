@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 import { queueCodeTemplate } from '@/data';
-import useRealtimeQueue from '@/hooks/realtime/useQueue';
+import { useRealtimeQueue } from '@/hooks';
 
 import RealtimeLayout from '@/components/playground/realtime/layout/RealtimeLayout';
 import QueueRealtime from '@/components/playground/realtime/visualization/Queue';

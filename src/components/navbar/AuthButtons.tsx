@@ -2,7 +2,7 @@
 
 import React, { useId } from 'react';
 import Image from 'next/image';
-import { ChevronDown, BarChart3 } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 
@@ -143,28 +143,6 @@ const AuthButtons: React.FC = () => {
           // Token is still valid for more than 5 minutes, skip validation
           return;
         }
-
-        // Try to refresh token if it's close to expiry
-        try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/refresh`, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.data.token) {
-              setAuthData(data.data.token, data.data.user);
-              return;
-            }
-          }
-        } catch {
-          // Token refresh failed, continue with existing token
-        }
-
         // Fallback to validating existing token
         await fetchUserProfile(accessToken);
       } catch (error) {
@@ -177,11 +155,6 @@ const AuthButtons: React.FC = () => {
     const timeoutId = setTimeout(validateSession, 30000);
     return () => clearTimeout(timeoutId);
   }, [isInitialized, profile, accessToken, fetchUserProfile, clearAuthData, setAuthData]);
-
-  const handleViewScore = () => {
-    // TODO: Navigate to score page
-    toast.info('Score page coming soon!');
-  };
 
   const handleLogin = async () => {
     if (isLoggingOut) {
@@ -287,11 +260,6 @@ const AuthButtons: React.FC = () => {
         <div className="text-muted-foreground px-2 py-1.5 text-sm">
           Signed in as <span className="text-foreground font-medium">{profile.email}</span>
         </div>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" onClick={handleViewScore}>
-          <BarChart3 className="mr-2 h-4 w-4" />
-          <span>View Score</span>
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-600"

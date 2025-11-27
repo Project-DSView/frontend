@@ -7,10 +7,10 @@ import {
   StackStateExtended,
   BaseState,
 } from '@/types';
-import { StackService } from '@/services';
+import { StackDragDropService } from '@/services';
 import { useBaseDataStructure } from './useBaseDataStructureDragDrop';
 class StackServiceAdapter {
-  private service: StackService;
+  private service: StackDragDropService;
 
   constructor(state: BaseState<StackData, StackStatsExtended>) {
     const stackState: StackState = {
@@ -23,7 +23,7 @@ class StackServiceAdapter {
         isEmpty: state.stats.isEmpty,
       },
     };
-    this.service = new StackService(stackState);
+    this.service = new StackDragDropService(stackState);
   }
 
   getState(): BaseState<StackData, StackStatsExtended> {
@@ -87,7 +87,7 @@ const defaultState: StackStateExtended = {
   },
 };
 
-const useStack = () => {
+const useDragDropStack = () => {
   const baseHook = useBaseDataStructure<StackData, StackStatsExtended, StackOperation>(
     defaultState,
     StackServiceAdapter,
@@ -118,4 +118,4 @@ const useStack = () => {
   };
 };
 
-export default useStack;
+export { useDragDropStack };

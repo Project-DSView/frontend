@@ -1,6 +1,5 @@
 import { MenuItem, PlaygroundItem } from '@/types';
 
-
 const getSubmenuItemsWithNested = (basePath: string): MenuItem[] => [
   {
     href: null,

@@ -7,12 +7,12 @@ import {
   SinglyLinkedListStateExtended,
   BaseState,
 } from '@/types';
-import { SinglyLinkedListService } from '@/services';
+import { SinglyLinkedListDragDropService } from '@/services';
 import { useBaseDataStructure } from './useBaseDataStructureDragDrop';
 
 // SinglyLinkedList Service Adapter
 class SinglyLinkedListServiceAdapter {
-  private service: SinglyLinkedListService;
+  private service: SinglyLinkedListDragDropService;
 
   constructor(state: BaseState<SinglyLinkedListData, SinglyLinkedListStatsExtended>) {
     const singlyLinkedListState: SinglyLinkedListState = {
@@ -25,7 +25,7 @@ class SinglyLinkedListServiceAdapter {
         isEmpty: state.stats.isEmpty,
       },
     };
-    this.service = new SinglyLinkedListService(singlyLinkedListState);
+    this.service = new SinglyLinkedListDragDropService(singlyLinkedListState);
   }
 
   getState(): BaseState<SinglyLinkedListData, SinglyLinkedListStatsExtended> {
@@ -146,7 +146,7 @@ const defaultState: SinglyLinkedListStateExtended = {
   },
 };
 
-const useSinglyLinkedList = () => {
+const useDragDropSinglyLinkedList = () => {
   const baseHook = useBaseDataStructure<
     SinglyLinkedListData,
     SinglyLinkedListStatsExtended,
@@ -178,4 +178,4 @@ const useSinglyLinkedList = () => {
   };
 };
 
-export default useSinglyLinkedList;
+export { useDragDropSinglyLinkedList };

@@ -1,9 +1,9 @@
 import React from 'react';
-import { FilePen, Video, Code, FileText } from 'lucide-react';
+import { FilePen, Video, Code, FileText, Megaphone } from 'lucide-react';
 import { Material } from '@/types';
 
 // Material type definitions
-type MaterialType = 'document' | 'video' | 'code_exercise' | 'pdf_exercise';
+type MaterialType = 'document' | 'video' | 'code_exercise' | 'pdf_exercise' | 'announcement';
 
 // Icon mapping for each material type
 const getMaterialIcon = (type: MaterialType) => {
@@ -16,6 +16,8 @@ const getMaterialIcon = (type: MaterialType) => {
       return React.createElement(Code, { className: 'h-5 w-5 text-error' });
     case 'pdf_exercise':
       return React.createElement(FilePen, { className: 'h-5 w-5 text-error' });
+    case 'announcement':
+      return React.createElement(Megaphone, { className: 'h-5 w-5 text-warning' });
     default:
       return React.createElement(FileText, { className: 'h-5 w-5 text-black' });
   }
@@ -27,6 +29,7 @@ const materialTypeLabels: Record<MaterialType, string> = {
   video: 'วิดีโอ',
   code_exercise: 'แบบฝึกหัด',
   pdf_exercise: 'แบบฝึกหัด',
+  announcement: 'ประกาศ',
 };
 
 // Color mapping for each material type
@@ -35,6 +38,7 @@ const materialTypeColors: Record<MaterialType, string> = {
   video: 'bg-success text-white',
   code_exercise: 'bg-error text-white',
   pdf_exercise: 'bg-error text-white',
+  announcement: 'bg-warning text-white',
 };
 
 const getMaterialTypeLabel = (type: MaterialType) => {

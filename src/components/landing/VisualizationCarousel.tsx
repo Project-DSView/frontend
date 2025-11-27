@@ -4,11 +4,7 @@ import Image from 'next/image';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import {
-  visualizationModes,
-  AUTO_SWITCH_INTERVAL,
-  IMAGE_SWITCH_INTERVAL,
-} from '@/data';
+import { visualizationModes, AUTO_SWITCH_INTERVAL, IMAGE_SWITCH_INTERVAL } from '@/data';
 
 const VisualizationCarousel = () => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -108,7 +104,7 @@ const VisualizationCarousel = () => {
                 onClick={() => handleModeClick(index)}
                 className={`relative flex flex-1 flex-row items-center justify-center gap-2 rounded-xl px-2 py-1.5 transition-all duration-300 sm:px-3 sm:py-2 ${
                   isActive
-                    ? 'bg-secondary/10 text-secondary shadow-md dark:bg-secondary/20'
+                    ? 'bg-secondary/10 text-secondary dark:bg-secondary/20 shadow-md'
                     : 'text-neutral/60 hover:bg-secondary/5 hover:text-secondary dark:text-gray-400 dark:hover:text-gray-300'
                 }`}
                 whileHover={{ scale: 1.02 }}
@@ -122,9 +118,9 @@ const VisualizationCarousel = () => {
                 <h3 className="text-xs font-semibold sm:text-sm">{mode.title}</h3>
                 {/* Progress Bar on active button */}
                 {isActive && (
-                  <div className="absolute -bottom-1 left-0 right-0 h-1 overflow-hidden rounded-full bg-gray-200/30 dark:bg-gray-700/30">
+                  <div className="absolute right-0 -bottom-1 left-0 h-1 overflow-hidden rounded-full bg-gray-200/30 dark:bg-gray-700/30">
                     <motion.div
-                      className="h-full bg-gradient-to-r from-secondary to-secondary/80"
+                      className="from-secondary to-secondary/80 h-full bg-gradient-to-r"
                       style={{ width: `${progress}%` }}
                       transition={{ duration: 0.1, ease: 'linear' }}
                     />
@@ -199,7 +195,7 @@ const VisualizationCarousel = () => {
               onClick={() => handleModeClick(index)}
               className={`h-2 rounded-full transition-all ${
                 activeIndex === index
-                  ? 'w-8 bg-primary shadow-md'
+                  ? 'bg-primary w-8 shadow-md'
                   : 'w-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500'
               }`}
               aria-label={`Switch to ${visualizationModes[index].title}`}
@@ -212,4 +208,3 @@ const VisualizationCarousel = () => {
 };
 
 export default VisualizationCarousel;
-

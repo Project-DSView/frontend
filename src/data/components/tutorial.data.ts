@@ -1,9 +1,4 @@
-import {
-  DataStructure,
-  LearningTip,
-  PlaygroundMode,
-  TutorialSection,
-} from '@/types/props/tutorial.types';
+import { DataStructure, LearningTip, PlaygroundMode, TutorialSection } from '@/types';
 
 const dataStructures: DataStructure[] = [
   {

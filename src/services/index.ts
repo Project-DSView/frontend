@@ -1,31 +1,22 @@
 // Auth
-export { default as AuthService } from './auth/auth.service';
-export { default as ProfileService } from './auth/profile.service';
+export { AuthService, ProfileService } from './auth/auth.service';
 
 // Course
-export { default as CourseService } from './course/course.service';
-export { default as MaterialService } from './course/materials.service';
+export { CourseService } from './course/course.service';
+
+// Material
+export { default as MaterialService } from './material/material.service';
 
 // Dragdrop
-export { default as SinglyLinkedListService } from './dragdrop/SinglyLinkedList.service';
-export { default as DoublyLinkedListService } from './dragdrop/DoublyLinkedList.service';
-export { default as StackService } from './dragdrop/Stack.service';
-export { default as QueueDragDropService } from './dragdrop/Queue.service';
-export { default as BSTService } from './dragdrop/BST.service';
-export { default as UndirectedGraphService } from './dragdrop/UndirectedGraph.service';
-export { default as DirectedGraphService } from './dragdrop/DirectedGraph.service';
+export { SinglyLinkedListDragDropService } from './dragdrop/SinglyLinkedList.service';
+export { DoublyLinkedListDragDropService } from './dragdrop/DoublyLinkedList.service';
+export { StackDragDropService } from './dragdrop/Stack.service';
+export { QueueDragDropService } from './dragdrop/Queue.service';
+export { BSTDragDropService } from './dragdrop/BST.service';
+export { UndirectedGraphDragDropService } from './dragdrop/UndirectedGraph.service';
+export { DirectedGraphDragDropService } from './dragdrop/DirectedGraph.service';
 
-// Enrollment
-export { default as EnrollmentService } from './enrollment/enrollment.service';
-
-// Announcements
-export { default as AnnouncementsService } from './announcements/announcements.service';
-
-// Submissions
-export { default as SubmissionService } from './submissions/submissions.service';
-
-// Queue
-export { default as QueueService } from './queue/queue.service';
+// Enrollment, Queue, and Submissions are now part of CourseService
 
 // Realtime
 export { default as SinglyLinkedListRealtimeService } from './realtime/SinglyLinkedList.service';

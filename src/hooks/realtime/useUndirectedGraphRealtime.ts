@@ -130,4 +130,4 @@ const useRealtimeUndirectedGraph = (code: string) => {
   };
 };
 
-export default useRealtimeUndirectedGraph;
+export { useRealtimeUndirectedGraph };

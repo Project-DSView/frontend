@@ -104,4 +104,4 @@ const useRealtimeDoublyLinkedList = (code: string) => {
   };
 };
 
-export default useRealtimeDoublyLinkedList;
+export { useRealtimeDoublyLinkedList };

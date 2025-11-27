@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useParams } from 'next/navigation';
-import { Loader2, AlertCircle, BookOpen, LogOut } from 'lucide-react';
+import { Loader2, AlertCircle, BookOpen, LogOut, RefreshCw, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
@@ -14,12 +14,21 @@ import {
   useMyEnrollment,
   useUnenrollFromCourse,
   useCourseEnrollments,
-  useCourseLeaderboard,
+  useQueueJobs,
+  useCoursePDFSubmissions,
 } from '@/query';
 import { useQueryClient } from '@tanstack/react-query';
+import { QueueJobStatus } from '@/types/services/services.types';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,9 +41,12 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import LatestAnnouncement from '@/components/announcements';
-import MaterialsByWeek from '@/components/course/MaterialsByWeek';
-import MembersList from '@/components/course/MembersList';
-import Leaderboard from '@/components/course/Leaderboard';
+import MaterialsByWeek from '@/components/course/[id]/material/MaterialsByWeek';
+import MembersList from '@/components/course/[id]/MembersList';
+import QueueTable from '@/components/course/[id]/queue/QueueTable';
+import GradingTable from '@/components/course/[id]/grade/GradingTable';
+import InvitationLinkCard from '@/components/course/[id]/InvitationLinkCard';
+import CreateMaterialDialog from '@/components/course/[id]/material/CreateMaterialDialog';
 
 const CourseDetailPage: React.FC = () => {
   const params = useParams();
@@ -44,9 +56,18 @@ const CourseDetailPage: React.FC = () => {
   const courseId = params.id as string;
 
   // State for active tab
-  const [activeTab, setActiveTab] = React.useState<'materials' | 'members' | 'leaderboard'>(
+  const [activeTab, setActiveTab] = React.useState<'materials' | 'members' | 'queue' | 'grading'>(
     'materials',
   );
+
+  // State for queue status filter
+  const [queueStatusFilter, setQueueStatusFilter] = React.useState<string>('all');
+
+  // State for create material dialog
+  const [isCreateMaterialDialogOpen, setIsCreateMaterialDialogOpen] = React.useState(false);
+  const [defaultMaterialType, setDefaultMaterialType] = React.useState<
+    'document' | 'video' | 'code_exercise' | 'pdf_exercise' | 'announcement' | ''
+  >('');
 
   // Fetch course data
   const {
@@ -66,6 +87,7 @@ const CourseDetailPage: React.FC = () => {
     data: materialsData,
     isLoading: isMaterialsLoading,
     error: materialsError,
+    refetch: refetchMaterials,
   } = useCourseMaterials(accessToken, courseId, { limit: 100, offset: 0 });
 
   // Fetch enrollment status
@@ -78,12 +100,72 @@ const CourseDetailPage: React.FC = () => {
     error: enrollmentsError,
   } = useCourseEnrollments(accessToken, courseId);
 
-  // Fetch course leaderboard
+  // Check if user can manage queue (teacher or TA)
+  const canManageQueue = profile?.is_teacher || enrollmentData?.data?.enrollment?.role === 'ta';
+
+  // Check if user can grade (teacher or TA)
+  const canGrade = canManageQueue;
+
+  // Check if user is the course creator
+  const course = courseData?.data;
+  const isCreator = course && profile?.user_id === course.created_by && profile?.is_teacher;
+
+  // Fetch all queue jobs (without filter) to calculate queue positions
+  const { data: allQueueJobsData } = useQueueJobs(accessToken, {
+    course_id: courseId || undefined,
+    page: 1,
+    limit: 100,
+  });
+
+  // Fetch queue jobs for this course with filter
   const {
-    data: leaderboardData,
-    isLoading: isLeaderboardLoading,
-    error: leaderboardError,
-  } = useCourseLeaderboard(accessToken, courseId);
+    data: queueJobsData,
+    isLoading: isQueueJobsLoading,
+    error: queueJobsError,
+    refetch: refetchQueueJobs,
+  } = useQueueJobs(accessToken, {
+    course_id: courseId || undefined,
+    status: queueStatusFilter !== 'all' ? (queueStatusFilter as QueueJobStatus) : undefined,
+    page: 1,
+    limit: 100,
+  });
+
+  // Fetch course PDF submissions for grading tab
+  const {
+    data: courseSubmissionsData,
+    isLoading: isSubmissionsLoading,
+    error: submissionsError,
+  } = useCoursePDFSubmissions(accessToken, courseId);
+
+  // Create a map of job ID to queue position based on all jobs (sorted by created_at)
+  const queuePositionMap = React.useMemo(() => {
+    if (!allQueueJobsData?.data?.jobs) return new Map<string, number>();
+
+    // Sort all jobs by created_at to get the queue order
+    const sortedJobs = [...allQueueJobsData.data.jobs].sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
+
+    const positionMap = new Map<string, number>();
+    sortedJobs.forEach((job, index) => {
+      positionMap.set(job.id, index + 1);
+    });
+
+    return positionMap;
+  }, [allQueueJobsData]);
+
+  // Debug logging
+  React.useEffect(() => {
+    if (activeTab === 'queue') {
+      console.log('Queue Tab Debug:', {
+        courseId,
+        accessToken: !!accessToken,
+        queueJobsData,
+        queueJobsError,
+        isLoading: isQueueJobsLoading,
+      });
+    }
+  }, [activeTab, courseId, accessToken, queueJobsData, queueJobsError, isQueueJobsLoading]);
 
   // Unenroll mutation
   const unenrollMutation = useUnenrollFromCourse();
@@ -150,11 +232,11 @@ const CourseDetailPage: React.FC = () => {
   // Show error state for course
   if (courseError) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <AlertCircle className="mx-auto h-12 w-12 text-red-500" />
-          <h2 className="mt-4 text-lg font-semibold text-gray-900">เกิดข้อผิดพลาด</h2>
-          <p className="mt-2 text-gray-600">ไม่สามารถโหลดข้อมูลคอร์สได้</p>
+          <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">เกิดข้อผิดพลาด</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">ไม่สามารถโหลดข้อมูลคอร์สได้</p>
           <Button onClick={() => router.back()} className="mt-4">
             กลับ
           </Button>
@@ -175,17 +257,16 @@ const CourseDetailPage: React.FC = () => {
     );
   }
 
-  const course = courseData?.data;
   const announcements = announcementsData?.data.announcements || [];
   const materials = materialsData?.data.materials || [];
 
   if (!course) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
-          <h2 className="mt-4 text-lg font-semibold text-gray-900">ไม่พบคอร์ส</h2>
-          <p className="mt-2 text-gray-600">ไม่พบคอร์สที่ระบุ</p>
+          <BookOpen className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+          <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">ไม่พบคอร์ส</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">ไม่พบคอร์สที่ระบุ</p>
           <Button onClick={() => router.back()} className="mt-4">
             กลับ
           </Button>
@@ -195,25 +276,35 @@ const CourseDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">{course.name}</h1>
-            <p className="mt-2 text-gray-600">{course.description}</p>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{course.name}</h1>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">{course.description}</p>
+            </div>
+            {enrollmentData?.data?.enrollment && (
+              <Button
+                onClick={() => router.push(`/course/${courseId}/me`)}
+                className="flex items-center gap-2 bg-yellow-500 text-white hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700"
+              >
+                คะแนนของฉัน
+              </Button>
+            )}
           </div>
         </div>
 
         {/* Tab Switcher */}
         <div className="mb-6">
-          <div className="flex space-x-8 border-b border-gray-200">
+          <div className="flex space-x-8 border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={() => setActiveTab('materials')}
               className={`pb-3 text-lg font-medium transition-colors ${
                 activeTab === 'materials'
-                  ? 'border-secondary border-b-4 text-gray-900'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'border-secondary border-b-4 text-gray-900 dark:text-white'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
               เนื้อหาคอร์ส
@@ -222,101 +313,203 @@ const CourseDetailPage: React.FC = () => {
               onClick={() => setActiveTab('members')}
               className={`pb-3 text-lg font-medium transition-colors ${
                 activeTab === 'members'
-                  ? 'border-secondary border-b-4 text-gray-900'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'border-secondary border-b-4 text-gray-900 dark:text-white'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
               สมาชิก
             </button>
             <button
-              onClick={() => setActiveTab('leaderboard')}
+              onClick={() => setActiveTab('queue')}
               className={`pb-3 text-lg font-medium transition-colors ${
-                activeTab === 'leaderboard'
-                  ? 'border-secondary border-b-4 text-gray-900'
-                  : 'text-gray-500 hover:text-gray-700'
+                activeTab === 'queue'
+                  ? 'border-secondary border-b-4 text-gray-900 dark:text-white'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
-              กระดานคะแนน
+              คิวงาน
             </button>
+            {canGrade && (
+              <button
+                onClick={() => setActiveTab('grading')}
+                className={`pb-3 text-lg font-medium transition-colors ${
+                  activeTab === 'grading'
+                    ? 'border-secondary border-b-4 text-gray-900 dark:text-white'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                ตรวจงาน
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Course Info Card */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>ข้อมูลคอร์ส</CardTitle>
-              {enrollmentData?.data?.enrollment && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      disabled={unenrollMutation.isPending}
-                      className="bg-error flex items-center gap-2 text-[16px] text-white"
-                    >
-                      {unenrollMutation.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <LogOut className="h-4 w-4" />
-                      )}
-                      ออกจากคอร์ส
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>ยืนยันการออกจากคอร์ส</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        คุณแน่ใจหรือไม่ว่าต้องการออกจากคอร์ส &quot;{course.name}&quot;?
-                        การกระทำนี้ไม่สามารถย้อนกลับได้
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="hover:bg-neutral">ยกเลิก</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleUnenroll}
-                        className="bg-error hover:bg-red-700"
-                      >
-                        ออกจากคอร์ส
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <p className="text-sm text-gray-500">ชื่อคอร์ส</p>
-                <p className="font-medium">{course.name}</p>
-              </div>
-              <div className="md:col-span-2">
-                <p className="text-sm text-gray-500">คำอธิบาย</p>
-                <p className="font-medium">{course.description}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Course Info and Invitation Link */}
+        {profile?.is_teacher ? (
+          <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {/* Course Info Card */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>ข้อมูลคอร์ส</CardTitle>
+                  {enrollmentData?.data?.enrollment && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          disabled={unenrollMutation.isPending}
+                          className="bg-error flex items-center gap-2 text-[16px] text-white"
+                        >
+                          {unenrollMutation.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <LogOut className="h-4 w-4" />
+                          )}
+                          ออกจากคอร์ส
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>ยืนยันการออกจากคอร์ส</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            คุณแน่ใจหรือไม่ว่าต้องการออกจากคอร์ส &quot;{course.name}&quot;?
+                            การกระทำนี้ไม่สามารถย้อนกลับได้
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="hover:bg-neutral">ยกเลิก</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleUnenroll}
+                            className="bg-error hover:bg-red-700"
+                          >
+                            ออกจากคอร์ส
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">ชื่อคอร์ส</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{course.name}</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">คำอธิบาย</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{course.description}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Invitation Link Card */}
+            <InvitationLinkCard
+              courseId={courseId}
+              accessToken={accessToken}
+              isCreator={isCreator || false}
+            />
+          </div>
+        ) : (
+          <div className="mb-8">
+            {/* Course Info Card - Full Width for Students */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>ข้อมูลคอร์ส</CardTitle>
+                  {enrollmentData?.data?.enrollment && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          disabled={unenrollMutation.isPending}
+                          className="bg-error flex items-center gap-2 text-[16px] text-white"
+                        >
+                          {unenrollMutation.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <LogOut className="h-4 w-4" />
+                          )}
+                          ออกจากคอร์ส
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>ยืนยันการออกจากคอร์ส</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            คุณแน่ใจหรือไม่ว่าต้องการออกจากคอร์ส &quot;{course.name}&quot;?
+                            การกระทำนี้ไม่สามารถย้อนกลับได้
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="hover:bg-neutral">ยกเลิก</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleUnenroll}
+                            className="bg-error hover:bg-red-700"
+                          >
+                            ออกจากคอร์ส
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">ชื่อคอร์ส</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{course.name}</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">คำอธิบาย</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{course.description}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Content Section - Conditional Rendering */}
         {activeTab === 'materials' ? (
           <>
             {/* Latest/Pinned Announcement Card - Only show on Materials tab */}
-            <LatestAnnouncement announcements={announcements} />
+            <LatestAnnouncement
+              announcements={announcements}
+              showAddButton={profile?.is_teacher}
+              onAddAnnouncement={() => {
+                setDefaultMaterialType('announcement');
+                setIsCreateMaterialDialogOpen(true);
+              }}
+            />
 
             {/* Materials Section */}
             <Card>
               <CardHeader>
-                <CardTitle>เนื้อหาคอร์ส</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>เนื้อหาคอร์ส</CardTitle>
+                  {profile?.is_teacher && (
+                    <Button
+                      onClick={() => setIsCreateMaterialDialogOpen(true)}
+                      className="bg-primary hover:bg-primary/90 flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      เพิ่ม Material
+                    </Button>
+                  )}
+                </div>
                 {isMaterialsLoading && (
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     กำลังโหลดเนื้อหา...
                   </div>
                 )}
                 {materialsError && (
-                  <div className="text-sm text-red-500">เกิดข้อผิดพลาดในการโหลดเนื้อหา</div>
+                  <div className="text-sm text-red-500 dark:text-red-400">เกิดข้อผิดพลาดในการโหลดเนื้อหา</div>
                 )}
               </CardHeader>
               <CardContent>
@@ -337,26 +530,106 @@ const CourseDetailPage: React.FC = () => {
                 enrollmentsData={enrollmentsData}
                 isLoading={isEnrollmentsLoading}
                 error={enrollmentsError}
+                isTeacher={profile?.is_teacher}
+                courseId={courseId}
+                accessToken={accessToken}
+              />
+            </CardContent>
+          </Card>
+        ) : activeTab === 'queue' ? (
+          /* Queue Section */
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>คิวงาน</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Select value={queueStatusFilter} onValueChange={setQueueStatusFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="กรองสถานะ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">ทั้งหมด</SelectItem>
+                      <SelectItem value="pending">รอตรวจ</SelectItem>
+                      <SelectItem value="processing">กำลังตรวจ</SelectItem>
+                      <SelectItem value="completed">ตรวจเสร็จ</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => refetchQueueJobs()}
+                    disabled={isQueueJobsLoading}
+                  >
+                    <RefreshCw
+                      className={`mr-2 h-4 w-4 ${isQueueJobsLoading ? 'animate-spin' : ''}`}
+                    />
+                    รีเฟรช
+                  </Button>
+                </div>
+              </div>
+              {queueJobsError && (
+                <div className="mt-2 text-sm text-red-500 dark:text-red-400">
+                  เกิดข้อผิดพลาด:{' '}
+                  {queueJobsError instanceof Error
+                    ? queueJobsError.message
+                    : 'ไม่สามารถโหลดข้อมูลคิวได้'}
+                </div>
+              )}
+            </CardHeader>
+            <CardContent>
+              <QueueTable
+                jobs={queueJobsData?.data?.jobs || []}
+                isLoading={isQueueJobsLoading}
+                canManage={canManageQueue}
+                token={accessToken}
+                onRefresh={() => refetchQueueJobs()}
+                showRefreshButton={false}
+                queuePositionMap={queuePositionMap}
               />
             </CardContent>
           </Card>
         ) : (
-          /* Leaderboard Section */
+          /* Grading Section */
           <Card>
             <CardHeader>
-              <CardTitle>กระดานคะแนน</CardTitle>
+              <CardTitle>ตรวจงาน</CardTitle>
+              {submissionsError && (
+                <div className="mt-2 text-sm text-red-500 dark:text-red-400">
+                  เกิดข้อผิดพลาด:{' '}
+                  {submissionsError instanceof Error
+                    ? submissionsError.message
+                    : 'ไม่สามารถโหลดข้อมูลได้'}
+                </div>
+              )}
             </CardHeader>
             <CardContent>
-              <Leaderboard
-                leaderboardData={leaderboardData}
-                enrollmentsData={enrollmentsData}
-                isLoading={isLeaderboardLoading}
-                error={leaderboardError}
+              <GradingTable
+                submissions={courseSubmissionsData?.data || []}
+                isLoading={isSubmissionsLoading}
+                courseId={courseId}
+                accessToken={accessToken}
               />
             </CardContent>
           </Card>
         )}
       </div>
+
+      {/* Create Material Dialog */}
+      <CreateMaterialDialog
+        isOpen={isCreateMaterialDialogOpen}
+        onClose={() => {
+          setIsCreateMaterialDialogOpen(false);
+          setDefaultMaterialType('');
+        }}
+        accessToken={accessToken}
+        courseId={courseId}
+        defaultMaterialType={defaultMaterialType}
+        onSuccess={() => {
+          refetchMaterials();
+          setIsCreateMaterialDialogOpen(false);
+          setDefaultMaterialType('');
+        }}
+      />
     </div>
   );
 };

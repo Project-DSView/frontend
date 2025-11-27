@@ -1,28 +1,42 @@
 // Auth
-export { useGoogleAuthUrl, useLogout, useRefreshToken } from './auth/auth.query';
-export { useProfile, useFetchProfile } from './auth/profile.query';
+export { useGoogleAuthUrl, useLogout, useProfile, useFetchProfile } from './auth/auth.query';
 
 // Course
-export { useCourses, useCourse } from './course/course.query';
-export { useCourseMaterials, useCourseMaterial } from './course/materials.query';
-export { useCourseLeaderboard } from './course/leaderboard.query';
 export {
+  useCourses,
+  useCourse,
+  useAnnouncements,
+  useCourseMaterial,
+  useCourseMaterials,
+  useCourseScore,
   useMySubmission,
   useSubmission,
   useSubmissionDownloadUrl,
   useSubmitCodeExercise,
   useSubmitPDFExercise,
   useCancelSubmission,
-} from './course/submissions.query';
-export { useAnnouncements } from './course/announcements.query';
-
-// Enrollment
-export {
+  useCoursePDFSubmissions,
+  useApprovePDFSubmission,
   useMyEnrollment,
   useEnrollInCourse,
   useUnenrollFromCourse,
   useCourseEnrollments,
-} from './enrollment/enrollment.query';
+  useUpdateEnrollmentRole,
+  useSelfProgress,
+  useRequestApproval,
+  useQueueJobs,
+  useClaimQueueJob,
+  useCompleteReview,
+  useCreateCourse,
+  useUpdateCourse,
+  useUploadCourseImage,
+  useCreateInvitation,
+  useCourseInvitations,
+  useEnrollViaInvitation,
+} from './course/course.query';
+
+// Material
+export { useCreateMaterial } from './material/material.query';
 
 // Stepthrough
 export {
@@ -31,11 +45,3 @@ export {
   useCurrentStepDetails,
   useStepthroughState,
 } from './stepthrough/stepthrough.query';
-
-// Queue
-export {
-  useRequestApproval,
-  useQueueJobs,
-  useClaimQueueJob,
-  useCompleteReview,
-} from './queue/queue.query';

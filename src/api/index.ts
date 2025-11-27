@@ -57,18 +57,35 @@ api.interceptors.response.use(
 );
 
 // API Layer - Direct API calls only
-export { fetchProfile } from './auth/profile';
-export { getCourses, getCourse, getCourseLeaderboard } from './course/course';
-export { getCourseMaterials, getCourseMaterial } from './course/materials';
 export {
+  getCourses,
+  getCourse,
+  getCourseMaterials,
+  getCourseMaterial,
+  createMaterial,
+  updateMaterial,
+  deleteMaterial,
+  getCourseScore,
+  getAnnouncements,
   getMyEnrollment,
   enrollInCourse,
   unenrollFromCourse,
   getCourseEnrollments,
-} from './enrollment/enrollment';
-export { getAnnouncements } from './announcements/announcements';
-export { executeStepthrough } from './stepthrough/stepthrough';
-export { getGoogleAuthUrl, logout, refreshToken } from './auth/auth';
+  updateEnrollmentRole,
+  getSelfProgress,
+  requestApproval,
+  getQueueJobs,
+  claimQueueJob,
+  completeReview,
+  createCourse,
+  updateCourse,
+  uploadCourseImage,
+  createInvitation,
+  getCourseInvitations,
+  enrollViaInvitation,
+} from './course';
+export { executeStepthrough } from './playground';
+export { getGoogleAuthUrl, logout, refreshToken, fetchProfile } from './auth';
 
 // Submissions
 export {
@@ -78,7 +95,8 @@ export {
   getSubmission,
   getSubmissionDownloadUrl,
   cancelSubmission,
-} from './submissions/submissions';
-
-// Queue
-export { requestApproval, getQueueJobs, claimQueueJob, completeReview } from './queue/queue';
+  getCoursePDFSubmissions,
+  downloadPDFSubmission,
+  downloadFeedbackFile,
+  approvePDFSubmission,
+} from './submissions';

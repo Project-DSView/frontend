@@ -7,7 +7,7 @@ import {
 } from '@/types';
 import { createExecutionStep } from '@/lib';
 
-class UndirectedGraphService {
+class UndirectedGraphDragDropService {
   private state: UndirectedGraphState;
 
   constructor(initialState: UndirectedGraphState) {
@@ -662,4 +662,4 @@ class UndirectedGraphService {
   }
 }
 
-export default UndirectedGraphService;
+export { UndirectedGraphDragDropService };

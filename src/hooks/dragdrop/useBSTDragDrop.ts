@@ -9,12 +9,12 @@ import {
   BSTStateExtended,
   BaseState,
 } from '@/types';
-import { BSTService } from '@/services';
+import { BSTDragDropService } from '@/services';
 import { useBaseDataStructure } from './useBaseDataStructureDragDrop';
 
 // BST Service Adapter
 class BSTServiceAdapter {
-  private service: BSTService;
+  private service: BSTDragDropService;
 
   constructor(state: BaseState<BSTData, BSTStatsExtended>) {
     const bstState: BSTState = {
@@ -26,7 +26,7 @@ class BSTServiceAdapter {
         isEmpty: state.stats.isEmpty,
       },
     };
-    this.service = new BSTService(bstState);
+    this.service = new BSTDragDropService(bstState);
   }
 
   getState(): BaseState<BSTData, BSTStatsExtended> {
@@ -78,7 +78,7 @@ const defaultState: BSTStateExtended = {
   },
 };
 
-const useBST = () => {
+const useDragDropBST = () => {
   const baseHook = useBaseDataStructure<BSTData, BSTStatsExtended, BSTOperation>(
     defaultState,
     BSTServiceAdapter,
@@ -119,4 +119,4 @@ const useBST = () => {
   };
 };
 
-export default useBST;
+export { useDragDropBST };

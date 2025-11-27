@@ -1,0 +1,643 @@
+import React from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { Code } from 'lucide-react';
+import {
+  Course,
+  UserProfile,
+  Material,
+  PDFSubmission,
+  SubmissionResponse,
+  QueueJob,
+  QueueJobStatus,
+  CourseEnrollmentsResponse,
+  Announcement,
+  CoursePDFSubmission,
+  TestCaseResult,
+} from '../services/services.types';
+import {
+  OperationCategory,
+  DragComponent,
+  DataStructureStats,
+  Operation as DragDropOperation,
+} from '../dragdrop/common.types';
+import { SinglyLinkedListDragComponent } from '../dragdrop/SinglyLinkedList.types';
+import { DoublyLinkedListDragComponent } from '../dragdrop/DoublyLinkedList.types';
+import { StackDragComponent } from '../dragdrop/Stack.types';
+import { QueueDragComponent } from '../dragdrop/Queue.types';
+
+// ============================================================================
+// Button Props
+// ============================================================================
+interface CopyAndExportButtonProps {
+  code: string;
+  disabled?: boolean;
+}
+
+interface ExportPNGButtonProps {
+  visualizationRef: React.RefObject<HTMLElement | null>;
+  disabled?: boolean;
+}
+
+interface FileUploadButtonProps {
+  onFileLoad: (content: string, filename: string) => void;
+  disabled?: boolean;
+}
+
+// ============================================================================
+// Card Props
+// ============================================================================
+interface Feature {
+  iconSrc: string;
+  iconAlt: string;
+  title: string;
+  desc: string;
+  priority?: boolean;
+}
+
+interface FeatureCardProps {
+  feature: Feature;
+  index: number;
+}
+
+interface CourseCardProps {
+  course: Course;
+  onEnroll?: (courseId: string, enrollKey: string) => void;
+  isEnrolling?: boolean;
+  isEnrolled?: boolean;
+  onEnterCourse?: (courseId: string) => void;
+  onArchive?: (courseId: string) => void;
+  isArchiving?: boolean;
+  onEdit?: (course: Course) => void;
+  userProfile?: UserProfile | null;
+}
+
+interface CourseCardWithEnrollmentProps {
+  course: Course;
+  onEnroll: (courseId: string, enrollKey: string) => void;
+  isEnrolling: boolean;
+  onEnterCourse: (courseId: string) => void;
+  onArchive?: (courseId: string) => void;
+  isArchiving?: boolean;
+  onEdit?: (course: Course) => void;
+  accessToken: string | null;
+  userProfile?: UserProfile | null;
+}
+
+interface MaterialCardProps {
+  material: Material;
+}
+
+interface ExerciseProblemCardProps {
+  material: Material;
+  isExpired: boolean;
+  isGraded: boolean;
+}
+
+interface PDFSubmissionCardProps {
+  materialId: string;
+  accessToken: string;
+  isExpired: boolean;
+  isGraded: boolean;
+}
+
+interface SubmittedPDFCardProps {
+  submission: PDFSubmission;
+  accessToken: string;
+  material?: Material;
+}
+
+interface TestCaseResultCardProps {
+  results?: TestCaseResult[];
+  passedCount?: number;
+  failedCount?: number;
+}
+
+interface QueueStatusCardProps {
+  queueJob?: QueueJob | null;
+  status?: QueueJobStatus;
+  labRoom?: string;
+  tableNumber?: string;
+  claimedByName?: string;
+  reviewComment?: string;
+  reviewStatus?: 'approved' | 'rejected';
+  reviewedAt?: string;
+}
+
+interface QueueJobCardProps {
+  job: QueueJob;
+  onClaim?: (jobId: string) => void;
+  onReview?: (jobId: string) => void;
+  isClaiming?: boolean;
+  isReviewing?: boolean;
+  canClaim?: boolean;
+  canReview?: boolean;
+}
+
+interface TACommentCardProps {
+  comment: string;
+  status: 'approved' | 'rejected';
+  reviewedAt: string;
+  reviewedByName: string;
+}
+
+interface PlaygroundModeCardProps {
+  mode: PlaygroundMode;
+  onImageClick: (imageSrc: string) => void;
+}
+
+interface LearningTipCardProps {
+  tip: LearningTip;
+}
+
+interface DataStructureCardProps {
+  structure: DataStructure;
+}
+
+// ============================================================================
+// Table Props
+// ============================================================================
+interface GradingTableProps {
+  submissions: CoursePDFSubmission[];
+  isLoading: boolean;
+  courseId: string;
+  accessToken: string | null;
+}
+
+interface QueueTableProps {
+  jobs: QueueJob[];
+  isLoading?: boolean;
+  canManage?: boolean;
+  token: string | null;
+  onRefresh?: () => void;
+  showRefreshButton?: boolean;
+  queuePositionMap?: Map<string, number>;
+}
+
+// ============================================================================
+// Dialog Props
+// ============================================================================
+interface GradingDialogProps {
+  submission: CoursePDFSubmission;
+  isOpen: boolean;
+  onClose: () => void;
+  courseId: string;
+  accessToken: string | null;
+  totalPoints?: number;
+}
+
+interface ReviewScoreDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  jobId: string;
+  token: string | null;
+  onSuccess?: () => void;
+}
+
+interface ReviewDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: { status: 'approved' | 'rejected'; comment: string }) => void;
+  isLoading?: boolean;
+  job?: QueueJob | null;
+}
+
+interface RequestApprovalDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: { lab_room: string; table_number: string }) => void;
+  isLoading?: boolean;
+}
+
+interface ImageDialogProps {
+  selectedImage: string | null;
+  onClose: () => void;
+}
+
+interface TutorialDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  playgroundMode: 'dragdrop' | 'stepthrough' | 'realtime';
+}
+
+// ============================================================================
+// UI Component Props (Badge, Dropdown, Popover, Chart)
+// ============================================================================
+interface ApprovalStatusBadgeProps {
+  status: QueueJobStatus | 'waiting_approval' | 'not_started';
+  className?: string;
+}
+
+interface OperationCategoryDropdownProps {
+  categories: { key: OperationCategory; title: string; color: string }[];
+  selectedCategory: OperationCategory | null;
+  onCategorySelect: (category: OperationCategory | null) => void;
+}
+
+interface EnrollmentPopoverProps {
+  courseId: string;
+  courseName: string;
+  onEnroll?: (courseId: string, enrollKey: string) => void;
+  isEnrolling?: boolean;
+}
+
+interface ProgressChartProps {
+  completedCount: number;
+  totalCount: number;
+}
+
+// ============================================================================
+// Editor Props
+// ============================================================================
+interface CodeEditorProps {
+  code: string;
+  currentLine?: number;
+  title?: string;
+  maxHeight?: string;
+}
+
+interface ExerciseEditorCardProps {
+  code: string;
+  onCodeChange: (code: string) => void;
+  isExpired: boolean;
+  isGraded: boolean;
+  submission?: SubmissionResponse | null;
+  materialId?: string;
+  token?: string | null;
+  material?: Material;
+}
+
+// ============================================================================
+// List Props
+// ============================================================================
+interface QueueJobListProps {
+  jobs: QueueJob[];
+  isLoading?: boolean;
+  onClaim?: (jobId: string) => void;
+  onReview?: (jobId: string) => void;
+  filters?: {
+    status?: QueueJobStatus;
+    courseId?: string;
+  };
+}
+
+interface MembersListProps {
+  enrollmentsData: CourseEnrollmentsResponse | null | undefined;
+  isLoading: boolean;
+  error: Error | null;
+  isTeacher?: boolean;
+  courseId?: string;
+  accessToken?: string | null;
+}
+
+interface VirtualizedListProps<T> {
+  items: T[];
+  itemHeight: number;
+  containerHeight: number;
+  renderItem: (item: T, index: number) => React.ReactNode;
+  keyExtractor: (item: T, index: number) => string | number;
+  overscan?: number;
+  className?: string;
+}
+
+// ============================================================================
+// Menu Props
+// ============================================================================
+type SubItem = {
+  href: string;
+  label: string;
+};
+
+type MenuItem = {
+  href: string | null;
+  label: string;
+  hasSubItems: boolean;
+  subItems?: SubItem[];
+};
+
+type PlaygroundItem = {
+  title: string;
+  description: string;
+  items?: MenuItem[];
+  href?: string;
+};
+
+interface SubMenuItemProps {
+  title: string;
+  description: string;
+  items?: PlaygroundItem['items'];
+}
+
+interface NestedSubMenuItemProps {
+  item: MenuItem;
+}
+
+// ============================================================================
+// Step Selector Props
+// ============================================================================
+interface Operation {
+  id: number;
+  type: string;
+  name: string;
+  value?: string | null;
+  position?: string | null;
+  newValue?: string | null;
+  color: string;
+  category: string;
+}
+
+interface StepSelectorProps {
+  operations: Operation[];
+  selectedStep: number | null;
+  onStepSelect: (stepIndex: number) => void;
+  getStepDescription: (operation: Operation) => string;
+  onPrevious?: () => void;
+  onNext?: () => void;
+  onAutoPlay?: () => void;
+  isAutoPlaying?: boolean;
+}
+
+// ============================================================================
+// Showcase Props
+// ============================================================================
+interface CTASectionProps {
+  onGetStarted?: () => void;
+}
+
+interface Structure {
+  id: string;
+  name: string;
+  icon: typeof Code;
+  description: string;
+  preview: string;
+  color: string;
+}
+
+// ============================================================================
+// Landing Props
+// ============================================================================
+interface VisualizationMode {
+  id: string;
+  title: string;
+  icon: LucideIcon;
+  images: string[];
+}
+
+// ============================================================================
+// Tutorial Props
+// ============================================================================
+interface DataStructure {
+  name: string;
+  description: string;
+  iconName: string;
+  iconColor: string;
+}
+
+interface LearningTip {
+  title: string;
+  description: string;
+}
+
+interface TutorialStep {
+  image: string;
+  alt: string;
+  description: string;
+}
+
+interface PlaygroundMode {
+  title: string;
+  description: string;
+  iconName: string;
+  iconColor: string;
+  steps: TutorialStep[];
+}
+
+interface TutorialSection {
+  title: string;
+  description: string;
+  image: string;
+  alt: string;
+}
+
+interface TutorialStepProps {
+  step: TutorialStep;
+  hoverColor: string;
+  onImageClick: (imageSrc: string) => void;
+}
+
+type PlaygroundModeType = 'dragdrop' | 'stepthrough' | 'realtime';
+
+// ============================================================================
+// Section Props
+// ============================================================================
+interface MaterialsByWeekProps {
+  materials: Material[];
+  userProfile?: UserProfile | null;
+}
+
+interface LatestAnnouncementProps {
+  announcements: Announcement[];
+}
+
+// ============================================================================
+// DragDrop Props
+// ============================================================================
+interface OperationCardProps {
+  component: DragComponent;
+  onDragStart: (e: React.DragEvent, component: DragComponent) => void;
+  onTouchStart?: (e: React.TouchEvent, component: DragComponent) => void;
+  description?: string;
+}
+
+interface VisualizationProps {
+  nodes: string[];
+  stats: DataStructureStats;
+  isRunning?: boolean;
+  title?: string;
+  renderNode?: (value: string, index: number) => React.ReactNode;
+}
+
+interface SinglyLinkedListOperationsProps {
+  dragComponents: SinglyLinkedListDragComponent[];
+  onDragStart: (e: React.DragEvent, component: SinglyLinkedListDragComponent) => void;
+  onTouchStart?: (e: React.TouchEvent, component: SinglyLinkedListDragComponent) => void;
+}
+
+interface SinglyLinkedListVisualizationProps {
+  nodes: string[];
+  stats: DataStructureStats;
+  isRunning?: boolean;
+  currentOperation?: string;
+  currentStep?: string;
+  currentPosition?: number;
+  selectedStep?: number | null;
+  currentOperationData?: {
+    type: string;
+    value?: string | null;
+    position?: string | null;
+    newValue?: string | null;
+  };
+}
+
+interface DoublyLinkedListOperationsProps {
+  dragComponents: DoublyLinkedListDragComponent[];
+  onDragStart: (e: React.DragEvent, component: DoublyLinkedListDragComponent) => void;
+  onTouchStart?: (e: React.TouchEvent, component: DoublyLinkedListDragComponent) => void;
+}
+
+interface DoublyLinkedListVisualizationProps {
+  nodes: string[];
+  stats: DataStructureStats;
+  isRunning?: boolean;
+  currentOperation?: string;
+  currentStep?: string;
+  currentPosition?: number;
+  selectedStep?: number | null;
+  currentOperationData?: {
+    type: string;
+    value?: string | null;
+    position?: string | null;
+    newValue?: string | null;
+  };
+}
+
+interface StackOperationsProps {
+  dragComponents: StackDragComponent[];
+  onDragStart: (e: React.DragEvent, component: StackDragComponent) => void;
+  onTouchStart?: (e: React.TouchEvent, component: StackDragComponent) => void;
+}
+
+interface StackVisualizationProps {
+  elements: string[];
+  stats: {
+    length: number;
+    count: number;
+    headValue: string | null;
+    tailValue: string | null;
+    isEmpty: boolean;
+  };
+  isRunning?: boolean;
+  currentOperation?: string;
+  currentStep?: string;
+  stacks?: {
+    s1: string[];
+    s2: string[];
+  };
+  mainStack?: string[];
+  stackS1?: string[];
+  stackS2?: string[];
+}
+
+interface QueueOperationsProps {
+  dragComponents: QueueDragComponent[];
+  onDragStart?: (e: React.DragEvent, component: QueueDragComponent) => void;
+  onTouchStart?: (e: React.TouchEvent, component: QueueDragComponent) => void;
+}
+
+interface QueueVisualizationProps {
+  dequeuedElement?: string | null;
+  elements: string[];
+  stats: DataStructureStats;
+  isRunning?: boolean;
+  currentOperation?: string;
+  currentStep?: string;
+}
+
+interface DragDropZoneProps {
+  operations: DragDropOperation[];
+  onDragOver: (e: React.DragEvent) => void;
+  onDragEnter: (e: React.DragEvent) => void;
+  onDragLeave: (e: React.DragEvent) => void;
+  onDrop: (e: React.DragEvent) => void;
+  onRemoveOperation: (id: number) => void;
+  onUpdateOperationValue: (id: number, value: string) => void;
+  onUpdateOperationPosition: (id: number, position: string) => void;
+  onUpdateOperationNewValue: (id: number, newValue: string) => void;
+  onUpdateOperationSourceStack?: (id: number, sourceStack: string) => void;
+  onUpdateOperationTargetStack?: (id: number, targetStack: string) => void;
+  onReorderOperation?: (fromIndex: number, toIndex: number) => void;
+  children?: React.ReactNode;
+}
+
+// ============================================================================
+// Exports
+// ============================================================================
+export type {
+  // Button
+  CopyAndExportButtonProps,
+  ExportPNGButtonProps,
+  FileUploadButtonProps,
+  // Card
+  Feature,
+  FeatureCardProps,
+  CourseCardProps,
+  CourseCardWithEnrollmentProps,
+  MaterialCardProps,
+  ExerciseProblemCardProps,
+  PDFSubmissionCardProps,
+  SubmittedPDFCardProps,
+  TestCaseResultCardProps,
+  QueueStatusCardProps,
+  QueueJobCardProps,
+  TACommentCardProps,
+  PlaygroundModeCardProps,
+  LearningTipCardProps,
+  DataStructureCardProps,
+  // Table
+  GradingTableProps,
+  QueueTableProps,
+  // Dialog
+  GradingDialogProps,
+  ReviewScoreDialogProps,
+  ReviewDialogProps,
+  RequestApprovalDialogProps,
+  ImageDialogProps,
+  TutorialDialogProps,
+  // UI Components
+  ApprovalStatusBadgeProps,
+  OperationCategoryDropdownProps,
+  EnrollmentPopoverProps,
+  ProgressChartProps,
+  // Editor
+  CodeEditorProps,
+  ExerciseEditorCardProps,
+  // List
+  QueueJobListProps,
+  MembersListProps,
+  VirtualizedListProps,
+  // Menu
+  SubItem,
+  MenuItem,
+  PlaygroundItem,
+  SubMenuItemProps,
+  NestedSubMenuItemProps,
+  // Step Selector
+  StepSelectorProps,
+  // Showcase
+  Structure,
+  CTASectionProps,
+  // Landing
+  VisualizationMode,
+  // Tutorial
+  DataStructure,
+  LearningTip,
+  TutorialStep,
+  PlaygroundMode,
+  TutorialSection,
+  TutorialStepProps,
+  PlaygroundModeType,
+  // Section
+  MaterialsByWeekProps,
+  LatestAnnouncementProps,
+  // DragDrop
+  OperationCardProps,
+  VisualizationProps,
+  SinglyLinkedListOperationsProps,
+  SinglyLinkedListVisualizationProps,
+  DoublyLinkedListOperationsProps,
+  DoublyLinkedListVisualizationProps,
+  StackOperationsProps,
+  StackVisualizationProps,
+  QueueOperationsProps,
+  QueueVisualizationProps,
+  DragDropZoneProps,
+};

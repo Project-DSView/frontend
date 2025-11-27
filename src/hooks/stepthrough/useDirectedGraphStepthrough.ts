@@ -308,7 +308,7 @@ const defaultState: BaseStepthroughState<DirectedGraphData, DirectedGraphStatsEx
   },
 };
 
-const useDirectedGraphStepthrough = () => {
+const useStepthroughDirectedGraph = () => {
   const baseHook = useBaseStepthrough<
     DirectedGraphData,
     DirectedGraphStatsExtended,
@@ -346,4 +346,4 @@ const useDirectedGraphStepthrough = () => {
   };
 };
 
-export default useDirectedGraphStepthrough;
+export { useStepthroughDirectedGraph };

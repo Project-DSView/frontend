@@ -2,7 +2,7 @@
 
 import React, { lazy } from 'react';
 
-import { useSinglyLinkedListStepthrough } from '@/hooks';
+import { useStepthroughSinglyLinkedList } from '@/hooks';
 import { LinkedListData } from '@/types';
 
 import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
@@ -24,7 +24,7 @@ const StepthroughSinglyLinkedList: React.FC = () => {
     reset,
     isLoading,
     linkedListData,
-  } = useSinglyLinkedListStepthrough();
+  } = useStepthroughSinglyLinkedList();
 
   return (
     <StepthroughLayout<LinkedListData>

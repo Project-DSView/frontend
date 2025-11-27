@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { UserProfile, UseAuthReturn } from '@/types';
 import { ProfileService, AuthService } from '@/services';
+import { useGoogleAuthUrl } from '@/query';
 import {
   secureSessionUtils,
-  logError,
+  getErrorMessage,
   isTokenExpired,
   isValidJWTFormat,
   RATE_LIMIT_CONFIGS,
@@ -41,9 +42,7 @@ const useAuth = (): UseAuthReturn => {
           secureSessionUtils.clearSession();
         }
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Failed to initialize session';
-        console.error('Failed to initialize session:', error);
+        const errorMessage = getErrorMessage(error) || 'Failed to initialize session';
         setError(errorMessage);
         secureSessionUtils.clearSession();
       } finally {
@@ -70,8 +69,7 @@ const useAuth = (): UseAuthReturn => {
       }
       return null;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load session';
-      console.error('Failed to load session:', error);
+      const errorMessage = getErrorMessage(error) || 'Failed to load session';
       setError(errorMessage);
       return null;
     } finally {
@@ -112,8 +110,7 @@ const useAuth = (): UseAuthReturn => {
 
       return newToken;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Token refresh failed';
-      logError('Refresh failed:', error);
+      const errorMessage = getErrorMessage(error) || 'Token refresh failed';
       setError(errorMessage);
       setProfile(null);
       setAccessToken(null);
@@ -142,6 +139,10 @@ const useAuth = (): UseAuthReturn => {
 
       const profileData = await ProfileService.fetchProfile(token);
 
+      // Debug: Log fetched profile
+      console.log('[useAuth] Fetched profile data:', profileData);
+      console.log('[useAuth] is_teacher from fetched data:', profileData.is_teacher);
+
       // Validate profile data
       if (!profileData || !profileData.user_id) {
         throw new Error('Invalid profile data received');
@@ -149,10 +150,10 @@ const useAuth = (): UseAuthReturn => {
 
       await secureSessionUtils.saveSession(token, profileData);
       setProfile(profileData);
+      console.log('[useAuth] Profile saved to session and state');
       return profileData;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch profile';
-      logError('Failed to fetch profile:', error);
+      const errorMessage = getErrorMessage(error) || 'Failed to fetch profile';
       setError(errorMessage);
       throw error;
     } finally {
@@ -183,7 +184,7 @@ const useAuth = (): UseAuthReturn => {
       setProfile(userProfile);
       await secureSessionUtils.saveSession(token, userProfile);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to set auth data';
+      const errorMessage = getErrorMessage(error) || 'Failed to set auth data';
       setError(errorMessage);
       throw error;
     } finally {
@@ -213,4 +214,8 @@ const useAuth = (): UseAuthReturn => {
   };
 };
 
-export default useAuth;
+const useGoogleAuth = () => {
+  return useGoogleAuthUrl();
+};
+
+export { useAuth, useGoogleAuth };

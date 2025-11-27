@@ -361,7 +361,7 @@ const defaultState: BaseStepthroughState<UndirectedGraphData, UndirectedGraphSta
   },
 };
 
-const useUndirectedGraphStepthrough = () => {
+const useStepthroughUndirectedGraph = () => {
   const baseHook = useBaseStepthrough<
     UndirectedGraphData,
     UndirectedGraphStats,
@@ -395,4 +395,4 @@ const useUndirectedGraphStepthrough = () => {
   };
 };
 
-export default useUndirectedGraphStepthrough;
+export { useStepthroughUndirectedGraph };

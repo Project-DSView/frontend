@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, lazy, Suspense } from 'react';
 import { DoublyLinkedListDragComponent } from '@/types';
-import { useDoublyLinkedListDragDrop } from '@/hooks';
+import { useDragDropDoublyLinkedList } from '@/hooks';
 import { doublyLinkedListDragComponents } from '@/data';
 
 import DragDropZone from '@/components/playground/shared/DragDropZone';
@@ -21,7 +21,7 @@ const TutorialModal = lazy(() => import('@/components/tutorial/TutorialModal'));
 
 const DragDropDoublyLinkList = () => {
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
-    useDoublyLinkedListDragDrop();
+    useDragDropDoublyLinkedList();
 
   const [draggedItem, setDraggedItem] = useState<DoublyLinkedListDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);

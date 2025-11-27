@@ -3,7 +3,7 @@
 import React, { useState, useRef, lazy, Suspense } from 'react';
 
 import { SinglyLinkedListDragComponent } from '@/types';
-import { useSinglyLinkedListDragDrop } from '@/hooks';
+import { useDragDropSinglyLinkedList } from '@/hooks';
 import { singlyLinkedListDragComponents } from '@/data';
 
 import DragDropZone from '@/components/playground/shared/DragDropZone';
@@ -22,7 +22,7 @@ const TutorialModal = lazy(() => import('@/components/tutorial/TutorialModal'));
 
 const DragDropSinglyLinkList = () => {
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
-    useSinglyLinkedListDragDrop();
+    useDragDropSinglyLinkedList();
 
   const [draggedItem, setDraggedItem] = useState<SinglyLinkedListDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);

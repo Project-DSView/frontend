@@ -1,7 +1,7 @@
 'use client';
 
 import React, { lazy } from 'react';
-import { useUndirectedGraphStepthrough } from '@/hooks';
+import { useStepthroughUndirectedGraph } from '@/hooks';
 import { UndirectedGraphData } from '@/types';
 
 import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
@@ -23,7 +23,7 @@ const StepthroughUndirectedGraph: React.FC = () => {
     reset,
     isLoading,
     graphData,
-  } = useUndirectedGraphStepthrough();
+  } = useStepthroughUndirectedGraph();
 
   return (
     <StepthroughLayout<UndirectedGraphData>

@@ -2,11 +2,21 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, AlertCircle, Plus } from 'lucide-react';
 import { LatestAnnouncementProps } from '@/types';
 import { formatDateShort } from '@/lib';
 
-const LatestAnnouncement: React.FC<LatestAnnouncementProps> = ({ announcements }) => {
+interface LatestAnnouncementWithButtonProps extends LatestAnnouncementProps {
+  onAddAnnouncement?: () => void;
+  showAddButton?: boolean;
+}
+
+const LatestAnnouncement: React.FC<LatestAnnouncementWithButtonProps> = ({
+  announcements,
+  onAddAnnouncement,
+  showAddButton = false,
+}) => {
   // หาประกาศที่สำคัญที่สุด (ปักหมุดก่อน แล้วค่อยประกาศล่าสุด)
   const getLatestAnnouncement = () => {
     if (announcements.length === 0) return null;
@@ -30,13 +40,25 @@ const LatestAnnouncement: React.FC<LatestAnnouncementProps> = ({ announcements }
     return (
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-gray-400" />
-            ประกาศล่าสุด
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+              <span className="text-gray-900 dark:text-white">ประกาศล่าสุด</span>
+            </CardTitle>
+            {showAddButton && onAddAnnouncement && (
+              <Button
+                onClick={onAddAnnouncement}
+                size="sm"
+                className="bg-primary hover:bg-primary/90 flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                เพิ่มประกาศ
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
-          <p className="py-4 text-center text-gray-500">ยังไม่มีประกาศในคอร์สนี้</p>
+          <p className="py-4 text-center text-gray-500 dark:text-gray-400">ยังไม่มีประกาศในคอร์สนี้</p>
         </CardContent>
       </Card>
     );
@@ -47,23 +69,34 @@ const LatestAnnouncement: React.FC<LatestAnnouncementProps> = ({ announcements }
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-blue-600" />
-            ประกาศล่าสุด
+            <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <span className="text-gray-900 dark:text-white">ประกาศล่าสุด</span>
           </CardTitle>
+          {showAddButton && onAddAnnouncement && (
+            <Button
+              onClick={onAddAnnouncement}
+              size="sm"
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              เพิ่มประกาศ
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-gray-900">{latestAnnouncement.title}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{latestAnnouncement.title}</h3>
 
-          <div className="flex items-center gap-4 text-sm text-gray-500">
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
               {formatDateShort(latestAnnouncement.created_at)}
             </div>
           </div>
 
-          <p className="leading-relaxed whitespace-pre-wrap text-gray-700">
+          <p className="leading-relaxed whitespace-pre-wrap text-gray-700 dark:text-gray-300">
             {latestAnnouncement.content}
           </p>
         </div>

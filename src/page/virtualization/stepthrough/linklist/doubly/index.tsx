@@ -2,7 +2,7 @@
 
 import React, { lazy } from 'react';
 
-import { useDoublyLinkedListStepthrough } from '@/hooks';
+import { useStepthroughDoublyLinkedList } from '@/hooks';
 import { LinkedListData } from '@/types';
 
 import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
@@ -24,7 +24,7 @@ const StepthroughDoublyLinkedList: React.FC = () => {
     reset,
     isLoading,
     linkedListData,
-  } = useDoublyLinkedListStepthrough();
+  } = useStepthroughDoublyLinkedList();
 
   return (
     <StepthroughLayout<LinkedListData>

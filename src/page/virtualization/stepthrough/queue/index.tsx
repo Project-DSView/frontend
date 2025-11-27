@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 import { queueCodeTemplate } from '@/data';
-import useQueueStepthrough from '@/hooks/stepthrough/useQueueStepthrough';
+import { useStepthroughQueue } from '@/hooks';
 
 import StepthroughLayout from '@/components/playground/stepthrough/layout/StepthroughLayout';
 import QueueStepthrough from '@/components/playground/stepthrough/visualization/Queue';
@@ -22,7 +22,7 @@ const QueueStepthroughPage: React.FC = () => {
     toggleAutoPlay,
     reset,
     isLoading,
-  } = useQueueStepthrough(code);
+  } = useStepthroughQueue(code);
 
   return (
     <StepthroughLayout

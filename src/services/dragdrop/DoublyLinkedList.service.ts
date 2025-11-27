@@ -1,7 +1,7 @@
 import { DoublyLinkedListState, DoublyLinkedListExecutionStep } from '@/types';
 import { createExecutionStep } from '@/lib';
 
-class DoublyLinkedListService {
+class DoublyLinkedListDragDropService {
   private state: DoublyLinkedListState;
 
   constructor(initialState: DoublyLinkedListState) {
@@ -645,4 +645,4 @@ class DoublyLinkedListService {
   }
 }
 
-export default DoublyLinkedListService;
+export { DoublyLinkedListDragDropService };

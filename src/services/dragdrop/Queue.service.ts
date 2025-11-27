@@ -1,7 +1,7 @@
 import { QueueState, BaseExecutionStep } from '@/types';
 import { createExecutionStep } from '@/lib';
 
-class QueueService {
+class QueueDragDropService {
   private state: QueueState;
 
   constructor(initialState: QueueState) {
@@ -136,4 +136,4 @@ class QueueService {
   }
 }
 
-export default QueueService;
+export { QueueDragDropService };
