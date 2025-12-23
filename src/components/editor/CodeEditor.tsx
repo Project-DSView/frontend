@@ -9,16 +9,13 @@ import {
   EditorView,
   gutter,
   GutterMarker,
-  lineNumbers,
   Decoration,
-  ViewPlugin,
-  WidgetType,
 } from '@codemirror/view';
 import { autocompletion, completionKeymap } from '@codemirror/autocomplete';
 import { keymap } from '@codemirror/view';
 import { linter, lintGutter } from '@codemirror/lint';
 import { Diagnostic } from '@codemirror/lint';
-import { StateField, StateEffect } from '@codemirror/state';
+import { Range, RangeSet } from '@codemirror/state';
 
 import { StepthroughCodeEditorProps } from '@/types';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -346,6 +343,30 @@ const pythonLinter = linter((view) => {
   return diagnostics;
 });
 
+// Breakpoint marker class
+class BreakpointMarker extends GutterMarker {
+  constructor(public enabled: boolean) {
+    super();
+  }
+  eq(other: BreakpointMarker) {
+    return this.enabled === other.enabled;
+  }
+  toDOM() {
+    const marker = document.createElement('div');
+    marker.className = 'cm-breakpoint-marker';
+    marker.style.cssText = `
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background-color: ${this.enabled ? '#f87171' : '#9ca3af'};
+      cursor: pointer;
+      margin-left: 2px;
+      margin-top: 2px;
+    `;
+    return marker;
+  }
+}
+
 const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
   code,
   onCodeChange,
@@ -363,29 +384,7 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
     setIsClient(true);
   }, []);
 
-  // Breakpoint marker class
-  class BreakpointMarker extends GutterMarker {
-    constructor(public enabled: boolean) {
-      super();
-    }
-    eq(other: BreakpointMarker) {
-      return this.enabled === other.enabled;
-    }
-    toDOM() {
-      const marker = document.createElement('div');
-      marker.className = 'cm-breakpoint-marker';
-      marker.style.cssText = `
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        background-color: ${this.enabled ? '#f87171' : '#9ca3af'};
-        cursor: pointer;
-        margin-left: 2px;
-        margin-top: 2px;
-      `;
-      return marker;
-    }
-  }
+
 
   // Breakpoint gutter
   const breakpointGutter = useMemo(() => {
@@ -396,27 +395,29 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
     const breakpointGutterExtension = gutter({
       class: 'cm-breakpoint-gutter',
       markers: (view) => {
-        if (!debugState?.breakpoints) return [];
-        const markers: GutterMarker[] = [];
+        if (!debugState?.breakpoints) return RangeSet.empty;
+        const markers: Range<GutterMarker>[] = [];
         debugState.breakpoints.forEach((bp) => {
           if (bp.enabled && bp.line > 0) {
             try {
               const line = view.state.doc.line(bp.line);
               if (line) {
-                markers.push(new BreakpointMarker(bp.enabled));
+                const marker = new BreakpointMarker(bp.enabled);
+                markers.push(marker.range(line.from));
               }
             } catch {
               // Line doesn't exist
             }
           }
         });
-        return markers;
+        return RangeSet.of(markers);
       },
       initialSpacer: () => new BreakpointMarker(false),
       domEventHandlers: {
         mousedown: (view, line) => {
           if (onBreakpointClick && debugState?.isDebugMode) {
-            onBreakpointClick(line.number);
+            const lineNum = view.state.doc.lineAt(line.from).number;
+            onBreakpointClick(lineNum);
             return true;
           }
           return false;
@@ -445,18 +446,20 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
       class: 'executable-line',
     });
 
-    return EditorView.decorations.of((view) => {
-      const decorations = [];
-      for (const lineNum of executableLines) {
-        try {
-          const line = view.state.doc.line(lineNum);
-          decorations.push(lineMark.range(line.from));
-        } catch {
-          // Line doesn't exist, skip
+    return [
+      EditorView.decorations.of((view) => {
+        const decorations = [];
+        for (const lineNum of executableLines) {
+          try {
+            const line = view.state.doc.line(lineNum);
+            decorations.push(lineMark.range(line.from));
+          } catch {
+            // Line doesn't exist, skip
+          }
         }
-      }
-      return Decoration.set(decorations);
-    });
+        return Decoration.set(decorations);
+      }),
+    ];
   }, [executableLines]);
 
   // Memoize extensions to prevent re-creation

@@ -10,7 +10,6 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
 >(({ steps, currentStepIndex, data, isRunning, error }, ref) => {
   const [highlightedNodeIndex, setHighlightedNodeIndex] = useState(-1);
   const [, setHeadPosition] = useState(0);
-  const [traverseIndex, setTraverseIndex] = useState(0);
   const [isTraversing, setIsTraversing] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [enteringNodes, setEnteringNodes] = useState<Set<number>>(new Set());
@@ -315,7 +314,7 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
             </div>
           </div>
           {/* Pointer Section - Right */}
-          <div className="flex inline-block w-1/2 items-center justify-center pl-2">
+          <div className="flex w-1/2 items-center justify-center pl-2">
             {isLast ? (
               <div className="relative flex h-full w-full items-center justify-center">
                 <div className="absolute inset-0 flex items-center justify-center">

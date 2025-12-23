@@ -115,6 +115,13 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     }
   }, [currentStep, isOpen, targetRect, windowSize]);
 
+  const handleComplete = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(storageKey, 'completed');
+    }
+    onClose();
+  }, [onClose, storageKey]);
+
   // Navigation handlers
   const handleNext = useCallback(() => {
     if (currentStep < steps.length - 1) {
@@ -126,7 +133,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     } else {
       handleComplete();
     }
-  }, [currentStep, steps.length]);
+  }, [currentStep, steps.length, handleComplete]);
 
   const handlePrevious = useCallback(() => {
     if (currentStep > 0) {
@@ -137,13 +144,6 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       }, 150);
     }
   }, [currentStep]);
-
-  const handleComplete = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(storageKey, 'completed');
-    }
-    onClose();
-  };
 
   // Skip
   const handleSkip = () => {

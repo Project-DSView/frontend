@@ -33,6 +33,7 @@ interface BaseStepthroughHookReturn<TData, TStats> {
     stats: TStats;
     debugState?: DebugState;
     inputState?: InputState;
+    terminalOutput?: string;
     astPreview?: {
       astNodes: Array<{
         type: string;

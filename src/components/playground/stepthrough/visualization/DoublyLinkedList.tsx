@@ -10,7 +10,6 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
 >(({ steps, currentStepIndex, data, isRunning, error }, ref) => {
   const [highlightedNodeIndex, setHighlightedNodeIndex] = useState(-1);
   const [, setHeadPosition] = useState(0);
-  const [traverseIndex, setTraverseIndex] = useState(0);
   const [isTraversing, setIsTraversing] = useState(false);
   const [isReverseTraversing, setIsReverseTraversing] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -282,7 +281,6 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
     const isTraversePulse = isTraversing || isReverseTraversing;
     const isFirst = index === 0;
     const isLast = index === nodesToRender.length - 1;
-    const isEntering = enteringNodes.has(index);
     const isExiting = exitingNodes.has(value);
 
     const nodeKey = `${value}-${index}`;
@@ -351,7 +349,7 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
 
           {/* Data Section - Center */}
           <div
-            className={`flex w-1/3 items-center justify-center border-x border-x-4 ${
+            className={`flex w-1/3 items-center justify-center border-x ${
               isCurrentNode
                 ? 'border-blue-500 bg-blue-100 dark:border-blue-400 dark:bg-blue-900/30'
                 : isHighlighted
@@ -467,14 +465,6 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
           <div className="flex items-center justify-start space-x-2 p-6 pt-20">
             {/* Nodes with Head/Tail Pointers */}
             {nodesToRender.map((value, index) => {
-              const message =
-                steps.length > 0 && currentStepIndex < steps.length
-                  ? steps[currentStepIndex].state?.message || ''
-                  : '';
-              const code =
-                steps.length > 0 && currentStepIndex < steps.length
-                  ? steps[currentStepIndex].code || ''
-                  : '';
               const isExiting = exitingNodes.has(value);
               return (
                 <Fragment key={index}>

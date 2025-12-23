@@ -140,6 +140,17 @@ interface DataStructureCardProps {
   structure: DataStructure;
 }
 
+interface FeatureCardProps {
+  feature: {
+    iconSrc: string;
+    iconAlt: string;
+    title: string;
+    desc: string;
+    priority?: boolean;
+  };
+  index: number;
+}
+
 // ============================================================================
 // Table Props
 // ============================================================================
@@ -625,4 +636,5 @@ export type {
   QueueOperationsProps,
   QueueVisualizationProps,
   DragDropZoneProps,
+  FeatureCardProps,
 };

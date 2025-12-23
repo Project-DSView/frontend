@@ -131,6 +131,7 @@ export type {
   PlaygroundModeCardProps,
   LearningTipCardProps,
   DataStructureCardProps,
+  FeatureCardProps,
   // Table
   GradingTableProps,
   QueueTableProps,

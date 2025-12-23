@@ -167,12 +167,13 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
 
       setInputState(newInputState);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     executeMutation.isSuccess,
     executeMutation.data,
     extractDataFromSteps,
     extractStatsFromSteps,
-  ]); // Removed inputState from dep array to avoid infinite loop
+  ]);
 
   useEffect(() => {
     if (executeMutation.isError && executeMutation.error) {

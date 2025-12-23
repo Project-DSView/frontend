@@ -1,6 +1,6 @@
 'use client';
 
-import React, { lazy, useMemo, useEffect } from 'react';
+import React, { lazy, useEffect } from 'react';
 
 import { useStepthroughStack } from '@/hooks';
 import { StackData } from '@/types';

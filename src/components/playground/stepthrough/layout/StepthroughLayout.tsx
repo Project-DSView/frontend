@@ -45,7 +45,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   debugState,
   onToggleDebugMode,
   onSetBreakpoint,
-  onRemoveBreakpoint,
+
   onStepOver,
   onStepInto,
   onStepOut,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, lazy, Suspense, useEffect } from 'react';
+import React, { useState, useRef, lazy, Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import { BSTDragComponent, BSTNode, BSTOperation } from '@/types';
 
@@ -95,6 +95,7 @@ const calculateStats = (root: BSTNode | null) => {
 };
 
 const DragDropBST = () => {
+  const pathname = usePathname();
   const {
     state,
     addOperation,

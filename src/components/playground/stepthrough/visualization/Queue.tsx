@@ -4,7 +4,6 @@ import { StepthroughVisualizationProps } from '@/types';
 import { QueueData } from '@/types/stepthrough/Queue.types';
 
 import ZoomableContainer from '../../shared/ZoomableContainer';
-import { gsap } from 'gsap';
 
 const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
   steps,
@@ -13,7 +12,7 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
 }) => {
   const currentStep = steps[currentStepIndex];
   const queueData = data as QueueData;
-  const [enteringElements, setEnteringElements] = useState<Set<number>>(new Set());
+  const [, setEnteringElements] = useState<Set<number>>(new Set());
   const [exitingElements, setExitingElements] = useState<Set<string>>(new Set());
   const [elementsToRender, setElementsToRender] = useState<string[]>([]);
   const previousElementsRef = useRef<string[]>([]);

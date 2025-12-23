@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, lazy, Suspense, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useRef, lazy, Suspense, useMemo, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -29,6 +29,7 @@ const DirectedGraphDragDropVisualization = lazy(
 const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
 
 const DragDropDirectedGraph = () => {
+  const pathname = usePathname();
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
     useDragDropDirectedGraph();
 
