@@ -17,6 +17,7 @@ type StepthroughData =
 interface StepthroughRequest {
   code: string;
   dataType: string;
+  inputValues?: string[];
 }
 
 interface StepthroughStep {
@@ -25,6 +26,9 @@ interface StepthroughStep {
   code: string;
   state: {
     message: string;
+    error?: string;
+    input_prompt?: string;
+    waiting_for_input?: boolean;
     instances?: Record<string, unknown>;
     active?: unknown;
     print_output?: string[];
@@ -32,11 +36,36 @@ interface StepthroughStep {
     nodes?: Record<string, unknown>;
     variables?: Record<string, unknown>;
     returnValue?: unknown;
+    ast_info?: {
+      node_count?: number;
+      has_input?: boolean;
+      classes?: string[];
+      ast_nodes?: Array<{
+        type: string;
+        typeDisplay?: string;
+        line?: number;
+        colOffset?: number;
+        category?: string;
+        functionName?: string;
+        methodName?: string;
+        objectName?: string;
+        variableName?: string;
+        attributeName?: string;
+        className?: string;
+        operator?: string;
+      }>;
+      executable_lines?: number[];
+    };
+    execution_result?: Record<string, unknown>;
     step_detail?: {
       operation: string;
       method_name?: string;
       detected_behavior?: string;
       parameters?: string;
+      content?: string;
+      output?: string;
+      arguments?: string[];
+      method_call?: boolean;
       behavior_analysis?: {
         name: string;
         params: string[];
@@ -72,11 +101,14 @@ interface StepthroughResponse {
   dataType: string;
   steps: StepthroughStep[];
   totalSteps: number;
-  status: 'success' | 'error';
+  status: StepStatus;
   errorMessage?: string | null;
   executedAt: string;
   createdAt: string;
+  output?: string; // Full execution stdout
 }
+
+export type StepStatus = 'success' | 'error' | 'timeout' | 'waiting';
 
 interface StepthroughState<TData extends StepthroughData = StepthroughData> {
   code: string;
@@ -88,6 +120,9 @@ interface StepthroughState<TData extends StepthroughData = StepthroughData> {
   executionId: string | null;
   error: string | null;
   data: TData;
+  debugState?: DebugState;
+  inputState?: InputState;
+  terminalOutput?: string; // Full terminal output
 }
 
 interface StepthroughHookReturn<TData extends StepthroughData = StepthroughData> {
@@ -102,6 +137,17 @@ interface StepthroughHookReturn<TData extends StepthroughData = StepthroughData>
   toggleAutoPlay: () => void;
   reset: () => void;
   isLoading: boolean;
+  // Debug mode functions
+  toggleDebugMode?: () => void;
+  setBreakpoint?: (line: number) => void;
+  removeBreakpoint?: (line: number) => void;
+  stepOver?: () => void;
+  stepInto?: () => void;
+  stepOut?: () => void;
+  continueDebug?: () => void;
+  // Input handling functions
+  handleInputSubmit?: (values: string[]) => void;
+  handleInputCancel?: () => void;
 }
 
 interface StepthroughCodeEditorProps {
@@ -114,6 +160,21 @@ interface StepthroughCodeEditorProps {
   } | null;
   height?: string | number;
   error?: string | null;
+  // Debug mode props
+  debugState?: DebugState;
+  onBreakpointClick?: (line: number) => void;
+}
+
+interface Breakpoint {
+  line: number;
+  enabled: boolean;
+}
+
+interface DebugState {
+  isDebugMode: boolean;
+  breakpoints: Breakpoint[];
+  currentDebugLine: number | null;
+  isPaused: boolean;
 }
 
 interface StepthroughStepControlProps {
@@ -125,6 +186,15 @@ interface StepthroughStepControlProps {
   onAutoPlay: () => void;
   isAutoPlaying: boolean;
   isRunning: boolean;
+  // Debug mode props
+  debugState?: DebugState;
+  onToggleDebugMode?: () => void;
+  onSetBreakpoint?: (line: number) => void;
+  onRemoveBreakpoint?: (line: number) => void;
+  onStepOver?: () => void;
+  onStepInto?: () => void;
+  onStepOut?: () => void;
+  onContinue?: () => void;
 }
 
 interface StepthroughVisualizationProps<TData extends StepthroughData = StepthroughData> {
@@ -133,6 +203,31 @@ interface StepthroughVisualizationProps<TData extends StepthroughData = Stepthro
   data: TData;
   isRunning: boolean;
   error?: string | null;
+  terminalOutput?: string; // Full terminal output to display
+  astNodes?: Array<{
+    type: string;
+    typeDisplay?: string;
+    line?: number;
+    colOffset?: number;
+    category?: string;
+    functionName?: string;
+    methodName?: string;
+    objectName?: string;
+    variableName?: string;
+    attributeName?: string;
+    className?: string;
+    operator?: string;
+  }>;
+  currentASTNodeIndex?: number;
+}
+
+interface InputState {
+  waitingForInput: boolean;
+  inputPrompt: string | null;
+  inputId: number | null;
+  inputHistory: Array<{ prompt: string; value: string; inputId: number }>;
+  inputValues?: string[]; // Pre-collected input values
+  collectingInputs?: boolean; // Whether we're currently collecting inputs
 }
 
 interface StepthroughLayoutProps<TData extends StepthroughData = StepthroughData> {
@@ -152,10 +247,50 @@ interface StepthroughLayoutProps<TData extends StepthroughData = StepthroughData
   isRunning: boolean;
   isLoading: boolean;
   data: TData;
+  terminalOutput?: string; // Full terminal output
   title: string;
   description: string;
   visualizationComponent: React.ComponentType<StepthroughVisualizationProps<TData>>;
   error?: string | null;
+  // Debug mode props
+  debugState?: DebugState;
+  onToggleDebugMode?: () => void;
+  onSetBreakpoint?: (line: number) => void;
+  onRemoveBreakpoint?: (line: number) => void;
+  onStepOver?: () => void;
+  onStepInto?: () => void;
+  onStepOut?: () => void;
+  onContinue?: () => void;
+  // Input handling props
+  inputState?: InputState;
+  onInputSubmit?: (values: string[]) => void;
+  onInputCancel?: () => void;
+  // AST Preview props
+  astPreview?: {
+    astNodes: Array<{
+      type: string;
+      typeDisplay?: string;
+      line?: number;
+      colOffset?: number;
+      category?: string;
+      functionName?: string;
+      methodName?: string;
+      objectName?: string;
+      variableName?: string;
+      attributeName?: string;
+      className?: string;
+      operator?: string;
+    }>;
+    nodeCount: number;
+    hasInput: boolean;
+    executableLines: number[];
+    classes: string[];
+    inputCalls: Array<{
+      line: number;
+      prompt?: string;
+    }>;
+  } | null;
+  astPreviewLoading?: boolean;
 }
 
 export type {
@@ -169,4 +304,7 @@ export type {
   StepthroughVisualizationProps,
   StepthroughLayoutProps,
   StepthroughData,
+  DebugState,
+  Breakpoint,
+  InputState,
 };

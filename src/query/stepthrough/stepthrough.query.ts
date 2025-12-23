@@ -5,10 +5,11 @@ import { StepthroughStep } from '@/types';
 // Execute stepthrough mutation
 const useExecuteStepthrough = (dataType: string) => {
   return useMutation({
-    mutationFn: (code: string) =>
+    mutationFn: (params: { code: string; inputValues?: string[] }) =>
       executeStepthrough({
-        code,
+        code: params.code,
         dataType,
+        inputValues: params.inputValues || [],
       }),
     mutationKey: ['stepthrough', 'execute'],
   });

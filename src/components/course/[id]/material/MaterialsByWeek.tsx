@@ -61,7 +61,16 @@ const MaterialsByWeek: React.FC<MaterialsByWeekProps> = ({ materials, userProfil
   const sortMaterials = (materials: Material[]) => {
     return materials.sort((a, b) => {
       // เรียงตามประเภท: exercise ก่อน document/video
-      const typeOrder = { code_exercise: 0, pdf_exercise: 1, document: 2, video: 3 };
+      const typeOrder: Record<
+        'code_exercise' | 'pdf_exercise' | 'document' | 'video' | 'announcement',
+        number
+      > = {
+        announcement: -1,
+        code_exercise: 0,
+        pdf_exercise: 1,
+        document: 2,
+        video: 3,
+      };
       const aOrder = typeOrder[a.type] ?? 4;
       const bOrder = typeOrder[b.type] ?? 4;
 
@@ -109,31 +118,31 @@ const MaterialsByWeek: React.FC<MaterialsByWeekProps> = ({ materials, userProfil
               <div className="flex items-center gap-3">
                 <span className="font-semibold text-gray-900 dark:text-white">Week {week}</span>
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:text-gray-200">
+                  <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-200">
                     {stats.total} รายการ
                   </span>
                   {stats.exercises > 0 && (
-                    <span className="bg-error/20 dark:bg-error/30 text-error dark:text-red-400 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                    <span className="bg-error/20 dark:bg-error/30 text-error inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium dark:text-red-400">
                       {stats.exercises} แบบฝึกหัด
                     </span>
                   )}
                   {stats.documents > 0 && (
-                    <span className="bg-info/20 dark:bg-info/30 text-info dark:text-blue-400 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                    <span className="bg-info/20 dark:bg-info/30 text-info inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium dark:text-blue-400">
                       {stats.documents} เอกสาร
                     </span>
                   )}
                   {stats.videos > 0 && (
-                    <span className="bg-success/20 dark:bg-success/30 text-success dark:text-green-400 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                    <span className="bg-success/20 dark:bg-success/30 text-success inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium dark:text-green-400">
                       {stats.videos} วิดีโอ
                     </span>
                   )}
                   {stats.announcements > 0 && (
-                    <span className="bg-warning/20 dark:bg-warning/30 text-warning dark:text-yellow-400 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                    <span className="bg-warning/20 dark:bg-warning/30 text-warning inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium dark:text-yellow-400">
                       {stats.announcements} ประกาศ
                     </span>
                   )}
                   {stats.withDeadline > 0 && (
-                    <span className="inline-flex items-center rounded-full border border-orange-300 dark:border-orange-600 px-2.5 py-0.5 text-xs font-medium text-orange-600 dark:text-orange-400">
+                    <span className="inline-flex items-center rounded-full border border-orange-300 px-2.5 py-0.5 text-xs font-medium text-orange-600 dark:border-orange-600 dark:text-orange-400">
                       {stats.withDeadline} มีกำหนดส่ง
                     </span>
                   )}

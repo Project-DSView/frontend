@@ -9,11 +9,16 @@ import CopyCodeButton from '@/components/playground/shared/CopyCodeButton';
 import ExportPythonButton from '@/components/playground/shared/ExportPythonButton';
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 import TutorialButton from '@/components/playground/shared/TutorialButton';
+import InputDialog from '@/components/playground/shared/InputDialog';
 import { StepthroughLayoutProps, StepthroughData } from '@/types';
 
 // Lazy load heavy components
-const TutorialModal = lazy(() => import('@/components/tutorial/TutorialModal'));
+// Lazy load heavy components
+const TutorialOverlay = lazy(() => import('@/components/playground/tutorial/TutorialOverlay'));
 const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
+import { stepthroughTutorialSteps } from '@/data/components/stepthrough-tutorial.data';
+import { getTutorialStorageKey } from '@/data/components/tutorial-overlay.data';
+import { usePathname } from 'next/navigation';
 
 const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   code,
@@ -36,96 +41,53 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   description,
   visualizationComponent: VisualizationComponent,
   error,
+  // Debug mode props
+  debugState,
+  onToggleDebugMode,
+  onSetBreakpoint,
+  onRemoveBreakpoint,
+  onStepOver,
+  onStepInto,
+  onStepOut,
+  onContinue,
+  // Input handling props
+  inputState,
+  onInputSubmit,
+  onInputCancel,
+  terminalOutput,
 }: StepthroughLayoutProps<TData>) => {
+  // Debug: Log inputState on every render
+  console.log('🎨 StepthroughLayout render - inputState:', inputState);
+  const pathname = usePathname();
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const visualizationRef = useRef<HTMLDivElement | null>(null);
   const stepControlRef = useRef<HTMLDivElement | null>(null);
-  const [codeEditorHeight, setCodeEditorHeight] = React.useState<string>('320px');
+
+  // Auto-show tutorial
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storageKey = getTutorialStorageKey(pathname, 'stepthrough');
+      const hasSeenTutorial = localStorage.getItem(storageKey) === 'completed';
+
+      if (!hasSeenTutorial) {
+         const timer = setTimeout(() => {
+            setIsTutorialOpen(true);
+         }, 800); // Slight delay for layout to settle
+         return () => clearTimeout(timer);
+      }
+    }
+  }, [pathname]);
 
   // Show toast notification when error occurs
   useEffect(() => {
     if (error) {
-      toast.error('เกิดข้อผิดพลาดในการรันโค้ด', {
+      const isSecurityError = error.includes('โค้ดไม่ปลอดภัย') || error.includes('Dangerous');
+      toast.error(isSecurityError ? 'โค้ดไม่ปลอดภัย' : 'เกิดข้อผิดพลาดในการรันโค้ด', {
         description: error,
-        duration: 5000,
+        duration: isSecurityError ? 7000 : 5000,
       });
     }
   }, [error]);
-
-  // Update code editor height based on step control height
-  React.useEffect(() => {
-    const updateHeight = () => {
-      if (stepControlRef.current && typeof window !== 'undefined') {
-        const stepControlHeight = stepControlRef.current.offsetHeight;
-        // Responsive padding: smaller on mobile, larger on desktop
-        const isMobile = window.innerWidth < 640; // sm breakpoint
-        const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024; // lg breakpoint
-
-        let padding, minHeight;
-        if (isMobile) {
-          padding = 20; // 20px for mobile
-          minHeight = 120; // 120px for mobile
-        } else if (isTablet) {
-          padding = 32; // 32px for tablet
-          minHeight = 180; // 180px for tablet
-        } else {
-          padding = 48; // 48px for desktop
-          minHeight = 200; // 200px for desktop
-        }
-
-        const newHeight = Math.max(stepControlHeight - padding, minHeight);
-        setCodeEditorHeight(`${newHeight}px`);
-      }
-    };
-
-    // Only run on client side
-    if (typeof window !== 'undefined') {
-      // Reset height first to prevent accumulation
-      setCodeEditorHeight('320px');
-
-      // Update height on mount and when steps change
-      updateHeight();
-
-      // Update height when window resizes
-      window.addEventListener('resize', updateHeight);
-
-      return () => window.removeEventListener('resize', updateHeight);
-    }
-  }, [steps.length, currentStepIndex]);
-
-  // Reset height when step changes to prevent height accumulation
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Reset to default height when step changes
-      setCodeEditorHeight('320px');
-
-      // Then recalculate after a short delay
-      const timer = setTimeout(() => {
-        if (stepControlRef.current) {
-          const stepControlHeight = stepControlRef.current.offsetHeight;
-          const isMobile = window.innerWidth < 640;
-          const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024;
-
-          let padding, minHeight;
-          if (isMobile) {
-            padding = 20;
-            minHeight = 120;
-          } else if (isTablet) {
-            padding = 32;
-            minHeight = 180;
-          } else {
-            padding = 48;
-            minHeight = 200;
-          }
-
-          const newHeight = Math.max(stepControlHeight - padding, minHeight);
-          setCodeEditorHeight(`${newHeight}px`);
-        }
-      }, 50);
-
-      return () => clearTimeout(timer);
-    }
-  }, [currentStepIndex]);
 
   // Auto-scroll to visualization when auto-play starts
   React.useEffect(() => {
@@ -157,7 +119,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
           </div>
           <div className="flex flex-col gap-4">
             {/* Export Buttons */}
-            <div className="flex flex-wrap gap-2 sm:gap-3">
+            <div id="tutorial-export-buttons" className="flex flex-wrap gap-2 sm:gap-3">
               <FileUploadButton onFileLoad={onFileLoad} disabled={isLoading} />
               <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
               <ExportPythonButton code={code} disabled={isLoading} />
@@ -167,10 +129,8 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
         </div>
       </div>
 
-      {/* Error Alert removed - now using toast notification */}
-
       <div className="mb-4 grid grid-cols-1 gap-4 sm:mb-6 sm:gap-6 lg:grid-cols-2">
-        {/* Left Side - Code Editor */}
+        {/* Left Side - Code Editor with Step Control */}
         <div className="rounded-lg bg-white p-3 shadow sm:p-6 dark:bg-gray-800">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
@@ -190,6 +150,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
                 Reset Code
               </button>
               <button
+                id="tutorial-run-button"
                 onClick={onExecute}
                 disabled={isLoading || !code.trim()}
                 className={`rounded px-3 py-2 text-xs text-white transition-colors sm:px-4 sm:text-sm md:px-5 md:py-2.5 md:text-sm lg:px-6 lg:py-3 lg:text-base ${
@@ -203,11 +164,11 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
             </div>
           </div>
 
-          <div style={{ height: codeEditorHeight }}>
+          <div id="tutorial-code-editor" className="mb-4" style={{ height: '400px' }}>
             <CodeEditor
               code={code}
               onCodeChange={onCodeChange}
-              height={codeEditorHeight}
+              height="400px"
               currentStep={
                 steps.length > 0 && currentStepIndex < steps.length
                   ? {
@@ -217,26 +178,59 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
                   : null
               }
               error={error}
+              debugState={debugState}
+              onBreakpointClick={onSetBreakpoint}
+            />
+          </div>
+
+          {/* Step Control - Now below Code Editor */}
+          <div
+            id="tutorial-step-control"
+            ref={stepControlRef}
+            className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700"
+          >
+            <StepControl
+              steps={steps}
+              currentStepIndex={currentStepIndex}
+              onStepSelect={onStepSelect}
+              onNext={onNext}
+              onPrevious={onPrevious}
+              onAutoPlay={onAutoPlay}
+              isAutoPlaying={isAutoPlaying}
+              isRunning={isRunning}
+              debugState={debugState}
+              onToggleDebugMode={onToggleDebugMode}
+              onStepOver={onStepOver}
+              onStepInto={onStepInto}
+              onStepOut={onStepOut}
+              onContinue={onContinue}
             />
           </div>
         </div>
 
-        {/* Right Side - Step Control */}
-        <div
-          ref={stepControlRef}
-          className="rounded-lg bg-white p-3 shadow sm:p-6 dark:bg-gray-800"
+        {/* Right Side - Visualization */}
+        <Suspense
+          fallback={
+            <div className="flex h-48 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 sm:h-64 dark:border-gray-700 dark:bg-gray-800">
+              <div className="text-center">
+                <div className="text-sm text-gray-500 sm:text-base dark:text-gray-400">
+                  Loading visualization...
+                </div>
+              </div>
+            </div>
+          }
         >
-          <StepControl
-            steps={steps}
-            currentStepIndex={currentStepIndex}
-            onStepSelect={onStepSelect}
-            onNext={onNext}
-            onPrevious={onPrevious}
-            onAutoPlay={onAutoPlay}
-            isAutoPlaying={isAutoPlaying}
-            isRunning={isRunning}
-          />
-        </div>
+          <div id="tutorial-visualization" ref={visualizationRef}>
+            <VisualizationComponent
+              steps={steps}
+              currentStepIndex={currentStepIndex}
+              data={data}
+              isRunning={isRunning}
+              error={error}
+              terminalOutput={terminalOutput}
+            />
+          </div>
+        </Suspense>
       </div>
 
       {/* Step Indicator - Sticky */}
@@ -264,28 +258,6 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
           </div>
         )}
 
-      <Suspense
-        fallback={
-          <div className="flex h-48 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 sm:h-64 dark:border-gray-700 dark:bg-gray-800">
-            <div className="text-center">
-              <div className="text-sm text-gray-500 sm:text-base dark:text-gray-400">
-                Loading visualization...
-              </div>
-            </div>
-          </div>
-        }
-      >
-        <div ref={visualizationRef}>
-          <VisualizationComponent
-            steps={steps}
-            currentStepIndex={currentStepIndex}
-            data={data}
-            isRunning={isRunning}
-            error={error}
-          />
-        </div>
-      </Suspense>
-
       {/* Tutorial Modal */}
       <Suspense
         fallback={
@@ -294,12 +266,70 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
           </div>
         }
       >
-        <TutorialModal
+        <TutorialOverlay
           isOpen={isTutorialOpen}
           onClose={() => setIsTutorialOpen(false)}
-          playgroundMode="stepthrough"
+          steps={stepthroughTutorialSteps}
+          storageKey={getTutorialStorageKey(pathname, 'stepthrough')}
         />
       </Suspense>
+
+      {/* Input Dialog - Supports both upfront collection and interactive mode */}
+      {(() => {
+        // Only show if:
+        // 1. We are explicitly collecting inputs (upfront mode)
+        // 2. OR We are waiting for input AND we are at the last step (current execution tip)
+        const isAtLastStep = steps.length > 0 && currentStepIndex === steps.length - 1;
+        
+        const shouldShow = inputState && (
+          inputState.collectingInputs === true || 
+          (inputState.waitingForInput === true && isAtLastStep)
+        );
+        
+        // Debug toggles - remove in production or rely on props
+        // console.log('💬 InputDialog check:', { waiting: inputState?.waitingForInput, isAtLastStep, shouldShow });
+
+        if (!shouldShow || !inputState) {
+          return null;
+        }
+
+        // Determine prompts based on mode
+        let dialogPrompts: { prompt: string; inputId: number }[] | null = null;
+        let dialogTotal = 1;
+
+        if (inputState.waitingForInput) {
+          // Interactive mode: Single prompt
+          dialogPrompts = [{
+            prompt: inputState.inputPrompt || 'Enter value',
+            inputId: inputState.inputId || Date.now()
+          }];
+          dialogTotal = 1;
+        } else if (inputState.collectingInputs) {
+          // Upfront mode: Multiple prompts from history/definitions
+          if (inputState.inputHistory && inputState.inputHistory.length > 0) {
+            dialogPrompts = inputState.inputHistory.map((h, idx) => ({
+              prompt: h.prompt || `Input ${idx + 1}`,
+              inputId: h.inputId,
+            }));
+            dialogTotal = inputState.inputHistory.length;
+          }
+        }
+
+        return (
+          <InputDialog
+            isOpen={true}
+            prompts={dialogPrompts}
+            totalInputs={dialogTotal}
+            onSubmit={(values) => {
+              // Submit values
+              if (onInputSubmit) {
+                onInputSubmit(values);
+              }
+            }}
+            onCancel={onInputCancel || (() => {})}
+          />
+        );
+      })()}
     </div>
   );
 };

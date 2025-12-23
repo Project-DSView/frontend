@@ -1,4 +1,4 @@
-import { StepthroughStep } from './common.types';
+import { StepthroughStep, DebugState } from './common.types';
 
 interface BaseStepthroughState<TData, TStats> {
   code: string;
@@ -6,6 +6,17 @@ interface BaseStepthroughState<TData, TStats> {
   steps: StepthroughStep[];
   data: TData;
   stats: TStats;
+  debugState?: DebugState;
+  terminalOutput?: string;
+}
+
+interface InputState {
+  waitingForInput: boolean;
+  inputPrompt: string | null;
+  inputId: number | null;
+  inputHistory: Array<{ prompt: string; value: string; inputId: number }>;
+  inputValues?: string[];
+  collectingInputs?: boolean;
 }
 
 interface BaseStepthroughHookReturn<TData, TStats> {
@@ -20,6 +31,33 @@ interface BaseStepthroughHookReturn<TData, TStats> {
     error: string | null;
     data: TData;
     stats: TStats;
+    debugState?: DebugState;
+    inputState?: InputState;
+    astPreview?: {
+      astNodes: Array<{
+        type: string;
+        typeDisplay?: string;
+        line?: number;
+        colOffset?: number;
+        category?: string;
+        functionName?: string;
+        methodName?: string;
+        objectName?: string;
+        variableName?: string;
+        attributeName?: string;
+        className?: string;
+        operator?: string;
+      }>;
+      nodeCount: number;
+      hasInput: boolean;
+      executableLines: number[];
+      classes: string[];
+      inputCalls: Array<{
+        line: number;
+        prompt?: string;
+      }>;
+    } | null;
+    astPreviewLoading?: boolean;
   };
   setCode: (code: string) => void;
   setFilename: (filename: string) => void;
@@ -31,11 +69,22 @@ interface BaseStepthroughHookReturn<TData, TStats> {
   toggleAutoPlay: () => void;
   reset: () => void;
   isLoading: boolean;
+  // Debug mode functions
+  toggleDebugMode?: () => void;
+  setBreakpoint?: (line: number) => void;
+  removeBreakpoint?: (line: number) => void;
+  stepOver?: () => void;
+  stepInto?: () => void;
+  stepOut?: () => void;
+  continueDebug?: () => void;
+  // Input handling functions
+  handleInputSubmit?: (values: string[]) => void;
+  handleInputCancel?: () => void;
 }
+
+export type { BaseStepthroughState, BaseStepthroughHookReturn, BaseStepthroughService, InputState };
 
 interface BaseStepthroughService<TData, TStats> {
   extractDataFromSteps(steps: StepthroughStep[], stepIndex: number): TData;
   extractStatsFromSteps(steps: StepthroughStep[], stepIndex: number): TStats;
 }
-
-export type { BaseStepthroughState, BaseStepthroughHookReturn, BaseStepthroughService };

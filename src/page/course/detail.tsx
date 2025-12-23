@@ -235,7 +235,9 @@ const CourseDetailPage: React.FC = () => {
       <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <AlertCircle className="mx-auto h-12 w-12 text-red-500" />
-          <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">เกิดข้อผิดพลาด</h2>
+          <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+            เกิดข้อผิดพลาด
+          </h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">ไม่สามารถโหลดข้อมูลคอร์สได้</p>
           <Button onClick={() => router.back()} className="mt-4">
             กลับ
@@ -276,7 +278,7 @@ const CourseDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen bg-gray-50 py-8 dark:bg-gray-900">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
@@ -304,7 +306,7 @@ const CourseDetailPage: React.FC = () => {
               className={`pb-3 text-lg font-medium transition-colors ${
                 activeTab === 'materials'
                   ? 'border-secondary border-b-4 text-gray-900 dark:text-white'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
               เนื้อหาคอร์ส
@@ -314,7 +316,7 @@ const CourseDetailPage: React.FC = () => {
               className={`pb-3 text-lg font-medium transition-colors ${
                 activeTab === 'members'
                   ? 'border-secondary border-b-4 text-gray-900 dark:text-white'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
               สมาชิก
@@ -324,7 +326,7 @@ const CourseDetailPage: React.FC = () => {
               className={`pb-3 text-lg font-medium transition-colors ${
                 activeTab === 'queue'
                   ? 'border-secondary border-b-4 text-gray-900 dark:text-white'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
               คิวงาน
@@ -335,7 +337,7 @@ const CourseDetailPage: React.FC = () => {
                 className={`pb-3 text-lg font-medium transition-colors ${
                   activeTab === 'grading'
                     ? 'border-secondary border-b-4 text-gray-900 dark:text-white'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                 }`}
               >
                 ตรวจงาน
@@ -399,7 +401,9 @@ const CourseDetailPage: React.FC = () => {
                   </div>
                   <div className="md:col-span-2">
                     <p className="text-sm text-gray-500 dark:text-gray-400">คำอธิบาย</p>
-                    <p className="font-medium text-gray-900 dark:text-white">{course.description}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {course.description}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -466,7 +470,9 @@ const CourseDetailPage: React.FC = () => {
                   </div>
                   <div className="md:col-span-2">
                     <p className="text-sm text-gray-500 dark:text-gray-400">คำอธิบาย</p>
-                    <p className="font-medium text-gray-900 dark:text-white">{course.description}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {course.description}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -509,7 +515,9 @@ const CourseDetailPage: React.FC = () => {
                   </div>
                 )}
                 {materialsError && (
-                  <div className="text-sm text-red-500 dark:text-red-400">เกิดข้อผิดพลาดในการโหลดเนื้อหา</div>
+                  <div className="text-sm text-red-500 dark:text-red-400">
+                    เกิดข้อผิดพลาดในการโหลดเนื้อหา
+                  </div>
                 )}
               </CardHeader>
               <CardContent>

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useRef, lazy, Suspense } from 'react';
+import React, { useState, useRef, lazy, Suspense, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { DoublyLinkedListDragComponent } from '@/types';
 import { useDragDropDoublyLinkedList } from '@/hooks';
 import { doublyLinkedListDragComponents } from '@/data';
@@ -9,6 +10,8 @@ import DragDropZone from '@/components/playground/shared/DragDropZone';
 import StepSelector from '@/components/playground/shared/StepSelector';
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 import TutorialButton from '@/components/playground/shared/TutorialButton';
+import TutorialOverlay from '@/components/playground/tutorial/TutorialOverlay';
+import { getTutorialSteps, getTutorialStorageKey } from '@/data/components/tutorial-overlay.data';
 // Lazy load heavy components
 const DoublyLinkedDragDropListOperations = lazy(
   () => import('@/components/playground/dragdrop/opeartion/DoublyLinkedList'),
@@ -17,9 +20,9 @@ const DoublyLinkedDragDropListVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/DoublyLinkedList'),
 );
 const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
-const TutorialModal = lazy(() => import('@/components/tutorial/TutorialModal'));
 
 const DragDropDoublyLinkList = () => {
+  const pathname = usePathname();
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
     useDragDropDoublyLinkedList();
 
@@ -31,6 +34,21 @@ const DragDropDoublyLinkList = () => {
   const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-show tutorial on first visit
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storageKey = getTutorialStorageKey(pathname, 'dragdrop');
+      const hasSeenTutorial = localStorage.getItem(storageKey) === 'completed';
+
+      if (!hasSeenTutorial) {
+        const timer = setTimeout(() => {
+          setIsTutorialOpen(true);
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [pathname]);
 
   const handleDragStart = (e: React.DragEvent, component: DoublyLinkedListDragComponent) => {
     setDraggedItem(component);
@@ -476,20 +494,13 @@ const DragDropDoublyLinkList = () => {
         />
       </div>
 
-      {/* Tutorial Modal */}
-      <Suspense
-        fallback={
-          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
-          </div>
-        }
-      >
-        <TutorialModal
-          isOpen={isTutorialOpen}
-          onClose={() => setIsTutorialOpen(false)}
-          playgroundMode="dragdrop"
-        />
-      </Suspense>
+      {/* Tutorial Overlay */}
+      <TutorialOverlay
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+        steps={getTutorialSteps('dragdrop')}
+        storageKey={getTutorialStorageKey(pathname, 'dragdrop')}
+      />
     </div>
   );
 };

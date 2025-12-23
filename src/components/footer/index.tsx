@@ -1,13 +1,10 @@
-'use client';
-
-import { useMemo } from 'react';
 import Link from 'next/link';
 
 import { getProcessedPlaygroundItems } from '@/lib';
 
 function Footer() {
-  // Use pre-processed items from lib
-  const processedItems = useMemo(() => getProcessedPlaygroundItems(), []);
+  // Process playground items (static data, no need for memoization in Server Component)
+  const processedItems = getProcessedPlaygroundItems();
 
   return (
     <footer className="border-border bg-background border-t px-4 py-8 sm:px-6 sm:py-12">

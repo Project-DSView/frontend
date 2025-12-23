@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useRef, lazy, Suspense } from 'react';
+import React, { useState, useRef, lazy, Suspense, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 import { StackDragComponent } from '@/types';
 import { useDragDropStack } from '@/hooks';
@@ -10,6 +11,9 @@ import DragDropZone from '@/components/playground/shared/DragDropZone';
 import StepSelector from '@/components/playground/shared/StepSelector';
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 import TutorialButton from '@/components/playground/shared/TutorialButton';
+import TutorialOverlay from '@/components/playground/tutorial/TutorialOverlay';
+import { stackTutorialSteps } from '@/data/components/stack-tutorial.data';
+import { getTutorialStorageKey } from '@/data/components/tutorial-overlay.data';
 // Lazy load heavy components
 const StackDragDropOperations = lazy(
   () => import('@/components/playground/dragdrop/opeartion/Stack'),
@@ -18,9 +22,9 @@ const StackDragDropVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/Stack'),
 );
 const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
-const TutorialModal = lazy(() => import('@/components/tutorial/TutorialModal'));
 
 const DragDropStack = () => {
+  const pathname = usePathname();
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
     useDragDropStack();
 
@@ -33,6 +37,21 @@ const DragDropStack = () => {
   const visualizationRef = useRef<HTMLDivElement>(null);
   const visualizationContainerRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-show tutorial on first visit
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storageKey = getTutorialStorageKey(pathname, 'dragdrop');
+      const hasSeenTutorial = localStorage.getItem(storageKey) === 'completed';
+
+      if (!hasSeenTutorial) {
+        const timer = setTimeout(() => {
+          setIsTutorialOpen(true);
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [pathname]);
 
   const handleDragStart = (e: React.DragEvent, component: StackDragComponent) => {
     setDraggedItem(component);
@@ -74,6 +93,8 @@ const DragDropStack = () => {
         value: ['pop', 'peek', 'is_empty', 'size'].includes(draggedItem.type) ? null : '',
         position: null,
         newValue: null,
+        sourceStack: 'main',
+        targetStack: 'main',
         color: draggedItem.color,
         category: draggedItem.category,
       };
@@ -356,6 +377,12 @@ const DragDropStack = () => {
     if (selectedStep !== null) {
       return getStepState(selectedStep);
     }
+
+    // If there are operations, show the final state (result of all operations)
+    if (state.operations.length > 0) {
+      return getStepState(state.operations.length - 1);
+    }
+
     return {
       elements: state.elements,
       stats: {
@@ -391,8 +418,7 @@ const DragDropStack = () => {
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-        {/* Left Side - Drag Components */}
-        <div className="sticky top-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
+        <div id="tutorial-operations-panel" className="sticky top-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
           <Suspense
             fallback={
               <div className="h-64 w-full rounded-lg border bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
@@ -411,7 +437,7 @@ const DragDropStack = () => {
         </div>
 
         {/* Right Side - Drop Zone */}
-        <div className="rounded-lg bg-white p-4 shadow md:p-6 dark:bg-gray-800">
+        <div id="tutorial-drop-zone" className="rounded-lg bg-white p-4 shadow md:p-6 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Drop Zone</h2>
             <div className="space-x-2">
@@ -442,7 +468,7 @@ const DragDropStack = () => {
       </div>
 
       {/* Visualization */}
-      <div ref={visualizationContainerRef} className="relative">
+      <div id="tutorial-visualization" ref={visualizationContainerRef} className="relative">
         {/* Step Indicator */}
         {isAutoPlaying && state.operations.length > 0 && selectedStep !== null && (
           <Suspense
@@ -488,6 +514,7 @@ const DragDropStack = () => {
 
       <div className="mt-6">
         {/* Step Selection */}
+        <div id="tutorial-controls">
         <StepSelector
           operations={state.operations}
           selectedStep={selectedStep}
@@ -498,22 +525,16 @@ const DragDropStack = () => {
           onAutoPlay={handleAutoPlay}
           isAutoPlaying={isAutoPlaying}
         />
+        </div>
       </div>
 
-      {/* Tutorial Modal */}
-      <Suspense
-        fallback={
-          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
-          </div>
-        }
-      >
-        <TutorialModal
-          isOpen={isTutorialOpen}
-          onClose={() => setIsTutorialOpen(false)}
-          playgroundMode="dragdrop"
-        />
-      </Suspense>
+      {/* Tutorial Overlay */}
+      <TutorialOverlay
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+        steps={stackTutorialSteps}
+        storageKey={getTutorialStorageKey(pathname, 'dragdrop')}
+      />
     </div>
   );
 };

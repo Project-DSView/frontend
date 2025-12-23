@@ -2,30 +2,164 @@ import React, { forwardRef, useState, useEffect, useRef } from 'react';
 import { StepthroughVisualizationProps, StackData } from '@/types';
 import ZoomableContainer from '../../shared/ZoomableContainer';
 import StepIndicator from '../../shared/StepIndicator';
+import { gsap } from 'gsap';
 
 const StackStepthroughVisualization = forwardRef<
   HTMLDivElement,
   StepthroughVisualizationProps<StackData>
->(({ steps, currentStepIndex, data, isRunning, error }, ref) => {
+>(({  steps,
+  currentStepIndex,
+  data,
+  isRunning,
+  error,
+}: StepthroughVisualizationProps<StackData>, ref) => {
+  console.log('🖼️ StackStepthroughVisualization rendered', { data, steps, isRunning });
   const [highlightedElementIndex, setHighlightedElementIndex] = useState(-1);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [enteringElements, setEnteringElements] = useState<Set<number>>(new Set());
+  const [exitingElements, setExitingElements] = useState<Set<string>>(new Set());
+  const [elementsToRender, setElementsToRender] = useState<string[]>(data.elements);
 
   // Use ref to store elements to prevent unnecessary re-renders
   const elementsRef = useRef(data.elements);
+  const previousElementsRef = useRef<string[]>(data.elements);
+  const elementRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [elements, setElements] = useState(data.elements);
 
-  // Update elements when data.elements actually changes
+  // Update elements when data.elements actually changes and detect push/pop
   useEffect(() => {
     if (JSON.stringify(elementsRef.current) !== JSON.stringify(data.elements)) {
+      const previousElements = previousElementsRef.current;
+      const currentElements = data.elements;
+
+      // Detect changes: compare previous and current arrays
+      const newEnteringElements = new Set<number>();
+      const newExitingElements = new Set<string>();
+
+      // Find elements that were deleted (pop operation)
+      previousElements.forEach((prevElement) => {
+        if (!currentElements.includes(prevElement)) {
+          newExitingElements.add(prevElement);
+        }
+      });
+
+      // Find elements that were inserted (push operation)
+      currentElements.forEach((currentElement, index) => {
+        if (!previousElements.includes(currentElement)) {
+          newEnteringElements.add(index);
+        } else {
+          // Check if this is a new occurrence (duplicate values)
+          const prevCount = previousElements.filter((e) => e === currentElement).length;
+          const currentCount = currentElements.filter((e) => e === currentElement).length;
+          if (currentCount > prevCount) {
+            // This is a new occurrence
+            const occurrencesBefore = currentElements
+              .slice(0, index)
+              .filter((e) => e === currentElement).length;
+            if (occurrencesBefore >= prevCount) {
+              newEnteringElements.add(index);
+            }
+          }
+        }
+      });
+
+      // For exit animation: keep exiting elements temporarily in render
+      if (newExitingElements.size > 0) {
+        // Keep exiting elements in render temporarily
+        const elementsWithExiting = [...currentElements];
+        previousElements.forEach((element) => {
+          if (newExitingElements.has(element) && !elementsWithExiting.includes(element)) {
+            // Find where this element was in previous array (should be at top)
+            const prevIndex = previousElements.indexOf(element);
+            // Try to insert it at a similar position for animation
+            elementsWithExiting.splice(prevIndex, 0, element);
+          }
+        });
+        setElementsToRender(elementsWithExiting);
+        setExitingElements(newExitingElements);
+
+        // Remove exiting elements after animation
+        setTimeout(() => {
+          setElementsToRender(currentElements);
+          setExitingElements(new Set());
+        }, 1200);
+      } else {
+        setElementsToRender(currentElements);
+      }
+
+      // Set entering elements
+      if (newEnteringElements.size > 0) {
+        setEnteringElements(newEnteringElements);
+        // Clear entering animation after duration
+        setTimeout(() => {
+          setEnteringElements((prev) => {
+            const updated = new Set(prev);
+            newEnteringElements.forEach((idx) => updated.delete(idx));
+            return updated;
+          });
+        }, 2000);
+      }
+
       setIsTransitioning(true);
+      previousElementsRef.current = [...currentElements];
       elementsRef.current = data.elements;
-      setElements(data.elements);
+      setElements(currentElements);
 
       // Stop transition animation after duration
       setTimeout(() => setIsTransitioning(false), 800);
     }
   }, [data.elements]);
+
+  // GSAP animations for entering elements
+  useEffect(() => {
+    enteringElements.forEach((index) => {
+      const element = elementsToRender[index];
+      if (element) {
+        const elementKey = `${element}-${index}`;
+        const elementRef = elementRefs.current.get(elementKey);
+        if (elementRef) {
+          gsap.fromTo(
+            elementRef,
+            {
+              opacity: 0,
+              scale: 0.2,
+              y: -50, // Slide down from top for stack
+            },
+            {
+              opacity: 1,
+              scale: 1,
+              y: 0,
+              duration: 1.8,
+              ease: 'back.out(1.7)',
+            },
+          );
+        }
+      }
+    });
+  }, [enteringElements, elementsToRender]);
+
+  // GSAP animations for exiting elements
+  useEffect(() => {
+    exitingElements.forEach((value) => {
+      // Find all elements with this value
+      elementsToRender.forEach((element, index) => {
+        if (element === value) {
+          const elementKey = `${element}-${index}`;
+          const elementRef = elementRefs.current.get(elementKey);
+          if (elementRef) {
+            gsap.to(elementRef, {
+              opacity: 0,
+              scale: 0.2,
+              y: -40, // Slide up for stack (opposite of entering)
+              duration: 1.2,
+              ease: 'power2.in',
+            });
+          }
+        }
+      });
+    });
+  }, [exitingElements, elementsToRender]);
 
   // Check if we need to show multiple stacks
   const showMultipleStacks = data.allStacks && Object.keys(data.allStacks).length > 0;
@@ -85,6 +219,31 @@ const StackStepthroughVisualization = forwardRef<
     }
   }, [steps, currentStepIndex, elements.length]);
 
+  // Get current step for error detection
+  const currentStep =
+    steps.length > 0 && currentStepIndex < steps.length ? steps[currentStepIndex] : null;
+
+  // Detect underflow/overflow errors
+  const detectUnderflowOverflow = () => {
+    if (!currentStep?.state?.error) return null;
+    const error = currentStep.state.error.toLowerCase();
+    if (error.includes('underflow')) {
+      return {
+        type: 'underflow',
+        message: 'Underflow: Cannot pop from empty stack',
+      };
+    }
+    if (error.includes('overflow')) {
+      return {
+        type: 'overflow',
+        message: 'Overflow: Stack is full',
+      };
+    }
+    return null;
+  };
+
+  const errorInfo = detectUnderflowOverflow();
+
   const renderStackElement = (
     value: string,
     index: number,
@@ -93,9 +252,10 @@ const StackStepthroughVisualization = forwardRef<
   ): React.ReactNode => {
     const isHighlighted = highlightedElementIndex === index;
     const isTop = index === stackLength - 1;
+    const elementKey = `${value}-${index}`;
 
     return (
-      <div key={`${value}-${index}`} className="relative flex flex-col items-center">
+      <div key={elementKey} className="relative flex flex-col items-center">
         {/* Top indicator */}
         {isTop && (
           <div className="mb-1 flex flex-col items-center">
@@ -109,13 +269,20 @@ const StackStepthroughVisualization = forwardRef<
 
         {/* Stack Element */}
         <div
+          ref={(el) => {
+            if (el) {
+              elementRefs.current.set(elementKey, el);
+            } else {
+              elementRefs.current.delete(elementKey);
+            }
+          }}
           className={`flex h-16 w-16 items-center justify-center bg-gray-100 shadow-lg transition-all duration-700 ease-in-out dark:bg-gray-700 ${
             isHighlighted && isAnimating
               ? 'border-accent scale-110 animate-bounce bg-blue-50 dark:bg-blue-900/30'
               : isTransitioning
                 ? 'scale-105 animate-pulse bg-blue-50 dark:bg-blue-900/30'
                 : 'hover:scale-105 hover:bg-gray-50 dark:hover:bg-gray-600'
-          } ${isTop ? 'border-2 border-blue-500 dark:border-blue-400' : 'border-t-0'} ${isTop ? 'ring-2 ring-blue-300 dark:ring-blue-600' : ''} ${
+          } ${isTop ? 'border-2 border-blue-500 dark:border-blue-400' : 'border-t-0 border-gray-300 dark:border-gray-600'} ${isTop ? 'ring-2 ring-blue-300 dark:ring-blue-600' : ''} ${
             isTransitioning ? 'animate-pulse' : ''
           }`}
         >
@@ -147,7 +314,7 @@ const StackStepthroughVisualization = forwardRef<
           ) : (
             <div className="relative w-36">
               {/* Stack Frame - กรอบสี่เหลี่ยมไม่มีเส้นด้านบน */}
-              <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black"></div>
+              <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black dark:border-gray-300"></div>
 
               {/* Stack Elements - อยู่ติดกันไม่มีช่องว่าง */}
               <div className="flex flex-col-reverse">
@@ -191,6 +358,18 @@ const StackStepthroughVisualization = forwardRef<
         </div>
       )}
 
+      {/* Underflow/Overflow Warning Banner */}
+      {errorInfo && (
+        <div className="mb-4 animate-pulse rounded-lg border-2 border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/20">
+          <div className="flex items-center space-x-2">
+            <span className="text-xl">⚠️</span>
+            <span className="font-semibold text-red-800 dark:text-red-200">
+              {errorInfo.message}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Stack Container */}
       <ZoomableContainer
         className="min-h-[300px] rounded-lg bg-gray-50 dark:bg-gray-800"
@@ -217,7 +396,6 @@ const StackStepthroughVisualization = forwardRef<
             <div className="flex justify-center space-x-8">
               {data.allStacks &&
                 Object.entries(data.allStacks)
-                  .filter(([, stackData]) => stackData.data.length > 0) // กรองเอาเฉพาะ stack ที่มีข้อมูล
                   .map(([stackName, stackData]) =>
                     renderSingleStack(stackData.data, `Stack ${stackName}`, stackName),
                   )}
@@ -225,7 +403,7 @@ const StackStepthroughVisualization = forwardRef<
           </div>
         ) : (
           <div className="flex min-h-[200px] flex-col items-center justify-end p-6">
-            {elements.length === 0 ? (
+            {elementsToRender.length === 0 ? (
               <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
                 <div className="text-center text-gray-500 dark:text-gray-400">
                   <div className="font-semibold">Stack is Empty</div>
@@ -235,15 +413,22 @@ const StackStepthroughVisualization = forwardRef<
             ) : (
               <div className="relative w-36">
                 {/* Stack Frame - กรอบสี่เหลี่ยมไม่มีเส้นด้านบน */}
-                <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black"></div>
+                <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black dark:border-gray-300"></div>
 
                 {/* Stack Elements - อยู่ติดกันไม่มีช่องว่าง */}
                 <div className="flex flex-col-reverse">
-                  {elements.map((element, index) => (
-                    <div key={`${element}-${index}`} className="relative">
-                      {renderStackElement(element, index, elements.length)}
-                    </div>
-                  ))}
+                  {elementsToRender.map((element, index) => {
+                    const isExiting = exitingElements.has(element);
+                    // Don't render exiting elements after animation
+                    if (isExiting && !isTransitioning) {
+                      return null;
+                    }
+                    return (
+                      <div key={`${element}-${index}`} className="relative">
+                        {renderStackElement(element, index, elementsToRender.length)}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -258,7 +443,6 @@ const StackStepthroughVisualization = forwardRef<
           <div className="space-y-4">
             {data.allStacks &&
               Object.entries(data.allStacks)
-                .filter(([, stackData]) => stackData.data.length > 0)
                 .map(([stackName, stackData]) => (
                   <div key={stackName} className="rounded-lg bg-white p-3 dark:bg-gray-700">
                     <h5 className="mb-2 font-medium text-gray-700 dark:text-gray-300">
@@ -346,6 +530,59 @@ const StackStepthroughVisualization = forwardRef<
         <div>
           <span className="font-semibold">Top Value:</span>{' '}
           {elements.length > 0 ? elements[elements.length - 1] : 'None'}
+        </div>
+      </div>
+
+      {/* Console Output */}
+      <div className="mt-4 overflow-hidden rounded-lg bg-gray-900 shadow-inner dark:bg-black">
+        <div className="border-b border-gray-700 bg-gray-800 px-4 py-2 dark:bg-gray-900">
+          <div className="flex items-center space-x-2">
+            <svg
+              className="h-4 w-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <span className="font-mono text-sm font-semibold text-gray-300">Console Output</span>
+          </div>
+        </div>
+        <div className="max-h-40 min-h-[60px] overflow-y-auto p-4 font-mono text-sm">
+          {(() => {
+            // Aggregate output from all steps up to the current one
+            const accumulatedOutput: string[] = [];
+            const executedSteps = steps.slice(0, currentStepIndex + 1);
+            
+            executedSteps.forEach((step) => {
+              // Only add output if the step explicitly performed a print operation
+              // This prevents duplication from non-print steps carrying over state
+              const operation = step.state?.step_detail?.operation;
+              if ((operation === 'print' || operation === 'printStack') && 
+                  step.state?.print_output && 
+                  Array.isArray(step.state.print_output)) {
+                step.state.print_output.forEach((line) => {
+                  if (line) accumulatedOutput.push(line);
+                });
+              }
+            });
+
+            if (accumulatedOutput.length === 0) {
+              return <div className="italic text-gray-600 dark:text-gray-600">No output generated...</div>;
+            }
+
+            return accumulatedOutput.map((line, idx) => (
+              <div key={idx} className="whitespace-pre-wrap text-green-400">
+                <span className="mr-2 text-gray-600 select-none">$</span>
+                {line}
+              </div>
+            ));
+          })()}
         </div>
       </div>
 

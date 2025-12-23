@@ -35,11 +35,6 @@ const playgroundItems: PlaygroundItem[] = [
     description: 'Run Step by Step',
     items: getSubmenuItemsWithNested('/stepthrough'),
   },
-  {
-    title: 'Real-time',
-    description: 'Live Code Execution',
-    items: getSubmenuItemsWithNested('/realtime'),
-  },
 ];
 
 export { getSubmenuItemsWithNested, playgroundItems };

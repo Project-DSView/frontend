@@ -108,14 +108,19 @@ export function validateCodeSecurity(
   }
 
   // Check for suspicious patterns
+  // Note: input() pattern is conditionally checked based on config
   const suspiciousPatterns = [
     { pattern: /eval\s*\(/, message: 'Use of eval() function' },
     { pattern: /exec\s*\(/, message: 'Use of exec() function' },
     { pattern: /__import__\s*\(/, message: 'Use of __import__() function' },
     { pattern: /compile\s*\(/, message: 'Use of compile() function' },
     { pattern: /open\s*\(/, message: 'File operations detected' },
-    { pattern: /input\s*\(/, message: 'User input detected' },
   ];
+
+  // Only check for input() if it's in dangerousFunctions
+  if (validationConfig.dangerousFunctions?.includes('input')) {
+    suspiciousPatterns.push({ pattern: /input\s*\(/, message: 'User input detected' });
+  }
 
   suspiciousPatterns.forEach(({ pattern, message }) => {
     if (pattern.test(code)) {
@@ -145,9 +150,34 @@ export function validateCodeSecurity(
 /**
  * Validates Python code specifically for data structure operations
  * @param code - The Python code to validate
+ * @param mode - Validation mode: 'stepthrough' allows input() for educational purposes, 'normal' blocks it
  * @returns SecurityStatus object with validation results
  */
-export function validatePythonCodeSecurity(code: string): SecurityStatus {
+export function validatePythonCodeSecurity(
+  code: string,
+  mode: 'stepthrough' | 'normal' = 'normal',
+): SecurityStatus {
+  // Build dangerous functions list - exclude input() in stepthrough mode
+  const dangerousFunctions = [
+    'open',
+    'file',
+    'exec',
+    'eval',
+    'compile',
+    '__import__',
+    'raw_input',
+    'reload',
+    'dir',
+    'vars',
+    'locals',
+    'globals',
+  ];
+
+  // Add input() only if not in stepthrough mode
+  if (mode !== 'stepthrough') {
+    dangerousFunctions.push('input');
+  }
+
   return validateCodeSecurity(code, {
     dangerousImports: [
       'os',
@@ -168,21 +198,7 @@ export function validatePythonCodeSecurity(code: string): SecurityStatus {
       'threading',
       'asyncio',
     ],
-    dangerousFunctions: [
-      'open',
-      'file',
-      'input',
-      'exec',
-      'eval',
-      'compile',
-      '__import__',
-      'raw_input',
-      'reload',
-      'dir',
-      'vars',
-      'locals',
-      'globals',
-    ],
+    dangerousFunctions,
     allowedImports: [
       'collections',
       'math',

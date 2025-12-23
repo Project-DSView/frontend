@@ -74,7 +74,9 @@ const ExerciseDetailPage: React.FC = () => {
       <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <AlertCircle className="mx-auto h-12 w-12 text-red-500 dark:text-red-400" />
-          <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">เกิดข้อผิดพลาด</h2>
+          <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+            เกิดข้อผิดพลาด
+          </h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">ไม่สามารถโหลดข้อมูลโจทย์ได้</p>
           <Button onClick={() => router.back()} className="mt-4">
             กลับ
@@ -103,7 +105,7 @@ const ExerciseDetailPage: React.FC = () => {
   const isCodeExercise = material.type === 'code_exercise';
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen bg-gray-50 py-8 dark:bg-gray-900">
       <div className="container mx-auto px-4">
         <ExerciseProblemCard material={material} isExpired={isExpired} isGraded={isGraded} />
 

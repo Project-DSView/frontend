@@ -109,18 +109,22 @@ const PDFSubmissionCard: React.FC<PDFSubmissionCardProps> = ({
 
           {/* Selected file preview */}
           {selectedFile ? (
-            <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+            <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <FileText className="h-5 w-5 text-red-600 dark:text-red-400" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedFile.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{formatFileSizeForDisplay(selectedFile)}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {selectedFile.name}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {formatFileSizeForDisplay(selectedFile)}
+                  </p>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleRemoveFile}
-                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                   disabled={submitMutation.isPending}
                 >
                   <X className="h-4 w-4" />
@@ -128,7 +132,7 @@ const PDFSubmissionCard: React.FC<PDFSubmissionCardProps> = ({
               </div>
             </div>
           ) : (
-            <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 text-center">
+            <div className="rounded-lg border border-gray-200 p-4 text-center dark:border-gray-700">
               <p className="text-sm text-gray-500 dark:text-gray-400">ยังไม่ได้เลือกไฟล์</p>
             </div>
           )}
@@ -162,14 +166,14 @@ const PDFSubmissionCard: React.FC<PDFSubmissionCardProps> = ({
 
           {/* Status messages */}
           {isExpired && isGraded && (
-            <div className="flex items-center gap-2 rounded-lg bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-600 dark:text-red-400">
+            <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
               <AlertCircle className="h-4 w-4" />
               <span>หมดเวลาส่งงานแล้ว ไม่สามารถส่งได้</span>
             </div>
           )}
 
           {isExpired && !isGraded && (
-            <div className="flex items-center gap-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 p-3 text-sm text-yellow-600 dark:text-yellow-400">
+            <div className="flex items-center gap-2 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400">
               <AlertCircle className="h-4 w-4" />
               <span>แบบฝึกหัดฝึกฝน สามารถส่งได้แม้เกินเวลา</span>
             </div>

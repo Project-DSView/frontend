@@ -3,11 +3,22 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { python } from '@codemirror/lang-python';
 import { vscodeLight, vscodeDark } from '@uiw/codemirror-theme-vscode';
-import { highlightActiveLine, highlightActiveLineGutter, EditorView } from '@codemirror/view';
+import {
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  EditorView,
+  gutter,
+  GutterMarker,
+  lineNumbers,
+  Decoration,
+  ViewPlugin,
+  WidgetType,
+} from '@codemirror/view';
 import { autocompletion, completionKeymap } from '@codemirror/autocomplete';
 import { keymap } from '@codemirror/view';
 import { linter, lintGutter } from '@codemirror/lint';
 import { Diagnostic } from '@codemirror/lint';
+import { StateField, StateEffect } from '@codemirror/state';
 
 import { StepthroughCodeEditorProps } from '@/types';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -341,6 +352,8 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
   disabled = false,
   currentStep,
   height = '100%',
+  debugState,
+  onBreakpointClick,
 }) => {
   const [isClient, setIsClient] = useState(false);
   const [editorView, setEditorView] = useState<unknown>(null);
@@ -349,6 +362,102 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Breakpoint marker class
+  class BreakpointMarker extends GutterMarker {
+    constructor(public enabled: boolean) {
+      super();
+    }
+    eq(other: BreakpointMarker) {
+      return this.enabled === other.enabled;
+    }
+    toDOM() {
+      const marker = document.createElement('div');
+      marker.className = 'cm-breakpoint-marker';
+      marker.style.cssText = `
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background-color: ${this.enabled ? '#f87171' : '#9ca3af'};
+        cursor: pointer;
+        margin-left: 2px;
+        margin-top: 2px;
+      `;
+      return marker;
+    }
+  }
+
+  // Breakpoint gutter
+  const breakpointGutter = useMemo(() => {
+    if (!debugState?.isDebugMode || !onBreakpointClick) {
+      return [];
+    }
+
+    const breakpointGutterExtension = gutter({
+      class: 'cm-breakpoint-gutter',
+      markers: (view) => {
+        if (!debugState?.breakpoints) return [];
+        const markers: GutterMarker[] = [];
+        debugState.breakpoints.forEach((bp) => {
+          if (bp.enabled && bp.line > 0) {
+            try {
+              const line = view.state.doc.line(bp.line);
+              if (line) {
+                markers.push(new BreakpointMarker(bp.enabled));
+              }
+            } catch {
+              // Line doesn't exist
+            }
+          }
+        });
+        return markers;
+      },
+      initialSpacer: () => new BreakpointMarker(false),
+      domEventHandlers: {
+        mousedown: (view, line) => {
+          if (onBreakpointClick && debugState?.isDebugMode) {
+            onBreakpointClick(line.number);
+            return true;
+          }
+          return false;
+        },
+      },
+    });
+
+    return [breakpointGutterExtension];
+  }, [debugState, onBreakpointClick]);
+
+  // Get executable lines from current step's AST info
+  const executableLines = useMemo(() => {
+    // Try to get executable lines from AST info
+    if (currentStep && typeof currentStep === 'object' && 'state' in currentStep) {
+      const stepState = (currentStep as { state?: { ast_info?: { executable_lines?: number[] } } }).state;
+      return stepState?.ast_info?.executable_lines || [];
+    }
+    return [];
+  }, [currentStep]);
+
+  // Create extension to highlight executable lines
+  const executableLinesHighlight = useMemo(() => {
+    if (executableLines.length === 0) return [];
+
+    const lineMark = Decoration.line({
+      class: 'executable-line',
+    });
+
+    return EditorView.decorations.of((view) => {
+      const decorations = [];
+      for (const lineNum of executableLines) {
+        try {
+          const line = view.state.doc.line(lineNum);
+          decorations.push(lineMark.range(line.from));
+        } catch {
+          // Line doesn't exist, skip
+        }
+      }
+      return Decoration.set(decorations);
+    });
+  }, [executableLines]);
 
   // Memoize extensions to prevent re-creation
   const extensions = useMemo(
@@ -360,12 +469,21 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
       keymap.of(completionKeymap),
       pythonLinter,
       lintGutter(),
+      ...breakpointGutter,
+      ...executableLinesHighlight,
       EditorView.baseTheme({
         '& .cm-activeLine': {
           backgroundColor: '#FFFF0040 !important',
         },
         '& .cm-activeLineGutter': {
           backgroundColor: '#FFFF0040 !important',
+        },
+        // Highlight executable lines
+        '& .cm-line.executable-line': {
+          backgroundColor: '#E0F2FE !important',
+        },
+        '& .cm-line.executable-line.dark': {
+          backgroundColor: '#1e3a5f !important',
         },
         // Error highlighting styles
         '& .cm-lint-marker-error': {
@@ -408,9 +526,27 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
           background: 'linear-gradient(90deg, transparent 0%, transparent 100%)',
           borderBottom: '2px wavy #3b82f6',
         },
+        // Breakpoint styles
+        '& .cm-breakpoint-gutter': {
+          width: '20px',
+          cursor: 'pointer',
+        },
+        '& .cm-breakpoint-marker': {
+          width: '14px',
+          height: '14px',
+          borderRadius: '50%',
+          backgroundColor: '#f87171',
+          cursor: 'pointer',
+          marginLeft: '2px',
+          marginTop: '2px',
+        },
+        // Debug line highlight
+        '& .cm-line': {
+          position: 'relative',
+        },
       }),
     ],
-    [],
+    [breakpointGutter, executableLinesHighlight],
   );
 
   // Scroll to and highlight current step line
@@ -428,6 +564,24 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
       });
     }
   }, [currentStep?.line, editorView]);
+
+  // Highlight debug line
+  useEffect(() => {
+    if (debugState?.isDebugMode && debugState.currentDebugLine && editorView) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const view = editorView as any;
+      const lineNumber = debugState.currentDebugLine - 1;
+      try {
+        const lineStart = view.state.doc.line(lineNumber + 1).from;
+        view.dispatch({
+          selection: { anchor: lineStart, head: lineStart },
+          scrollIntoView: true,
+        });
+      } catch {
+        // Line doesn't exist
+      }
+    }
+  }, [debugState?.currentDebugLine, debugState?.isDebugMode, editorView]);
 
   // Reset height when step changes to prevent height accumulation
   useEffect(() => {

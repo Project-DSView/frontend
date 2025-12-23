@@ -24,6 +24,8 @@ const StepthroughDirectedGraph: React.FC = () => {
     reset,
     isLoading,
     graphData,
+    handleInputSubmit,
+    handleInputCancel,
   } = useStepthroughDirectedGraph();
 
   return (
@@ -48,6 +50,9 @@ const StepthroughDirectedGraph: React.FC = () => {
       description="เขียนโค้ด Python และดูการทำงานแบบ step-by-step พร้อม visualization ของ Directed Graph"
       visualizationComponent={DirectedGraphStepthroughVisualization}
       error={state.error}
+      inputState={state.inputState}
+      onInputSubmit={handleInputSubmit}
+      onInputCancel={handleInputCancel}
     />
   );
 };

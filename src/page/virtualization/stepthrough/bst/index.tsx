@@ -23,6 +23,8 @@ const StepthroughBST: React.FC = () => {
     reset,
     isLoading,
     linkedListData,
+    handleInputSubmit,
+    handleInputCancel,
   } = useStepthroughBST();
 
   return (
@@ -47,6 +49,9 @@ const StepthroughBST: React.FC = () => {
       description="เขียนโค้ด Python และดูการทำงานแบบ step-by-step พร้อม visualization"
       visualizationComponent={BSTStepthroughVisualization}
       error={state.error}
+      inputState={state.inputState}
+      onInputSubmit={handleInputSubmit}
+      onInputCancel={handleInputCancel}
     />
   );
 };

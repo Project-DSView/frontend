@@ -154,6 +154,7 @@ const VisualizationCarousel = () => {
                 fill
                 className="object-contain p-4"
                 priority={activeIndex === 0 && imageIndex === 0}
+                quality={90}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1024px"
               />
             </motion.div>

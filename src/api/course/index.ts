@@ -294,11 +294,15 @@ const updateMaterial = async (
     backendUpdates.test_cases = updates.testCases;
   }
 
-  const res = await api.put<MaterialResponse>(`/api/course-materials/${materialId}`, backendUpdates, {
-    headers: {
-      Authorization: `Bearer ${token}`,
+  const res = await api.put<MaterialResponse>(
+    `/api/course-materials/${materialId}`,
+    backendUpdates,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     },
-  });
+  );
 
   return res.data;
 };
@@ -313,7 +317,6 @@ const deleteMaterial = async (token: string, materialId: string): Promise<void> 
     },
   });
 };
-
 
 // Get student course score
 const getCourseScore = async (token: string, courseId: string): Promise<CourseScoreResponse> => {

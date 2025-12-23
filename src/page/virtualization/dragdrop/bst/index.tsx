@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useRef, lazy, Suspense } from 'react';
+import React, { useState, useRef, lazy, Suspense, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { BSTDragComponent, BSTNode, BSTOperation } from '@/types';
 
 import { useDragDropBST } from '@/hooks';
@@ -10,13 +11,14 @@ import DragDropZone from '@/components/playground/shared/DragDropZone';
 import StepSelector from '@/components/playground/shared/StepSelector';
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 import TutorialButton from '@/components/playground/shared/TutorialButton';
+import TutorialOverlay from '@/components/playground/tutorial/TutorialOverlay';
+import { getTutorialSteps, getTutorialStorageKey } from '@/data/components/tutorial-overlay.data';
 // Lazy load heavy components
 const BSTDragDropOperations = lazy(() => import('@/components/playground/dragdrop/opeartion/BST'));
 const BSTDragDropVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/BST'),
 );
 const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
-const TutorialModal = lazy(() => import('@/components/tutorial/TutorialModal'));
 
 // BST helper functions - moved outside component to prevent recreation
 const insertNode = (root: BSTNode | null, value: string): BSTNode => {
@@ -549,20 +551,13 @@ const DragDropBST = () => {
         />
       </div>
 
-      {/* Tutorial Modal */}
-      <Suspense
-        fallback={
-          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
-          </div>
-        }
-      >
-        <TutorialModal
-          isOpen={isTutorialOpen}
-          onClose={() => setIsTutorialOpen(false)}
-          playgroundMode="dragdrop"
-        />
-      </Suspense>
+      {/* Tutorial Overlay */}
+      <TutorialOverlay
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+        steps={getTutorialSteps('dragdrop')}
+        storageKey={getTutorialStorageKey(pathname, 'dragdrop')}
+      />
     </div>
   );
 };

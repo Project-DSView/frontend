@@ -1,7 +1,6 @@
 // Components
 export { getSubmenuItemsWithNested, playgroundItems } from './components/menu.data';
 export {
-  features,
   structures,
   visualizationModes,
   AUTO_SWITCH_INTERVAL,
@@ -53,3 +52,6 @@ export {
   QUEUE_STATUS_LABELS,
   QUEUE_STATUS_COLORS,
 } from './components/queue.data';
+
+// About
+export { advisor, developers } from './components/about.data';

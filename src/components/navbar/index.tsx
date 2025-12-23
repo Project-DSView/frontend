@@ -1,18 +1,21 @@
 'use client';
 
+import React, { Suspense, lazy } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
-import DesktopMenu from './DesktopMenu';
 import AuthButtonsWrapper from './AuthButtonsWrapper';
-import MobileMenu from './MobileMenu';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useScrollPosition } from '@/hooks';
 
-const Navbar = () => {
+// Lazy load heavy menu components
+const DesktopMenu = lazy(() => import('./DesktopMenu'));
+const MobileMenu = lazy(() => import('./MobileMenu'));
+
+const Navbar = React.memo(() => {
   const pathname = usePathname();
   const isLandingPage = pathname === '/';
   const { hasScrolled } = useScrollPosition(100);
@@ -22,7 +25,9 @@ const Navbar = () => {
       <div className="mx-auto flex h-16 w-full max-w-screen-2xl items-center justify-between">
         {/* Left side - Menu items */}
         <div className="hidden flex-1 items-center justify-start md:flex">
-          <DesktopMenu />
+          <Suspense fallback={<div className="bg-muted h-8 w-20 animate-pulse rounded" />}>
+            <DesktopMenu />
+          </Suspense>
         </div>
 
         {/* Center - Logo */}
@@ -74,11 +79,15 @@ const Navbar = () => {
           <div className="hidden md:flex">
             <ThemeToggle />
           </div>
-          <MobileMenu />
+          <Suspense fallback={<div className="bg-muted h-8 w-8 animate-pulse rounded md:hidden" />}>
+            <MobileMenu />
+          </Suspense>
         </div>
       </div>
     </nav>
   );
-};
+});
+
+Navbar.displayName = 'Navbar';
 
 export default Navbar;

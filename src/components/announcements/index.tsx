@@ -58,7 +58,9 @@ const LatestAnnouncement: React.FC<LatestAnnouncementWithButtonProps> = ({
           </div>
         </CardHeader>
         <CardContent>
-          <p className="py-4 text-center text-gray-500 dark:text-gray-400">ยังไม่มีประกาศในคอร์สนี้</p>
+          <p className="py-4 text-center text-gray-500 dark:text-gray-400">
+            ยังไม่มีประกาศในคอร์สนี้
+          </p>
         </CardContent>
       </Card>
     );
@@ -87,7 +89,9 @@ const LatestAnnouncement: React.FC<LatestAnnouncementWithButtonProps> = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{latestAnnouncement.title}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {latestAnnouncement.title}
+          </h3>
 
           <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-1">

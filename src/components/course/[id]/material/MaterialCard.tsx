@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { MaterialCardProps } from '@/types';
+import { MaterialCardProps, Material } from '@/types';
 import {
   getMaterialIcon,
   getMaterialTypeLabel,
@@ -41,7 +41,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Download, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks';
-import { useUpdateMaterial, useDeleteMaterial } from '@/query/material/material.query';
+import { useDeleteMaterial } from '@/query';
 import CreateMaterialDialog from './CreateMaterialDialog';
 
 const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
@@ -52,20 +52,22 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const updateMutation = useUpdateMaterial();
   const deleteMutation = useDeleteMaterial();
 
   // Check if user can edit/delete (must be teacher and creator)
   const canEdit = profile?.is_teacher && material.created_by === profile.user_id;
-  const editableTypes: ('announcement' | 'document' | 'video' | 'code_exercise' | 'pdf_exercise')[] = [
-    'announcement',
-    'document',
-    'video',
-    'code_exercise',
-    'pdf_exercise',
-  ];
+  const editableTypes: (
+    | 'announcement'
+    | 'document'
+    | 'video'
+    | 'code_exercise'
+    | 'pdf_exercise'
+  )[] = ['announcement', 'document', 'video', 'code_exercise', 'pdf_exercise'];
   const showEditDelete =
-    canEdit && editableTypes.includes(material.type as 'announcement' | 'document' | 'video' | 'code_exercise' | 'pdf_exercise');
+    canEdit &&
+    editableTypes.includes(
+      material.type as 'announcement' | 'document' | 'video' | 'code_exercise' | 'pdf_exercise',
+    );
 
   // Handle escape key to close video dialog
   React.useEffect(() => {
@@ -124,7 +126,9 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
                 <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
                   {material.title}
                 </CardTitle>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{material.description}</p>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  {material.description}
+                </p>
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -161,7 +165,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
                   {getMaterialTypeLabel(material.type)}
                 </span>
               </div>
-              <span className="inline-flex items-center rounded-full border border-gray-300 dark:border-gray-600 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:text-gray-300">
+              <span className="inline-flex items-center rounded-full border border-gray-300 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:border-gray-600 dark:text-gray-300">
                 Week {material.week}
               </span>
             </div>
@@ -175,14 +179,16 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
                 {hasDeadline && (
                   <div
                     className={`flex items-center gap-1 ${
-                      isExpired ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
+                      isExpired
+                        ? 'text-red-600 dark:text-red-400'
+                        : 'text-gray-600 dark:text-gray-400'
                     }`}
                   >
                     <span className="text-error dark:text-red-400">
                       {isExpired ? 'หมดเวลาแล้ว' : `กำหนดส่ง ${formatDate(material.deadline!)}`}
                     </span>
                     {isExpired && !isGraded && (
-                      <span className="ml-1 rounded bg-yellow-100 dark:bg-yellow-900/30 px-1.5 py-0.5 text-xs text-yellow-800 dark:text-yellow-300">
+                      <span className="ml-1 rounded bg-yellow-100 px-1.5 py-0.5 text-xs text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
                         Practice
                       </span>
                     )}
@@ -306,7 +312,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
             week: material.week,
             is_public: material.is_public,
             video_url: material.video_url || null,
-            content: (material as any).content || null, // For announcements
+            content: (material as Material & { content?: string }).content || null, // For announcements
             file_name: material.file_name || null,
             file_url: material.file_url || null,
             // Code exercise fields
@@ -315,7 +321,27 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
             hints: material.hints || null,
             total_points: material.total_points || null,
             deadline: material.deadline || null,
-            test_cases: (material as any).test_cases || null,
+            test_cases: (() => {
+              const testCases = (
+                material as Material & {
+                  test_cases?: Array<{
+                    input_data: unknown;
+                    expected_output: unknown;
+                    display_name?: string;
+                  }>;
+                }
+              ).test_cases;
+              if (!testCases || !Array.isArray(testCases)) return null;
+              return testCases.map((tc) => ({
+                input_data:
+                  typeof tc.input_data === 'string' ? tc.input_data : JSON.stringify(tc.input_data),
+                expected_output:
+                  typeof tc.expected_output === 'string'
+                    ? tc.expected_output
+                    : JSON.stringify(tc.expected_output),
+                display_name: tc.display_name || null,
+              }));
+            })(),
             problem_images: material.problem_images || null,
           }}
           onSuccess={() => {
@@ -330,7 +356,8 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
           <AlertDialogHeader>
             <AlertDialogTitle>ยืนยันการลบ</AlertDialogTitle>
             <AlertDialogDescription>
-              คุณแน่ใจหรือไม่ว่าต้องการลบ "{material.title}"? การกระทำนี้ไม่สามารถยกเลิกได้
+              คุณแน่ใจหรือไม่ว่าต้องการลบ &quot;{material.title}&quot;?
+              การกระทำนี้ไม่สามารถยกเลิกได้
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

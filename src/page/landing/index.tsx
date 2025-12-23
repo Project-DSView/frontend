@@ -6,15 +6,13 @@ import { LogIn } from 'lucide-react';
 import { memo, lazy, Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { features } from '@/data';
 import { useAuth } from '@/hooks';
 import { AuthService } from '@/services';
 import { heroVariants, heroChildVariants, buttonVariants } from '@/lib';
 
 import { Button } from '@/components/ui/button';
-import PlaygroundCardGrid from '@/components/landing/PlaygroundCardGrid';
+
 // Lazy load components
-const FeatureCard = lazy(() => import('@/components/card'));
 const InteractiveShowcase = lazy(() => import('@/components/landing/InteractiveShowcase'));
 const CTASection = lazy(() => import('@/components/landing/CTASection'));
 const VisualizationCarousel = lazy(() => import('@/components/landing/VisualizationCarousel'));
@@ -146,7 +144,7 @@ const Landing = () => {
                     onClick={handleLogin}
                     className="from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary rounded-xl bg-gradient-to-r px-10 py-5 text-xl text-white shadow-xl transition-all duration-300 hover:shadow-2xl"
                   >
-                    <LogIn size={24} className="ml-2" />
+                    <LogIn size={24} className="mr-2" />
                     เข้าสู่ระบบ
                   </Button>
                 </motion.div>
@@ -160,8 +158,8 @@ const Landing = () => {
                     onClick={handleGoToCourse}
                     className="from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary rounded-xl bg-gradient-to-r px-10 py-5 text-xl text-white shadow-xl transition-all duration-300 hover:shadow-2xl"
                   >
+                    <LogIn size={24} className="mr-2" />
                     เข้าคอร์สเรียน
-                    <LogIn size={24} className="ml-2" />
                   </Button>
                 </motion.div>
               </>
@@ -174,93 +172,6 @@ const Landing = () => {
       <Suspense fallback={<div className="h-96 bg-gradient-to-b from-white to-[#F8F9FC]" />}>
         <VisualizationCarousel />
       </Suspense>
-
-      {/* Playground Grid Section */}
-      <section className="from-gradient-start to-gradient-end relative overflow-hidden bg-gradient-to-b via-[#EEF2FF] py-16 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <motion.div
-          className="mx-auto max-w-screen-xl px-6"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8 }}
-        >
-          <motion.div
-            className="mb-12 text-center"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <h2 className="text-primary mb-4 text-3xl font-bold md:text-4xl">
-              เลือกวิธีการเรียนรู้
-            </h2>
-            <p className="text-neutral mx-auto max-w-2xl text-lg md:text-xl dark:text-gray-300">
-              เลือกโหมดการเรียนรู้ที่เหมาะกับคุณ
-            </p>
-          </motion.div>
-
-          <PlaygroundCardGrid />
-        </motion.div>
-      </section>
-
-      {/* Features Section */}
-      <section className="from-gradient-start to-background w-full bg-gradient-to-b py-20 dark:from-gray-900 dark:to-gray-950">
-        <motion.div
-          className="mx-auto max-w-screen-xl px-6"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8 }}
-        >
-          <motion.div
-            className="mb-16 text-center"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <h2 className="text-primary mb-4 text-3xl font-bold md:text-4xl">
-              ทำไมต้องเลือก DSView?
-            </h2>
-            <p className="text-neutral mx-auto max-w-2xl text-lg md:text-xl dark:text-gray-300">
-              เครื่องมือที่ออกแบบมาเพื่อการเรียนรู้โครงสร้างข้อมูลอย่างมีประสิทธิภาพ
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="grid grid-cols-1 items-stretch gap-8 md:grid-cols-2 lg:grid-cols-4"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <Suspense
-              fallback={
-                <div className="col-span-full grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-                  {Array.from({ length: 4 }).map((_, idx) => (
-                    <div
-                      key={idx}
-                      className="h-48 w-full animate-pulse rounded-2xl border border-white/30 bg-gradient-to-br from-white/50 to-white/20 backdrop-blur-sm"
-                    ></div>
-                  ))}
-                </div>
-              }
-            >
-              {features.map((feature, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: idx * 0.1 }}
-                >
-                  <FeatureCard feature={feature} index={idx} />
-                </motion.div>
-              ))}
-            </Suspense>
-          </motion.div>
-        </motion.div>
-      </section>
 
       {/* Interactive Showcase Section */}
       <Suspense fallback={<div className="h-96 bg-gradient-to-b from-white to-[#F8F9FC]" />}>

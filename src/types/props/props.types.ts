@@ -46,19 +46,6 @@ interface FileUploadButtonProps {
 // ============================================================================
 // Card Props
 // ============================================================================
-interface Feature {
-  iconSrc: string;
-  iconAlt: string;
-  title: string;
-  desc: string;
-  priority?: boolean;
-}
-
-interface FeatureCardProps {
-  feature: Feature;
-  index: number;
-}
-
 interface CourseCardProps {
   course: Course;
   onEnroll?: (courseId: string, enrollKey: string) => void;
@@ -567,8 +554,6 @@ export type {
   ExportPNGButtonProps,
   FileUploadButtonProps,
   // Card
-  Feature,
-  FeatureCardProps,
   CourseCardProps,
   CourseCardWithEnrollmentProps,
   MaterialCardProps,

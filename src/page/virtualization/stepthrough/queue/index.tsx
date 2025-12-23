@@ -22,6 +22,15 @@ const QueueStepthroughPage: React.FC = () => {
     toggleAutoPlay,
     reset,
     isLoading,
+    toggleDebugMode,
+    setBreakpoint,
+    removeBreakpoint,
+    stepOver,
+    stepInto,
+    stepOut,
+    continueDebug,
+    handleInputSubmit,
+    handleInputCancel,
   } = useStepthroughQueue(code);
 
   return (
@@ -49,6 +58,17 @@ const QueueStepthroughPage: React.FC = () => {
       description="Run your queue code step by step"
       visualizationComponent={QueueStepthrough}
       error={state.error}
+      debugState={state.debugState}
+      onToggleDebugMode={toggleDebugMode}
+      onSetBreakpoint={setBreakpoint}
+      onRemoveBreakpoint={removeBreakpoint}
+      onStepOver={stepOver}
+      onStepInto={stepInto}
+      onStepOut={stepOut}
+      onContinue={continueDebug}
+      inputState={state.inputState}
+      onInputSubmit={handleInputSubmit}
+      onInputCancel={handleInputCancel}
     />
   );
 };

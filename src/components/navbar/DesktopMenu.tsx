@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -18,7 +18,7 @@ import {
 
 import SubMenuItem from './SubMenuItem';
 
-const DesktopMenu = () => {
+const DesktopMenu = React.memo(() => {
   const [isPlaygroundOpen, setIsPlaygroundOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const { profile, isInitialized } = useAuth();
@@ -100,6 +100,8 @@ const DesktopMenu = () => {
       </Link>
     </div>
   );
-};
+});
+
+DesktopMenu.displayName = 'DesktopMenu';
 
 export default DesktopMenu;

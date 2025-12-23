@@ -233,7 +233,7 @@ const DirectedGraphStepthroughVisualization = forwardRef<
                   ? 'scale-105 animate-pulse border-blue-400 bg-blue-200 text-blue-800 shadow-md'
                   : isTraverseSelected || isCurrentlyTraversing
                     ? 'scale-110 animate-bounce border-green-400 bg-green-200 text-green-800 shadow-lg'
-                    : 'border-gray-600 bg-white text-gray-800 hover:scale-105 hover:shadow-md'
+                    : 'border-gray-600 bg-white text-gray-800 hover:scale-105 hover:shadow-md dark:border-gray-300 dark:bg-gray-700 dark:text-gray-100'
             } ${isRunning ? 'animate-pulse' : ''} ${isTransitioning ? 'animate-pulse' : ''} ${
               draggedNode === node.id ? 'z-10' : ''
             }`}
@@ -343,17 +343,19 @@ const DirectedGraphStepthroughVisualization = forwardRef<
   return (
     <div
       ref={ref}
-      className="rounded-lg bg-white p-6 shadow"
+      className="rounded-lg bg-white p-6 shadow dark:bg-gray-800"
       suppressHydrationWarning
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-800">Directed Graph Visualization</h2>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+          Directed Graph Visualization
+        </h2>
         {isRunning && (
-          <div className="flex items-center space-x-2 text-sm text-blue-600">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600" />
+          <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-400" />
             <span>Running...</span>
           </div>
         )}
@@ -361,8 +363,8 @@ const DirectedGraphStepthroughVisualization = forwardRef<
 
       {/* Current Step Info */}
       {currentStep && !error && (
-        <div className="bg-info/10 mb-4 rounded-lg p-3">
-          <div className="text-info/90 text-sm font-medium">
+        <div className="bg-info/10 mb-4 rounded-lg p-3 dark:bg-blue-900/30">
+          <div className="text-info/90 text-sm font-medium dark:text-blue-200">
             Step {currentStep.stepNumber}: {currentStep.state.message}
           </div>
         </div>
@@ -370,7 +372,7 @@ const DirectedGraphStepthroughVisualization = forwardRef<
 
       {/* Graph Visualization */}
       <ZoomableContainer
-        className="min-h-[400px] rounded-lg bg-gray-50"
+        className="min-h-[400px] rounded-lg bg-gray-50 dark:bg-gray-800"
         minZoom={0.3}
         maxZoom={2}
         initialZoom={1}
@@ -398,7 +400,7 @@ const DirectedGraphStepthroughVisualization = forwardRef<
             {data.nodes.map(renderNode)}
           </div>
         ) : (
-          <div className="flex h-96 items-center justify-center text-gray-400">
+          <div className="flex h-96 items-center justify-center text-gray-400 dark:text-gray-500">
             <div className="text-center">
               <div className="text-lg font-medium">Empty Graph</div>
               <div className="text-sm">Run your code to see graph visualization</div>
@@ -409,19 +411,23 @@ const DirectedGraphStepthroughVisualization = forwardRef<
 
       {/* Stats Display */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <div className="rounded-lg bg-gray-50 p-3 text-center">
-          <div className="text-2xl font-bold text-gray-800">{data.nodes.length}</div>
-          <div className="text-xs text-gray-600">Vertices</div>
+        <div className="rounded-lg bg-gray-50 p-3 text-center dark:bg-gray-700">
+          <div className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+            {data.nodes.length}
+          </div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">Vertices</div>
         </div>
-        <div className="rounded-lg bg-gray-50 p-3 text-center">
-          <div className="text-2xl font-bold text-gray-800">{data.edges.length}</div>
-          <div className="text-xs text-gray-600">Edges</div>
+        <div className="rounded-lg bg-gray-50 p-3 text-center dark:bg-gray-700">
+          <div className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+            {data.edges.length}
+          </div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">Edges</div>
         </div>
-        <div className="rounded-lg bg-gray-50 p-3 text-center">
-          <div className="text-2xl font-bold text-gray-800">
+        <div className="rounded-lg bg-gray-50 p-3 text-center dark:bg-gray-700">
+          <div className="text-2xl font-bold text-gray-800 dark:text-gray-200">
             {data.nodes.length === 0 ? 'Yes' : 'No'}
           </div>
-          <div className="text-xs text-gray-600">Empty</div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">Empty</div>
         </div>
       </div>
 
@@ -447,6 +453,45 @@ const DirectedGraphStepthroughVisualization = forwardRef<
           </div>
         </div>
       )}
+
+      {/* Console Output */}
+      <div className="mt-4 overflow-hidden rounded-lg bg-gray-900 shadow-inner dark:bg-black">
+        <div className="border-b border-gray-700 bg-gray-800 px-4 py-2 dark:bg-gray-900">
+          <div className="flex items-center space-x-2">
+            <svg
+              className="h-4 w-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <span className="font-mono text-sm font-semibold text-gray-300">Console Output</span>
+          </div>
+        </div>
+        <div className="max-h-40 min-h-[60px] overflow-y-auto p-4 font-mono text-sm">
+          {(() => {
+            const currentStep = steps.length > 0 && currentStepIndex < steps.length ? steps[currentStepIndex] : null;
+            const printOutput = currentStep?.state?.print_output as string[] | undefined;
+
+            if (!printOutput || printOutput.length === 0) {
+              return <div className="italic text-gray-600 dark:text-gray-600">No output generated...</div>;
+            }
+
+            return printOutput.map((line, idx) => (
+              <div key={idx} className="whitespace-pre-wrap text-green-400">
+                <span className="mr-2 text-gray-600 select-none">$</span>
+                {line}
+              </div>
+            ));
+          })()}
+        </div>
+      </div>
 
       {/* Legend */}
       <div className="mt-4 flex flex-wrap gap-4 text-xs">

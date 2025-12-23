@@ -8,6 +8,9 @@ export {
   useAnnouncements,
   useCourseMaterial,
   useCourseMaterials,
+  useCreateMaterial,
+  useUpdateMaterial,
+  useDeleteMaterial,
   useCourseScore,
   useMySubmission,
   useSubmission,
@@ -34,9 +37,6 @@ export {
   useCourseInvitations,
   useEnrollViaInvitation,
 } from './course/course.query';
-
-// Material
-export { useCreateMaterial } from './material/material.query';
 
 // Stepthrough
 export {

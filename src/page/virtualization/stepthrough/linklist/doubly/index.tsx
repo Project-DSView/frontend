@@ -24,6 +24,8 @@ const StepthroughDoublyLinkedList: React.FC = () => {
     reset,
     isLoading,
     linkedListData,
+    handleInputSubmit,
+    handleInputCancel,
   } = useStepthroughDoublyLinkedList();
 
   return (
@@ -48,6 +50,9 @@ const StepthroughDoublyLinkedList: React.FC = () => {
       description="เขียนโค้ด Python และดูการทำงานแบบ step-by-step พร้อม visualization"
       visualizationComponent={DoublyLinkedListStepthroughVisualization}
       error={state.error}
+      inputState={state.inputState}
+      onInputSubmit={handleInputSubmit}
+      onInputCancel={handleInputCancel}
     />
   );
 };

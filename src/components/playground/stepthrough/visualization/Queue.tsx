@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import { StepthroughVisualizationProps } from '@/types';
 import { QueueData } from '@/types/stepthrough/Queue.types';
 
 import ZoomableContainer from '../../shared/ZoomableContainer';
+import { gsap } from 'gsap';
 
 const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
   steps,
@@ -12,6 +13,10 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
 }) => {
   const currentStep = steps[currentStepIndex];
   const queueData = data as QueueData;
+  const [enteringElements, setEnteringElements] = useState<Set<number>>(new Set());
+  const [exitingElements, setExitingElements] = useState<Set<string>>(new Set());
+  const [elementsToRender, setElementsToRender] = useState<string[]>([]);
+  const previousElementsRef = useRef<string[]>([]);
 
   // Get queue elements from step state
   const getQueueElements = (): string[] => {
@@ -38,6 +43,82 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
   };
 
   const elements = getQueueElements();
+
+  // Track insert/delete animations
+  useEffect(() => {
+    const previousElements = previousElementsRef.current;
+    const currentElements = elements;
+
+    // Detect changes: compare previous and current arrays
+    const newEnteringElements = new Set<number>();
+    const newExitingElements = new Set<string>();
+
+    // Find elements that were deleted (dequeue operation)
+    previousElements.forEach((prevElement) => {
+      if (!currentElements.includes(prevElement)) {
+        newExitingElements.add(prevElement);
+      }
+    });
+
+    // Find elements that were inserted (enqueue operation)
+    currentElements.forEach((currentElement, index) => {
+      if (!previousElements.includes(currentElement)) {
+        newEnteringElements.add(index);
+      } else {
+        // Check if this is a new occurrence (duplicate values)
+        const prevCount = previousElements.filter((e) => e === currentElement).length;
+        const currentCount = currentElements.filter((e) => e === currentElement).length;
+        if (currentCount > prevCount) {
+          // This is a new occurrence
+          const occurrencesBefore = currentElements
+            .slice(0, index)
+            .filter((e) => e === currentElement).length;
+          if (occurrencesBefore >= prevCount) {
+            newEnteringElements.add(index);
+          }
+        }
+      }
+    });
+
+    // For exit animation: keep exiting elements temporarily in render
+    if (newExitingElements.size > 0) {
+      // Keep exiting elements in render temporarily
+      const elementsWithExiting = [...currentElements];
+      previousElements.forEach((element) => {
+        if (newExitingElements.has(element) && !elementsWithExiting.includes(element)) {
+          // Find where this element was in previous array (should be at front)
+          const prevIndex = previousElements.indexOf(element);
+          // Try to insert it at a similar position for animation
+          elementsWithExiting.splice(prevIndex, 0, element);
+        }
+      });
+      setElementsToRender(elementsWithExiting);
+      setExitingElements(newExitingElements);
+
+      // Remove exiting elements after animation
+      setTimeout(() => {
+        setElementsToRender(currentElements);
+        setExitingElements(new Set());
+      }, 1200);
+    } else {
+      setElementsToRender(currentElements);
+    }
+
+    // Set entering elements
+    if (newEnteringElements.size > 0) {
+      setEnteringElements(newEnteringElements);
+      // Clear entering animation after duration
+      setTimeout(() => {
+        setEnteringElements((prev) => {
+          const updated = new Set(prev);
+          newEnteringElements.forEach((idx) => updated.delete(idx));
+          return updated;
+        });
+      }, 2000);
+    }
+
+    previousElementsRef.current = [...currentElements];
+  }, [elements]);
 
   // Get dequeued element from step state (look for variables.dequeued from response)
   const getDequeuedElement = (): string | null => {
@@ -104,15 +185,37 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
 
   const stats = getStats();
 
+  // Detect underflow/overflow errors
+  const detectUnderflowOverflow = () => {
+    if (!currentStep?.state?.error) return null;
+    const error = currentStep.state.error.toLowerCase();
+    if (error.includes('underflow')) {
+      return {
+        type: 'underflow',
+        message: 'Underflow: Cannot dequeue from empty queue',
+      };
+    }
+    if (error.includes('overflow')) {
+      return {
+        type: 'overflow',
+        message: 'Overflow: Queue is full',
+      };
+    }
+    return null;
+  };
+
+  const errorInfo = detectUnderflowOverflow();
+
   const renderQueueElement = (value: string, index: number, queueLength: number) => {
     const isFront = index === 0;
     const isBack = index === queueLength - 1;
+    const elementKey = `${value}-${index}`;
 
     return (
-      <div key={`${value}-${index}`} className="relative flex flex-col items-center">
+      <div key={elementKey} className="relative flex flex-col items-center">
         {/* Queue Element - connected horizontally, no gaps, same height */}
         <div
-          className={`flex h-16 w-16 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg transition-all duration-500 hover:shadow-xl dark:from-gray-700 dark:to-gray-800 dark:hover:bg-gray-600 ${isFront ? 'rounded-l-lg border-t-2 border-b-2 border-l-2 border-green-500 dark:border-green-400' : ''} ${isBack ? 'rounded-r-lg border-t-2 border-r-2 border-b-2 border-blue-500 dark:border-blue-400' : ''} ${!isFront && !isBack ? 'border-t-2 border-b-2 border-gray-300 dark:border-gray-600' : ''} ${isFront || isBack ? 'ring-2' : ''} ${isFront ? 'ring-green-300 dark:ring-green-600' : isBack ? 'ring-blue-300 dark:ring-blue-600' : ''}`}
+          className={`flex h-16 w-16 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg transition-all duration-500 hover:shadow-xl dark:from-gray-700 dark:to-gray-800 dark:hover:bg-gray-600 ${isFront ? 'rounded-l-lg border-t-2 border-b-2 border-l-2 border-green-500 dark:border-green-400' : ''} ${isBack ? 'rounded-r-lg border-t-2 border-r-2 border-b-2 border-blue-500 dark:border-blue-400' : ''} ${!isFront && !isBack ? 'border-t-2 border-b-2 border-gray-300 dark:border-gray-300' : ''} ${isFront || isBack ? 'ring-2' : ''} ${isFront ? 'ring-green-300 dark:ring-green-600' : isBack ? 'ring-blue-300 dark:ring-blue-600' : ''}`}
         >
           <span
             className={`font-bold text-gray-900 dark:text-gray-100 ${value.length > 6 ? 'text-sm' : 'text-lg'}`}
@@ -126,6 +229,18 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
 
   return (
     <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+      {/* Underflow/Overflow Warning Banner */}
+      {errorInfo && (
+        <div className="mb-4 animate-pulse rounded-lg border-2 border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/20">
+          <div className="flex items-center space-x-2">
+            <span className="text-xl">⚠️</span>
+            <span className="font-semibold text-red-800 dark:text-red-200">
+              {errorInfo.message}
+            </span>
+          </div>
+        </div>
+      )}
+
       <ZoomableContainer
         className="min-h-[300px] rounded-lg bg-gray-50 dark:bg-gray-800"
         minZoom={0.5}
@@ -145,7 +260,7 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
                 Queue
               </div>
               <div className="relative min-h-[120px] w-full overflow-x-auto rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                {elements.length === 0 ? (
+                {elementsToRender.length === 0 ? (
                   <div className="flex h-24 w-full items-center justify-center border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
                     <div className="text-center text-gray-500 dark:text-gray-400">
                       <div className="text-xs font-semibold">Empty Queue</div>
@@ -155,11 +270,18 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
                   <div className="relative flex items-center justify-center">
                     {/* Queue Elements - horizontal layout, no gaps, aligned on same baseline */}
                     <div className="z-10 flex items-center">
-                      {elements.map((element, index) => (
-                        <div key={`${element}-${index}`} className="relative flex items-center">
-                          {renderQueueElement(element, index, elements.length)}
-                        </div>
-                      ))}
+                      {elementsToRender.map((element, index) => {
+                        const isExiting = exitingElements.has(element);
+                        // Don't render exiting elements after animation
+                        if (isExiting && elementsToRender.length > elements.length) {
+                          return null;
+                        }
+                        return (
+                          <div key={`${element}-${index}`} className="relative flex items-center">
+                            {renderQueueElement(element, index, elementsToRender.length)}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -223,6 +345,45 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
               {stats.isEmpty ? 'Yes' : 'No'}
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* Console Output */}
+      <div className="mt-4 overflow-hidden rounded-lg bg-gray-900 shadow-inner dark:bg-black">
+        <div className="border-b border-gray-700 bg-gray-800 px-4 py-2 dark:bg-gray-900">
+          <div className="flex items-center space-x-2">
+            <svg
+              className="h-4 w-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <span className="font-mono text-sm font-semibold text-gray-300">Console Output</span>
+          </div>
+        </div>
+        <div className="max-h-40 min-h-[60px] overflow-y-auto p-4 font-mono text-sm">
+          {(() => {
+            const currentStep = steps.length > 0 && currentStepIndex < steps.length ? steps[currentStepIndex] : null;
+            const printOutput = currentStep?.state?.print_output as string[] | undefined;
+
+            if (!printOutput || printOutput.length === 0) {
+              return <div className="italic text-gray-600 dark:text-gray-600">No output generated...</div>;
+            }
+
+            return printOutput.map((line, idx) => (
+              <div key={idx} className="whitespace-pre-wrap text-green-400">
+                <span className="mr-2 text-gray-600 select-none">$</span>
+                {line}
+              </div>
+            ));
+          })()}
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { lazy } from 'react';
+import React, { lazy, useMemo, useEffect } from 'react';
 
 import { useStepthroughStack } from '@/hooks';
 import { StackData } from '@/types';
@@ -12,6 +12,11 @@ const StackStepthroughVisualization = lazy(
 );
 
 const StepthroughStack: React.FC = () => {
+  const hookResult = useStepthroughStack();
+  console.log('🔍 useStepthroughStack result:', hookResult);
+  console.log('🔍 hookResult.state:', hookResult.state);
+  console.log('🔍 hookResult.state.inputState:', hookResult.state?.inputState);
+  
   const {
     state,
     setCode,
@@ -24,7 +29,19 @@ const StepthroughStack: React.FC = () => {
     reset,
     isLoading,
     stackData,
-  } = useStepthroughStack();
+    handleInputSubmit,
+    handleInputCancel,
+  } = hookResult;
+  
+  console.log('🔍 Destructured state.inputState:', state?.inputState);
+
+  console.log('📋 StepthroughStack render - state.inputState:', state?.inputState);
+  console.log('📋 Full state:', state);
+
+  // Add useEffect to verify component re-renders when inputState changes
+  useEffect(() => {
+    console.log('🔄 StepthroughStack - inputState changed:', state?.inputState);
+  }, [state?.inputState]);
 
   return (
     <StepthroughLayout<StackData>
@@ -48,6 +65,12 @@ const StepthroughStack: React.FC = () => {
       description="เขียนโค้ด Python และดูการทำงานแบบ step-by-step พร้อม visualization"
       visualizationComponent={StackStepthroughVisualization}
       error={state.error}
+      astPreview={state.astPreview}
+      astPreviewLoading={state.astPreviewLoading}
+      inputState={state.inputState}
+      onInputSubmit={handleInputSubmit}
+      onInputCancel={handleInputCancel}
+      terminalOutput={state.terminalOutput}
     />
   );
 };

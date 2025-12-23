@@ -8,10 +8,10 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Edit, Trash2, Loader2, FileImage } from 'lucide-react';
 
-import { ExerciseProblemCardProps } from '@/types';
+import { ExerciseProblemCardProps, Material } from '@/types';
 import { formatDate, transformImageUrl } from '@/lib';
 import { useAuth } from '@/hooks';
-import { useUpdateMaterial, useDeleteMaterial } from '@/query/material/material.query';
+import { useDeleteMaterial } from '@/query';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,7 @@ const ProblemImage: React.FC<{ src: string; filename: string; alt: string }> = (
           onError={() => setImageError(true)}
         />
       ) : (
-        <div className="flex h-full items-center justify-center bg-gray-100 dark:bg-gray-800 p-2">
+        <div className="flex h-full items-center justify-center bg-gray-100 p-2 dark:bg-gray-800">
           <div className="text-center">
             <FileImage className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" />
             <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">{filename}</p>
@@ -66,21 +66,24 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
   const { accessToken, profile } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const updateMutation = useUpdateMaterial();
   const deleteMutation = useDeleteMaterial();
 
   const canEdit = profile?.is_teacher && material.created_by === profile.user_id;
   const exampleInputs = material.example_inputs || [];
   const exampleOutputs = material.example_outputs || [];
   const problemImages = material.problem_images || [];
-  const testCases = (material as any).test_cases || [];
+  type TestCase = { input_data: unknown; expected_output: unknown; display_name?: string };
+  const testCases: TestCase[] =
+    (material as Material & { test_cases?: TestCase[] }).test_cases || [];
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex flex-col">
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">{material.title}</CardTitle>
+            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+              {material.title}
+            </CardTitle>
             {material.total_points && (
               <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                 <span>{material.total_points} คะแนน</span>
@@ -113,7 +116,7 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
                     <AlertDialogHeader>
                       <AlertDialogTitle>คุณแน่ใจหรือไม่?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        การลบแบบฝึกหัด "{material.title}" จะไม่สามารถย้อนกลับได้
+                        การลบแบบฝึกหัด &quot;{material.title}&quot; จะไม่สามารถย้อนกลับได้
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -152,14 +155,16 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
             {material.deadline && (
               <div
                 className={`flex items-center gap-2 rounded-lg px-3 py-2 ${
-                  isExpired ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 'text-error dark:text-red-400'
+                  isExpired
+                    ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                    : 'text-error dark:text-red-400'
                 }`}
               >
-                <span className="text-error dark:text-red-400 text-base font-medium">
+                <span className="text-error text-base font-medium dark:text-red-400">
                   {isExpired ? 'หมดเวลาแล้ว' : `ส่งภายใน ${formatDate(material.deadline)}`}
                 </span>
                 {isExpired && !isGraded && (
-                  <span className="rounded bg-yellow-100 dark:bg-yellow-900/30 px-2 py-1 text-xs text-yellow-800 dark:text-yellow-300">
+                  <span className="rounded bg-yellow-100 px-2 py-1 text-xs text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
                     (Practice - ส่งได้)
                   </span>
                 )}
@@ -175,12 +180,7 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
               // Extract filename from URL
               const filename = src.split('/').pop() || `รูปภาพ-${idx + 1}`;
               return (
-                <ProblemImage
-                  key={idx}
-                  src={src}
-                  filename={filename}
-                  alt={`problem-${idx + 1}`}
-                />
+                <ProblemImage key={idx} src={src} filename={filename} alt={`problem-${idx + 1}`} />
               );
             })}
           </div>
@@ -200,14 +200,19 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
           {/* Problem Statement */}
           {material.problem_statement && (
             <div>
-              <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">รายละเอียดโจทย์</h3>
+              <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
+                รายละเอียดโจทย์
+              </h3>
               <div className="bg-info/10 rounded-lg p-4">
                 <div className="prose prose-sm dark:prose-invert max-w-none">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      code({ className, children, ...props }: any) {
+                      code({
+                        className,
+                        children,
+                        ...props
+                      }: React.ComponentPropsWithoutRef<'code'>) {
                         const match = /language-(\w+)/.exec(className || '');
                         const isInline = !match;
                         return isInline ? (
@@ -242,8 +247,11 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      code({ className, children, ...props }: any) {
+                      code({
+                        className,
+                        children,
+                        ...props
+                      }: React.ComponentPropsWithoutRef<'code'>) {
                         const match = /language-(\w+)/.exec(className || '');
                         const isInline = !match;
                         return isInline ? (
@@ -278,8 +286,11 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      code({ className, children, ...props }: any) {
+                      code({
+                        className,
+                        children,
+                        ...props
+                      }: React.ComponentPropsWithoutRef<'code'>) {
                         const match = /language-(\w+)/.exec(className || '');
                         const isInline = !match;
                         return isInline ? (
@@ -308,14 +319,16 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
 
         {/* Examples - แสดง input/output จาก test cases ถ้ามี ไม่เช่นนั้นแสดงจาก example inputs/outputs */}
         <div className="mt-6">
-          <h2 className="mb-3 text-base font-semibold text-gray-900 dark:text-white">ตัวอย่าง Input / Output</h2>
+          <h2 className="mb-3 text-base font-semibold text-gray-900 dark:text-white">
+            ตัวอย่าง Input / Output
+          </h2>
           {testCases.length > 0 ? (
             // แสดงจาก test cases
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <h3 className="mb-2 text-sm font-semibold text-gray-800 dark:text-white">Input</h3>
                 <div className="space-y-2">
-                  {testCases.map((tc: any, idx: number) => {
+                  {testCases.map((tc, idx: number) => {
                     let inputDisplay = '';
                     try {
                       const inputData =
@@ -330,11 +343,15 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
                           : JSON.stringify(tc.input_data);
                     }
                     return (
-                      <div key={idx} className="rounded-md bg-gray-100 dark:bg-gray-800 p-3">
+                      <div key={idx} className="rounded-md bg-gray-100 p-3 dark:bg-gray-800">
                         {tc.display_name && (
-                          <p className="mb-1 text-xs font-medium text-gray-600 dark:text-gray-400">{tc.display_name}</p>
+                          <p className="mb-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                            {tc.display_name}
+                          </p>
                         )}
-                        <pre className="overflow-auto text-xs text-gray-800 dark:text-gray-200">{inputDisplay}</pre>
+                        <pre className="overflow-auto text-xs text-gray-800 dark:text-gray-200">
+                          {inputDisplay}
+                        </pre>
                       </div>
                     );
                   })}
@@ -343,7 +360,7 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
               <div>
                 <h3 className="mb-2 text-sm font-semibold text-gray-800 dark:text-white">Output</h3>
                 <div className="space-y-2">
-                  {testCases.map((tc: any, idx: number) => {
+                  {testCases.map((tc, idx: number) => {
                     let outputDisplay = '';
                     try {
                       const outputData =
@@ -351,7 +368,11 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
                           ? JSON.parse(tc.expected_output)
                           : tc.expected_output;
                       // Extract "output" value if exists
-                      if (typeof outputData === 'object' && outputData !== null && 'output' in outputData) {
+                      if (
+                        typeof outputData === 'object' &&
+                        outputData !== null &&
+                        'output' in outputData
+                      ) {
                         outputDisplay =
                           typeof outputData.output === 'string'
                             ? outputData.output
@@ -366,11 +387,15 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
                           : JSON.stringify(tc.expected_output);
                     }
                     return (
-                      <div key={idx} className="rounded-md bg-gray-100 dark:bg-gray-800 p-3">
+                      <div key={idx} className="rounded-md bg-gray-100 p-3 dark:bg-gray-800">
                         {tc.display_name && (
-                          <p className="mb-1 text-xs font-medium text-gray-600 dark:text-gray-400">{tc.display_name}</p>
+                          <p className="mb-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                            {tc.display_name}
+                          </p>
                         )}
-                        <pre className="overflow-auto text-xs text-gray-800 dark:text-gray-200">{outputDisplay}</pre>
+                        <pre className="overflow-auto text-xs text-gray-800 dark:text-gray-200">
+                          {outputDisplay}
+                        </pre>
                       </div>
                     );
                   })}
@@ -389,7 +414,7 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
                     {exampleInputs.map((ex: string, i: number) => (
                       <pre
                         key={i}
-                        className="overflow-auto rounded-md bg-gray-100 dark:bg-gray-800 p-3 text-xs text-gray-800 dark:text-gray-200"
+                        className="overflow-auto rounded-md bg-gray-100 p-3 text-xs text-gray-800 dark:bg-gray-800 dark:text-gray-200"
                       >
                         {ex}
                       </pre>
@@ -422,7 +447,7 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
                       return (
                         <pre
                           key={i}
-                          className="overflow-auto rounded-md bg-gray-100 dark:bg-gray-800 p-3 text-xs text-gray-800 dark:text-gray-200"
+                          className="overflow-auto rounded-md bg-gray-100 p-3 text-xs text-gray-800 dark:bg-gray-800 dark:text-gray-200"
                         >
                           {displayValue}
                         </pre>
@@ -456,7 +481,20 @@ const ExerciseProblemCard: React.FC<ExerciseProblemCardProps> = ({
             hints: material.hints || null,
             total_points: material.total_points || null,
             deadline: material.deadline || null,
-            test_cases: testCases.length > 0 ? testCases : null,
+            test_cases:
+              testCases.length > 0
+                ? testCases.map((tc) => ({
+                    input_data:
+                      typeof tc.input_data === 'string'
+                        ? tc.input_data
+                        : JSON.stringify(tc.input_data),
+                    expected_output:
+                      typeof tc.expected_output === 'string'
+                        ? tc.expected_output
+                        : JSON.stringify(tc.expected_output),
+                    display_name: tc.display_name || null,
+                  }))
+                : null,
             problem_images: problemImages.length > 0 ? problemImages : null,
           }}
           onSuccess={() => {

@@ -1,4 +1,4 @@
-import React, { forwardRef, useMemo, useState, useEffect, memo, useCallback } from 'react';
+import React, { forwardRef, useMemo, useState, useEffect, memo, useCallback, useRef } from 'react';
 import { StepthroughVisualizationProps, BSTNode, PositionedNode, BSTData } from '@/types';
 import ZoomableContainer from '../../shared/ZoomableContainer';
 import StepIndicator from '../../shared/StepIndicator';
@@ -7,13 +7,23 @@ const BSTStepthroughVisualization = forwardRef<
   HTMLDivElement,
   StepthroughVisualizationProps<BSTData>
 >(({ steps, currentStepIndex, data, isRunning, error }, ref) => {
-  const [highlightedNodes, setHighlightedNodes] = useState<string[]>([]);
   const [searchPath, setSearchPath] = useState<string[]>([]);
   const [traverseIndex, setTraverseIndex] = useState(0);
   const [isTraversing, setIsTraversing] = useState(false);
   const [traversalOrder, setTraversalOrder] = useState<string[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [previousNodes, setPreviousNodes] = useState<PositionedNode[]>([]);
+  const [exitingNodes, setExitingNodes] = useState<Set<string>>(new Set());
+  const [insertedNode, setInsertedNode] = useState<string | null>(null); // Latest inserted node (highlighted)
+  const [currentNode, setCurrentNode] = useState<string | null>(null); // Current node from backend (orange highlight)
+  const [pathNodes, setPathNodes] = useState<Set<string>>(new Set()); // Nodes in the path to current node
+  const [activeConnectionIndex, setActiveConnectionIndex] = useState<number | null>(null); // Connection that is currently animating
+  const [connectionProgress, setConnectionProgress] = useState<number>(0); // Progress of current connection (0-1)
+  const [activeParentNode, setActiveParentNode] = useState<string | null>(null); // Parent node of currently animating connection (fill orange)
+  const [animatedNodes, setAnimatedNodes] = useState<Set<string>>(new Set()); // Nodes that animation has passed (change to border orange)
+  const [completedConnections, setCompletedConnections] = useState<Set<string>>(new Set()); // Connections that animation has completed
+  const previousRootRef = useRef<BSTNode | null>(null);
+  const rootPositionRef = useRef<{ x: number; y: number } | null>(null); // Store root position to prevent movement
 
   // Helper function to convert backend tree data to BSTNode
   const convertToBSTNode = useCallback((nodeData: unknown): BSTNode | null => {
@@ -243,24 +253,24 @@ const BSTStepthroughVisualization = forwardRef<
 
         return () => clearInterval(interval);
       }
-      // Check if this is an insert operation
-      else if (message.includes('insert') || message.includes('Insert')) {
-        setHighlightedNodes([]);
-        setSearchPath([]);
-        setIsTraversing(false);
-      }
+      // Insert operation - don't set highlightedNodes (use insertedNode instead)
       // Check if this is a delete operation
       else if (message.includes('delete') || message.includes('Delete')) {
-        setHighlightedNodes([]);
+        setSearchPath([]);
+        setIsTraversing(false);
+      } else if (
+        message.includes('insert') ||
+        message.includes('Insert') ||
+        message.includes('เพิ่ม')
+      ) {
+        // Insert operation - use insertedNode for highlighting instead
         setSearchPath([]);
         setIsTraversing(false);
       } else {
-        setHighlightedNodes([]);
         setSearchPath([]);
         setIsTraversing(false);
       }
     } else {
-      setHighlightedNodes([]);
       setSearchPath([]);
       setIsTraversing(false);
     }
@@ -271,10 +281,25 @@ const BSTStepthroughVisualization = forwardRef<
     if (!treeRoot) return [];
 
     const nodes: PositionedNode[] = [];
-    const levelHeight = 100; // Vertical spacing between levels
-    const nodeWidth = 80; // Horizontal spacing between nodes
+    const levelHeight = 140; // Vertical spacing between levels (increased from 100)
+    const nodeWidth = 120; // Horizontal spacing between nodes (increased from 80)
+    const minSpacing = 100; // Minimum spacing between nodes at same level
 
-    // Calculate positions using a simple approach
+    // Calculate subtree width to ensure proper spacing
+    const calculateSubtreeWidth = (node: BSTNode | null, level: number): number => {
+      if (!node) return 0;
+
+      const leftWidth = calculateSubtreeWidth(node.left, level + 1);
+      const rightWidth = calculateSubtreeWidth(node.right, level + 1);
+
+      // Base width for current node
+      const nodeBaseWidth = nodeWidth;
+
+      // Return total width needed for this subtree
+      return Math.max(leftWidth + rightWidth, nodeBaseWidth) + minSpacing;
+    };
+
+    // Calculate positions using improved algorithm
     const calculatePositions = (
       node: BSTNode | null,
       level: number = 0,
@@ -283,22 +308,52 @@ const BSTStepthroughVisualization = forwardRef<
     ): void => {
       if (!node) return;
 
+      // For root node (level 0), use stored position if available, otherwise use center
+      let finalX = x;
+      let finalY = y + 50;
+
+      if (level === 0) {
+        if (rootPositionRef.current) {
+          // Use stored root position to prevent movement
+          finalX = rootPositionRef.current.x;
+          finalY = rootPositionRef.current.y;
+        } else {
+          // First time: store root position at center
+          finalX = 0;
+          finalY = 50;
+          rootPositionRef.current = { x: finalX, y: finalY };
+        }
+      }
+
       nodes.push({
         ...node,
-        x: x, // เก็บตำแหน่งเดิมไว้
-        y: y + 50,
+        x: finalX,
+        y: finalY,
         level: level,
       });
 
-      // Calculate positions for children
-      const childY = y + levelHeight;
-      const childXOffset = nodeWidth * Math.pow(0.6, level + 1); // Decrease offset for deeper levels
+      // Calculate positions for children with better spacing
+      const childY = (level === 0 ? finalY : y) + levelHeight;
+
+      // Calculate spacing based on subtree widths
+      const leftSubtreeWidth = calculateSubtreeWidth(node.left, level + 1);
+      const rightSubtreeWidth = calculateSubtreeWidth(node.right, level + 1);
+
+      // Use dynamic offset based on subtree widths
+      const leftOffset =
+        leftSubtreeWidth > 0
+          ? Math.max(leftSubtreeWidth / 2 + minSpacing / 2, nodeWidth * 0.8)
+          : nodeWidth * 0.8;
+      const rightOffset =
+        rightSubtreeWidth > 0
+          ? Math.max(rightSubtreeWidth / 2 + minSpacing / 2, nodeWidth * 0.8)
+          : nodeWidth * 0.8;
 
       if (node.left) {
-        calculatePositions(node.left, level + 1, x - childXOffset, childY);
+        calculatePositions(node.left, level + 1, finalX - leftOffset, childY);
       }
       if (node.right) {
-        calculatePositions(node.right, level + 1, x + childXOffset, childY);
+        calculatePositions(node.right, level + 1, finalX + rightOffset, childY);
       }
     };
 
@@ -312,64 +367,461 @@ const BSTStepthroughVisualization = forwardRef<
     return calculateTreeLayout(root);
   }, [root, calculateTreeLayout]);
 
-  // Handle transition animation when nodes change
+  // Extract all node values from a tree
+  const extractNodeValues = useCallback((node: BSTNode | null): Set<string> => {
+    const values = new Set<string>();
+    const traverse = (n: BSTNode | null) => {
+      if (n) {
+        values.add(n.value);
+        traverse(n.left);
+        traverse(n.right);
+      }
+    };
+    traverse(node);
+    return values;
+  }, []);
+
+  // Find path from root to target node
+  const findPathToNode = useCallback((treeRoot: BSTNode | null, targetValue: string): string[] => {
+    if (!treeRoot) return [];
+
+    const path: string[] = [];
+
+    const traverse = (node: BSTNode | null, currentPath: string[]): boolean => {
+      if (!node) return false;
+
+      const newPath = [...currentPath, node.value];
+
+      if (node.value === targetValue) {
+        path.push(...newPath);
+        return true;
+      }
+
+      if (traverse(node.left, newPath)) return true;
+      if (traverse(node.right, newPath)) return true;
+
+      return false;
+    };
+
+    traverse(treeRoot, []);
+    return path;
+  }, []);
+
+  // Get path connections with order
+  const getPathConnections = useCallback(
+    (
+      treeRoot: BSTNode | null,
+      pathValues: string[],
+      positionedNodes: PositionedNode[],
+    ): Array<{
+      parentValue: string;
+      childValue: string;
+      connectionKey: string;
+      index: number;
+      isLeft: boolean;
+    }> => {
+      if (!treeRoot || pathValues.length < 2) return [];
+
+      const connections: Array<{
+        parentValue: string;
+        childValue: string;
+        connectionKey: string;
+        index: number;
+        isLeft: boolean;
+      }> = [];
+
+      // Find node by value in tree
+      const findNodeByValue = (node: BSTNode | null, value: string): BSTNode | null => {
+        if (!node) return null;
+        if (node.value === value) return node;
+        const left = findNodeByValue(node.left, value);
+        if (left) return left;
+        return findNodeByValue(node.right, value);
+      };
+
+      // Build connections from path
+      for (let i = 0; i < pathValues.length - 1; i++) {
+        const parentValue = pathValues[i];
+        const childValue = pathValues[i + 1];
+
+        const parentNode = findNodeByValue(treeRoot, parentValue);
+        if (!parentNode) continue;
+
+        // Check if child is left or right
+        const isLeft = parentNode.left?.value === childValue;
+        const isRight = parentNode.right?.value === childValue;
+
+        if (isLeft || isRight) {
+          // Find positioned nodes to get IDs
+          const parentPosNode = positionedNodes.find((n) => n.value === parentValue);
+          const childPosNode = positionedNodes.find((n) => n.value === childValue);
+
+          if (parentPosNode && childPosNode) {
+            connections.push({
+              parentValue,
+              childValue,
+              connectionKey: `${parentPosNode.id}-${childPosNode.id}`,
+              index: i,
+              isLeft: isLeft,
+            });
+          }
+        }
+      }
+
+      return connections;
+    },
+    [],
+  );
+
+  // Refs for node elements
+  const nodeRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const connectionRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+  // Detect entering and exiting nodes
   useEffect(() => {
-    if (previousNodes.length > 0) {
+    const previousValues = extractNodeValues(previousRootRef.current);
+    const currentValues = extractNodeValues(root);
+
+    // Find nodes that were deleted
+    const newExitingNodes = new Set<string>();
+    previousValues.forEach((value) => {
+      if (!currentValues.has(value)) {
+        newExitingNodes.add(value);
+      }
+    });
+
+    // Find nodes that were inserted
+    const newEnteringNodes = new Set<string>();
+    currentValues.forEach((value) => {
+      if (!previousValues.has(value)) {
+        newEnteringNodes.add(value);
+      }
+    });
+
+    // Only track the node that was just added/removed in current step
+    let targetNode: string | null = null;
+    if (steps.length > 0 && currentStepIndex < steps.length) {
+      const currentStep = steps[currentStepIndex];
+      const message = currentStep.state?.message || '';
+
+      // Try to extract the node value from the message
+      const nodePatterns = [
+        /(?:insert|inserting|เพิ่ม)\s+([^\s,()]+)/i,
+        /(?:delete|deleting|removed|ลบ)\s+([^\s,()]+)/i,
+        /(?:value|node)\s+([^\s,()]+)/i,
+      ];
+
+      for (const pattern of nodePatterns) {
+        const match = message.match(pattern);
+        if (match && match[1]) {
+          const extractedValue = match[1].trim();
+          // Only use if this value is actually in the entering or exiting nodes
+          if (newEnteringNodes.has(extractedValue) || newExitingNodes.has(extractedValue)) {
+            targetNode = extractedValue;
+            break;
+          }
+        }
+      }
+    }
+
+    // Extract current node and inserted node from step_detail
+    let insertedNodeValue: string | null = null;
+    let currentNodeValue: string | null = null;
+
+    if (steps.length > 0 && currentStepIndex < steps.length) {
+      const currentStep = steps[currentStepIndex];
+      const message = currentStep.state?.message || '';
+      const stepDetail = currentStep.state?.step_detail as Record<string, unknown> | undefined;
+
+      // Extract current_node from step_detail (for all operations)
+      if (stepDetail?.current_node && typeof stepDetail.current_node === 'string') {
+        currentNodeValue = String(stepDetail.current_node);
+      }
+
+      // Check if this is an insert operation
+      if (
+        message.includes('insert') ||
+        message.includes('Insert') ||
+        message.includes('เพิ่ม') ||
+        stepDetail?.operation === 'insert'
+      ) {
+        // Primary: Use inserted_node from step_detail if available (most reliable)
+        if (stepDetail?.inserted_node && typeof stepDetail.inserted_node === 'string') {
+          const detailValue = String(stepDetail.inserted_node);
+          if (newEnteringNodes.has(detailValue)) {
+            insertedNodeValue = detailValue;
+          }
+        }
+
+        // Fallback 1: Try to extract from message using patterns
+        if (!insertedNodeValue) {
+          const nodePatterns = [
+            /(?:insert|inserting|เพิ่ม)\s+([^\s,()]+)/i,
+            /(?:value|node)\s+([^\s,()]+)/i,
+          ];
+
+          for (const pattern of nodePatterns) {
+            const match = message.match(pattern);
+            if (match && match[1]) {
+              const extractedValue = match[1].trim();
+              if (newEnteringNodes.has(extractedValue)) {
+                insertedNodeValue = extractedValue;
+                break;
+              }
+            }
+          }
+        }
+
+        // Fallback 2: If no match found but there's a new entering node, use it
+        if (!insertedNodeValue && newEnteringNodes.size > 0) {
+          insertedNodeValue = Array.from(newEnteringNodes)[0];
+        }
+      }
+    }
+
+    // Only set state if we found a specific target node
+    if (targetNode) {
+      if (newExitingNodes.has(targetNode)) {
+        setExitingNodes(new Set([targetNode]));
+      } else {
+        setExitingNodes(new Set());
+      }
+    } else {
+      // No target node found - clear states
+      setExitingNodes(new Set());
+    }
+
+    // Set current node from backend (for animation)
+    if (currentNodeValue) {
+      setCurrentNode(currentNodeValue);
+
+      // Find path from root to current node
+      const pathToCurrent = findPathToNode(root, currentNodeValue);
+      setPathNodes(new Set(pathToCurrent));
+    } else {
+      // Clear current node when step changes (no current node in this step)
+      setCurrentNode(null);
+      setPathNodes(new Set());
+    }
+
+    // Set insert path and inserted node
+    // Keep inserted node highlighted permanently (until new insert or node is deleted)
+    if (insertedNodeValue) {
+      // New insert - set the inserted node
+      setInsertedNode(insertedNodeValue);
+    } else {
+      // No new insert in this step - only clear if node was deleted
+      if (insertedNode && !currentValues.has(insertedNode)) {
+        // Inserted node was deleted - clear it
+        setInsertedNode(null);
+      }
+      // Otherwise keep the existing insertedNode (don't clear it)
+    }
+
+    if (previousNodes.length > 0 || newEnteringNodes.size > 0 || newExitingNodes.size > 0) {
       setIsTransitioning(true);
       const timer = setTimeout(() => setIsTransitioning(false), 800);
       return () => clearTimeout(timer);
     }
     setPreviousNodes(positionedNodes);
-  }, [positionedNodes, previousNodes.length]);
+    previousRootRef.current = root;
+  }, [
+    positionedNodes,
+    previousNodes.length,
+    root,
+    extractNodeValues,
+    steps,
+    currentStepIndex,
+    insertedNode,
+    currentNode,
+    findPathToNode,
+  ]);
+
+  // Animation effect for path connections
+  useEffect(() => {
+    if (!currentNode || pathNodes.size === 0) {
+      setActiveConnectionIndex(null);
+      setConnectionProgress(0);
+      setActiveParentNode(null);
+      setAnimatedNodes(new Set());
+      setCompletedConnections(new Set());
+      return;
+    }
+
+    // Get path connections
+    const pathValues = Array.from(pathNodes);
+    const pathConnections = getPathConnections(root, pathValues, positionedNodes);
+
+    if (pathConnections.length === 0) {
+      setActiveConnectionIndex(null);
+      setConnectionProgress(0);
+      setActiveParentNode(null);
+      setAnimatedNodes(new Set());
+      setCompletedConnections(new Set());
+      return;
+    }
+
+    // Reset animation state
+    setActiveConnectionIndex(null);
+    setConnectionProgress(0);
+    setActiveParentNode(null);
+    setAnimatedNodes(new Set());
+    setCompletedConnections(new Set());
+
+    // Animate each connection sequentially
+    let currentIndex = 0;
+    let animationFrameId: number | null = null;
+    let startTime: number | null = null;
+    const duration = 1500; // 1.5 seconds per connection
+
+    const animateConnection = () => {
+      if (currentIndex >= pathConnections.length) {
+        // All connections animated, mark all as completed
+        const allConnectionKeys = new Set(pathConnections.map((conn) => conn.connectionKey));
+        setCompletedConnections(allConnectionKeys);
+        setActiveConnectionIndex(null);
+        setConnectionProgress(1);
+        return;
+      }
+
+      const connection = pathConnections[currentIndex];
+      setActiveConnectionIndex(currentIndex);
+      // Set parent node as active (fill orange) when starting animation
+      setActiveParentNode(connection.parentValue);
+
+      const animate = (timestamp: number) => {
+        if (startTime === null) {
+          startTime = timestamp;
+        }
+
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        setConnectionProgress(progress);
+
+        if (progress < 1) {
+          animationFrameId = requestAnimationFrame(animate);
+        } else {
+          // Connection complete - mark parent node as animated (border orange) and clear active parent
+          setAnimatedNodes((prev) => new Set([...prev, connection.parentValue]));
+          setActiveParentNode(null);
+          setCompletedConnections((prev) => new Set([...prev, connection.connectionKey]));
+          setConnectionProgress(0);
+          startTime = null;
+          currentIndex++;
+          setTimeout(() => {
+            animateConnection();
+          }, 300); // 0.3s delay between connections
+        }
+      };
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    // Start animation after a short delay
+    const timeoutId = setTimeout(() => {
+      animateConnection();
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [currentNode, pathNodes, root, positionedNodes, getPathConnections]);
 
   // Memoized node component
   const NodeComponent = memo<{
     node: PositionedNode;
-    isHighlighted: boolean;
     isInSearchPath: boolean;
     isTraverseSelected: boolean;
     isCurrentlyTraversing: boolean;
-    isRunning: boolean;
-    isTransitioning: boolean;
+    isInsertedNode: boolean;
+    isCurrentNode: boolean;
+    isInPath: boolean;
+    isAnimatedNode: boolean;
+    isActiveParent: boolean;
   }>(
     ({
       node,
-      isHighlighted,
       isInSearchPath,
       isTraverseSelected,
       isCurrentlyTraversing,
-      isRunning,
-      isTransitioning,
+      isInsertedNode,
+      isCurrentNode,
+      isInPath,
+      isAnimatedNode,
+      isActiveParent,
     }) => (
       <div
-        className={`absolute -translate-x-1/2 -translate-y-1/2 transform transition-all duration-700 ease-in-out ${
-          isTransitioning ? 'animate-pulse' : ''
-        }`}
+        className="absolute -translate-x-1/2 -translate-y-1/2 transform"
         style={{
           left: `calc(50% + ${node.x}px)`,
           top: `${node.y}px`,
         }}
+        ref={(el) => {
+          if (el) {
+            nodeRefs.current.set(node.value, el);
+          } else {
+            nodeRefs.current.delete(node.value);
+          }
+        }}
       >
         <div
-          className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-700 ease-in-out ${
-            isHighlighted
-              ? 'scale-110 animate-bounce border-yellow-400 bg-yellow-200 text-yellow-800 shadow-lg'
-              : isInSearchPath
-                ? 'scale-105 animate-pulse border-blue-400 bg-blue-200 text-blue-800 shadow-md'
-                : isTraverseSelected || isCurrentlyTraversing
-                  ? 'scale-110 animate-bounce border-green-400 bg-green-200 text-green-800 shadow-lg'
-                  : 'border-black bg-transparent text-gray-800 hover:scale-105 hover:shadow-md'
-          } ${isRunning ? 'animate-pulse' : ''} ${isTransitioning ? 'animate-pulse' : ''}`}
+          className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold ${
+            isCurrentNode
+              ? 'border-orange-500 bg-orange-200 text-orange-800 shadow-lg'
+              : isInsertedNode
+                ? 'border-yellow-400 bg-yellow-200 text-yellow-800 shadow-lg'
+                : isActiveParent
+                  ? 'border-orange-500 bg-orange-200 text-orange-800 shadow-lg'
+                  : isAnimatedNode
+                    ? 'border-orange-500 bg-transparent text-gray-800 shadow-md'
+                    : isInPath && !isAnimatedNode
+                      ? 'border-orange-500 bg-orange-200 text-orange-800 shadow-md'
+                      : isInSearchPath
+                        ? 'border-blue-400 bg-blue-200 text-blue-800 shadow-md'
+                        : isTraverseSelected || isCurrentlyTraversing
+                          ? 'border-green-400 bg-green-200 text-green-800 shadow-lg'
+                          : 'border-black bg-transparent text-gray-800 hover:shadow-md'
+          }`}
         >
           {node.value}
-          {isHighlighted && (
-            <div className="absolute -top-2 -right-2 h-4 w-4 animate-ping rounded-full bg-yellow-400" />
+          {/* Show "root" label for root node */}
+          {node.level === 0 && !isCurrentNode && (
+            <div className="absolute top-1/2 -right-16 -translate-y-1/2 whitespace-nowrap">
+              <div className="flex items-center space-x-1">
+                <div className="text-xs font-normal text-gray-600">→</div>
+                <div className="rounded border border-gray-300 bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600">
+                  root
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Show "current" label for current node */}
+          {isCurrentNode && (
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap">
+              <div className="flex flex-col items-center">
+                <div className="text-lg font-bold text-orange-500">↓</div>
+                <div className="rounded border border-orange-300 bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-600">
+                  current
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Show both "root" and "current" if root is also current */}
+          {node.level === 0 && isCurrentNode && (
+            <div className="absolute top-1/2 -right-16 -translate-y-1/2 whitespace-nowrap">
+              <div className="flex items-center space-x-1">
+                <div className="text-xs font-normal text-orange-500">→</div>
+                <div className="rounded border border-orange-300 bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-600">
+                  root
+                </div>
+              </div>
+            </div>
           )}
           {(isTraverseSelected || isCurrentlyTraversing) && (
-            <div className="absolute -top-2 -right-2 h-4 w-4 animate-ping rounded-full bg-green-400" />
-          )}
-          {isTransitioning && (
-            <div className="absolute inset-0 animate-ping rounded-full border-2 border-blue-300" />
+            <div className="absolute -top-2 -right-2 h-4 w-4 rounded-full bg-green-400" />
           )}
         </div>
       </div>
@@ -380,8 +832,13 @@ const BSTStepthroughVisualization = forwardRef<
 
   const renderNode = useCallback(
     (node: PositionedNode): React.ReactNode => {
-      const isHighlighted = highlightedNodes.includes(node.value);
       const isInSearchPath = searchPath.includes(node.value);
+      const isExiting = exitingNodes.has(node.value);
+      const isInsertedNode = insertedNode === node.value;
+      const isCurrentNode = currentNode === node.value;
+      const isInPath = pathNodes.has(node.value) && !isCurrentNode;
+      const isAnimatedNode = animatedNodes.has(node.value);
+      const isActiveParent = activeParentNode === node.value;
 
       // Check if this node should be animated during traversal
       const isTraverseSelected = Boolean(
@@ -396,27 +853,38 @@ const BSTStepthroughVisualization = forwardRef<
           node.value === traversalOrder[traverseIndex],
       );
 
+      // Don't render exiting nodes after animation
+      if (isExiting && !isTransitioning) {
+        return null;
+      }
+
       return (
         <NodeComponent
           key={node.id}
           node={node}
-          isHighlighted={isHighlighted}
           isInSearchPath={isInSearchPath}
           isTraverseSelected={isTraverseSelected}
           isCurrentlyTraversing={isCurrentlyTraversing}
-          isRunning={isRunning ?? false}
-          isTransitioning={isTransitioning}
+          isInsertedNode={isInsertedNode}
+          isCurrentNode={isCurrentNode}
+          isInPath={isInPath}
+          isAnimatedNode={isAnimatedNode}
+          isActiveParent={isActiveParent}
         />
       );
     },
     [
-      highlightedNodes,
       searchPath,
       isTraversing,
       traverseIndex,
       traversalOrder,
-      isRunning,
       isTransitioning,
+      exitingNodes,
+      insertedNode,
+      currentNode,
+      pathNodes,
+      animatedNodes,
+      activeParentNode,
       NodeComponent,
     ],
   );
@@ -426,6 +894,12 @@ const BSTStepthroughVisualization = forwardRef<
       if (!treeRoot) return null;
 
       const connections: React.ReactNode[] = [];
+
+      // Get path connections if we have a current node
+      const pathValues = currentNode ? Array.from(pathNodes) : [];
+      const pathConnections = currentNode
+        ? getPathConnections(treeRoot, pathValues, positionedNodes)
+        : [];
 
       const addConnection = (parent: PositionedNode, child: PositionedNode | null) => {
         if (!child) return;
@@ -442,22 +916,68 @@ const BSTStepthroughVisualization = forwardRef<
         const lineLength = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         const lineAngle = (Math.atan2(deltaY, deltaX) * 180) / Math.PI;
 
+        // Check if this connection is part of the path to current node
+        const isInPath = pathNodes.has(parent.value) && pathNodes.has(child.value);
+
+        const connectionKey = `${parent.id}-${child.id}`;
+        const pathConnection = pathConnections.find((conn) => conn.connectionKey === connectionKey);
+        const isActive = pathConnection && activeConnectionIndex === pathConnection.index;
+        const isCompleted = completedConnections.has(connectionKey);
+
+        // Determine base line color
+        const baseColor = isTransitioning ? '#3b82f6' : '#000000';
+
+        // Calculate animated width for active connection
+        const animatedWidth = isActive ? connectionProgress * lineLength : isCompleted ? lineLength : 0;
+        const showOverlay = isActive || isCompleted;
+
         connections.push(
           <div
-            key={`${parent.id}-${child.id}`}
-            className={`pointer-events-none absolute z-0 transition-all duration-700 ease-in-out ${
-              isTransitioning ? 'animate-pulse' : ''
-            }`}
+            key={connectionKey}
+            className="pointer-events-none absolute z-0"
             style={{
               left: `calc(50% + ${parentX}px)`,
               top: `${parentY}px`,
               width: `${lineLength}px`,
-              height: '2px',
-              backgroundColor: isTransitioning ? '#3b82f6' : '#000000',
+              height: isInPath ? '3px' : '2px',
               transformOrigin: '0 50%',
               transform: `rotate(${lineAngle}deg)`,
+              opacity: isTransitioning ? 0.5 : 1,
             }}
-          />,
+            ref={(el) => {
+              if (el) {
+                connectionRefs.current.set(connectionKey, el);
+              } else {
+                connectionRefs.current.delete(connectionKey);
+              }
+            }}
+          >
+            {/* Base line (black) */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                backgroundColor: baseColor,
+              }}
+            />
+            {/* Animated orange overlay */}
+            {showOverlay && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: `${animatedWidth}px`,
+                  height: '100%',
+                  backgroundColor: '#f97316',
+                  transition: isActive ? 'none' : 'width 0.3s ease-out',
+                }}
+              />
+            )}
+          </div>,
         );
       };
 
@@ -472,7 +992,15 @@ const BSTStepthroughVisualization = forwardRef<
 
       return <>{connections}</>;
     },
-    [isTransitioning],
+    [
+      isTransitioning,
+      pathNodes,
+      currentNode,
+      activeConnectionIndex,
+      connectionProgress,
+      completedConnections,
+      getPathConnections,
+    ],
   );
 
   // Render a single tree
@@ -486,27 +1014,31 @@ const BSTStepthroughVisualization = forwardRef<
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-700">{treeName}</h3>
-            <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
+            <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
               <div className="text-center text-gray-500">
                 <div className="text-lg font-semibold">Tree is Empty</div>
                 <div className="text-sm">Add nodes using Insert operation</div>
               </div>
             </div>
             {treeData && (
-              <div className="rounded-lg bg-gray-50 p-3">
-                <h5 className="mb-2 font-medium text-gray-700">Tree {treeName} Information</h5>
+              <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+                <h5 className="mb-2 font-medium text-gray-700 dark:text-gray-300">
+                  Tree {treeName} Information
+                </h5>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span className="font-medium text-gray-600">Size:</span>
-                    <span className="ml-2 text-gray-800">{treeData.size}</span>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">Size:</span>
+                    <span className="ml-2 text-gray-800 dark:text-gray-200">{treeData.size}</span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-600">Is Empty:</span>
-                    <span className="ml-2 text-gray-800">{treeData.isEmpty ? 'Yes' : 'No'}</span>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">Is Empty:</span>
+                    <span className="ml-2 text-gray-800 dark:text-gray-200">
+                      {treeData.isEmpty ? 'Yes' : 'No'}
+                    </span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-600">Height:</span>
-                    <span className="ml-2 text-gray-800">{treeData.height}</span>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">Height:</span>
+                    <span className="ml-2 text-gray-800 dark:text-gray-200">{treeData.height}</span>
                   </div>
                 </div>
               </div>
@@ -522,7 +1054,7 @@ const BSTStepthroughVisualization = forwardRef<
       return (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-700">{treeName}</h3>
-          <div className="relative min-h-[400px] overflow-auto rounded-lg bg-gray-50">
+          <div className="relative min-h-[400px] overflow-auto rounded-lg bg-gray-50 dark:bg-gray-800">
             <div className="relative flex h-full min-h-[400px] w-full justify-center">
               <div className="relative" style={{ minWidth: '800px', minHeight: '400px' }}>
                 {/* Render connections first (behind nodes) */}
@@ -535,36 +1067,42 @@ const BSTStepthroughVisualization = forwardRef<
           </div>
 
           {/* Tree Information */}
-          <div className="rounded-lg bg-gray-50 p-3">
-            <h5 className="mb-2 font-medium text-gray-700">Tree {treeName} Information</h5>
+          <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+            <h5 className="mb-2 font-medium text-gray-700 dark:text-gray-300">
+              Tree {treeName} Information
+            </h5>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <span className="font-medium text-gray-600">Size:</span>
-                <span className="ml-2 text-gray-800">{treeData?.size || 0}</span>
+                <span className="font-medium text-gray-600 dark:text-gray-400">Size:</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">{treeData?.size || 0}</span>
               </div>
               <div>
-                <span className="font-medium text-gray-600">Is Empty:</span>
-                <span className="ml-2 text-gray-800">{treeData?.isEmpty ? 'Yes' : 'No'}</span>
+                <span className="font-medium text-gray-600 dark:text-gray-400">Is Empty:</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">
+                  {treeData?.isEmpty ? 'Yes' : 'No'}
+                </span>
               </div>
               <div>
-                <span className="font-medium text-gray-600">Height:</span>
-                <span className="ml-2 text-gray-800">{treeData?.height || 0}</span>
+                <span className="font-medium text-gray-600 dark:text-gray-400">Height:</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">
+                  {treeData?.height || 0}
+                </span>
               </div>
               <div>
-                <span className="font-medium text-gray-600">Preorder:</span>
-                <span className="ml-2 text-gray-800">
+                <span className="font-medium text-gray-600 dark:text-gray-400">Preorder:</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">
                   {traversalResults.preorder.join(', ') || 'None'}
                 </span>
               </div>
               <div>
-                <span className="font-medium text-gray-600">Inorder:</span>
-                <span className="ml-2 text-gray-800">
+                <span className="font-medium text-gray-600 dark:text-gray-400">Inorder:</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">
                   {traversalResults.inorder.join(', ') || 'None'}
                 </span>
               </div>
               <div>
-                <span className="font-medium text-gray-600">Postorder:</span>
-                <span className="ml-2 text-gray-800">
+                <span className="font-medium text-gray-600 dark:text-gray-400">Postorder:</span>
+                <span className="ml-2 text-gray-800 dark:text-gray-200">
                   {traversalResults.postorder.join(', ') || 'None'}
                 </span>
               </div>
@@ -580,12 +1118,18 @@ const BSTStepthroughVisualization = forwardRef<
   const showMultipleTrees = Object.keys(allTrees).length > 1;
 
   return (
-    <div ref={ref} className="rounded-lg bg-white p-6 shadow" suppressHydrationWarning>
+    <div
+      ref={ref}
+      className="rounded-lg bg-white p-6 shadow dark:bg-gray-800"
+      suppressHydrationWarning
+    >
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-800">BST Visualization</h2>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+          BST Visualization
+        </h2>
         {isRunning && (
-          <div className="flex items-center space-x-2 text-sm text-blue-600">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600" />
+          <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+            <div className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" />
             <span>Running...</span>
           </div>
         )}
@@ -607,7 +1151,10 @@ const BSTStepthroughVisualization = forwardRef<
             {Object.entries(allTrees)
               .filter(([, treeData]) => treeData.root !== null)
               .map(([treeName, treeData]) => (
-                <div key={treeName} className="rounded-lg border bg-white p-4">
+                <div
+                  key={treeName}
+                  className="rounded-lg border bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+                >
                   {renderSingleTree(treeData.root, `Tree ${treeName}`, treeData)}
                 </div>
               ))}
@@ -615,7 +1162,7 @@ const BSTStepthroughVisualization = forwardRef<
         </div>
       ) : (
         <ZoomableContainer
-          className="min-h-[400px] rounded-lg bg-gray-50"
+          className="min-h-[400px] rounded-lg bg-gray-50 dark:bg-gray-800"
           minZoom={0.3}
           maxZoom={2}
           initialZoom={1}
@@ -689,28 +1236,46 @@ const BSTStepthroughVisualization = forwardRef<
         </div>
       )}
 
-      {/* Traversal Order Display - Single Tree */}
-      {!showMultipleTrees && traversalOrder.length > 0 && (
-        <div className="mt-4 rounded-lg bg-green-50 p-3">
-          <div className="text-sm font-medium text-green-800">Traversal Order:</div>
-          <div className="text-sm text-green-700">
-            {traversalOrder.map((value, index) => (
-              <span
-                key={index}
-                className={`mx-1 inline-block rounded px-2 py-1 transition-all duration-300 ${
-                  isTraversing && index === traverseIndex
-                    ? 'scale-110 bg-green-200 font-bold text-green-800'
-                    : index < traverseIndex
-                      ? 'bg-green-100 text-green-600'
-                      : 'bg-gray-100 text-gray-500'
-                }`}
-              >
-                {value}
-              </span>
-            ))}
+
+
+      {/* Console Output */}
+      <div className="mt-4 overflow-hidden rounded-lg bg-gray-900 shadow-inner dark:bg-black">
+        <div className="border-b border-gray-700 bg-gray-800 px-4 py-2 dark:bg-gray-900">
+          <div className="flex items-center space-x-2">
+            <svg
+              className="h-4 w-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <span className="font-mono text-sm font-semibold text-gray-300">Console Output</span>
           </div>
         </div>
-      )}
+        <div className="max-h-40 min-h-[60px] overflow-y-auto p-4 font-mono text-sm">
+          {(() => {
+            const currentStep = steps.length > 0 && currentStepIndex < steps.length ? steps[currentStepIndex] : null;
+            const printOutput = currentStep?.state?.print_output as string[] | undefined;
+
+            if (!printOutput || printOutput.length === 0) {
+              return <div className="italic text-gray-600 dark:text-gray-600">No output generated...</div>;
+            }
+
+            return printOutput.map((line, idx) => (
+              <div key={idx} className="whitespace-pre-wrap text-green-400">
+                <span className="mr-2 text-gray-600 select-none">$</span>
+                {line}
+              </div>
+            ));
+          })()}
+        </div>
+      </div>
 
       {/* Legend */}
       <div className="mt-4 flex flex-wrap gap-4 text-xs">

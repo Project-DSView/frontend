@@ -118,8 +118,6 @@ export type {
   ExportPNGButtonProps,
   FileUploadButtonProps,
   // Card
-  Feature,
-  FeatureCardProps,
   CourseCardProps,
   CourseCardWithEnrollmentProps,
   MaterialCardProps,
@@ -366,6 +364,8 @@ export type {
 export type { BSTData } from './stepthrough/BST.types';
 
 export type {
+  DebugState,
+  Breakpoint,
   StepthroughRequest,
   StepthroughStep,
   StepthroughResponse,
@@ -387,6 +387,13 @@ export type { StackData, StackInstanceData, StackStepDetail } from './stepthroug
 export type { QueueData, QueueStats } from './stepthrough/Queue.types';
 
 export type { UndirectedGraphData } from './stepthrough/UndirectedGraph.types';
+export type {
+  ASTNodeMetadata,
+  ASTInfo,
+  ASTClassification,
+  ASTVisualizationProps,
+} from './stepthrough/ast.types';
+export type { InputState } from './stepthrough/common.types';
 
 // Schemas - All schema types in one file
 export type {

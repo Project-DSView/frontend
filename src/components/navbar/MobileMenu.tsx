@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 
@@ -12,7 +12,7 @@ import { Menu, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
-const MobileMenu = () => {
+const MobileMenu = React.memo(() => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<number[]>([]);
   const [expandedSubItems, setExpandedSubItems] = useState<string[]>([]);
@@ -64,7 +64,7 @@ const MobileMenu = () => {
         isMobileMenuOpen &&
         typeof document !== 'undefined' &&
         createPortal(
-          <div className="border-border bg-background fixed inset-x-0 top-[56px] z-[10000] border-t shadow-2xl md:hidden">
+          <div className="border-border bg-background fixed inset-x-0 top-[72px] z-[10000] border-t shadow-2xl md:hidden">
             <div className="max-h-[70vh] overflow-y-auto px-4 py-6">
               <div className="space-y-4">
                 {/* Mobile Playground Items */}
@@ -219,6 +219,8 @@ const MobileMenu = () => {
         )}
     </>
   );
-};
+});
+
+MobileMenu.displayName = 'MobileMenu';
 
 export default MobileMenu;

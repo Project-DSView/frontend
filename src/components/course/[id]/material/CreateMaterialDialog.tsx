@@ -4,7 +4,7 @@ import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { useForm } from '@tanstack/react-form';
 
-import { useCreateMaterial, useUpdateMaterial } from '@/query/material/material.query';
+import { useCreateMaterial, useUpdateMaterial } from '@/query';
 import { materialSchema } from '@/lib/schemas/material.schema';
 import { z } from 'zod';
 
@@ -189,25 +189,27 @@ const CreateMaterialDialog: React.FC<CreateMaterialDialogProps> = ({
           return [];
         }
         // Convert test cases to the expected format
-        return materialToEdit.test_cases.map((tc: {
-          input_data?: string | object;
-          expected_output?: string | object;
-          display_name?: string | null;
-        }) => ({
-          input_data:
-            typeof tc.input_data === 'string'
-              ? tc.input_data
-              : typeof tc.input_data === 'object'
-                ? JSON.stringify(tc.input_data)
-                : String(tc.input_data || ''),
-          expected_output:
-            typeof tc.expected_output === 'string'
-              ? tc.expected_output
-              : typeof tc.expected_output === 'object'
-                ? JSON.stringify(tc.expected_output)
-                : String(tc.expected_output || ''),
-          display_name: tc.display_name || '',
-        }));
+        return materialToEdit.test_cases.map(
+          (tc: {
+            input_data?: string | object;
+            expected_output?: string | object;
+            display_name?: string | null;
+          }) => ({
+            input_data:
+              typeof tc.input_data === 'string'
+                ? tc.input_data
+                : typeof tc.input_data === 'object'
+                  ? JSON.stringify(tc.input_data)
+                  : String(tc.input_data || ''),
+            expected_output:
+              typeof tc.expected_output === 'string'
+                ? tc.expected_output
+                : typeof tc.expected_output === 'object'
+                  ? JSON.stringify(tc.expected_output)
+                  : String(tc.expected_output || ''),
+            display_name: tc.display_name || '',
+          }),
+        );
       })(),
       // Announcement fields
       content: materialToEdit?.content || '',
@@ -358,25 +360,27 @@ const CreateMaterialDialog: React.FC<CreateMaterialDialogProps> = ({
         if (!materialToEdit.test_cases || !Array.isArray(materialToEdit.test_cases)) {
           return [];
         }
-        return materialToEdit.test_cases.map((tc: {
-          input_data?: string | object;
-          expected_output?: string | object;
-          display_name?: string | null;
-        }) => ({
-          input_data:
-            typeof tc.input_data === 'string'
-              ? tc.input_data
-              : typeof tc.input_data === 'object'
-                ? JSON.stringify(tc.input_data)
-                : String(tc.input_data || ''),
-          expected_output:
-            typeof tc.expected_output === 'string'
-              ? tc.expected_output
-              : typeof tc.expected_output === 'object'
-                ? JSON.stringify(tc.expected_output)
-                : String(tc.expected_output || ''),
-          display_name: tc.display_name || '',
-        }));
+        return materialToEdit.test_cases.map(
+          (tc: {
+            input_data?: string | object;
+            expected_output?: string | object;
+            display_name?: string | null;
+          }) => ({
+            input_data:
+              typeof tc.input_data === 'string'
+                ? tc.input_data
+                : typeof tc.input_data === 'object'
+                  ? JSON.stringify(tc.input_data)
+                  : String(tc.input_data || ''),
+            expected_output:
+              typeof tc.expected_output === 'string'
+                ? tc.expected_output
+                : typeof tc.expected_output === 'object'
+                  ? JSON.stringify(tc.expected_output)
+                  : String(tc.expected_output || ''),
+            display_name: tc.display_name || '',
+          }),
+        );
       })();
 
       form.reset({
@@ -878,21 +882,25 @@ const CreateMaterialDialog: React.FC<CreateMaterialDialogProps> = ({
                               ไฟล์ใหม่: {field.state.value.name} (
                               {(field.state.value.size / 1024 / 1024).toFixed(2)} MB)
                             </p>
-                          ) : isEditMode && materialToEdit?.problem_images && materialToEdit.problem_images.length > 0 ? (
+                          ) : isEditMode &&
+                            materialToEdit?.problem_images &&
+                            materialToEdit.problem_images.length > 0 ? (
                             <div className="mt-1">
                               <p className="text-xs text-gray-500">ไฟล์ปัจจุบัน:</p>
                               <ul className="mt-1 list-inside list-disc space-y-1 text-xs text-gray-600">
-                                {materialToEdit.problem_images.map((imgUrl: string, idx: number) => {
-                                  const filename = imgUrl.split('/').pop() || `รูปภาพ-${idx + 1}`;
-                                  return <li key={idx}>{filename}</li>;
-                                })}
+                                {materialToEdit.problem_images.map(
+                                  (imgUrl: string, idx: number) => {
+                                    const filename = imgUrl.split('/').pop() || `รูปภาพ-${idx + 1}`;
+                                    return <li key={idx}>{filename}</li>;
+                                  },
+                                )}
                               </ul>
                               <p className="mt-1 text-xs text-gray-400">
                                 (ไม่เลือกไฟล์ใหม่ = ใช้รูปภาพเดิม)
                               </p>
                             </div>
                           ) : (
-                            <p className="mt-1 text-xs text-muted-foreground">
+                            <p className="text-muted-foreground mt-1 text-xs">
                               {isEditMode ? '(ไม่เลือก = ใช้รูปภาพเดิม)' : 'กรุณาเลือกไฟล์'}
                             </p>
                           )}

@@ -202,7 +202,7 @@ const SubmittedPDFCard: React.FC<SubmittedPDFCardProps> = ({
       <CardContent>
         <div className="space-y-4">
           {/* File information */}
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <div className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-red-600 dark:text-red-400" />
               <div className="flex-1">
@@ -224,7 +224,7 @@ const SubmittedPDFCard: React.FC<SubmittedPDFCardProps> = ({
           {submission.status === 'completed' && (
             <div className="space-y-3">
               {(submission.total_score !== undefined || submission.score !== undefined) && (
-                <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-4">
+                <div className="rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                     <span className="text-sm font-medium text-green-900 dark:text-green-300">
@@ -240,18 +240,24 @@ const SubmittedPDFCard: React.FC<SubmittedPDFCardProps> = ({
               )}
 
               {submission.feedback && (
-                <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-4">
-                  <h4 className="mb-2 text-sm font-medium text-blue-900 dark:text-blue-300">ความคิดเห็นจากอาจารย์</h4>
-                  <p className="text-sm whitespace-pre-wrap text-blue-800 dark:text-blue-300">{submission.feedback}</p>
+                <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+                  <h4 className="mb-2 text-sm font-medium text-blue-900 dark:text-blue-300">
+                    ความคิดเห็นจากอาจารย์
+                  </h4>
+                  <p className="text-sm whitespace-pre-wrap text-blue-800 dark:text-blue-300">
+                    {submission.feedback}
+                  </p>
                 </div>
               )}
 
               {/* Show feedback file section if graded (even if no feedback_file_url yet) */}
               {submission.graded_at && (
-                <div className="rounded-lg bg-purple-50 dark:bg-purple-900/20 p-4">
+                <div className="rounded-lg bg-purple-50 p-4 dark:bg-purple-900/20">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="mb-1 text-sm font-medium text-purple-900 dark:text-purple-300">ไฟล์ Feedback</h4>
+                      <h4 className="mb-1 text-sm font-medium text-purple-900 dark:text-purple-300">
+                        ไฟล์ Feedback
+                      </h4>
                       <p className="text-xs text-purple-700 dark:text-purple-300">
                         {submission.feedback_file_url
                           ? 'อาจารย์ได้อัปโหลดไฟล์ PDF ที่ตรวจแล้ว'
@@ -310,9 +316,13 @@ const SubmittedPDFCard: React.FC<SubmittedPDFCardProps> = ({
 
           {/* Error feedback (if rejected) */}
           {submission.status === 'error' && submission.feedback && (
-            <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4">
-              <h4 className="mb-2 text-sm font-medium text-red-900 dark:text-red-300">ข้อเสนอแนะ</h4>
-              <p className="text-sm whitespace-pre-wrap text-red-800 dark:text-red-300">{submission.feedback}</p>
+            <div className="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
+              <h4 className="mb-2 text-sm font-medium text-red-900 dark:text-red-300">
+                ข้อเสนอแนะ
+              </h4>
+              <p className="text-sm whitespace-pre-wrap text-red-800 dark:text-red-300">
+                {submission.feedback}
+              </p>
             </div>
           )}
 

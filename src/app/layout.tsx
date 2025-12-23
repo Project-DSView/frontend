@@ -4,6 +4,7 @@ import { ReactQueryProvider } from '@/providers/ReactQueryProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
 import { Toaster } from '@/components/ui/sonner';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { notoSansThai } from '@/lib/utils/fonts';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://dsview.it.kmitl.ac.th/'),
@@ -43,8 +44,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans antialiased`}>
+    <html lang="en" suppressHydrationWarning className={notoSansThai.variable}>
+      <body className="font-sans antialiased">
         <ThemeProvider>
           <ReactQueryProvider>
             {children}

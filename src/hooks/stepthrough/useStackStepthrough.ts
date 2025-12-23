@@ -29,26 +29,49 @@ class StackStepthroughService implements BaseStepthroughService<StackData, Stack
 
     if (state.instances) {
       // Look for all stack instances in the state
+      // Look for all stack instances in the state
       Object.entries(state.instances).forEach(([instanceName, instanceData]) => {
+        console.log(`🔍 Processing instance: ${instanceName}`, instanceData);
+        let stackData: string[] | null = null;
+
+        // Case 1: ArrayStack instance (has .data property)
         if (instanceData && typeof instanceData === 'object' && 'data' in instanceData) {
           const instance = instanceData as StackInstanceData;
           if (Array.isArray(instance.data)) {
-            const stackData = instance.data.map((item: unknown) => String(item));
-            allStacks[instanceName] = {
-              data: stackData,
-              size: instance.size || stackData.length,
-              isEmpty: instance.isEmpty || stackData.length === 0,
-              top: instance.top
-                ? String(instance.top)
-                : stackData.length > 0
-                  ? stackData[stackData.length - 1]
-                  : null,
-            };
+            stackData = instance.data.map((item: unknown) => String(item));
+          }
+        }
+        // Case 2: Plain list (is an array)
+        else if (Array.isArray(instanceData)) {
+          stackData = instanceData.map((item: unknown) => String(item));
+        }
 
-            // Use the first stack as primary elements for backward compatibility
-            if (elements.length === 0) {
-              elements = stackData;
-            }
+        if (stackData) {
+          allStacks[instanceName] = {
+            data: stackData,
+            size: stackData.length, // Default to length if size not available
+            isEmpty: stackData.length === 0,
+            top: stackData.length > 0 ? stackData[stackData.length - 1] : null,
+          };
+
+          // Try to extract extra properties if available (for ArrayStack)
+          if (instanceData && typeof instanceData === 'object' && !Array.isArray(instanceData)) {
+            const instance = instanceData as Record<string, unknown>;
+            if (typeof instance.size === 'number') allStacks[instanceName].size = instance.size;
+            if (typeof instance.isEmpty === 'boolean')
+              allStacks[instanceName].isEmpty = instance.isEmpty;
+            if (instance.top !== undefined) allStacks[instanceName].top = String(instance.top);
+          }
+
+          // Use the first stack as primary elements for backward compatibility
+          // Prioritize 's1' or 'stack' or 'main' if available, otherwise just use the first one found
+          if (
+            elements.length === 0 ||
+            instanceName === 's1' ||
+            instanceName === 'main' ||
+            instanceName === 'stack'
+          ) {
+            elements = stackData;
           }
         }
       });
@@ -90,6 +113,30 @@ class StackStepthroughService implements BaseStepthroughService<StackData, Stack
           const stepDetail = currentState.step_detail as StackStepDetail;
           if (stepDetail.after_data && Array.isArray(stepDetail.after_data)) {
             elements = stepDetail.after_data.map((item: unknown) => String(item));
+          }
+        }
+      }
+    }
+
+    // Fallback: Check print_output if elements are still empty
+    if (elements.length === 0 && state.print_output && Array.isArray(state.print_output)) {
+      for (const outputLine of state.print_output) {
+        if (
+          typeof outputLine === 'string' &&
+          outputLine.trim().startsWith('[') &&
+          outputLine.trim().endsWith(']')
+        ) {
+          try {
+            // Replace single quotes with double quotes for valid JSON parsing if needed
+            const jsonString = outputLine.replace(/'/g, '"');
+            const parsed = JSON.parse(jsonString);
+            if (Array.isArray(parsed)) {
+              elements = parsed.map((item: unknown) => String(item));
+              // Break after finding the first valid list representation in print output
+              break;
+            }
+          } catch {
+            console.warn('Failed to parse stack from print output:', outputLine);
           }
         }
       }
