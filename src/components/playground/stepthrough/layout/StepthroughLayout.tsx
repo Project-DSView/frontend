@@ -70,10 +70,10 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
       const hasSeenTutorial = localStorage.getItem(storageKey) === 'completed';
 
       if (!hasSeenTutorial) {
-         const timer = setTimeout(() => {
-            setIsTutorialOpen(true);
-         }, 800); // Slight delay for layout to settle
-         return () => clearTimeout(timer);
+        const timer = setTimeout(() => {
+          setIsTutorialOpen(true);
+        }, 800); // Slight delay for layout to settle
+        return () => clearTimeout(timer);
       }
     }
   }, [pathname]);
@@ -280,12 +280,12 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
         // 1. We are explicitly collecting inputs (upfront mode)
         // 2. OR We are waiting for input AND we are at the last step (current execution tip)
         const isAtLastStep = steps.length > 0 && currentStepIndex === steps.length - 1;
-        
-        const shouldShow = inputState && (
-          inputState.collectingInputs === true || 
-          (inputState.waitingForInput === true && isAtLastStep)
-        );
-        
+
+        const shouldShow =
+          inputState &&
+          (inputState.collectingInputs === true ||
+            (inputState.waitingForInput === true && isAtLastStep));
+
         // Debug toggles - remove in production or rely on props
         // console.log('💬 InputDialog check:', { waiting: inputState?.waitingForInput, isAtLastStep, shouldShow });
 
@@ -299,10 +299,12 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
 
         if (inputState.waitingForInput) {
           // Interactive mode: Single prompt
-          dialogPrompts = [{
-            prompt: inputState.inputPrompt || 'Enter value',
-            inputId: inputState.inputId || Date.now()
-          }];
+          dialogPrompts = [
+            {
+              prompt: inputState.inputPrompt || 'Enter value',
+              inputId: inputState.inputId || Date.now(),
+            },
+          ];
           dialogTotal = 1;
         } else if (inputState.collectingInputs) {
           // Upfront mode: Multiple prompts from history/definitions

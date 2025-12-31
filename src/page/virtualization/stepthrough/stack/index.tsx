@@ -16,7 +16,7 @@ const StepthroughStack: React.FC = () => {
   console.log('🔍 useStepthroughStack result:', hookResult);
   console.log('🔍 hookResult.state:', hookResult.state);
   console.log('🔍 hookResult.state.inputState:', hookResult.state?.inputState);
-  
+
   const {
     state,
     setCode,
@@ -32,7 +32,7 @@ const StepthroughStack: React.FC = () => {
     handleInputSubmit,
     handleInputCancel,
   } = hookResult;
-  
+
   console.log('🔍 Destructured state.inputState:', state?.inputState);
 
   console.log('📋 StepthroughStack render - state.inputState:', state?.inputState);

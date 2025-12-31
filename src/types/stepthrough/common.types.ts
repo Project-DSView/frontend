@@ -32,6 +32,7 @@ interface StepthroughStep {
     instances?: Record<string, unknown>;
     active?: unknown;
     print_output?: string[];
+    stdout?: string[];
     linkedlist?: unknown[];
     nodes?: Record<string, unknown>;
     variables?: Record<string, unknown>;

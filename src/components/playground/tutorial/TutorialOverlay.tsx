@@ -99,8 +99,8 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       if (findElement() || retryCount >= maxRetries) {
         clearInterval(interval);
         if (retryCount >= maxRetries && step.disableNextUntilVisible) {
-             // Failed to find required element
-             console.warn(`Tutorial: Could not find element ${step.highlightSelector}`);
+          // Failed to find required element
+          console.warn(`Tutorial: Could not find element ${step.highlightSelector}`);
         }
       }
     }, 500);
@@ -246,7 +246,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     <>
       {/* 1. Backdrop / Spotlight */}
       {isCentered ? (
-         // Full dim background for centered steps
+        // Full dim background for centered steps
         <div
           className="fixed inset-0 z-[9998] bg-black/70 backdrop-blur-sm transition-opacity duration-300"
           aria-hidden="true"
@@ -255,8 +255,8 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         // Spotlight Element (The Shadow creates the backdrop)
         // Also add a transparent blocker to prevent clicks everywhere
         <>
-           <div className="fixed inset-0 z-[9998] cursor-default" aria-hidden="true" />
-           <div style={spotlightStyle} className="transition-all duration-300 ease-in-out" />
+          <div className="fixed inset-0 z-[9998] cursor-default" aria-hidden="true" />
+          <div style={spotlightStyle} className="transition-all duration-300 ease-in-out" />
         </>
       )}
 
@@ -264,62 +264,62 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       <div
         ref={cardRef}
         style={{
-             ...style,
-             // Apply slight scale animation
-             transform: isCentered
-                ? 'translate(-50%, -50%)' + (isAnimating ? ' scale(0.95)' : ' scale(1)')
-                : (isAnimating ? 'scale(0.98)' : 'scale(1)'),
+          ...style,
+          // Apply slight scale animation
+          transform: isCentered
+            ? 'translate(-50%, -50%)' + (isAnimating ? ' scale(0.95)' : ' scale(1)')
+            : isAnimating
+              ? 'scale(0.98)'
+              : 'scale(1)',
         }}
         className="w-full max-w-md transition-all duration-300 ease-in-out"
         role="dialog"
         aria-modal="true"
       >
-        <Card className="shadow-2xl border-2 border-primary/20">
+        <Card className="border-primary/20 border-2 shadow-2xl">
           {/* Progress */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-muted rounded-t-lg overflow-hidden">
-             <div className="h-full bg-primary transition-all duration-300" style={{ width: `${progress}%` }} />
+          <div className="bg-muted absolute top-0 right-0 left-0 h-1 overflow-hidden rounded-t-lg">
+            <div
+              className="bg-primary h-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
           </div>
 
           <CardHeader className="pb-2">
-             <div className="flex justify-between items-start gap-2">
-                <div>
-                   <CardTitle className="text-lg">{step.title}</CardTitle>
-                   <CardDescription className="text-xs mt-1">
-                      Step {currentStep + 1} of {steps.length}
-                   </CardDescription>
-                </div>
-                {!isLastStep && (
-                   <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleSkip}>
-                      <X className="h-4 w-4" />
-                   </Button>
-                )}
-             </div>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <CardTitle className="text-lg">{step.title}</CardTitle>
+                <CardDescription className="mt-1 text-xs">
+                  Step {currentStep + 1} of {steps.length}
+                </CardDescription>
+              </div>
+              {!isLastStep && (
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleSkip}>
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </CardHeader>
 
           <CardContent className="space-y-4">
-             <p className="text-sm leading-relaxed">{step.description}</p>
-             {step.image && (
-                <div className="relative w-full h-32 bg-muted rounded-md overflow-hidden">
-                   <Image src={step.image} alt={step.title} fill className="object-contain" />
-                </div>
-             )}
+            <p className="text-sm leading-relaxed">{step.description}</p>
+            {step.image && (
+              <div className="bg-muted relative h-32 w-full overflow-hidden rounded-md">
+                <Image src={step.image} alt={step.title} fill className="object-contain" />
+              </div>
+            )}
           </CardContent>
 
           {/* Footer */}
-          <div className="flex justify-between items-center p-4 pt-0">
-             <Button
-                variant="ghost"
-                size="sm"
-                onClick={handlePrevious}
-                disabled={currentStep === 0}
-             >
-                <ArrowLeft className="mr-2 h-4 w-4" /> Prev
-             </Button>
+          <div className="flex items-center justify-between p-4 pt-0">
+            <Button variant="ghost" size="sm" onClick={handlePrevious} disabled={currentStep === 0}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Prev
+            </Button>
 
-             <Button size="sm" onClick={handleNext}>
-                {isLastStep ? 'Finish' : 'Next'}
-                {!isLastStep && <ArrowRight className="ml-2 h-4 w-4" />}
-             </Button>
+            <Button size="sm" onClick={handleNext}>
+              {isLastStep ? 'Finish' : 'Next'}
+              {!isLastStep && <ArrowRight className="ml-2 h-4 w-4" />}
+            </Button>
           </div>
         </Card>
       </div>
@@ -328,4 +328,3 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 };
 
 export default TutorialOverlay;
-

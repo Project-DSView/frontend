@@ -11,6 +11,34 @@ const DirectedGraphStepthroughVisualization = lazy(
   () => import('@/components/playground/stepthrough/visualization/DirectedGraph'),
 );
 
+// Wrapper component to pass animation props
+const DirectedGraphVisualizationWrapper = React.forwardRef<
+  HTMLDivElement,
+  {
+    steps: unknown[];
+    currentStepIndex: number;
+    data: DirectedGraphData;
+    isRunning?: boolean;
+    error?: string | null;
+    insertedVertex?: string | null;
+    insertedEdge?: string | null;
+    currentVertex?: string | null;
+  }
+>((props, ref) => (
+  <DirectedGraphStepthroughVisualization
+    ref={ref}
+    steps={props.steps as never}
+    currentStepIndex={props.currentStepIndex}
+    data={props.data}
+    isRunning={props.isRunning ?? false}
+    error={props.error}
+    insertedVertex={props.insertedVertex}
+    insertedEdge={props.insertedEdge}
+    currentVertex={props.currentVertex}
+  />
+));
+DirectedGraphVisualizationWrapper.displayName = 'DirectedGraphVisualizationWrapper';
+
 const StepthroughDirectedGraph: React.FC = () => {
   const {
     state,
@@ -26,7 +54,39 @@ const StepthroughDirectedGraph: React.FC = () => {
     graphData,
     handleInputSubmit,
     handleInputCancel,
+    // [NEW] Animation state from hook
+    insertedVertex,
+    insertedEdge,
+    currentVertex,
   } = useStepthroughDirectedGraph();
+
+  // Create wrapped visualization component with animation props
+  const VisualizationWithAnimation = React.useMemo(() => {
+    const Component = React.forwardRef<
+      HTMLDivElement,
+      {
+        steps: unknown[];
+        currentStepIndex: number;
+        data: DirectedGraphData;
+        isRunning?: boolean;
+        error?: string | null;
+      }
+    >((props, ref) => (
+      <DirectedGraphStepthroughVisualization
+        ref={ref}
+        steps={props.steps as never}
+        currentStepIndex={props.currentStepIndex}
+        data={props.data}
+        isRunning={props.isRunning ?? false}
+        error={props.error}
+        insertedVertex={insertedVertex}
+        insertedEdge={insertedEdge}
+        currentVertex={currentVertex}
+      />
+    ));
+    Component.displayName = 'VisualizationWithAnimation';
+    return Component;
+  }, [insertedVertex, insertedEdge, currentVertex]);
 
   return (
     <StepthroughLayout<DirectedGraphData>
@@ -48,7 +108,7 @@ const StepthroughDirectedGraph: React.FC = () => {
       data={{ nodes: graphData.nodes, edges: graphData.edges } as DirectedGraphData}
       title="Stepthrough Directed Graph"
       description="เขียนโค้ด Python และดูการทำงานแบบ step-by-step พร้อม visualization ของ Directed Graph"
-      visualizationComponent={DirectedGraphStepthroughVisualization}
+      visualizationComponent={VisualizationWithAnimation}
       error={state.error}
       inputState={state.inputState}
       onInputSubmit={handleInputSubmit}

@@ -2,7 +2,15 @@ import React, { forwardRef, useState, useEffect, Fragment, useRef } from 'react'
 import { StepthroughVisualizationProps, LinkedListData } from '@/types';
 import ZoomableContainer from '../../shared/ZoomableContainer';
 import StepIndicator from '../../shared/StepIndicator';
+import ConsoleOutput from '../../shared/ConsoleOutput';
 import { gsap } from 'gsap';
+
+// Type for storing node state at each step
+interface StepNodeState {
+  nodes: string[];
+  currentInsertedValue: string | null;
+  insertHistory: string[];
+}
 
 const DoublyLinkedListStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -17,50 +25,121 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
   const [exitingNodes, setExitingNodes] = useState<Set<string>>(new Set());
   const [nodesToRender, setNodesToRender] = useState<string[]>(data.nodes);
 
+  // Track the current (last inserted) node and history for when nodes are deleted
+  // Using refs to avoid useEffect dependency array size changes
+  const currentInsertedValueRef = useRef<string | null>(null);
+  const insertHistoryRef = useRef<string[]>([]);
+  const [currentInsertedValue, setCurrentInsertedValue] = useState<string | null>(null);
+
   // Use ref to store nodes to prevent unnecessary re-renders
   const nodesRef = useRef(data.nodes);
   const previousNodesRef = useRef<string[]>(data.nodes);
   const [nodes, setNodes] = useState(data.nodes);
 
-  // Update nodes when data.nodes actually changes and detect insert/delete
+  // *** Store accumulated state for each step to persist across navigation ***
+  const stepStateCache = useRef<Map<number, StepNodeState>>(new Map());
+  const previousStepIndexRef = useRef<number>(currentStepIndex);
+  const isInitializedRef = useRef<boolean>(false);
+
+  // Update nodes when data.nodes changes or step changes - with caching for navigation
   useEffect(() => {
-    if (JSON.stringify(nodesRef.current) !== JSON.stringify(data.nodes)) {
+    const isMovingForward = currentStepIndex > previousStepIndexRef.current;
+    const isMovingBackward = currentStepIndex < previousStepIndexRef.current;
+    const isSameStep = currentStepIndex === previousStepIndexRef.current;
+
+    // Check if we have a cached state for this step
+    const cachedState = stepStateCache.current.get(currentStepIndex);
+
+    // If moving backward and we have cached state, restore it without animations
+    if (isMovingBackward && cachedState) {
+      setNodes(cachedState.nodes);
+      setNodesToRender(cachedState.nodes);
+      setCurrentInsertedValue(cachedState.currentInsertedValue);
+      currentInsertedValueRef.current = cachedState.currentInsertedValue;
+      insertHistoryRef.current = cachedState.insertHistory;
+      previousNodesRef.current = cachedState.nodes;
+      nodesRef.current = cachedState.nodes;
+      previousStepIndexRef.current = currentStepIndex;
+      // No animations when going backward
+      setEnteringNodes(new Set());
+      setExitingNodes(new Set());
+      setIsTransitioning(false);
+      return;
+    }
+
+    // Normal processing for forward movement or data changes
+    if (JSON.stringify(nodesRef.current) !== JSON.stringify(data.nodes) || !isSameStep) {
       const previousNodes = previousNodesRef.current;
       const currentNodes = data.nodes;
 
       // Detect changes: compare previous and current arrays
       const newEnteringNodes = new Set<number>();
       const newExitingNodes = new Set<string>();
+      const insertedValues: string[] = [];
+      const deletedValues: string[] = [];
 
-      // Find nodes that were deleted (in previous but not in current)
-      previousNodes.forEach((prevNode) => {
-        if (!currentNodes.includes(prevNode)) {
-          newExitingNodes.add(prevNode);
-        }
-      });
+      // Only detect animations when moving forward or on initial load
+      if (isMovingForward || !isInitializedRef.current) {
+        // Find nodes that were deleted (in previous but not in current)
+        previousNodes.forEach((prevNode) => {
+          if (!currentNodes.includes(prevNode)) {
+            newExitingNodes.add(prevNode);
+            deletedValues.push(prevNode);
+          }
+        });
 
-      // Find nodes that were inserted (in current but not in previous)
-      currentNodes.forEach((currentNode, index) => {
-        if (!previousNodes.includes(currentNode)) {
-          newEnteringNodes.add(index);
-        } else {
-          // Check if this is a new occurrence (duplicate values)
-          const prevCount = previousNodes.filter((n) => n === currentNode).length;
-          const currentCount = currentNodes.filter((n) => n === currentNode).length;
-          if (currentCount > prevCount) {
-            // This is a new occurrence
-            const occurrencesBefore = currentNodes
-              .slice(0, index)
-              .filter((n) => n === currentNode).length;
-            if (occurrencesBefore >= prevCount) {
-              newEnteringNodes.add(index);
+        // Find nodes that were inserted (in current but not in previous)
+        currentNodes.forEach((currentNode, index) => {
+          if (!previousNodes.includes(currentNode)) {
+            newEnteringNodes.add(index);
+            insertedValues.push(currentNode);
+          } else {
+            // Check if this is a new occurrence (duplicate values)
+            const prevCount = previousNodes.filter((n) => n === currentNode).length;
+            const currentCount = currentNodes.filter((n) => n === currentNode).length;
+            if (currentCount > prevCount) {
+              // This is a new occurrence
+              const occurrencesBefore = currentNodes
+                .slice(0, index)
+                .filter((n) => n === currentNode).length;
+              if (occurrencesBefore >= prevCount) {
+                newEnteringNodes.add(index);
+                insertedValues.push(currentNode);
+              }
             }
           }
+        });
+      }
+
+      // Update insert history and current value
+      let newInsertHistory = insertHistoryRef.current;
+      let newCurrentInsertedValue = currentInsertedValueRef.current;
+
+      if (insertedValues.length > 0) {
+        // New nodes were inserted - add to history and set as current
+        newInsertHistory = [...insertHistoryRef.current, ...insertedValues];
+        newCurrentInsertedValue = insertedValues[insertedValues.length - 1];
+        insertHistoryRef.current = newInsertHistory;
+        currentInsertedValueRef.current = newCurrentInsertedValue;
+        setCurrentInsertedValue(newCurrentInsertedValue);
+      } else if (deletedValues.length > 0) {
+        // Nodes were deleted - check if current was deleted
+        newInsertHistory = insertHistoryRef.current.filter((v) => !deletedValues.includes(v));
+        if (
+          currentInsertedValueRef.current &&
+          deletedValues.includes(currentInsertedValueRef.current)
+        ) {
+          // Current was deleted, go to previous in history
+          newCurrentInsertedValue =
+            newInsertHistory.length > 0 ? newInsertHistory[newInsertHistory.length - 1] : null;
         }
-      });
+        insertHistoryRef.current = newInsertHistory;
+        currentInsertedValueRef.current = newCurrentInsertedValue;
+        setCurrentInsertedValue(newCurrentInsertedValue);
+      }
 
       // For exit animation: keep exiting nodes temporarily in render
-      if (newExitingNodes.size > 0) {
+      if (newExitingNodes.size > 0 && isMovingForward) {
         // Keep exiting nodes in render temporarily
         const nodesWithExiting = [...currentNodes];
         previousNodes.forEach((node) => {
@@ -83,10 +162,10 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
         setNodesToRender(currentNodes);
       }
 
-      // Set entering nodes
-      if (newEnteringNodes.size > 0) {
+      // Set entering nodes (only when moving forward)
+      if (newEnteringNodes.size > 0 && isMovingForward) {
         setEnteringNodes(newEnteringNodes);
-        // Clear entering animation after duration
+        // Clear entering animation after duration (match CSS animation duration)
         setTimeout(() => {
           setEnteringNodes((prev) => {
             const updated = new Set(prev);
@@ -96,15 +175,29 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
         }, 2000);
       }
 
-      setIsTransitioning(true);
+      if (isMovingForward) {
+        setIsTransitioning(true);
+        // Stop transition animation after duration
+        setTimeout(() => setIsTransitioning(false), 800);
+      }
+
       previousNodesRef.current = [...currentNodes];
       nodesRef.current = data.nodes;
       setNodes(currentNodes);
 
-      // Stop transition animation after duration
-      setTimeout(() => setIsTransitioning(false), 800);
+      // Cache the current state for this step
+      stepStateCache.current.set(currentStepIndex, {
+        nodes: currentNodes,
+        currentInsertedValue: newCurrentInsertedValue,
+        insertHistory: newInsertHistory,
+      });
+
+      isInitializedRef.current = true;
     }
-  }, [data.nodes]);
+
+    // Update previous step index
+    previousStepIndexRef.current = currentStepIndex;
+  }, [data.nodes, currentStepIndex]);
 
   // Handle traverse animation - just pulse, no movement
   useEffect(() => {
@@ -143,66 +236,22 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
     }
   }, [steps, currentStepIndex]);
 
-  // Determine which node should be highlighted based on current step
-  // Current node should be the node where the latest operation occurred
+  // Determine which node should be highlighted based on currentInsertedValue
+  // Current node is ALWAYS the last inserted node across ALL steps
   useEffect(() => {
+    // Priority: Always use currentInsertedValue if available
+    if (currentInsertedValue && nodes.includes(currentInsertedValue)) {
+      const nodeIndex = nodes.findIndex((node) => node === currentInsertedValue);
+      if (nodeIndex !== -1) {
+        setHighlightedNodeIndex(nodeIndex);
+        setHeadPosition(0);
+        return;
+      }
+    }
+
+    // Fallback: Check if we're in traverse mode
     if (steps.length > 0 && currentStepIndex < steps.length) {
       const currentStep = steps[currentStepIndex];
-      const stepDetail = currentStep.state?.step_detail as Record<string, unknown> | undefined;
-
-      // Priority 1: Check step_detail for current_node, inserted_node, or deleted_node
-      let targetNodeValue: string | null = null;
-
-      if (stepDetail) {
-        // Check for current_node (most common)
-        if (stepDetail.current_node && typeof stepDetail.current_node === 'string') {
-          targetNodeValue = String(stepDetail.current_node);
-        }
-        // Check for inserted_node
-        else if (stepDetail.inserted_node && typeof stepDetail.inserted_node === 'string') {
-          targetNodeValue = String(stepDetail.inserted_node);
-        }
-        // Check for deleted_node
-        else if (stepDetail.deleted_node && typeof stepDetail.deleted_node === 'string') {
-          targetNodeValue = String(stepDetail.deleted_node);
-        }
-      }
-
-      // Priority 2: If no step_detail, try to extract from message
-      if (!targetNodeValue && currentStep.state?.message) {
-        const message = currentStep.state.message;
-
-        // Look for patterns like "node at index 0", "position 1", etc.
-        const indexMatch = message.match(/(?:index|position)\s+(\d+)/i);
-        if (indexMatch) {
-          const index = parseInt(indexMatch[1]);
-          if (index >= 0 && index < nodes.length) {
-            targetNodeValue = nodes[index];
-          }
-        }
-
-        // Look for node values in the message
-        if (!targetNodeValue) {
-          for (let i = 0; i < nodes.length; i++) {
-            if (message.includes(nodes[i])) {
-              targetNodeValue = nodes[i];
-              break;
-            }
-          }
-        }
-      }
-
-      // Find the index of the target node
-      if (targetNodeValue) {
-        const nodeIndex = nodes.findIndex((node) => node === targetNodeValue);
-        if (nodeIndex !== -1) {
-          setHighlightedNodeIndex(nodeIndex);
-          setHeadPosition(0);
-          return;
-        }
-      }
-
-      // For traverse operations, don't set current node (just pulse)
       if (currentStep.state?.message) {
         const message = currentStep.state.message;
         if (message.includes('traverse') || message.includes('current.data')) {
@@ -211,15 +260,18 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
           return;
         }
       }
+    }
 
+    // If no currentInsertedValue yet and nodes exist, highlight first node as fallback
+    if (!currentInsertedValue && nodes.length > 0) {
+      setHighlightedNodeIndex(0);
+      setHeadPosition(0);
+    } else {
       // Default: no highlight
       setHighlightedNodeIndex(-1);
       setHeadPosition(0);
-    } else {
-      setHighlightedNodeIndex(-1);
-      setHeadPosition(0);
     }
-  }, [steps, currentStepIndex, nodes]);
+  }, [steps, currentStepIndex, nodes, currentInsertedValue]);
 
   // Refs for GSAP animations
   const nodeRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -297,107 +349,111 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
           }
         }}
       >
-        {/* Node Container - 3 Section Layout like in dragdrop */}
-        <div
-          className={`flex h-16 w-40 rounded-lg border-4 transition-all duration-700 ease-in-out ${
-            isExiting
-              ? 'opacity-0'
-              : isCurrentNode
-                ? 'scale-105 animate-pulse border-blue-500 bg-blue-50 shadow-lg'
+        {/* Node Container - 3 Section Layout */}
+        <div className="relative">
+          {/* Node Box */}
+          <div
+            className={`inline-flex rounded-lg border-4 transition-all duration-300 ${
+              isCurrentNode
+                ? 'border-blue-500 bg-blue-100 shadow-lg dark:border-blue-400 dark:bg-blue-900/30'
                 : isTraversePulse
-                  ? 'animate-pulse border-black bg-blue-50 dark:border-gray-300 dark:bg-blue-900/30'
+                  ? 'animate-pulse border-gray-900 bg-blue-100 dark:border-gray-300 dark:bg-blue-900/30'
                   : isHighlighted
-                    ? 'scale-105 animate-bounce border-black bg-yellow-50 shadow-lg dark:border-gray-300 dark:bg-yellow-900/20'
-                    : isTransitioning
-                      ? 'scale-105 animate-pulse border-black bg-blue-50 dark:border-gray-300 dark:bg-blue-900/30'
-                      : 'border-black bg-white hover:scale-105 hover:bg-gray-50 dark:border-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600'
-          } ${isTransitioning ? 'animate-pulse' : ''}`}
-        >
-          {/* Prev Section - Left */}
-          <div
-            className={`flex w-1/3 items-center justify-center rounded-l-lg bg-white dark:bg-gray-700 ${
-              isCurrentNode
-                ? 'bg-blue-100 dark:bg-blue-900/30'
-                : isHighlighted
-                  ? 'bg-yellow-100 dark:bg-yellow-900/20'
-                  : 'bg-gray-100 dark:bg-gray-700'
+                    ? 'border-yellow-500 bg-yellow-100 shadow-lg dark:border-yellow-400 dark:bg-yellow-900/20'
+                    : isExiting
+                      ? 'opacity-0'
+                      : isTransitioning
+                        ? 'animate-pulse border-gray-900 bg-blue-100 dark:border-gray-300 dark:bg-blue-900/30'
+                        : 'border-gray-900 bg-white dark:border-gray-300 dark:bg-gray-700'
             }`}
           >
-            {isFirst ? (
-              <div className="relative flex h-full w-full items-center justify-center">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div
-                    className={`h-1 w-10 rotate-45 transform ${
-                      isCurrentNode ? 'bg-blue-500 dark:bg-blue-400' : 'bg-black dark:bg-gray-300'
-                    }`}
-                  ></div>
-                  <div
-                    className={`absolute h-1 w-10 -rotate-45 transform ${
-                      isCurrentNode ? 'bg-blue-500 dark:bg-blue-400' : 'bg-black dark:bg-gray-300'
-                    }`}
-                  ></div>
-                </div>
-              </div>
-            ) : (
-              <span
-                className={`text-xs font-bold ${isCurrentNode ? 'text-blue-700 dark:text-blue-300' : 'text-black dark:text-gray-100'}`}
-              >
-                Prev
-              </span>
-            )}
-          </div>
-
-          {/* Data Section - Center */}
-          <div
-            className={`flex w-1/3 items-center justify-center border-x ${
-              isCurrentNode
-                ? 'border-blue-500 bg-blue-100 dark:border-blue-400 dark:bg-blue-900/30'
-                : isHighlighted
-                  ? 'border-black bg-yellow-100 dark:border-gray-300 dark:bg-yellow-900/20'
-                  : 'border-black bg-white dark:border-gray-300 dark:bg-gray-700'
-            }`}
-          >
-            <span
-              className={`font-bold ${
-                isCurrentNode ? 'text-blue-700 dark:text-blue-300' : 'text-black dark:text-gray-100'
-              } ${value.length > 6 ? 'text-sm' : 'text-lg'}`}
+            {/* Prev Section - Left */}
+            <div
+              className={`flex min-w-[40px] items-center justify-center px-2 py-2 ${
+                isCurrentNode
+                  ? 'border-blue-500 dark:border-blue-400'
+                  : 'border-gray-900 dark:border-gray-300'
+              }`}
             >
-              {value}
-            </span>
-          </div>
-
-          {/* Next Section - Right */}
-          <div
-            className={`flex w-1/3 items-center justify-center rounded-r-lg bg-white dark:bg-gray-700 ${
-              isCurrentNode
-                ? 'bg-blue-100 dark:bg-blue-900/30'
-                : isHighlighted
-                  ? 'bg-yellow-100 dark:bg-yellow-900/20'
-                  : 'bg-gray-100 dark:bg-gray-700'
-            }`}
-          >
-            {isLast ? (
-              <div className="relative flex h-full w-full items-center justify-center">
-                <div className="absolute inset-0 flex items-center justify-center">
+              {isFirst ? (
+                /* X mark for null - first node has no prev */
+                <div className="relative h-5 w-5">
                   <div
-                    className={`h-1 w-10 rotate-45 transform ${
-                      isCurrentNode ? 'bg-blue-500 dark:bg-blue-400' : 'bg-black dark:bg-gray-300'
+                    className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 rotate-45 transform ${
+                      isCurrentNode
+                        ? 'bg-blue-500 dark:bg-blue-400'
+                        : 'bg-gray-900 dark:bg-gray-300'
                     }`}
                   ></div>
                   <div
-                    className={`absolute h-1 w-10 -rotate-45 transform ${
-                      isCurrentNode ? 'bg-blue-500 dark:bg-blue-400' : 'bg-black dark:bg-gray-300'
+                    className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 -rotate-45 transform ${
+                      isCurrentNode
+                        ? 'bg-blue-500 dark:bg-blue-400'
+                        : 'bg-gray-900 dark:bg-gray-300'
                     }`}
                   ></div>
                 </div>
-              </div>
-            ) : (
+              ) : (
+                <div className={`h-2 w-2`}></div>
+              )}
+            </div>
+
+            {/* Data Section - Center */}
+            <div
+              className={`flex min-w-[60px] items-center justify-center border-x-4 px-4 py-2 ${
+                isCurrentNode
+                  ? 'border-blue-500 bg-blue-100 dark:border-blue-400 dark:bg-blue-900/30'
+                  : 'border-gray-900 bg-white dark:border-gray-300 dark:bg-gray-700'
+              }`}
+            >
               <span
-                className={`text-xs font-bold ${isCurrentNode ? 'text-blue-700 dark:text-blue-300' : 'text-black dark:text-gray-100'}`}
+                className={`font-bold ${
+                  isCurrentNode
+                    ? 'text-blue-700 dark:text-blue-300'
+                    : 'text-gray-900 dark:text-gray-100'
+                } ${value.length > 15 ? 'text-xs' : value.length > 8 ? 'text-sm' : 'text-lg'}`}
               >
-                Next
+                {value}
               </span>
-            )}
+            </div>
+
+            {/* Next Section - Right */}
+            <div
+              className={`flex min-w-[40px] items-center justify-center px-2 py-2 ${
+                isCurrentNode
+                  ? 'border-blue-500 dark:border-blue-400'
+                  : 'border-gray-900 dark:border-gray-300'
+              }`}
+            >
+              {isLast ? (
+                /* X mark for null - last node has no next */
+                <div className="relative h-5 w-5">
+                  <div
+                    className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 rotate-45 transform ${
+                      isCurrentNode
+                        ? 'bg-blue-500 dark:bg-blue-400'
+                        : 'bg-gray-900 dark:bg-gray-300'
+                    }`}
+                  ></div>
+                  <div
+                    className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 -rotate-45 transform ${
+                      isCurrentNode
+                        ? 'bg-blue-500 dark:bg-blue-400'
+                        : 'bg-gray-900 dark:bg-gray-300'
+                    }`}
+                  ></div>
+                </div>
+              ) : (
+                <div className={`h-2 w-2`}></div>
+              )}
+            </div>
+          </div>
+
+          {/* Labels below node - always show to maintain consistent height */}
+          <div className="flex text-sm text-gray-600 dark:text-gray-400" style={{ width: '100%' }}>
+            <div className={`w-1/3 text-center ${isFirst ? 'invisible' : ''}`}>prev</div>
+            <div className="w-1/3"></div>
+            <div className={`w-1/3 text-center ${isLast ? 'invisible' : ''}`}>next</div>
           </div>
         </div>
       </div>
@@ -420,8 +476,8 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
 
       {/* Current Step Info */}
       {steps.length > 0 && currentStepIndex < steps.length && !error && (
-        <div className="bg-info/10 mb-4 rounded-lg p-3">
-          <div className="text-info/90 text-sm font-medium">
+        <div className="mb-4 rounded-lg bg-blue-50 p-3 dark:bg-blue-900/30">
+          <div className="text-sm font-medium text-blue-800 dark:text-blue-200">
             Step {steps[currentStepIndex].stepNumber}: {steps[currentStepIndex].state.message}
           </div>
         </div>
@@ -429,7 +485,7 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
 
       {/* Visualization Area */}
       <ZoomableContainer
-        className="min-h-[220px] rounded-lg bg-gray-50 dark:bg-gray-800"
+        className="min-h-[280px] rounded-lg bg-gray-50 dark:bg-gray-800"
         minZoom={0.5}
         maxZoom={2}
         initialZoom={1}
@@ -448,76 +504,89 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
           />
         )}
 
-        {nodesToRender.length === 0 ? (
-          <div className="flex h-full items-center justify-center p-6 text-gray-400 dark:text-gray-500">
-            <div className="text-center">
-              <div className="text-lg font-semibold">Empty Doubly Linked List</div>
-              {steps.length > 0 ? (
-                <div className="text-sm">
-                  Executing step {currentStepIndex + 1} of {steps.length}
-                </div>
-              ) : (
-                <div className="text-sm">Run your code to see the visualization</div>
-              )}
+        {/* Root Node and Data Nodes - Root on top, nodes below */}
+        <div className="p-6">
+          {/* Root Node Section */}
+          <div className="mb-2">
+            {/* Root Label */}
+            <div className="mb-1 text-lg font-bold text-gray-800 italic dark:text-gray-200">
+              root
+            </div>
+
+            {/* Root Node Box - 3 sections: head, count, tail */}
+            <div className="inline-flex rounded-lg border-4 border-gray-900 bg-blue-100 dark:border-gray-300 dark:bg-blue-900/20">
+              {/* Head Pointer Section */}
+              <div className="flex min-w-[50px] items-center justify-center border-r-4 border-gray-900 px-4 py-2 dark:border-gray-300">
+                {nodesToRender.length > 0 ? (
+                  /* Just a dot to indicate pointer exists */
+                  <div className="h-3 w-3"></div>
+                ) : (
+                  /* X mark for null */
+                  <div className="relative h-6 w-6">
+                    <div className="absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 rotate-45 transform bg-gray-900 dark:bg-gray-300"></div>
+                    <div className="absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 -rotate-45 transform bg-gray-900 dark:bg-gray-300"></div>
+                  </div>
+                )}
+              </div>
+              {/* Count Section - Center */}
+              <div className="flex min-w-[60px] flex-col items-center justify-center border-r-4 border-gray-900 px-4 py-2 dark:border-gray-300">
+                <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  {nodesToRender.length}
+                </span>
+              </div>
+              {/* Tail Pointer Section */}
+              <div className="flex min-w-[50px] items-center justify-center px-4 py-2">
+                {nodesToRender.length > 0 ? (
+                  /* Just a dot to indicate pointer exists */
+                  <div className="h-3 w-3"></div>
+                ) : (
+                  /* X mark for null */
+                  <div className="relative h-6 w-6">
+                    <div className="absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 rotate-45 transform bg-gray-900 dark:bg-gray-300"></div>
+                    <div className="absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 -rotate-45 transform bg-gray-900 dark:bg-gray-300"></div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Labels below Root Node */}
+            <div
+              className="flex text-sm text-gray-600 dark:text-gray-400"
+              style={{ width: '180px' }}
+            >
+              <div className="w-1/3 text-center">head</div>
+              <div className="w-1/3 text-center">count</div>
+              <div className="w-1/3 text-center">tail</div>
             </div>
           </div>
-        ) : (
-          <div className="flex items-center justify-start space-x-2 p-6 pt-20">
-            {/* Nodes with Head/Tail Pointers */}
+
+          {/* Connector from Root to First Node */}
+          {nodesToRender.length > 0 && (
+            <div className="mb-2 ml-[25px] flex">
+              {/* Vertical line going down */}
+              <div className="flex flex-col items-center">
+                <div className="h-8 w-0.5 bg-gray-900 dark:bg-gray-300"></div>
+                {/* Arrow pointing down - triangle using border-top */}
+                <div className="h-0 w-0 border-t-[6px] border-r-[5px] border-l-[5px] border-t-gray-900 border-r-transparent border-l-transparent dark:border-t-gray-300"></div>
+              </div>
+            </div>
+          )}
+
+          {/* Data Nodes Row - Horizontal */}
+          <div className="flex flex-row flex-nowrap items-center">
             {nodesToRender.map((value, index) => {
               const isExiting = exitingNodes.has(value);
               return (
-                <Fragment key={index}>
+                <Fragment key={`${value}-${index}`}>
                   <div className="relative">
-                    {/* Head Label - Always show on first node */}
-                    {index === 0 && (
-                      <div
-                        className="absolute -top-16 left-1/2 z-10 -translate-x-1/2 transform"
-                        style={{
-                          left: nodes.length === 1 ? '25%' : '50%',
-                        }}
-                      >
-                        <div className="px-2 py-1 text-lg font-semibold text-gray-600 dark:text-gray-400">
-                          head
-                        </div>
+                    {/* Current Pointer */}
+                    {index === highlightedNodeIndex && !isTraversing && !isReverseTraversing && (
+                      <div className="absolute -bottom-16 left-1/2 z-10 -translate-x-1/2 transform">
                         <div className="flex flex-col items-center">
-                          <div className="h-4 w-1 bg-black dark:bg-gray-300"></div>
-                          <div className="h-0 w-0 border-t-[8px] border-r-[6px] border-l-[6px] border-t-black border-r-transparent border-l-transparent dark:border-t-gray-300"></div>
+                          <div className="h-0 w-0 border-r-[6px] border-b-[8px] border-l-[6px] border-r-transparent border-b-blue-500 border-l-transparent"></div>
+                          <div className="h-4 w-1 bg-blue-500"></div>
                         </div>
-                      </div>
-                    )}
-
-                    {/* Current Pointer - Show for latest operation (not during traverse) */}
-                    {highlightedNodeIndex !== -1 &&
-                      index === highlightedNodeIndex &&
-                      !isTraversing &&
-                      !isReverseTraversing && (
-                        <div className="absolute -bottom-16 left-1/2 z-10 -translate-x-1/2 transform">
-                          <div className="flex flex-col items-center">
-                            <div className="h-0 w-0 border-r-[6px] border-b-[8px] border-l-[6px] border-r-transparent border-b-blue-500 border-l-transparent"></div>
-                            <div className="h-4 w-1 bg-blue-500"></div>
-                          </div>
-                          <div className="px-2 py-1 text-lg font-semibold text-blue-600">
-                            current
-                          </div>
-                        </div>
-                      )}
-
-                    {/* Tail Label - Always show on last node */}
-                    {index === nodesToRender.length - 1 && (
-                      <div
-                        className="absolute -top-16 left-1/2 z-10 -translate-x-1/2 transform"
-                        style={{
-                          left: nodes.length === 1 ? '75%' : '50%',
-                        }}
-                      >
-                        <div className="px-2 py-1 text-lg font-semibold text-gray-600 dark:text-gray-400">
-                          tail
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <div className="h-4 w-1 bg-black dark:bg-gray-300"></div>
-                          <div className="h-0 w-0 border-t-[8px] border-r-[6px] border-l-[6px] border-t-black border-r-transparent border-l-transparent dark:border-t-gray-300"></div>
-                        </div>
+                        <div className="px-2 py-1 text-lg font-semibold text-blue-600">current</div>
                       </div>
                     )}
 
@@ -525,59 +594,59 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
                     {renderNode(value, index)}
                   </div>
 
+                  {/* Bidirectional Arrow between nodes */}
                   {index < nodesToRender.length - 1 &&
                     !isExiting &&
                     !exitingNodes.has(nodesToRender[index + 1]) && (
-                      <div
-                        className="mx-2 flex items-center"
-                        style={{
-                          opacity: isExiting ? 0 : 1,
-                          transition: isExiting ? 'opacity 500ms ease-in' : 'none',
-                        }}
-                      >
-                        <svg width="80" height="40" viewBox="0 0 80 40" key={`connector-${index}`}>
-                          <rect width="80" height="40" fill="#ffffff" />
+                      <div className="mx-2 mb-5 flex flex-shrink-0 items-center">
+                        <svg width="60" height="30" viewBox="0 0 60 30">
                           <defs>
                             <marker
-                              id={`arrowRight-dll-${index}-${value}`}
+                              id={`arrowRight-dll-step-${index}`}
                               markerWidth="4"
                               markerHeight="4"
                               refX="3"
                               refY="2"
                               orient="auto"
                             >
-                              <path d="M0,0 L4,2 L0,4 Z" fill="#000000" />
+                              <path
+                                d="M0,0 L4,2 L0,4 Z"
+                                className="fill-gray-900 dark:fill-gray-300"
+                              />
                             </marker>
                             <marker
-                              id={`arrowLeft-dll-${index}-${value}`}
+                              id={`arrowLeft-dll-step-${index}`}
                               markerWidth="4"
                               markerHeight="4"
                               refX="1"
                               refY="2"
                               orient="auto"
                             >
-                              <path d="M0,0 L3,2 L0,4 Z" fill="#000000" />
+                              <path
+                                d="M4,0 L0,2 L4,4 Z"
+                                className="fill-gray-900 dark:fill-gray-300"
+                              />
                             </marker>
                           </defs>
-                          {/* forward (right) */}
+                          {/* forward (right) arrow - top */}
                           <line
-                            x1="8"
-                            y1="12"
-                            x2="72"
-                            y2="12"
-                            stroke="#000000"
-                            strokeWidth="4"
-                            markerEnd={`url(#arrowRight-dll-${index}-${value})`}
+                            x1="5"
+                            y1="10"
+                            x2="55"
+                            y2="10"
+                            className="stroke-gray-900 dark:stroke-gray-300"
+                            strokeWidth="2"
+                            markerEnd={`url(#arrowRight-dll-step-${index})`}
                           />
-                          {/* backward (left) */}
+                          {/* backward (left) arrow - bottom */}
                           <line
-                            x1="72"
-                            y1="28"
-                            x2="8"
-                            y2="28"
-                            stroke="#000000"
-                            strokeWidth="4"
-                            markerEnd={`url(#arrowLeft-dll-${index}-${value})`}
+                            x1="5"
+                            y1="20"
+                            x2="55"
+                            y2="20"
+                            className="stroke-gray-900 dark:stroke-gray-300"
+                            strokeWidth="2"
+                            markerStart={`url(#arrowLeft-dll-step-${index})`}
                           />
                         </svg>
                       </div>
@@ -586,7 +655,7 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
               );
             })}
           </div>
-        )}
+        </div>
       </ZoomableContainer>
 
       {/* Stats */}
@@ -595,62 +664,29 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
           <span className="font-semibold">จำนวน Nodes:</span> {nodes.length}
         </div>
         <div>
-          <span className="font-semibold">Head Value:</span> {data.head || 'None'}
+          <span className="font-semibold">Head Value:</span> {nodes.length > 0 ? nodes[0] : 'None'}
         </div>
         <div>
-          <span className="font-semibold">Tail Value:</span> {data.tail || 'None'}
+          <span className="font-semibold">Tail Value:</span>{' '}
+          {nodes.length > 0 ? nodes[nodes.length - 1] : 'None'}
         </div>
       </div>
 
       {/* Console Output */}
-      <div className="mt-4 overflow-hidden rounded-lg bg-gray-900 shadow-inner dark:bg-black">
-        <div className="border-b border-gray-700 bg-gray-800 px-4 py-2 dark:bg-gray-900">
-          <div className="flex items-center space-x-2">
-            <svg
-              className="h-4 w-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span className="font-mono text-sm font-semibold text-gray-300">Console Output</span>
-          </div>
-        </div>
-        <div className="max-h-40 min-h-[60px] overflow-y-auto p-4 font-mono text-sm">
-          {(() => {
-            const currentStep = steps.length > 0 && currentStepIndex < steps.length ? steps[currentStepIndex] : null;
-            const printOutput = currentStep?.state?.print_output as string[] | undefined;
-
-            if (!printOutput || printOutput.length === 0) {
-              return <div className="italic text-gray-600 dark:text-gray-600">No output generated...</div>;
-            }
-
-            return printOutput.map((line, idx) => (
-              <div key={idx} className="whitespace-pre-wrap text-green-400">
-                <span className="mr-2 text-gray-600 select-none">$</span>
-                {line}
-              </div>
-            ));
-          })()}
-        </div>
-      </div>
+      <ConsoleOutput steps={steps} currentStepIndex={currentStepIndex} />
 
       {/* Current Operation Status */}
       {isRunning && steps.length > 0 && currentStepIndex < steps.length && (
-        <div className="mt-4 rounded-lg bg-blue-50 p-4">
+        <div className="mt-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/30">
           <div className="mb-2 flex items-center space-x-2">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500"></div>
-            <span className="font-semibold text-blue-800">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500 dark:bg-blue-400"></div>
+            <span className="font-semibold text-blue-800 dark:text-blue-200">
               Executing: {steps[currentStepIndex].code}
             </span>
           </div>
-          <p className="text-sm text-blue-700">{steps[currentStepIndex].state.message}</p>
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            {steps[currentStepIndex].state.message}
+          </p>
         </div>
       )}
     </div>

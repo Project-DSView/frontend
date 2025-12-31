@@ -54,6 +54,9 @@ interface DoublyLinkedListCodeTemplate {
 // DoublyLinkedList-specific types
 interface DoublyLinkedListData {
   nodes: string[];
+  head?: string | null;
+  tail?: string | null;
+  count?: number;
 }
 
 interface DoublyLinkedListStatsExtended extends BaseStats {

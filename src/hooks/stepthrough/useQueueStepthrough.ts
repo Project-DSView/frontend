@@ -128,25 +128,25 @@ const useStepthroughQueue = (initialCode: string = ''): StepthroughHookReturn<Qu
           inputValues: inputState.inputValues.length > 0 ? inputState.inputValues : undefined,
         });
 
-      // Extract queue data from first step
-      const firstStep = response.steps[0];
-      let initialQueueData: QueueData = {
-        elements: [],
-        count: 0,
-      };
+        // Extract queue data from first step
+        const firstStep = response.steps[0];
+        let initialQueueData: QueueData = {
+          elements: [],
+          count: 0,
+        };
 
-      if (firstStep?.state?.instances) {
-        const instanceEntries = Object.entries(firstStep.state.instances);
-        if (instanceEntries.length > 0) {
-          const firstInstance = instanceEntries[0][1] as Record<string, unknown>;
-          if (firstInstance?.data && Array.isArray(firstInstance.data)) {
-            initialQueueData = {
-              elements: firstInstance.data.map((item) => String(item)),
-              count: firstInstance.data.length,
-            };
+        if (firstStep?.state?.instances) {
+          const instanceEntries = Object.entries(firstStep.state.instances);
+          if (instanceEntries.length > 0) {
+            const firstInstance = instanceEntries[0][1] as Record<string, unknown>;
+            if (firstInstance?.data && Array.isArray(firstInstance.data)) {
+              initialQueueData = {
+                elements: firstInstance.data.map((item) => String(item)),
+                count: firstInstance.data.length,
+              };
+            }
           }
         }
-      }
 
         setState((prev) => ({
           ...prev,
