@@ -32,9 +32,13 @@ interface StepthroughStep {
     instances?: Record<string, unknown>;
     active?: unknown;
     print_output?: string[];
+    stdout?: string[];
     linkedlist?: unknown[];
     nodes?: Record<string, unknown>;
     variables?: Record<string, unknown>;
+    memory?: number; // Memory usage in bytes for this step
+    memory_delta?: number; // Memory change from previous step (bytes)
+    execution_time?: number; // Execution time in seconds for this step
     returnValue?: unknown;
     ast_info?: {
       node_count?: number;

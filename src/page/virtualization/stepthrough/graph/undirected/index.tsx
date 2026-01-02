@@ -25,7 +25,39 @@ const StepthroughUndirectedGraph: React.FC = () => {
     graphData,
     handleInputSubmit,
     handleInputCancel,
+    // [NEW] Animation state from hook
+    insertedVertex,
+    insertedEdge,
+    currentVertex,
   } = useStepthroughUndirectedGraph();
+
+  // Create wrapped visualization component with animation props
+  const VisualizationWithAnimation = React.useMemo(() => {
+    const Component = React.forwardRef<
+      HTMLDivElement,
+      {
+        steps: unknown[];
+        currentStepIndex: number;
+        data: UndirectedGraphData;
+        isRunning?: boolean;
+        error?: string | null;
+      }
+    >((props, ref) => (
+      <UndirectedGraphStepthroughVisualization
+        ref={ref}
+        steps={props.steps as never}
+        currentStepIndex={props.currentStepIndex}
+        data={props.data}
+        isRunning={props.isRunning ?? false}
+        error={props.error}
+        insertedVertex={insertedVertex}
+        insertedEdge={insertedEdge}
+        currentVertex={currentVertex}
+      />
+    ));
+    Component.displayName = 'UndirectedGraphVisualizationWithAnimation';
+    return Component;
+  }, [insertedVertex, insertedEdge, currentVertex]);
 
   return (
     <StepthroughLayout<UndirectedGraphData>
@@ -47,7 +79,7 @@ const StepthroughUndirectedGraph: React.FC = () => {
       data={{ nodes: graphData.nodes, edges: graphData.edges } as UndirectedGraphData}
       title="Stepthrough Undirected Graph"
       description="เขียนโค้ด Python และดูการทำงานแบบ step-by-step พร้อม visualization ของ Undirected Graph"
-      visualizationComponent={UndirectedGraphStepthroughVisualization}
+      visualizationComponent={VisualizationWithAnimation}
       error={state.error}
       inputState={state.inputState}
       onInputSubmit={handleInputSubmit}

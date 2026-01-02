@@ -50,6 +50,9 @@ interface SinglyLinkedListCodeTemplate {
 // SinglyLinkedList-specific types
 interface SinglyLinkedListData {
   nodes: string[];
+  head?: string | null;
+  tail?: string | null;
+  count?: number;
 }
 
 interface SinglyLinkedListStatsExtended extends BaseStats {

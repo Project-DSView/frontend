@@ -5,7 +5,6 @@ export {
   visualizationModes,
   AUTO_SWITCH_INTERVAL,
   IMAGE_SWITCH_INTERVAL,
-  playgroundIcons,
   PARTICLE_POSITIONS,
 } from './components/landing.data';
 export {

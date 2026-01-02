@@ -384,8 +384,6 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
     setIsClient(true);
   }, []);
 
-
-
   // Breakpoint gutter
   const breakpointGutter = useMemo(() => {
     if (!debugState?.isDebugMode || !onBreakpointClick) {
@@ -432,7 +430,8 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
   const executableLines = useMemo(() => {
     // Try to get executable lines from AST info
     if (currentStep && typeof currentStep === 'object' && 'state' in currentStep) {
-      const stepState = (currentStep as { state?: { ast_info?: { executable_lines?: number[] } } }).state;
+      const stepState = (currentStep as { state?: { ast_info?: { executable_lines?: number[] } } })
+        .state;
       return stepState?.ast_info?.executable_lines || [];
     }
     return [];

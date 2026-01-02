@@ -338,7 +338,10 @@ const DragDropQueue = () => {
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <div id="tutorial-operations-panel" className="sticky top-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
+        <div
+          id="tutorial-operations-panel"
+          className="sticky top-4 max-h-[calc(100vh-8rem)] overflow-y-auto"
+        >
           <Suspense
             fallback={
               <div className="h-64 w-full rounded-lg border bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
@@ -356,7 +359,10 @@ const DragDropQueue = () => {
           </Suspense>
         </div>
 
-        <div id="tutorial-drop-zone" className="rounded-lg bg-white p-4 shadow md:p-6 dark:bg-gray-800">
+        <div
+          id="tutorial-drop-zone"
+          className="rounded-lg bg-white p-4 shadow md:p-6 dark:bg-gray-800"
+        >
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Drop Zone</h2>
             <div className="space-x-2">
@@ -429,16 +435,16 @@ const DragDropQueue = () => {
       <div className="mt-6">
         {/* Step Selection */}
         <div id="tutorial-controls">
-        <StepSelector
-          operations={state.operations}
-          selectedStep={selectedStep}
-          onStepSelect={handleStepSelect}
-          getStepDescription={getStepDescription}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onAutoPlay={handleAutoPlay}
-          isAutoPlaying={isAutoPlaying}
-        />
+          <StepSelector
+            operations={state.operations}
+            selectedStep={selectedStep}
+            onStepSelect={handleStepSelect}
+            getStepDescription={getStepDescription}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onAutoPlay={handleAutoPlay}
+            isAutoPlaying={isAutoPlaying}
+          />
         </div>
       </div>
 

@@ -21,12 +21,36 @@ class SinglyLinkedListStepthroughService
     const step = steps[stepIndex];
 
     // First, try to extract nodes from instances field if available
-    if (
-      step.state.instances &&
-      step.state.instances.mylist &&
-      Array.isArray(step.state.instances.mylist)
-    ) {
-      return { nodes: step.state.instances.mylist };
+    // The backend sends instances as objects with nodes, count, head, tail
+    if (step.state.instances) {
+      // Find the first instance that has a 'nodes' array (could be 'mylist', 'self', 'list', etc.)
+      for (const [, instanceValue] of Object.entries(step.state.instances)) {
+        if (
+          instanceValue &&
+          typeof instanceValue === 'object' &&
+          'nodes' in instanceValue &&
+          Array.isArray((instanceValue as { nodes: string[] }).nodes)
+        ) {
+          const instance = instanceValue as {
+            nodes: string[];
+            count?: number;
+            head?: string | null;
+            tail?: string | null;
+          };
+          return {
+            nodes: instance.nodes,
+            head: instance.head ?? (instance.nodes.length > 0 ? instance.nodes[0] : undefined),
+            tail:
+              instance.tail ??
+              (instance.nodes.length > 0 ? instance.nodes[instance.nodes.length - 1] : undefined),
+            count: instance.count ?? instance.nodes.length,
+          };
+        }
+        // Backward compatibility: if instanceValue is directly an array
+        if (Array.isArray(instanceValue)) {
+          return { nodes: instanceValue as string[] };
+        }
+      }
     }
 
     // If instances not available, build from step_detail and operation data
