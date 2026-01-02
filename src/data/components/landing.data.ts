@@ -1,36 +1,6 @@
-import {
-  Move,
-  StepForward,
-  Zap,
-  MousePointerClick,
-  Footprints,
-  GitBranch,
-  Network,
-  Layers,
-} from 'lucide-react';
+import { Move, StepForward, GitBranch, Network, Layers } from 'lucide-react';
 
 import { VisualizationMode, Structure } from '@/types';
-
-const playgroundIcons = {
-  'Drag & Drop': {
-    Icon: MousePointerClick,
-    gradient: 'from-pink-500 via-rose-500 to-orange-500',
-    bgGradient: 'from-pink-500/20 via-rose-500/20 to-orange-500/20',
-    hoverGradient: 'from-pink-600 via-rose-600 to-orange-600',
-  },
-  'Step Through': {
-    Icon: Footprints,
-    gradient: 'from-cyan-500 via-blue-500 to-indigo-500',
-    bgGradient: 'from-cyan-500/20 via-blue-500/20 to-indigo-500/20',
-    hoverGradient: 'from-cyan-600 via-blue-600 to-indigo-600',
-  },
-  'Real-time': {
-    Icon: Zap,
-    gradient: 'from-yellow-500 via-amber-500 to-orange-500',
-    bgGradient: 'from-yellow-500/20 via-amber-500/20 to-orange-500/20',
-    hoverGradient: 'from-yellow-600 via-amber-600 to-orange-600',
-  },
-};
 
 const visualizationModes: VisualizationMode[] = [
   {
@@ -44,12 +14,6 @@ const visualizationModes: VisualizationMode[] = [
     title: 'Step Through',
     icon: StepForward,
     images: ['/landing/step_1.jpg', '/landing/step_2.jpg'],
-  },
-  {
-    id: 'realtime',
-    title: 'Real-time',
-    icon: Zap,
-    images: ['/landing/reailtime_1.jpg', '/landing/realtime_2.jpg'],
   },
 ];
 
@@ -109,7 +73,6 @@ export {
   visualizationModes,
   AUTO_SWITCH_INTERVAL,
   IMAGE_SWITCH_INTERVAL,
-  playgroundIcons,
   PARTICLE_POSITIONS,
   structures,
 };

@@ -56,8 +56,6 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   onInputCancel,
   terminalOutput,
 }: StepthroughLayoutProps<TData>) => {
-  // Debug: Log inputState on every render
-  console.log('🎨 StepthroughLayout render - inputState:', inputState);
   const pathname = usePathname();
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const visualizationRef = useRef<HTMLDivElement | null>(null);
@@ -274,48 +272,23 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
         />
       </Suspense>
 
-      {/* Input Dialog - Supports both upfront collection and interactive mode */}
+      {/* Input Dialog - Interactive step-by-step mode */}
       {(() => {
-        // Only show if:
-        // 1. We are explicitly collecting inputs (upfront mode)
-        // 2. OR We are waiting for input AND we are at the last step (current execution tip)
-        const isAtLastStep = steps.length > 0 && currentStepIndex === steps.length - 1;
-
-        const shouldShow =
-          inputState &&
-          (inputState.collectingInputs === true ||
-            (inputState.waitingForInput === true && isAtLastStep));
-
-        // Debug toggles - remove in production or rely on props
-        // console.log('💬 InputDialog check:', { waiting: inputState?.waitingForInput, isAtLastStep, shouldShow });
+        // Show dialog when waiting for input in interactive mode
+        const shouldShow = inputState && inputState.waitingForInput === true;
 
         if (!shouldShow || !inputState) {
           return null;
         }
 
-        // Determine prompts based on mode
-        let dialogPrompts: { prompt: string; inputId: number }[] | null = null;
-        let dialogTotal = 1;
-
-        if (inputState.waitingForInput) {
-          // Interactive mode: Single prompt
-          dialogPrompts = [
-            {
-              prompt: inputState.inputPrompt || 'Enter value',
-              inputId: inputState.inputId || Date.now(),
-            },
-          ];
-          dialogTotal = 1;
-        } else if (inputState.collectingInputs) {
-          // Upfront mode: Multiple prompts from history/definitions
-          if (inputState.inputHistory && inputState.inputHistory.length > 0) {
-            dialogPrompts = inputState.inputHistory.map((h, idx) => ({
-              prompt: h.prompt || `Input ${idx + 1}`,
-              inputId: h.inputId,
-            }));
-            dialogTotal = inputState.inputHistory.length;
-          }
-        }
+        // Interactive mode: Single prompt for current input
+        const dialogPrompts = [
+          {
+            prompt: inputState.inputPrompt || 'Enter value',
+            inputId: inputState.inputId ?? Date.now(),
+          },
+        ];
+        const dialogTotal = 1;
 
         return (
           <InputDialog
@@ -323,7 +296,6 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
             prompts={dialogPrompts}
             totalInputs={dialogTotal}
             onSubmit={(values) => {
-              // Submit values
               if (onInputSubmit) {
                 onInputSubmit(values);
               }

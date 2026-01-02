@@ -13,7 +13,6 @@ const StackStepthroughVisualization = forwardRef<
     { steps, currentStepIndex, data, isRunning, error }: StepthroughVisualizationProps<StackData>,
     ref,
   ) => {
-    console.log('🖼️ StackStepthroughVisualization rendered', { data, steps, isRunning });
     const [highlightedElementIndex, setHighlightedElementIndex] = useState(-1);
     const [isAnimating, setIsAnimating] = useState(false);
     const [isTransitioning, setIsTransitioning] = useState(false);

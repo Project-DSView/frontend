@@ -89,8 +89,6 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
       // Extract AST info from response steps
       let extractedASTInfo = null;
       if (response.steps && response.steps.length > 0) {
-        console.log('✅ BaseStepthrough: Execution response:', response);
-
         for (const step of response.steps) {
           if (step.state?.ast_info) {
             extractedASTInfo = step.state.ast_info;
@@ -102,46 +100,67 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
       // Extract statistics from steps
       extractStatsFromSteps(response.steps);
 
-      // Determine if waiting for input
-      const isWaitingForInput = response.status === 'waiting';
+      // Check if execution stopped due to needing more input
+      const needsMoreInput =
+        response.status === 'error' &&
+        (response.errorMessage?.includes('No more input provided') ||
+          (response.errorMessage?.includes('input') &&
+            response.errorMessage?.includes('provided')));
+
+      // Also check for explicit 'waiting' status
+      const isWaitingForInput = response.status === 'waiting' || needsMoreInput;
       const lastStep = response.steps.length > 0 ? response.steps[response.steps.length - 1] : null;
 
       let newInputState = { ...inputState };
 
-      if (isWaitingForInput && lastStep) {
-        console.log('⏳ BaseStepthrough: Waiting for input at step', lastStep.stepNumber);
+      if (isWaitingForInput) {
+        // Try to extract the prompt from the code at the current input position
+        const inputMatches = Array.from(state.code.matchAll(/input\s*\(\s*([^)]*)\s*\)/g));
+        const currentInputIndex = inputState.inputValues.length;
+        let prompt = 'Enter value';
 
-        // Extract prompt from last step state - ensure we check message properly
-        const prompt = lastStep.state.input_prompt || lastStep.state.message || 'Enter value';
-        const inputId = lastStep.stepNumber;
+        if (inputMatches[currentInputIndex]) {
+          const match = inputMatches[currentInputIndex];
+          if (match[1]) {
+            const promptStr = match[1].trim();
+            if (
+              (promptStr.startsWith('"') && promptStr.endsWith('"')) ||
+              (promptStr.startsWith("'") && promptStr.endsWith("'"))
+            ) {
+              prompt = promptStr.slice(1, -1);
+            }
+          }
+        }
+
+        // If lastStep has a message about input, use that
+        if (lastStep?.state?.input_prompt) {
+          prompt = lastStep.state.input_prompt;
+        } else if (lastStep?.state?.message && lastStep.state.message.includes('input')) {
+          prompt = lastStep.state.message;
+        }
 
         newInputState = {
           ...inputState,
           waitingForInput: true,
-          inputPrompt: prompt,
-          inputId: inputId,
+          inputPrompt: prompt || `Input ${currentInputIndex + 1}`,
+          inputId: currentInputIndex,
+          collectingInputs: false,
         };
       } else {
-        // Not waiting, clear input state
+        // Execution completed (success or other error), clear input state
         newInputState = {
           ...inputState,
           waitingForInput: false,
           inputPrompt: null,
           inputId: null,
+          collectingInputs: false,
+          // Keep inputValues for display but reset on next run
         };
       }
 
       const astInfoToSet = extractedASTInfo || null;
 
-      // Calculate index: if waiting, go to last step (the waiting one). If success, go to first step (standard reset)
-      // UNLESS we are resuming execution (inputHistory > 0), in which case we might want to stay current?
-      // Actually, standard behavior for "stepthrough" usually resets to 0.
-      // But for interactive resume, we probably want to auto-fast-forward or just show the new steps.
-      // If we provided inputs, we are likely deep in execution.
-      // Let's set it to the last executed step if we were waiting, otherwise 0?
-      // User request: "go to that step and then enter input -> step increases".
-      // So if we just executed with new input, we should probably jump to the NEW step (the one after input).
-
+      // Jump to last step when providing inputs (to show progress)
       const targetStepIndex = inputState.inputValues.length > 0 ? response.steps.length - 1 : 0;
 
       setState((prev) => ({
@@ -150,7 +169,11 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
         currentStepIndex: targetStepIndex,
         isRunning: false,
         executionId: response.executionId,
-        error: response.status === 'error' ? response.errorMessage || 'Execution failed' : null,
+        // Don't show "No more input provided" as error - it's just asking for input
+        error:
+          response.status === 'error' && !needsMoreInput
+            ? response.errorMessage || 'Execution failed'
+            : null,
         data: extractDataFromSteps(response.steps, targetStepIndex),
         astInfo: astInfoToSet,
         terminalOutput: response.output,
@@ -162,7 +185,10 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
         isRunning: false,
         currentStepIndex: targetStepIndex,
         executionId: response.executionId,
-        error: response.status === 'error' ? response.errorMessage || 'Execution failed' : null,
+        error:
+          response.status === 'error' && !needsMoreInput
+            ? response.errorMessage || 'Execution failed'
+            : null,
       }));
 
       setInputState(newInputState);
@@ -222,20 +248,17 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
     setState((prev) => ({ ...prev, code, filename }));
   }, []);
 
-  // Execute code - SIMPLIFIED for interactive mode
+  // Execute code - Interactive step-by-step input mode
   const executeCode = useCallback(async () => {
-    console.log('🔵 executeCode called with inputs:', inputState.inputValues);
     if (!state.code.trim()) return;
 
-    // Validate code security... (simplified for brevity here, assuming safe or already validated)
+    // Validate code security first
     const securityStatus = validatePythonCodeSecurity(state.code, 'stepthrough');
     if (!securityStatus.isSafe) {
-      // ... existing error handling
       const relevantViolations = securityStatus.violations.filter(
         (v) => !v.toLowerCase().includes('input') && !v.toLowerCase().includes('user input'),
       );
       if (relevantViolations.length > 0) {
-        // Build error message from violations
         const errorMessage =
           relevantViolations.length > 0
             ? `โค้ดไม่ปลอดภัย พบโค้ดที่เป็นอันตราย: ${relevantViolations.join(', ')}`
@@ -252,7 +275,6 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
           error: errorMessage,
         }));
 
-        // Return early to prevent code execution
         return;
       }
     }
@@ -261,7 +283,7 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
     setHookState((prev) => ({ ...prev, isRunning: true, error: null }));
 
     // Execute with CURRENT accumulated inputs.
-    // Backend will stop if more are needed.
+    // Backend will stop if more are needed (returning error "No more input provided")
     executeMutation.mutate({
       code: state.code,
       inputValues: inputState.inputValues,
@@ -509,6 +531,15 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
       currentDebugLine: null,
       isPaused: false,
     });
+    // Reset input state
+    setInputState({
+      waitingForInput: false,
+      inputPrompt: null,
+      inputId: null,
+      inputHistory: [],
+      inputValues: [],
+      collectingInputs: false,
+    });
   }, [initialState]);
 
   // Cleanup on unmount
@@ -520,43 +551,24 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
     };
   }, []);
 
-  // Handle input submission - APPEND and RE-EXECUTE
+  // Handle input submission - Interactive step-by-step mode
   const handleInputSubmit = useCallback(
     (values: string[]) => {
-      // In this new interactive mode, we usually receive one value at a time from the dialog
-      // But the component might send an array. We take the new values and append to history.
-
       if (values.length === 0) return;
 
-      setInputState((prev) => {
-        const newValues = [...prev.inputValues, ...values];
-
-        console.log('✅ Submitting input, new total inputs:', newValues);
-
-        // IMMEDIATE RE-EXECUTION with new inputs
-        // We need to trigger this outside the state update, but we need the new state.
-        // So we use a temp var or effect?
-        // Better: Update state, and let the effect trigger?
-        // Or just call mutate directly?
-        // Since executeCode depends on inputState.inputValues, we can't just call it inside setState.
-        // But we can call mutate directly if we have the values.
-
-        // However, we want to update the UI input history too.
-
-        return {
-          ...prev,
-          inputValues: newValues,
-          waitingForInput: false,
-          inputPrompt: null,
-          inputId: null,
-        };
-      });
-
-      // Trigger execution with new values immediately
-      // We pass the NEW values explicitly to avoid stale closure issues
+      // Append the new input value(s) to the accumulated inputs
       const currentInputValues = inputState.inputValues;
       const newInputValues = [...currentInputValues, ...values];
 
+      setInputState((prev) => ({
+        ...prev,
+        inputValues: newInputValues,
+        waitingForInput: false,
+        inputPrompt: null,
+        inputId: null,
+      }));
+
+      // Trigger execution with new values immediately
       setState((prev) => ({ ...prev, isRunning: true, error: null }));
       setHookState((prev) => ({ ...prev, isRunning: true, error: null }));
 
@@ -601,8 +613,7 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
       astPreviewLoading: false,
       terminalOutput: state.terminalOutput,
     };
-    console.log('📤 useBaseStepthrough return - inputState:', inputState);
-    console.log('📤 useBaseStepthrough return - returnState.inputState:', stateObj.inputState);
+
     return stateObj;
   }, [
     state.code,
