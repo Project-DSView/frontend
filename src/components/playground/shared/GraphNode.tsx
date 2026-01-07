@@ -1,18 +1,5 @@
 import React, { memo } from 'react';
-import { UndirectedGraphNode } from '@/types';
-
-interface GraphNodeProps {
-  node: UndirectedGraphNode;
-  isHighlighted: boolean;
-  isInSearchPath: boolean;
-  isTraverseSelected: boolean;
-  isCurrentlyTraversing: boolean;
-  isRunning: boolean;
-  isAnimating?: boolean;
-  onMouseDown?: (e: React.MouseEvent, nodeId: string) => void;
-  position?: { x: number; y: number };
-  isDragging?: boolean;
-}
+import { GraphNodeProps } from '@/types';
 
 const GraphNode = memo<GraphNodeProps>(
   ({

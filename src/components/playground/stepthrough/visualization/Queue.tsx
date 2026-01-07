@@ -5,11 +5,13 @@ import { QueueData } from '@/types/stepthrough/Queue.types';
 
 import ZoomableContainer from '../../shared/ZoomableContainer';
 import ConsoleOutput from '../../shared/ConsoleOutput';
+import BigOComplexityCard from '../../shared/BigOComplexityCard';
 
 const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
   steps,
   currentStepIndex,
   data,
+  complexity,
 }) => {
   const currentStep = steps[currentStepIndex];
   const queueData = data as QueueData;
@@ -229,6 +231,12 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
 
   return (
     <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+          Queue Visualization
+        </h2>
+      </div>
+
       {/* Underflow/Overflow Warning Banner */}
       {errorInfo && (
         <div className="mb-4 animate-pulse rounded-lg border-2 border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/20">
@@ -350,6 +358,9 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
 
       {/* Console Output */}
       <ConsoleOutput steps={steps} currentStepIndex={currentStepIndex} />
+
+      {/* Big O Analysis */}
+      <BigOComplexityCard complexity={complexity} />
 
       {/* Legend */}
       <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-700 dark:text-gray-300">

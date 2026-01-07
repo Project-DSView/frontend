@@ -52,6 +52,7 @@ const StepthroughBST: React.FC = () => {
       inputState={state.inputState}
       onInputSubmit={handleInputSubmit}
       onInputCancel={handleInputCancel}
+      complexity={state.complexity}
     />
   );
 };

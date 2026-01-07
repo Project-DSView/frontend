@@ -2,6 +2,15 @@
 
 import React, { useRef, Suspense, useState, lazy, useEffect } from 'react';
 import { toast } from 'sonner';
+import { usePathname } from 'next/navigation';
+import { StepthroughLayoutProps, StepthroughData } from '@/types';
+import { stepthroughTutorialSteps, getTutorialStorageKey } from '@/data';
+
+
+// Lazy load heavy components
+const TutorialOverlay = lazy(() => import('@/components/playground/tutorial/TutorialOverlay'));
+const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
+
 import CodeEditor from '@/components/editor/CodeEditor';
 import StepControl from '@/components/playground/shared/StepControl';
 import FileUploadButton from '@/components/playground/shared/FileUploadButton';
@@ -10,15 +19,7 @@ import ExportPythonButton from '@/components/playground/shared/ExportPythonButto
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 import TutorialButton from '@/components/playground/shared/TutorialButton';
 import InputDialog from '@/components/playground/shared/InputDialog';
-import { StepthroughLayoutProps, StepthroughData } from '@/types';
 
-// Lazy load heavy components
-// Lazy load heavy components
-const TutorialOverlay = lazy(() => import('@/components/playground/tutorial/TutorialOverlay'));
-const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
-import { stepthroughTutorialSteps } from '@/data/components/stepthrough-tutorial.data';
-import { getTutorialStorageKey } from '@/data/components/tutorial-overlay.data';
-import { usePathname } from 'next/navigation';
 
 const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   code,
@@ -55,6 +56,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   onInputSubmit,
   onInputCancel,
   terminalOutput,
+  complexity,
 }: StepthroughLayoutProps<TData>) => {
   const pathname = usePathname();
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
@@ -226,6 +228,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
               isRunning={isRunning}
               error={error}
               terminalOutput={terminalOutput}
+              complexity={complexity}
             />
           </div>
         </Suspense>
@@ -288,13 +291,11 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
             inputId: inputState.inputId ?? Date.now(),
           },
         ];
-        const dialogTotal = 1;
 
         return (
           <InputDialog
             isOpen={true}
             prompts={dialogPrompts}
-            totalInputs={dialogTotal}
             onSubmit={(values) => {
               if (onInputSubmit) {
                 onInputSubmit(values);

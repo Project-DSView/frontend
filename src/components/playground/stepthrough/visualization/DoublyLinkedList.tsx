@@ -3,6 +3,7 @@ import { StepthroughVisualizationProps, LinkedListData } from '@/types';
 import ZoomableContainer from '../../shared/ZoomableContainer';
 import StepIndicator from '../../shared/StepIndicator';
 import ConsoleOutput from '../../shared/ConsoleOutput';
+import BigOComplexityCard from '../../shared/BigOComplexityCard';
 import { gsap } from 'gsap';
 
 // Type for storing node state at each step
@@ -15,7 +16,7 @@ interface StepNodeState {
 const DoublyLinkedListStepthroughVisualization = forwardRef<
   HTMLDivElement,
   StepthroughVisualizationProps<LinkedListData>
->(({ steps, currentStepIndex, data, isRunning, error }, ref) => {
+>(({ steps, currentStepIndex, data, isRunning, error, complexity }, ref) => {
   const [highlightedNodeIndex, setHighlightedNodeIndex] = useState(-1);
   const [, setHeadPosition] = useState(0);
   const [isTraversing, setIsTraversing] = useState(false);
@@ -674,6 +675,9 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
 
       {/* Console Output */}
       <ConsoleOutput steps={steps} currentStepIndex={currentStepIndex} />
+
+      {/* Big O Analysis */}
+      <BigOComplexityCard complexity={complexity} />
 
       {/* Current Operation Status */}
       {isRunning && steps.length > 0 && currentStepIndex < steps.length && (

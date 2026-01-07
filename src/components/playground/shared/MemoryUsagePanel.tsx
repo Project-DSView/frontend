@@ -1,12 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { StepthroughStep } from '@/types';
-
-interface MemoryUsagePanelProps {
-  steps: StepthroughStep[];
-  currentStepIndex: number;
-}
+import { MemoryUsagePanelProps } from '@/types';
 
 // Memory limit for comparison (256 MB default, matching backend)
 const MEMORY_LIMIT_BYTES = 256 * 1024 * 1024;
@@ -21,6 +16,7 @@ const MemoryUsagePanel: React.FC<MemoryUsagePanelProps> = ({ steps, currentStepI
   const [showDetails, setShowDetails] = useState(false);
   const [showAllSteps, setShowAllSteps] = useState(false);
   const [activeTab, setActiveTab] = useState<'memory' | 'time'>('memory');
+  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
 
   const currentStep =
     steps.length > 0 && currentStepIndex < steps.length ? steps[currentStepIndex] : null;
@@ -261,6 +257,236 @@ const MemoryUsagePanel: React.FC<MemoryUsagePanelProps> = ({ steps, currentStepI
                   </p>
                 </div>
               </div>
+
+              {/* Performance Chart */}
+              {steps.length > 1 && (() => {
+                const chartData = steps.map((step, index) => ({
+                  index,
+                  memory: (step?.state?.memory as number) || 0,
+                  time: (step?.state?.execution_time as number) || 0,
+                }));
+                
+                const maxMem = Math.max(...chartData.map(d => d.memory), 1);
+                const maxTime = Math.max(...chartData.map(d => d.time), 0.001);
+                
+                const chartWidth = 380;
+                const chartHeight = 140;
+                const padding = { top: 20, right: 10, bottom: 25, left: 10 };
+                const innerWidth = chartWidth - padding.left - padding.right;
+                const innerHeight = chartHeight - padding.top - padding.bottom;
+                
+                const xScale = (i: number) => padding.left + (i / (chartData.length - 1)) * innerWidth;
+                const yScaleMem = (v: number) => padding.top + innerHeight - (v / maxMem) * innerHeight;
+                const yScaleTime = (v: number) => padding.top + innerHeight - (v / maxTime) * innerHeight;
+                
+                // Create path for memory area
+                const memAreaPath = `M ${xScale(0)} ${chartHeight - padding.bottom} ` +
+                  chartData.map((d, i) => `L ${xScale(i)} ${yScaleMem(d.memory)}`).join(' ') +
+                  ` L ${xScale(chartData.length - 1)} ${chartHeight - padding.bottom} Z`;
+                
+                // Create path for memory line
+                const memLinePath = chartData.map((d, i) => 
+                  `${i === 0 ? 'M' : 'L'} ${xScale(i)} ${yScaleMem(d.memory)}`
+                ).join(' ');
+                
+                // Create path for time line
+                const timeLinePath = chartData.map((d, i) => 
+                  `${i === 0 ? 'M' : 'L'} ${xScale(i)} ${yScaleTime(d.time)}`
+                ).join(' ');
+                
+                // Grid lines Y
+                const gridLines = [0.25, 0.5, 0.75].map(ratio => ({
+                  y: padding.top + innerHeight * (1 - ratio),
+                }));
+
+                // Active step (hovered or current)
+                const activeStepIdx = hoveredStep !== null ? hoveredStep : currentStepIndex;
+                const activeData = chartData[activeStepIdx] || chartData[0];
+
+                return (
+                  <div 
+                    className="rounded-lg bg-gradient-to-br from-slate-50 to-gray-50 p-4 dark:from-slate-900/30 dark:to-gray-900/30"
+                    onMouseLeave={() => setHoveredStep(null)}
+                  >
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                        Performance Graph
+                      </h3>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
+                          <div className="h-2 w-4 rounded bg-purple-500/60"></div>
+                          <span className="text-[10px] text-purple-600 dark:text-purple-400">Memory</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="h-0.5 w-4 rounded bg-cyan-500"></div>
+                          <span className="text-[10px] text-cyan-600 dark:text-cyan-400">Time</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tooltip */}
+                    <div className="mb-2 flex items-center justify-center gap-4 rounded-md bg-white/80 px-3 py-1.5 text-xs dark:bg-gray-800/80">
+                      <span className="font-semibold text-amber-600 dark:text-amber-400">
+                        Step {activeStepIdx + 1}
+                      </span>
+                      <span className="text-purple-600 dark:text-purple-400">
+                        Memory: <span className="font-medium">{formatMemory(activeData.memory)}</span>
+                      </span>
+                      <span className="text-cyan-600 dark:text-cyan-400">
+                        Time: <span className="font-medium">{formatTime(activeData.time)}</span>
+                      </span>
+                    </div>
+
+                    <svg
+                      viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+                      className="w-full"
+                      style={{ maxHeight: '140px' }}
+                    >
+                      {/* Grid lines */}
+                      {gridLines.map((line, idx) => (
+                        <line
+                          key={idx}
+                          x1={padding.left}
+                          y1={line.y}
+                          x2={chartWidth - padding.right}
+                          y2={line.y}
+                          stroke="currentColor"
+                          strokeOpacity={0.1}
+                          strokeDasharray="4 4"
+                        />
+                      ))}
+                      
+                      {/* Memory area fill */}
+                      <path
+                        d={memAreaPath}
+                        fill="url(#memoryGradient)"
+                        opacity={0.6}
+                      />
+                      
+                      {/* Memory line */}
+                      <path
+                        d={memLinePath}
+                        fill="none"
+                        stroke="#a855f7"
+                        strokeWidth={2}
+                        strokeLinejoin="round"
+                      />
+                      
+                      {/* Time line */}
+                      <path
+                        d={timeLinePath}
+                        fill="none"
+                        stroke="#06b6d4"
+                        strokeWidth={2}
+                        strokeLinejoin="round"
+                        strokeDasharray="6 3"
+                      />
+                      
+                      {/* Active step indicator (hovered or current) */}
+                      {activeStepIdx < chartData.length && (
+                        <>
+                          <line
+                            x1={xScale(activeStepIdx)}
+                            y1={padding.top}
+                            x2={xScale(activeStepIdx)}
+                            y2={chartHeight - padding.bottom}
+                            stroke={hoveredStep !== null ? "#3b82f6" : "#f59e0b"}
+                            strokeWidth={2}
+                            strokeOpacity={0.6}
+                          />
+                          <circle
+                            cx={xScale(activeStepIdx)}
+                            cy={yScaleMem(chartData[activeStepIdx].memory)}
+                            r={hoveredStep !== null ? 6 : 4}
+                            fill="#a855f7"
+                            stroke="white"
+                            strokeWidth={2}
+                            className="transition-all duration-150"
+                          />
+                          <circle
+                            cx={xScale(activeStepIdx)}
+                            cy={yScaleTime(chartData[activeStepIdx].time)}
+                            r={hoveredStep !== null ? 6 : 4}
+                            fill="#06b6d4"
+                            stroke="white"
+                            strokeWidth={2}
+                            className="transition-all duration-150"
+                          />
+                        </>
+                      )}
+
+                      {/* Hover zones - invisible rectangles for each data point */}
+                      {chartData.map((d, i) => {
+                        const stepWidth = innerWidth / (chartData.length - 1 || 1);
+                        const x = i === 0 
+                          ? padding.left 
+                          : i === chartData.length - 1 
+                            ? xScale(i) - stepWidth / 2
+                            : xScale(i) - stepWidth / 2;
+                        const width = i === 0 || i === chartData.length - 1 
+                          ? stepWidth / 2 + 5
+                          : stepWidth;
+                        
+                        return (
+                          <rect
+                            key={i}
+                            x={x}
+                            y={padding.top}
+                            width={width}
+                            height={innerHeight}
+                            fill="transparent"
+                            className="cursor-pointer"
+                            onMouseEnter={() => setHoveredStep(i)}
+                          />
+                        );
+                      })}
+                      
+                      {/* X axis */}
+                      <line
+                        x1={padding.left}
+                        y1={chartHeight - padding.bottom}
+                        x2={chartWidth - padding.right}
+                        y2={chartHeight - padding.bottom}
+                        stroke="currentColor"
+                        strokeOpacity={0.2}
+                      />
+                      
+                      {/* X axis labels */}
+                      <text
+                        x={padding.left}
+                        y={chartHeight - 8}
+                        fontSize="9"
+                        fill="currentColor"
+                        opacity={0.5}
+                      >
+                        Step 1
+                      </text>
+                      <text
+                        x={chartWidth - padding.right}
+                        y={chartHeight - 8}
+                        fontSize="9"
+                        fill="currentColor"
+                        opacity={0.5}
+                        textAnchor="end"
+                      >
+                        Step {chartData.length}
+                      </text>
+                      
+                      {/* Gradient definition */}
+                      <defs>
+                        <linearGradient id="memoryGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#a855f7" stopOpacity="0.4" />
+                          <stop offset="100%" stopColor="#a855f7" stopOpacity="0.05" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div className="mt-2 flex justify-between text-[10px] text-gray-500 dark:text-gray-400">
+                      <span>Peak: {formatMemory(maxMem)}</span>
+                      <span>Max Time/Step: {formatTime(maxTime)}</span>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Tabs for Memory/Time */}
               <div className="flex rounded-lg bg-gray-100 p-1 dark:bg-gray-700">

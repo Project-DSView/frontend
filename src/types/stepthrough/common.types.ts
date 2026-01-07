@@ -99,6 +99,21 @@ interface StepthroughStep {
   };
 }
 
+interface ComplexityAnalysis {
+  timeComplexity: string;
+  spaceComplexity: string;
+  timeExplanation: string;
+  spaceExplanation: string;
+  analysisDetails?: {
+    loop_count?: number;
+    max_nesting?: number;
+    has_recursion?: boolean;
+    recursion_type?: string | null;
+    space_allocations?: string[];
+    has_growing_structures?: boolean;
+  };
+}
+
 interface StepthroughResponse {
   executionId: string;
   code: string;
@@ -110,6 +125,7 @@ interface StepthroughResponse {
   executedAt: string;
   createdAt: string;
   output?: string; // Full execution stdout
+  complexity?: ComplexityAnalysis; // Big O analysis
 }
 
 export type StepStatus = 'success' | 'error' | 'timeout' | 'waiting';
@@ -127,6 +143,7 @@ interface StepthroughState<TData extends StepthroughData = StepthroughData> {
   debugState?: DebugState;
   inputState?: InputState;
   terminalOutput?: string; // Full terminal output
+  complexity?: ComplexityAnalysis | null; // Big O analysis
 }
 
 interface StepthroughHookReturn<TData extends StepthroughData = StepthroughData> {
@@ -223,6 +240,7 @@ interface StepthroughVisualizationProps<TData extends StepthroughData = Stepthro
     operator?: string;
   }>;
   currentASTNodeIndex?: number;
+  complexity?: ComplexityAnalysis | null; // Big O analysis
 }
 
 interface InputState {
@@ -295,6 +313,7 @@ interface StepthroughLayoutProps<TData extends StepthroughData = StepthroughData
     }>;
   } | null;
   astPreviewLoading?: boolean;
+  complexity?: ComplexityAnalysis | null; // Big O analysis
 }
 
 export type {
@@ -311,4 +330,5 @@ export type {
   DebugState,
   Breakpoint,
   InputState,
+  ComplexityAnalysis,
 };

@@ -4,10 +4,7 @@ import React from 'react';
 import { HelpCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-interface TutorialButtonProps {
-  onClick: () => void;
-  className?: string;
-}
+import { TutorialButtonProps } from '@/types';
 
 const TutorialButton: React.FC<TutorialButtonProps> = ({ onClick, className = '' }) => {
   return (

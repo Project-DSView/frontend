@@ -1,19 +1,5 @@
 import React, { memo } from 'react';
-
-import {
-  UndirectedGraphNode,
-  UndirectedGraphEdge,
-  DirectedGraphNode,
-  DirectedGraphEdge,
-} from '@/types';
-
-interface GraphEdgeProps {
-  edge: UndirectedGraphEdge | DirectedGraphEdge;
-  fromNode: UndirectedGraphNode | DirectedGraphNode;
-  toNode: UndirectedGraphNode | DirectedGraphNode;
-  isHighlighted: boolean;
-  allEdges?: (UndirectedGraphEdge | DirectedGraphEdge)[];
-}
+import { GraphEdgeProps } from '@/types';
 
 const GraphEdge = memo<GraphEdgeProps>(
   ({ edge, fromNode, toNode, isHighlighted, allEdges = [] }) => {

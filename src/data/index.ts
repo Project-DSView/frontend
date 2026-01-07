@@ -14,6 +14,14 @@ export {
   isMaterialClickable,
   isExercise,
 } from './components/material.data';
+export {
+  dragdropTutorialSteps,
+  stepthroughTutorialSteps,
+  getTutorialSteps,
+  getTutorialStorageKey,
+  namingGuides
+} from './components/tutorial.data';
+
 
 // Drag Drop
 export { categories } from './dragdrop/common.data';

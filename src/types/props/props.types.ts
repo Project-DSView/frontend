@@ -24,6 +24,9 @@ import { SinglyLinkedListDragComponent } from '../dragdrop/SinglyLinkedList.type
 import { DoublyLinkedListDragComponent } from '../dragdrop/DoublyLinkedList.types';
 import { StackDragComponent } from '../dragdrop/Stack.types';
 import { QueueDragComponent } from '../dragdrop/Queue.types';
+import { UndirectedGraphNode, UndirectedGraphEdge } from '../dragdrop/UndirectedGraph.types';
+import { DirectedGraphNode, DirectedGraphEdge } from '../dragdrop/DirectedGraph.types';
+import { StepthroughStep, ComplexityAnalysis } from '../stepthrough/common.types';
 
 // ============================================================================
 // Button Props
@@ -396,6 +399,25 @@ interface LearningTip {
 }
 
 interface TutorialStep {
+  title: string;
+  description: string;
+  image?: string;
+  highlightSelector?: string;
+  placement?: 'top' | 'bottom' | 'left' | 'right';
+  spotlightPadding?: number;
+  disableNextUntilVisible?: boolean;
+  customContent?: 'naming-guide';
+}
+
+interface TutorialOverlayProps {
+  isOpen: boolean;
+  onClose: () => void;
+  steps: TutorialStep[];
+  storageKey: string;
+}
+
+// Tutorial step for PlaygroundMode (with image and alt for display in cards)
+interface PlaygroundTutorialStep {
   image: string;
   alt: string;
   description: string;
@@ -406,7 +428,7 @@ interface PlaygroundMode {
   description: string;
   iconName: string;
   iconColor: string;
-  steps: TutorialStep[];
+  steps: PlaygroundTutorialStep[];
 }
 
 interface TutorialSection {
@@ -417,7 +439,7 @@ interface TutorialSection {
 }
 
 interface TutorialStepProps {
-  step: TutorialStep;
+  step: PlaygroundTutorialStep;
   hoverColor: string;
   onImageClick: (imageSrc: string) => void;
 }
@@ -557,6 +579,87 @@ interface DragDropZoneProps {
 }
 
 // ============================================================================
+// Playground Shared Component Props
+// ============================================================================
+interface ZoomControlsProps {
+  zoom: number;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onReset: () => void;
+  onFitToScreen: () => void;
+  minZoom?: number;
+  maxZoom?: number;
+}
+
+interface ZoomableContainerProps {
+  children: React.ReactNode;
+  className?: string;
+  minZoom?: number;
+  maxZoom?: number;
+  initialZoom?: number;
+  enablePan?: boolean;
+  enableWheelZoom?: boolean;
+  enableKeyboardZoom?: boolean;
+  showControls?: boolean;
+}
+
+interface TutorialButtonProps {
+  onClick: () => void;
+  className?: string;
+}
+
+interface StepIndicatorProps {
+  stepNumber: number;
+  totalSteps: number;
+  message?: string;
+  isAutoPlaying?: boolean;
+  className?: string;
+}
+
+interface MemoryUsagePanelProps {
+  steps: StepthroughStep[];
+  currentStepIndex: number;
+}
+
+interface InputDialogProps {
+  isOpen: boolean;
+  prompts: Array<{ prompt: string; inputId: number }> | null;
+  onSubmit: (values: string[]) => void;
+  onCancel: () => void;
+}
+
+interface GraphNodeProps {
+  node: UndirectedGraphNode;
+  isHighlighted: boolean;
+  isInSearchPath: boolean;
+  isTraverseSelected: boolean;
+  isCurrentlyTraversing: boolean;
+  isRunning: boolean;
+  isAnimating?: boolean;
+  onMouseDown?: (e: React.MouseEvent, nodeId: string) => void;
+  position?: { x: number; y: number };
+  isDragging?: boolean;
+}
+
+interface GraphEdgeProps {
+  edge: UndirectedGraphEdge | DirectedGraphEdge;
+  fromNode: UndirectedGraphNode | DirectedGraphNode;
+  toNode: UndirectedGraphNode | DirectedGraphNode;
+  isHighlighted: boolean;
+  allEdges?: (UndirectedGraphEdge | DirectedGraphEdge)[];
+}
+
+interface ConsoleOutputProps {
+  steps: StepthroughStep[];
+  currentStepIndex: number;
+}
+
+interface BigOComplexityCardProps {
+  complexity: ComplexityAnalysis | null | undefined;
+  isLoading?: boolean;
+}
+
+// ============================================================================
 // Exports
 // ============================================================================
 export type {
@@ -617,6 +720,8 @@ export type {
   DataStructure,
   LearningTip,
   TutorialStep,
+  TutorialOverlayProps,
+  PlaygroundTutorialStep,
   PlaygroundMode,
   TutorialSection,
   TutorialStepProps,
@@ -637,4 +742,15 @@ export type {
   QueueVisualizationProps,
   DragDropZoneProps,
   FeatureCardProps,
+  // Playground Shared Components
+  ZoomControlsProps,
+  ZoomableContainerProps,
+  TutorialButtonProps,
+  StepIndicatorProps,
+  MemoryUsagePanelProps,
+  InputDialogProps,
+  GraphNodeProps,
+  GraphEdgeProps,
+  ConsoleOutputProps,
+  BigOComplexityCardProps,
 };

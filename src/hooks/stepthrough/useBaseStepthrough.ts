@@ -5,6 +5,7 @@ import {
   BaseStepthroughHookReturn,
   BaseStepthroughService,
   DebugState,
+  ComplexityAnalysis,
 } from '@/types';
 import {
   useExecuteStepthrough,
@@ -12,7 +13,7 @@ import {
   useCurrentStepDetails,
   useStepthroughState,
 } from '@/query';
-import { validatePythonCodeSecurity } from '@/lib/security/code-validation';
+import { validatePythonCodeSecurity } from '@/lib';
 
 const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughService<TData, TStats>>(
   initialState: BaseStepthroughState<TData, TStats>,
@@ -27,6 +28,7 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
     executionId: null as string | null,
     error: null as string | null,
   });
+  const [complexity, setComplexity] = useState<ComplexityAnalysis | null>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentStepIndexRef = useRef<number>(0);
 
@@ -160,6 +162,11 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
 
       const astInfoToSet = extractedASTInfo || null;
 
+      // Store complexity analysis from response
+      if (response.complexity) {
+        setComplexity(response.complexity);
+      }
+
       // Jump to last step when providing inputs (to show progress)
       const targetStepIndex = inputState.inputValues.length > 0 ? response.steps.length - 1 : 0;
 
@@ -279,16 +286,26 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
       }
     }
 
+    // Reset input state for a fresh start on new execution
+    setInputState({
+      waitingForInput: false,
+      inputPrompt: null,
+      inputId: null,
+      inputHistory: [],
+      inputValues: [],
+      collectingInputs: false,
+    });
+
     setState((prev) => ({ ...prev, isRunning: true, error: null }));
     setHookState((prev) => ({ ...prev, isRunning: true, error: null }));
 
-    // Execute with CURRENT accumulated inputs.
-    // Backend will stop if more are needed (returning error "No more input provided")
+    // Execute with empty inputs - new execution starts fresh
+    // Backend will stop if inputs are needed (returning error "No more input provided")
     executeMutation.mutate({
       code: state.code,
-      inputValues: inputState.inputValues,
+      inputValues: [],
     });
-  }, [state.code, executeMutation, inputState.inputValues]);
+  }, [state.code, executeMutation]);
 
   // Set current step
   const setCurrentStep = useCallback(
@@ -612,6 +629,7 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
       astPreview: null,
       astPreviewLoading: false,
       terminalOutput: state.terminalOutput,
+      complexity: complexity,
     };
 
     return stateObj;
@@ -629,6 +647,7 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
     debugState,
     inputState, // This will trigger recompute when inputState changes
     state.terminalOutput,
+    complexity,
   ]);
 
   return {
