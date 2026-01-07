@@ -9,6 +9,7 @@ import ZoomableContainer from '../../shared/ZoomableContainer';
 import GraphEdge from '../../shared/GraphEdge';
 import StepIndicator from '../../shared/StepIndicator';
 import ConsoleOutput from '../../shared/ConsoleOutput';
+import BigOComplexityCard from '../../shared/BigOComplexityCard';
 
 // Extended props to include animation state from hook
 interface DirectedGraphVisualizationProps extends StepthroughVisualizationProps<DirectedGraphData> {
@@ -31,6 +32,7 @@ const DirectedGraphStepthroughVisualization = forwardRef<
       insertedVertex,
       insertedEdge,
       currentVertex,
+      complexity,
     },
     ref,
   ) => {
@@ -513,6 +515,9 @@ const DirectedGraphStepthroughVisualization = forwardRef<
 
         {/* Console Output */}
         <ConsoleOutput steps={steps} currentStepIndex={currentStepIndex} />
+
+        {/* Big O Analysis */}
+        <BigOComplexityCard complexity={complexity} />
 
         {/* Legend */}
         <div className="mt-4 flex flex-wrap gap-4 text-xs">

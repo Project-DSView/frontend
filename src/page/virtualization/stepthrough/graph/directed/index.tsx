@@ -70,6 +70,7 @@ const StepthroughDirectedGraph: React.FC = () => {
         data: DirectedGraphData;
         isRunning?: boolean;
         error?: string | null;
+        complexity?: unknown;
       }
     >((props, ref) => (
       <DirectedGraphStepthroughVisualization
@@ -82,6 +83,7 @@ const StepthroughDirectedGraph: React.FC = () => {
         insertedVertex={insertedVertex}
         insertedEdge={insertedEdge}
         currentVertex={currentVertex}
+        complexity={props.complexity as never}
       />
     ));
     Component.displayName = 'VisualizationWithAnimation';
@@ -113,6 +115,7 @@ const StepthroughDirectedGraph: React.FC = () => {
       inputState={state.inputState}
       onInputSubmit={handleInputSubmit}
       onInputCancel={handleInputCancel}
+      complexity={state.complexity}
     />
   );
 };

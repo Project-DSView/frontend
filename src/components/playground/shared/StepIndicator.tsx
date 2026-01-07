@@ -1,12 +1,5 @@
 import React from 'react';
-
-interface StepIndicatorProps {
-  stepNumber: number;
-  totalSteps: number;
-  message?: string;
-  isAutoPlaying?: boolean;
-  className?: string;
-}
+import { StepIndicatorProps } from '@/types';
 
 const StepIndicator: React.FC<StepIndicatorProps> = ({
   stepNumber,

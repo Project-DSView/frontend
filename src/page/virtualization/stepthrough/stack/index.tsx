@@ -58,6 +58,7 @@ const StepthroughStack: React.FC = () => {
       onInputSubmit={handleInputSubmit}
       onInputCancel={handleInputCancel}
       terminalOutput={state.terminalOutput}
+      complexity={state.complexity}
     />
   );
 };

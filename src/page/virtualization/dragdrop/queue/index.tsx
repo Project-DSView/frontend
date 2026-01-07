@@ -12,8 +12,7 @@ import StepSelector from '@/components/playground/shared/StepSelector';
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 import TutorialButton from '@/components/playground/shared/TutorialButton';
 import TutorialOverlay from '@/components/playground/tutorial/TutorialOverlay';
-import { queueTutorialSteps } from '@/data/components/queue-tutorial.data';
-import { getTutorialStorageKey } from '@/data/components/tutorial-overlay.data';
+import { dragdropTutorialSteps, getTutorialStorageKey } from '@/data';
 // Lazy load heavy components
 const QueueDragDropOperations = lazy(
   () => import('@/components/playground/dragdrop/opeartion/Queue'),
@@ -452,7 +451,7 @@ const DragDropQueue = () => {
       <TutorialOverlay
         isOpen={isTutorialOpen}
         onClose={() => setIsTutorialOpen(false)}
-        steps={queueTutorialSteps}
+        steps={dragdropTutorialSteps}
         storageKey={getTutorialStorageKey(pathname, 'dragdrop')}
       />
     </div>

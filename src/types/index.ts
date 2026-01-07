@@ -171,6 +171,8 @@ export type {
   DataStructure,
   LearningTip,
   TutorialStep,
+  TutorialOverlayProps,
+  PlaygroundTutorialStep,
   PlaygroundMode,
   TutorialSection,
   TutorialStepProps,
@@ -190,83 +192,18 @@ export type {
   QueueOperationsProps,
   QueueVisualizationProps,
   DragDropZoneProps,
+  // Playground Shared Components
+  ZoomControlsProps,
+  ZoomableContainerProps,
+  TutorialButtonProps,
+  StepIndicatorProps,
+  MemoryUsagePanelProps,
+  InputDialogProps,
+  GraphNodeProps,
+  GraphEdgeProps,
+  ConsoleOutputProps,
+  BigOComplexityCardProps,
 } from './props/props.types';
-
-// Realtime
-export type {
-  SinglyLinkedListNode as RealtimeSinglyLinkedListNode,
-  SinglyLinkedListData as RealtimeSinglyLinkedListData,
-  SinglyLinkedListStats as RealtimeSinglyLinkedListStats,
-  SinglyLinkedListRealtimeProps,
-  SecurityStatus as SinglyLinkedListSecurityStatus,
-  ParsedCode as SinglyLinkedListParsedCode,
-  Operation as RealtimeSinglyLinkedListOperation,
-  ExecutionResult,
-} from './realtime/SinglyLinkedList.types';
-
-export type {
-  DoublyLinkedListNode as RealtimeDoublyLinkedListNode,
-  DoublyLinkedListData as RealtimeDoublyLinkedListData,
-  DoublyLinkedListStats as RealtimeDoublyLinkedListStats,
-  DoublyLinkedListRealtimeProps,
-  SecurityStatus as DoublyLinkedListSecurityStatus,
-  ParsedCode as DoublyLinkedListParsedCode,
-  Operation as RealtimeDoublyLinkedListOperation,
-  ExecutionResult as DoublyLinkedListExecutionResult,
-} from './realtime/DoublyLinkedList.types';
-
-export type {
-  StackData as RealtimeStackData,
-  StackStats as RealtimeStackStats,
-  StackRealtimeProps,
-  SecurityStatus as StackSecurityStatus,
-  ParsedCode as StackParsedCode,
-  Operation as RealtimeStackOperation,
-  ExecutionResult as StackExecutionResult,
-} from './realtime/Stack.types';
-
-export type {
-  QueueData as RealtimeQueueData,
-  QueueStats as RealtimeQueueStats,
-  QueueRealtimeProps,
-  SecurityStatus as QueueSecurityStatus,
-  ParsedCode as QueueParsedCode,
-  Operation as RealtimeQueueOperation,
-  ExecutionResult as QueueExecutionResult,
-} from './realtime/Queue.types';
-
-export type {
-  UndirectedGraphData as RealtimeUndirectedGraphData,
-  UndirectedGraphStats as RealtimeUndirectedGraphStats,
-  UndirectedGraphNodeData as RealtimeUndirectedGraphNodeData,
-  UndirectedGraphEdgeData as RealtimeUndirectedGraphEdgeData,
-  UndirectedGraphRealtimeVisualizationProps,
-  SecurityStatus as UndirectedGraphSecurityStatus,
-  ParsedCode as UndirectedGraphParsedCode,
-  Operation as RealtimeUndirectedGraphOperation,
-} from './realtime/UndirectedGraph.types';
-
-export type {
-  DirectedGraphData as RealtimeDirectedGraphData,
-  DirectedGraphStats as RealtimeDirectedGraphStats,
-  DirectedGraphNodeData as RealtimeDirectedGraphNodeData,
-  DirectedGraphEdgeData as RealtimeDirectedGraphEdgeData,
-  GraphData,
-  SecurityStatus as DirectedGraphSecurityStatus,
-  ParsedCode as DirectedGraphParsedCode,
-  Operation as RealtimeDirectedGraphOperation,
-  DirectedGraphRealtimeProps,
-} from './realtime/DirectedGraph.types';
-
-export type {
-  BSTData as RealtimeBSTData,
-  BSTStats as RealtimeBSTStats,
-  BSTNodeData as RealtimeBSTNodeData,
-  SecurityStatus as BSTSecurityStatus,
-  ParsedCode as BSTParsedCode,
-  Operation as RealtimeBSTOperation,
-  BSTRealtimeProps,
-} from './realtime/BST.types';
 
 // Services - All service types in one file
 export type {
@@ -377,6 +314,7 @@ export type {
   StepthroughVisualizationProps,
   StepthroughLayoutProps,
   StepthroughData,
+  ComplexityAnalysis,
 } from './stepthrough/common.types';
 
 export type { DirectedGraphData } from './stepthrough/DirectedGraph.types';

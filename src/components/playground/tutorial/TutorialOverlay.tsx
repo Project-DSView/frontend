@@ -2,26 +2,64 @@
 
 import React, { useState, useCallback, useEffect, useRef, useLayoutEffect } from 'react';
 import Image from 'next/image';
-import { X, ArrowRight, ArrowLeft } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, ChevronDown, ChevronRight, Code2, Hash } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { namingGuides } from '@/data';
+import { TutorialOverlayProps } from '@/types';
 
-export interface TutorialStep {
-  title: string;
-  description: string;
-  image?: string;
-  highlightSelector?: string; // CSS selector for highlighter
-  placement?: 'top' | 'bottom' | 'left' | 'right'; // Preferred placement
-  spotlightPadding?: number; // Padding for the spotlight (default 8)
-  disableNextUntilVisible?: boolean; // If true, stays in "loading" state until element found
-}
 
-export interface TutorialOverlayProps {
-  isOpen: boolean;
-  onClose: () => void;
-  steps: TutorialStep[];
-  storageKey: string;
-}
+// Inline NamingGuideDropdown component for naming guide step
+const NamingGuideDropdown: React.FC = () => {
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+
+  const toggleItem = (id: string) => {
+    setExpandedItems((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  return (
+    <div className="max-h-64 space-y-2 overflow-y-auto">
+      {namingGuides.map((guide) => (
+        <div key={guide.id} className="rounded-lg border border-gray-200 dark:border-gray-700">
+          <button
+            onClick={() => toggleItem(guide.id)}
+            className="flex w-full items-center justify-between p-2 text-left text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            <span className="font-bold text-gray-800 dark:text-gray-200">{guide.name}</span>
+            {expandedItems[guide.id] ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </button>
+          {expandedItems[guide.id] && (
+            <div className="space-y-2 border-t border-gray-200 p-2 dark:border-gray-700">
+              <div>
+                <div className="mb-1 flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                  <Hash className="h-3 w-3" /> Class:
+                </div>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                  {guide.supportedClassNames.join(', ')}
+                </p>
+              </div>
+              <div>
+                <div className="mb-1 flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                  <Code2 className="h-3 w-3" /> Methods:
+                </div>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                  {guide.supportedMethods.map(m => `${m}()`).join(', ')}
+                </p>
+              </div>
+              <p className="text-xs text-green-600 dark:text-green-400">
+                ✓ ใช้ชื่อ Class หรือ Method อย่างใดอย่างหนึ่งจากด้านบน รูปจะสามารถขึ้นมาได้
+              </p>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   isOpen,
@@ -272,7 +310,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               ? 'scale(0.98)'
               : 'scale(1)',
         }}
-        className="w-full max-w-md transition-all duration-300 ease-in-out"
+        className="w-full max-w-2xl transition-all duration-300 ease-in-out"
         role="dialog"
         aria-modal="true"
       >
@@ -303,6 +341,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
           <CardContent className="space-y-4">
             <p className="text-sm leading-relaxed">{step.description}</p>
+            {step.customContent === 'naming-guide' && <NamingGuideDropdown />}
             {step.image && (
               <div className="bg-muted relative h-32 w-full overflow-hidden rounded-md">
                 <Image src={step.image} alt={step.title} fill className="object-contain" />

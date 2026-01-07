@@ -3,6 +3,7 @@ import { StepthroughVisualizationProps, StackData } from '@/types';
 import ZoomableContainer from '../../shared/ZoomableContainer';
 import StepIndicator from '../../shared/StepIndicator';
 import ConsoleOutput from '../../shared/ConsoleOutput';
+import BigOComplexityCard from '../../shared/BigOComplexityCard';
 import { gsap } from 'gsap';
 
 const StackStepthroughVisualization = forwardRef<
@@ -10,7 +11,14 @@ const StackStepthroughVisualization = forwardRef<
   StepthroughVisualizationProps<StackData>
 >(
   (
-    { steps, currentStepIndex, data, isRunning, error }: StepthroughVisualizationProps<StackData>,
+    {
+      steps,
+      currentStepIndex,
+      data,
+      isRunning,
+      error,
+      complexity,
+    }: StepthroughVisualizationProps<StackData>,
     ref,
   ) => {
     const [highlightedElementIndex, setHighlightedElementIndex] = useState(-1);
@@ -536,6 +544,9 @@ const StackStepthroughVisualization = forwardRef<
 
         {/* Console Output */}
         <ConsoleOutput steps={steps} currentStepIndex={currentStepIndex} />
+
+        {/* Big O Complexity Analysis */}
+        <BigOComplexityCard complexity={complexity} />
 
         {/* Current Operation Status */}
         {isRunning && steps.length > 0 && currentStepIndex < steps.length && (

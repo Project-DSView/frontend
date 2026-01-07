@@ -155,6 +155,7 @@ const useStepthroughQueue = (initialCode: string = ''): StepthroughHookReturn<Qu
           executionId: response.executionId,
           isRunning: false,
           data: initialQueueData,
+          complexity: response.complexity,
         }));
 
         // Reset input values after execution

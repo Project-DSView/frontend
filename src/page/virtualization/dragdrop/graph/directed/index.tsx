@@ -18,7 +18,7 @@ import StepSelector from '@/components/playground/shared/StepSelector';
 import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
 import TutorialButton from '@/components/playground/shared/TutorialButton';
 import TutorialOverlay from '@/components/playground/tutorial/TutorialOverlay';
-import { getTutorialSteps, getTutorialStorageKey } from '@/data/components/tutorial-overlay.data';
+import { getTutorialSteps, getTutorialStorageKey } from '@/data/components/tutorial.data';
 // Lazy load heavy components
 const DirectedGraphDragDropOperations = lazy(
   () => import('@/components/playground/dragdrop/opeartion/DirectedGraph'),

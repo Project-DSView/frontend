@@ -1,4 +1,4 @@
-import { StepthroughStep, DebugState } from './common.types';
+import { StepthroughStep, DebugState, ComplexityAnalysis } from './common.types';
 
 interface BaseStepthroughState<TData, TStats> {
   code: string;
@@ -59,6 +59,7 @@ interface BaseStepthroughHookReturn<TData, TStats> {
       }>;
     } | null;
     astPreviewLoading?: boolean;
+    complexity?: ComplexityAnalysis | null;
   };
   setCode: (code: string) => void;
   setFilename: (filename: string) => void;

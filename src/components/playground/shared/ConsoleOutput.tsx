@@ -1,11 +1,6 @@
 import React from 'react';
-import { StepthroughStep } from '@/types';
+import { ConsoleOutputProps } from '@/types';
 import MemoryUsagePanel from './MemoryUsagePanel';
-
-interface ConsoleOutputProps {
-  steps: StepthroughStep[];
-  currentStepIndex: number;
-}
 
 const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ steps, currentStepIndex }) => {
   const currentStep =
