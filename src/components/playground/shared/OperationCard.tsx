@@ -1,27 +1,40 @@
+'use client';
+
 import React from 'react';
-import { OperationCardProps } from '@/types';
+
+interface OperationCardProps {
+  component: {
+    id: string;
+    name: string;
+    color: string;
+    category: string;
+    description?: string;
+  };
+  onDragStart?: (e: React.DragEvent) => void;
+  onTouchStart?: (e: React.TouchEvent) => void;
+}
 
 const OperationCard: React.FC<OperationCardProps> = ({
   component,
   onDragStart,
   onTouchStart,
-  description,
 }) => {
   return (
     <div
       draggable
-      onDragStart={(e) => onDragStart(e, component)}
-      onTouchStart={(e) => onTouchStart && onTouchStart(e, component)}
-      className={`${component.color} cursor-move rounded-lg border-2 border-dashed p-3 transition-shadow duration-200 hover:shadow-md active:scale-95`}
+      onDragStart={onDragStart}
+      onTouchStart={onTouchStart}
+      className={`cursor-grab select-none rounded-md border px-2 py-1.5 shadow-sm transition hover:shadow ${component.color}`}
     >
-      <div className="flex items-center space-x-2">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-100">
-          {component.name}
-        </span>
+      <div className="text-xs font-semibold leading-tight text-gray-800 dark:text-gray-100">
+        {component.name}
       </div>
-      <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">
-        {description || component.name}
-      </p>
+
+      {component.description && (
+        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-gray-600 dark:text-gray-300">
+          {component.description}
+        </p>
+      )}
     </div>
   );
 };

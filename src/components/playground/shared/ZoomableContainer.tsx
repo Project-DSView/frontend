@@ -11,6 +11,13 @@ interface ZoomableContainerProps {
   enableWheelZoom?: boolean;
   enableKeyboardZoom?: boolean;
   showControls?: boolean;
+
+  /**
+   * ✅ NEW:
+   * true  = clip ขอบ (เหมาะกับพื้นที่วาด/ซูม/แพน)
+   * false = ไม่ clip (ใช้เมื่อมี footer/stats อยู่ใน container แล้วโดนตัด)
+   */
+  clipContent?: boolean;
 }
 
 const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
@@ -23,6 +30,7 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
   enableWheelZoom = true,
   enableKeyboardZoom = true,
   showControls = true,
+  clipContent = true,
 }) => {
   const [zoom, setZoom] = useState(initialZoom);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -31,7 +39,8 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Zoom functions
+  /* ================= Zoom functions ================= */
+
   const zoomIn = useCallback(() => {
     setZoom((prev) => Math.min(prev * 1.2, maxZoom));
   }, [maxZoom]);
@@ -51,32 +60,39 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
     const containerRect = containerRef.current.getBoundingClientRect();
     const contentRect = contentRef.current.getBoundingClientRect();
 
-    // Calculate the scale needed to fit content in container
+    if (contentRect.width === 0 || contentRect.height === 0) return;
+
     const scaleX = containerRect.width / contentRect.width;
     const scaleY = containerRect.height / contentRect.height;
-    const scale = Math.min(scaleX, scaleY, maxZoom) * 0.9; // 90% to add some padding
+    const scale = Math.min(scaleX, scaleY, maxZoom) * 0.9;
 
     setZoom(Math.max(scale, minZoom));
     setPan({ x: 0, y: 0 });
   }, [minZoom, maxZoom]);
 
-  // Mouse wheel zoom
+  /* ================= Mouse wheel zoom ================= */
+
   const handleWheel = useCallback(
     (e: WheelEvent) => {
       if (!enableWheelZoom) return;
-
       e.preventDefault();
 
-      if (e.deltaY < 0) {
-        zoomIn();
-      } else {
-        zoomOut();
-      }
+      if (e.deltaY < 0) zoomIn();
+      else zoomOut();
     },
     [enableWheelZoom, zoomIn, zoomOut],
   );
 
-  // Keyboard zoom
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [handleWheel]);
+
+  /* ================= Keyboard zoom ================= */
+
   useEffect(() => {
     if (!enableKeyboardZoom) return;
 
@@ -104,11 +120,11 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [enableKeyboardZoom, zoomIn, zoomOut, resetZoom]);
 
-  // Pan functions
+  /* ================= Pan ================= */
+
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (!enablePan) return;
-
       setIsPanning(true);
       setLastPanPoint({ x: e.clientX, y: e.clientY });
     },
@@ -122,67 +138,41 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
       const deltaX = e.clientX - lastPanPoint.x;
       const deltaY = e.clientY - lastPanPoint.y;
 
-      setPan((prev) => ({
-        x: prev.x + deltaX,
-        y: prev.y + deltaY,
-      }));
-
+      setPan((prev) => ({ x: prev.x + deltaX, y: prev.y + deltaY }));
       setLastPanPoint({ x: e.clientX, y: e.clientY });
     },
     [isPanning, enablePan, lastPanPoint],
   );
 
-  const handleMouseUp = useCallback(() => {
-    setIsPanning(false);
-  }, []);
+  const handleMouseUp = useCallback(() => setIsPanning(false), []);
+  const handleMouseLeave = useCallback(() => setIsPanning(false), []);
 
-  const handleMouseLeave = useCallback(() => {
-    setIsPanning(false);
-  }, []);
+  /* ================= Touch pan ================= */
 
-  // Touch events are now handled by native event listeners
-
-  // Add wheel event listener
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => container.removeEventListener('wheel', handleWheel);
-  }, [handleWheel]);
-
-  // Add touch event listeners with passive: false
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const handleTouchStartNative = (e: TouchEvent) => {
       if (!enablePan || e.touches.length !== 1) return;
-
-      const touch = e.touches[0];
+      const t = e.touches[0];
       setIsPanning(true);
-      setLastPanPoint({ x: touch.clientX, y: touch.clientY });
+      setLastPanPoint({ x: t.clientX, y: t.clientY });
     };
 
     const handleTouchMoveNative = (e: TouchEvent) => {
       if (!isPanning || !enablePan || e.touches.length !== 1) return;
-
       e.preventDefault();
-      const touch = e.touches[0];
-      const deltaX = touch.clientX - lastPanPoint.x;
-      const deltaY = touch.clientY - lastPanPoint.y;
 
-      setPan((prev) => ({
-        x: prev.x + deltaX,
-        y: prev.y + deltaY,
-      }));
+      const t = e.touches[0];
+      const deltaX = t.clientX - lastPanPoint.x;
+      const deltaY = t.clientY - lastPanPoint.y;
 
-      setLastPanPoint({ x: touch.clientX, y: touch.clientY });
+      setPan((prev) => ({ x: prev.x + deltaX, y: prev.y + deltaY }));
+      setLastPanPoint({ x: t.clientX, y: t.clientY });
     };
 
-    const handleTouchEndNative = () => {
-      setIsPanning(false);
-    };
+    const handleTouchEndNative = () => setIsPanning(false);
 
     container.addEventListener('touchstart', handleTouchStartNative, { passive: true });
     container.addEventListener('touchmove', handleTouchMoveNative, { passive: false });
@@ -195,15 +185,17 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
     };
   }, [isPanning, enablePan, lastPanPoint]);
 
+  /* ================= Render ================= */
+
   return (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden ${className}`}
+      className={`relative ${clipContent ? 'overflow-hidden' : 'overflow-visible'} ${className}`}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
-      style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
+      style={{ cursor: enablePan ? (isPanning ? 'grabbing' : 'grab') : 'default' }}
     >
       <div
         ref={contentRef}

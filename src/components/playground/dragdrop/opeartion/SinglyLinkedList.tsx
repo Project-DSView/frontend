@@ -14,45 +14,55 @@ const SinglyLinkedListDragDropOperations: React.FC<SinglyLinkedListOperationsPro
   onTouchStart,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<OperationCategory | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] =
+    useState<OperationCategory | 'all'>('all');
 
-  // Use categories from data
   const categories = linkedListCategories;
 
-  // Filter components based on search term and category
   const filteredComponents = useMemo(() => {
     return dragComponents.filter((component) => {
       const matchesSearch =
         component.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         component.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || component.category === selectedCategory;
+
+      const matchesCategory =
+        selectedCategory === 'all' || component.category === selectedCategory;
+
       return matchesSearch && matchesCategory;
     });
   }, [dragComponents, searchTerm, selectedCategory]);
 
   return (
-    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-      <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-100">
-        Singly Linked List Operations
-      </h2>
+    <div className="rounded-md bg-white p-2 shadow-sm dark:bg-gray-800">
+      {/* ================= Header ================= */}
+      <div className="mb-1">
+        <h2 className="text-xs font-semibold text-gray-800 dark:text-gray-100">
+          Singly Linked List Operations
+        </h2>
+        <p className="text-[11px] text-gray-500 dark:text-gray-400">
+          เลือก operation แล้วลากไปวางที่ Drop Zone
+        </p>
+      </div>
 
-      {/* Search and Filter */}
-      <OperationSearchFilter
-        onSearchChange={setSearchTerm}
-        onCategoryChange={setSelectedCategory}
-        searchTerm={searchTerm}
-        selectedCategory={selectedCategory}
-        categories={categories}
-      />
+      {/* ================= Search & Filter ================= */}
+      <div className="mb-2">
+        <OperationSearchFilter
+          onSearchChange={setSearchTerm}
+          onCategoryChange={setSelectedCategory}
+          searchTerm={searchTerm}
+          selectedCategory={selectedCategory}
+          categories={categories}
+        />
+      </div>
 
-      {/* Operations Grid - Show filtered operations */}
-      <div className="space-y-3">
+      {/* ================= Operations ================= */}
+      <div className="space-y-1">
         {filteredComponents.length === 0 ? (
-          <div className="py-8 text-center text-gray-500 dark:text-gray-400">
-            <p>ไม่มี operations</p>
+          <div className="py-3 text-center text-[11px] text-gray-500 dark:text-gray-400">
+            ไม่มี operations
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 gap-1">
             {filteredComponents.map((component) => (
               <OperationCard
                 key={component.id}
@@ -62,9 +72,9 @@ const SinglyLinkedListDragDropOperations: React.FC<SinglyLinkedListOperationsPro
                   color: component.color,
                   category: component.category,
                 }}
+                description={component.description}
                 onDragStart={(e) => onDragStart(e, component)}
                 onTouchStart={(e) => onTouchStart && onTouchStart(e, component)}
-                description={component.description}
               />
             ))}
           </div>

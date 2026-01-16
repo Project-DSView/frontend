@@ -1,7 +1,5 @@
 import React, { useEffect } from 'react';
-
 import { StepSelectorProps } from '@/types';
-
 import { Slider } from '@/components/ui/slider';
 
 const StepSelector: React.FC<StepSelectorProps> = ({
@@ -9,182 +7,136 @@ const StepSelector: React.FC<StepSelectorProps> = ({
   selectedStep,
   onStepSelect,
   getStepDescription,
-  onPrevious,
-  onNext,
   onAutoPlay,
   isAutoPlaying = false,
 }) => {
-  // Set default step to 0 if no step is selected
   useEffect(() => {
     if (selectedStep === null && operations.length > 0) {
       onStepSelect(0);
     }
   }, [selectedStep, operations.length, onStepSelect]);
 
-  if (operations.length === 0) {
-    return null;
-  }
+  if (operations.length === 0) return null;
 
-  const currentStepIndex = selectedStep !== null ? selectedStep : 0;
+  const currentStepIndex = selectedStep ?? 0;
   const isFirstStep = currentStepIndex <= 0;
   const isLastStep = currentStepIndex >= operations.length - 1;
   const currentOperation = operations[currentStepIndex];
 
+  /* =========================
+      Local navigation logic
+  ========================= */
+
+  const handlePrev = () => {
+    if (currentStepIndex > 0) {
+      onStepSelect(currentStepIndex - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStepIndex < operations.length - 1) {
+      onStepSelect(currentStepIndex + 1);
+    }
+  };
+
   return (
-    <div className="mb-6 rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="mb-4 rounded-md bg-white p-3 shadow-sm dark:bg-gray-800">
+      {/* Header */}
+      <div className="mb-2 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Step Control</h2>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            Step {currentStepIndex + 1} of {operations.length}
+          <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+            Step Control
+          </h2>
+          <span className="text-xs text-gray-500">
+            {currentStepIndex + 1} / {operations.length}
           </span>
         </div>
         {isAutoPlaying && (
-          <div className="animate-pulse text-xl font-medium text-green-600 dark:text-green-500">
-            กำลังเล่น...
-          </div>
+          <span className="animate-pulse text-xs font-medium text-green-600">
+            Playing…
+          </span>
         )}
       </div>
 
-      {/* Current Step Display */}
-      <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900">
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Step {currentStepIndex + 1}
-          </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {currentOperation?.category || 'Unknown'}
-          </span>
+      {/* Current Step */}
+      <div className="mb-3 rounded-md border bg-gray-50 px-3 py-2 text-xs dark:bg-gray-900">
+        <div className="flex justify-between">
+          <span className="font-medium">Step {currentStepIndex + 1}</span>
+          <span className="text-gray-400">{currentOperation?.category}</span>
         </div>
-        <div className="text-sm text-gray-600 dark:text-gray-300">
-          {currentOperation?.name || 'Unknown Operation'}
+        <div className="mt-1 text-gray-600 dark:text-gray-300">
+          {currentOperation?.name}
           {currentOperation?.value && (
-            <span className="ml-1 font-medium text-gray-800 dark:text-gray-200">
-              ({currentOperation.value})
-            </span>
-          )}
-          {currentOperation?.position && (
-            <span className="ml-1 text-gray-500 dark:text-gray-400">
-              at position {currentOperation.position}
-            </span>
+            <span className="ml-1 font-medium">({currentOperation.value})</span>
           )}
         </div>
       </div>
 
-      {/* Step Slider */}
-      <div className="mt-6 flex flex-col items-center justify-center px-2">
+      {/* Slider */}
+      <div className="mb-3 px-1">
         <Slider
           value={[currentStepIndex]}
-          onValueChange={(value) => onStepSelect(value[0])}
+          onValueChange={(v) => onStepSelect(v[0])}
           max={operations.length - 1}
           min={0}
           step={1}
           className="w-full"
           isAnimating={isAutoPlaying}
         />
-        <div className="mt-2 mb-4 flex items-center justify-center">
-          <span className="text-gray-500 dark:text-gray-400">
-            {currentStepIndex + 1} / {operations.length}
-          </span>
-        </div>
       </div>
 
-      {/* Navigation Controls */}
-      <div className="mb-4 flex items-center justify-center space-x-3">
+      {/* Controls */}
+      <div className="flex flex-wrap items-center justify-center gap-2">
         <button
           onClick={() => onStepSelect(0)}
           disabled={isFirstStep}
-          className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+          className="rounded border px-2 py-1 text-xs disabled:opacity-40"
         >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
-            />
-          </svg>
-          <span>First</span>
+          First
         </button>
 
         <button
-          onClick={onPrevious}
+          onClick={handlePrev}
           disabled={isFirstStep}
-          className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+          className="rounded border px-2 py-1 text-xs disabled:opacity-40"
         >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          <span>Previous</span>
+          Prev
         </button>
 
-        {/* Auto Play Button - Center */}
         <button
           onClick={onAutoPlay}
-          className={`flex transform items-center space-x-2 rounded-xl px-4 py-3 text-sm font-semibold shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl ${
-            isAutoPlaying
-              ? 'bg-error hover:bg-error/80 animate-pulse text-white'
-              : 'bg-success hover:bg-success/80 text-white'
+          className={`rounded px-3 py-1 text-xs font-semibold text-white ${
+            isAutoPlaying ? 'bg-red-500' : 'bg-green-500'
           }`}
         >
-          {isAutoPlaying ? (
-            <>
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-              </svg>
-              <span>Stop</span>
-            </>
-          ) : (
-            <>
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              <span>Play</span>
-            </>
-          )}
+          {isAutoPlaying ? 'Stop' : 'Play'}
         </button>
 
         <button
-          onClick={onNext}
+          onClick={handleNext}
           disabled={isLastStep}
-          className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+          className="rounded border px-2 py-1 text-xs disabled:opacity-40"
         >
-          <span>Next</span>
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          Next
         </button>
 
         <button
           onClick={() => onStepSelect(operations.length - 1)}
           disabled={isLastStep}
-          className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+          className="rounded border px-2 py-1 text-xs disabled:opacity-40"
         >
-          <span>Last</span>
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 5l7 7-7 7M5 5l7 7-7 7"
-            />
-          </svg>
+          Last
         </button>
       </div>
 
-      {/* Selected Step Description */}
-      <div className="mt-4 rounded-lg border border-blue-300 bg-blue-100 p-4 dark:border-blue-700 dark:bg-blue-900/50">
-        <h3 className="mb-2 font-semibold text-blue-900 dark:text-blue-300">
-          คำอธิบาย Step {currentStepIndex + 1}
-        </h3>
-        <p className="text-gray-900 dark:text-gray-50">
-          {currentOperation ? getStepDescription(currentOperation) : 'No operation selected'}
-        </p>
+      {/* Description */}
+      <div className="mt-3 rounded-md bg-blue-50 px-3 py-2 text-xs dark:bg-blue-900/40">
+        <span className="font-medium text-blue-700 dark:text-blue-300">
+          Step {currentStepIndex + 1}:
+        </span>{' '}
+        {currentOperation
+          ? getStepDescription(currentOperation)
+          : 'No operation'}
       </div>
     </div>
   );
