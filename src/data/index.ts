@@ -19,9 +19,8 @@ export {
   stepthroughTutorialSteps,
   getTutorialSteps,
   getTutorialStorageKey,
-  namingGuides
+  namingGuides,
 } from './components/tutorial.data';
-
 
 // Drag Drop
 export { categories } from './dragdrop/common.data';

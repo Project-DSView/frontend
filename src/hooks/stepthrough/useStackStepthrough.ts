@@ -18,64 +18,79 @@ class StackStepthroughService implements BaseStepthroughService<StackData, Stack
       return { elements: [], count: 0 };
     }
 
+    // Search backward from current step to find the most recent step with valid instance data
+    // This ensures visualization persists even when stepping through lines without instances
+    for (let searchIndex = stepIndex; searchIndex >= 0; searchIndex--) {
+      const step = steps[searchIndex];
+      const state = step.state;
+
+      // Extract all stack instances dynamically
+      const allStacks: {
+        [stackName: string]: { data: string[]; size: number; isEmpty: boolean; top: string | null };
+      } = {};
+      let elements: string[] = [];
+
+      if (state.instances) {
+        // Look for all stack instances in the state
+        Object.entries(state.instances).forEach(([instanceName, instanceData]) => {
+          let stackData: string[] | null = null;
+
+          // Case 1: ArrayStack instance (has .data property)
+          if (instanceData && typeof instanceData === 'object' && 'data' in instanceData) {
+            const instance = instanceData as StackInstanceData;
+            if (Array.isArray(instance.data)) {
+              stackData = instance.data.map((item: unknown) => String(item));
+            }
+          }
+          // Case 2: Plain list (is an array)
+          else if (Array.isArray(instanceData)) {
+            stackData = instanceData.map((item: unknown) => String(item));
+          }
+
+          if (stackData) {
+            allStacks[instanceName] = {
+              data: stackData,
+              size: stackData.length,
+              isEmpty: stackData.length === 0,
+              top: stackData.length > 0 ? stackData[stackData.length - 1] : null,
+            };
+
+            // Try to extract extra properties if available (for ArrayStack)
+            if (instanceData && typeof instanceData === 'object' && !Array.isArray(instanceData)) {
+              const instance = instanceData as Record<string, unknown>;
+              if (typeof instance.size === 'number') allStacks[instanceName].size = instance.size;
+              if (typeof instance.isEmpty === 'boolean')
+                allStacks[instanceName].isEmpty = instance.isEmpty;
+              if (instance.top !== undefined) allStacks[instanceName].top = String(instance.top);
+            }
+
+            // Use the first stack as primary elements for backward compatibility
+            if (
+              elements.length === 0 ||
+              instanceName === 's1' ||
+              instanceName === 'main' ||
+              instanceName === 'stack'
+            ) {
+              elements = stackData;
+            }
+          }
+        });
+
+        // If we found valid stack data, return it
+        if (elements.length > 0 || Object.keys(allStacks).length > 0) {
+          return {
+            elements,
+            count: elements.length,
+            allStacks: Object.keys(allStacks).length > 0 ? allStacks : undefined,
+          };
+        }
+      }
+    }
+
+    // If no instance data found via backward search, try fallback methods on current step
     const step = steps[stepIndex];
     const state = step.state;
-
-    // Extract all stack instances dynamically
-    const allStacks: {
-      [stackName: string]: { data: string[]; size: number; isEmpty: boolean; top: string | null };
-    } = {};
     let elements: string[] = [];
-
-    if (state.instances) {
-      // Look for all stack instances in the state
-      // Look for all stack instances in the state
-      Object.entries(state.instances).forEach(([instanceName, instanceData]) => {
-        console.log(`🔍 Processing instance: ${instanceName}`, instanceData);
-        let stackData: string[] | null = null;
-
-        // Case 1: ArrayStack instance (has .data property)
-        if (instanceData && typeof instanceData === 'object' && 'data' in instanceData) {
-          const instance = instanceData as StackInstanceData;
-          if (Array.isArray(instance.data)) {
-            stackData = instance.data.map((item: unknown) => String(item));
-          }
-        }
-        // Case 2: Plain list (is an array)
-        else if (Array.isArray(instanceData)) {
-          stackData = instanceData.map((item: unknown) => String(item));
-        }
-
-        if (stackData) {
-          allStacks[instanceName] = {
-            data: stackData,
-            size: stackData.length, // Default to length if size not available
-            isEmpty: stackData.length === 0,
-            top: stackData.length > 0 ? stackData[stackData.length - 1] : null,
-          };
-
-          // Try to extract extra properties if available (for ArrayStack)
-          if (instanceData && typeof instanceData === 'object' && !Array.isArray(instanceData)) {
-            const instance = instanceData as Record<string, unknown>;
-            if (typeof instance.size === 'number') allStacks[instanceName].size = instance.size;
-            if (typeof instance.isEmpty === 'boolean')
-              allStacks[instanceName].isEmpty = instance.isEmpty;
-            if (instance.top !== undefined) allStacks[instanceName].top = String(instance.top);
-          }
-
-          // Use the first stack as primary elements for backward compatibility
-          // Prioritize 's1' or 'stack' or 'main' if available, otherwise just use the first one found
-          if (
-            elements.length === 0 ||
-            instanceName === 's1' ||
-            instanceName === 'main' ||
-            instanceName === 'stack'
-          ) {
-            elements = stackData;
-          }
-        }
-      });
-    }
 
     // If no elements found, try to extract from step detail
     if (elements.length === 0 && state.step_detail) {
@@ -145,7 +160,7 @@ class StackStepthroughService implements BaseStepthroughService<StackData, Stack
     return {
       elements,
       count: elements.length,
-      allStacks: Object.keys(allStacks).length > 0 ? allStacks : undefined,
+      allStacks: undefined,
     };
   }
 

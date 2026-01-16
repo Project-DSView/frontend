@@ -1,6 +1,6 @@
 import localFont from 'next/font/local';
 
-export const notoSansThai = localFont({
+const notoSansThai = localFont({
   src: [
     {
       path: '../../../public/fonts/NotoSansThai/NotoSansThai-VariableFont_wdth,wght.woff2',
@@ -13,3 +13,5 @@ export const notoSansThai = localFont({
   preload: true,
   fallback: ['sans-serif'],
 });
+
+export { notoSansThai };

@@ -3,7 +3,7 @@ import { StepthroughVisualizationProps, StackData } from '@/types';
 import ZoomableContainer from '../../shared/ZoomableContainer';
 import StepIndicator from '../../shared/StepIndicator';
 import ConsoleOutput from '../../shared/ConsoleOutput';
-import BigOComplexityCard from '../../shared/BigOComplexityCard';
+import PerformanceAnalysisPanel from '../../shared/PerformanceAnalysisPanel';
 import { gsap } from 'gsap';
 
 const StackStepthroughVisualization = forwardRef<
@@ -545,8 +545,12 @@ const StackStepthroughVisualization = forwardRef<
         {/* Console Output */}
         <ConsoleOutput steps={steps} currentStepIndex={currentStepIndex} />
 
-        {/* Big O Complexity Analysis */}
-        <BigOComplexityCard complexity={complexity} />
+        {/* Performance Analysis Panel */}
+        <PerformanceAnalysisPanel
+          steps={steps}
+          currentStepIndex={currentStepIndex}
+          complexity={complexity}
+        />
 
         {/* Current Operation Status */}
         {isRunning && steps.length > 0 && currentStepIndex < steps.length && (

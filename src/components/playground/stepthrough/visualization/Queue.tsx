@@ -5,7 +5,7 @@ import { QueueData } from '@/types/stepthrough/Queue.types';
 
 import ZoomableContainer from '../../shared/ZoomableContainer';
 import ConsoleOutput from '../../shared/ConsoleOutput';
-import BigOComplexityCard from '../../shared/BigOComplexityCard';
+import PerformanceAnalysisPanel from '../../shared/PerformanceAnalysisPanel';
 
 const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
   steps,
@@ -359,8 +359,12 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
       {/* Console Output */}
       <ConsoleOutput steps={steps} currentStepIndex={currentStepIndex} />
 
-      {/* Big O Analysis */}
-      <BigOComplexityCard complexity={complexity} />
+      {/* Performance Analysis Panel */}
+      <PerformanceAnalysisPanel
+        steps={steps}
+        currentStepIndex={currentStepIndex}
+        complexity={complexity}
+      />
 
       {/* Legend */}
       <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-700 dark:text-gray-300">

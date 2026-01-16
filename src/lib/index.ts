@@ -125,6 +125,16 @@ export {
 } from './utils/file';
 
 export { getFlattenedLinks, getProcessedPlaygroundItems } from './utils/playground';
+export {
+  MEMORY_LIMIT_BYTES,
+  SIGNIFICANT_MEMORY_THRESHOLD,
+  SIGNIFICANT_TIME_THRESHOLD,
+  formatMemory,
+  formatTime as formatPerformanceTime,
+  truncateCode,
+  getTimeLevel,
+  getSpaceLevel,
+} from './utils/performance';
 
 // Schemas
 export { pdfSubmissionSchema } from './schemas/pdf-submission.schema';

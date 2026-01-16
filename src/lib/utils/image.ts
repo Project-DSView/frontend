@@ -1,4 +1,4 @@
-export const isValidImageUrl = (url: string | undefined | null): boolean => {
+const isValidImageUrl = (url: string | undefined | null): boolean => {
   if (!url) return false;
 
   // Check for placeholder URLs
@@ -18,7 +18,7 @@ export const isValidImageUrl = (url: string | undefined | null): boolean => {
   }
 };
 
-export const transformImageUrl = (url: string | undefined | null): string => {
+const transformImageUrl = (url: string | undefined | null): string => {
   if (!url) return '';
 
   try {
@@ -39,17 +39,19 @@ export const transformImageUrl = (url: string | undefined | null): string => {
   }
 };
 
-export const transformFileUrl = (url: string | undefined | null): string => {
+const transformFileUrl = (url: string | undefined | null): string => {
   if (!url) return '';
 
   // Use the same transformation as images for MinIO URLs
   return transformImageUrl(url);
 };
 
-export const getCourseImageFallback = (courseName: string) => {
+const getCourseImageFallback = (courseName: string) => {
   // Generate a simple color based on course name
   const colors = ['from-gray-50 to-gray-20'];
 
   const colorIndex = courseName.length % colors.length;
   return colors[colorIndex];
 };
+
+export { isValidImageUrl, transformImageUrl, transformFileUrl, getCourseImageFallback };

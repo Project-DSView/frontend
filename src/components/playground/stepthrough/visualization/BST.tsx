@@ -3,7 +3,7 @@ import { StepthroughVisualizationProps, BSTNode, PositionedNode, BSTData } from 
 import ZoomableContainer from '../../shared/ZoomableContainer';
 import StepIndicator from '../../shared/StepIndicator';
 import ConsoleOutput from '../../shared/ConsoleOutput';
-import BigOComplexityCard from '../../shared/BigOComplexityCard';
+import PerformanceAnalysisPanel from '../../shared/PerformanceAnalysisPanel';
 
 const BSTStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -1246,7 +1246,11 @@ const BSTStepthroughVisualization = forwardRef<
       <ConsoleOutput steps={steps} currentStepIndex={currentStepIndex} />
 
       {/* Big O Analysis */}
-      <BigOComplexityCard complexity={complexity} />
+      <PerformanceAnalysisPanel
+        steps={steps}
+        currentStepIndex={currentStepIndex}
+        complexity={complexity}
+      />
 
       {/* Legend */}
       <div className="mt-4 flex flex-wrap gap-4 text-xs">

@@ -1,5 +1,6 @@
 import { Operation, DragComponent, DataStructureStats } from './common.types';
 import { BaseStats, BaseState } from './base.types';
+import { ClassMetadata } from '../stepthrough/LinkedList.types';
 
 interface SinglyLinkedListNode {
   data: string;
@@ -53,6 +54,7 @@ interface SinglyLinkedListData {
   head?: string | null;
   tail?: string | null;
   count?: number;
+  classMetadata?: ClassMetadata; // Dynamic labels from user's class definitions
 }
 
 interface SinglyLinkedListStatsExtended extends BaseStats {

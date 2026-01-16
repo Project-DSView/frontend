@@ -19,96 +19,104 @@ class UndirectedGraphStepthroughService
       return { nodes: [], edges: [] };
     }
 
-    const step = steps[stepIndex];
-    const state = step.state;
+    // Search backward from current step to find the most recent step with valid graph data
+    // This ensures visualization persists even when stepping through lines without instances
+    for (let searchIndex = stepIndex; searchIndex >= 0; searchIndex--) {
+      const step = steps[searchIndex];
+      const state = step.state;
 
-    // Extract graph data from state directly
-    let nodes: UndirectedGraphNode[] = [];
-    let edges: UndirectedGraphEdge[] = [];
+      // Extract graph data from state directly
+      let nodes: UndirectedGraphNode[] = [];
+      let edges: UndirectedGraphEdge[] = [];
 
-    // Check if we have vertices and edges in state (old format)
-    const stateWithGraph = state as Record<string, unknown>;
-    if (
-      stateWithGraph.vertices &&
-      Array.isArray(stateWithGraph.vertices) &&
-      stateWithGraph.edges &&
-      Array.isArray(stateWithGraph.edges)
-    ) {
-      // Create nodes from vertices
-      nodes = (stateWithGraph.vertices as string[]).map((vertex: string, index: number) => ({
-        id: vertex,
-        value: vertex,
-        x: 100 + (index % 4) * 120,
-        y: 100 + Math.floor(index / 4) * 100,
-        neighbors: [],
-      }));
+      // Check if we have vertices and edges in state (old format)
+      const stateWithGraph = state as Record<string, unknown>;
+      if (
+        stateWithGraph.vertices &&
+        Array.isArray(stateWithGraph.vertices) &&
+        stateWithGraph.edges &&
+        Array.isArray(stateWithGraph.edges)
+      ) {
+        // Create nodes from vertices
+        nodes = (stateWithGraph.vertices as string[]).map((vertex: string, index: number) => ({
+          id: vertex,
+          value: vertex,
+          x: 100 + (index % 4) * 120,
+          y: 100 + Math.floor(index / 4) * 100,
+          neighbors: [],
+        }));
 
-      // Create edges and update neighbors
-      const processedEdges = new Set<string>();
-      (stateWithGraph.edges as string[][]).forEach((edge: string[]) => {
-        if (edge.length === 2) {
-          const [from, to] = edge;
-          const edgeKey = [from, to].sort().join('-');
+        // Create edges and update neighbors
+        const processedEdges = new Set<string>();
+        (stateWithGraph.edges as string[][]).forEach((edge: string[]) => {
+          if (edge.length === 2) {
+            const [from, to] = edge;
+            const edgeKey = [from, to].sort().join('-');
 
-          if (!processedEdges.has(edgeKey)) {
-            processedEdges.add(edgeKey);
+            if (!processedEdges.has(edgeKey)) {
+              processedEdges.add(edgeKey);
 
-            const edgeObj: UndirectedGraphEdge = {
-              id: `${from}-${to}`,
-              from: from,
-              to: to,
-              weight: 1,
-            };
-            edges.push(edgeObj);
+              const edgeObj: UndirectedGraphEdge = {
+                id: `${from}-${to}`,
+                from: from,
+                to: to,
+                weight: 1,
+              };
+              edges.push(edgeObj);
 
-            // Update neighbors
-            const fromNode = nodes.find((n) => n.id === from);
-            const toNode = nodes.find((n) => n.id === to);
-            if (fromNode && toNode) {
-              if (!fromNode.neighbors.includes(to)) {
-                fromNode.neighbors.push(to);
-              }
-              if (!toNode.neighbors.includes(from)) {
-                toNode.neighbors.push(from);
+              // Update neighbors
+              const fromNode = nodes.find((n) => n.id === from);
+              const toNode = nodes.find((n) => n.id === to);
+              if (fromNode && toNode) {
+                if (!fromNode.neighbors.includes(to)) {
+                  fromNode.neighbors.push(to);
+                }
+                if (!toNode.neighbors.includes(from)) {
+                  toNode.neighbors.push(from);
+                }
               }
             }
           }
-        }
-      });
-    }
+        });
 
-    // [NEW] Check for graph data in instances (new backend format)
-    if (nodes.length === 0 && state.instances) {
-      Object.entries(state.instances).forEach(([, instanceData]) => {
-        if (instanceData && typeof instanceData === 'object') {
-          const instance = instanceData as Record<string, unknown>;
-
-          // New format: instances[name].graph = { 'A': { 'B': 1 }, ... }
-          if (instance.graph && typeof instance.graph === 'object') {
-            const graphData = this.convertGraphDictToGraphData(
-              instance.graph as Record<string, Record<string, number>>,
-            );
-            nodes = graphData.nodes;
-            edges = graphData.edges;
-          }
-          // Old format: instances[name].adjacency_list
-          else if (instance.adjacency_list) {
-            const graphData = this.convertAdjacencyListToGraphData(instance.adjacency_list);
-            nodes = graphData.nodes;
-            edges = graphData.edges;
-          }
+        if (nodes.length > 0) {
+          return { nodes, edges };
         }
-      });
+      }
+
+      // Check for graph data in instances (new backend format)
+      if (state.instances) {
+        Object.entries(state.instances).forEach(([, instanceData]) => {
+          if (instanceData && typeof instanceData === 'object') {
+            const instance = instanceData as Record<string, unknown>;
+
+            // New format: instances[name].graph = { 'A': { 'B': 1 }, ... }
+            if (instance.graph && typeof instance.graph === 'object') {
+              const graphData = this.convertGraphDictToGraphData(
+                instance.graph as Record<string, Record<string, number>>,
+              );
+              nodes = graphData.nodes;
+              edges = graphData.edges;
+            }
+            // Old format: instances[name].adjacency_list
+            else if (instance.adjacency_list) {
+              const graphData = this.convertAdjacencyListToGraphData(instance.adjacency_list);
+              nodes = graphData.nodes;
+              edges = graphData.edges;
+            }
+          }
+        });
+
+        // If we found valid graph data, return it
+        if (nodes.length > 0) {
+          return { nodes, edges };
+        }
+      }
     }
 
     // If still no graph data, build from all steps up to current step
-    if (nodes.length === 0) {
-      const graphData = this.buildGraphFromSteps(steps, stepIndex);
-      nodes = graphData.nodes;
-      edges = graphData.edges;
-    }
-
-    return { nodes, edges };
+    const graphData = this.buildGraphFromSteps(steps, stepIndex);
+    return { nodes: graphData.nodes, edges: graphData.edges };
   }
 
   extractStatsFromSteps(steps: StepthroughStep[], stepIndex: number): UndirectedGraphStats {

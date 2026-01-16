@@ -546,6 +546,13 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
         '& .cm-line': {
           position: 'relative',
         },
+        // Enable horizontal scrolling
+        '& .cm-scroller': {
+          overflow: 'auto !important',
+        },
+        '& .cm-content': {
+          minWidth: 'max-content',
+        },
       }),
     ],
     [breakpointGutter, executableLinesHighlight],
@@ -645,7 +652,7 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
   }
 
   return (
-    <div className="overflow-hidden" style={{ height }} suppressHydrationWarning>
+    <div className="overflow-auto" style={{ height }} suppressHydrationWarning>
       <React.Suspense
         fallback={
           <div
@@ -683,7 +690,7 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
             fontSize: '16px',
             fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
             height: height,
-            overflow: 'hidden',
+            overflow: 'auto',
           }}
           onCreateEditor={(view: unknown) => setEditorView(view)}
         />
