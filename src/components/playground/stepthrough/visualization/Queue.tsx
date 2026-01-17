@@ -5,7 +5,7 @@ import { QueueData } from '@/types/stepthrough/Queue.types';
 
 import ZoomableContainer from '@/components/playground/shared/action/ZoomableContainer';
 import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
-import PerformanceAnalysisPanel from '@/components/playground/shared/performancepanel/PerformanceAnalysisPanel';
+import PerformanceAnalysisPanel from '@/components/playground/shared/PerformancePanel/PerformanceAnalysisPanel';
 
 const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
   steps,

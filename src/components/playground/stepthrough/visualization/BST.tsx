@@ -3,7 +3,7 @@ import { StepthroughVisualizationProps, BSTNode, PositionedNode, BSTData } from 
 import ZoomableContainer from '@/components/playground/shared/action/ZoomableContainer';
 import StepIndicator from '@/components/playground/shared/action/StepIndicator';
 import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
-import PerformanceAnalysisPanel from '@/components/playground/shared/performancepanel/PerformanceAnalysisPanel';
+import PerformanceAnalysisPanel from '@/components/playground/shared/PerformancePanel/PerformanceAnalysisPanel';
 
 const BSTStepthroughVisualization = forwardRef<
   HTMLDivElement,
