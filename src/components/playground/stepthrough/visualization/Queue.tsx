@@ -3,9 +3,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StepthroughVisualizationProps } from '@/types';
 import { QueueData } from '@/types/stepthrough/Queue.types';
 
-import ZoomableContainer from '../../shared/ZoomableContainer';
-import ConsoleOutput from '../../shared/ConsoleOutput';
-import PerformanceAnalysisPanel from '../../shared/PerformanceAnalysisPanel';
+import ZoomableContainer from '../../shared/action/ZoomableContainer';
+import ConsoleOutput from '../ConsoleOutput';
+import PerformanceAnalysisPanel from '../../shared/performancepanel/PerformanceAnalysisPanel';
 
 const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
   steps,

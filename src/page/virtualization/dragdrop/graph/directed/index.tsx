@@ -1,669 +1,587 @@
 'use client';
 
-import React, { useState, useRef, lazy, Suspense, useMemo, useCallback } from 'react';
-import { usePathname } from 'next/navigation';
-import { toast } from 'sonner';
+import React, { useState, useRef, lazy, Suspense, useMemo, useEffect } from 'react';
 
 import {
   DirectedGraphDragComponent,
+  Operation,
+  DirectedGraphOperation,
   DirectedGraphNode,
   DirectedGraphEdge,
-  Operation,
 } from '@/types';
 import { useDragDropDirectedGraph } from '@/hooks';
-import { directedGraphDragComponents } from '@/data';
+import {
+  directedGraphDragComponents,
+  getTutorialSteps,
+  getTutorialStorageKey,
+} from '@/data';
 
-import DragDropZone from '@/components/playground/shared/DragDropZone';
-import StepSelector from '@/components/playground/shared/StepSelector';
-import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
-import TutorialButton from '@/components/playground/shared/TutorialButton';
-import TutorialOverlay from '@/components/playground/tutorial/TutorialOverlay';
-import { getTutorialSteps, getTutorialStorageKey } from '@/data/components/tutorial.data';
-// Lazy load heavy components
-const DirectedGraphDragDropOperations = lazy(
+import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
+import StepSelector from '@/components/playground/shared/action/StepSelector';
+import ExportPNGButton from '@/components/playground/shared/action/ExportPNGButton';
+import TutorialButton from '@/components/playground/shared/tutorial/TutorialButton';
+import TutorialOverlay from '@/components/playground/shared/tutorial/TutorialOverlay';
+import CopyCodeButton from '@/components/playground/shared/action/CopyCodeButton';
+
+const DirectedGraphOperations = lazy(
   () => import('@/components/playground/dragdrop/opeartion/DirectedGraph'),
 );
-const DirectedGraphDragDropVisualization = lazy(
+const DirectedGraphVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/DirectedGraph'),
 );
-const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
+const CodeEditor = lazy(() => import('@/components/editor/CodeEditor'));
+
+type GraphEdge = {
+  from: string;
+  to: string;
+  weight?: number | null;
+};
+
+type GraphStats = {
+  vertexCount: number;
+  edgeCount: number;
+  isStronglyConnected: boolean;
+  hasCycle: boolean;
+};
+
+type GraphState = {
+  nodes: string[];
+  edges: GraphEdge[];
+  stats: GraphStats;
+};
+
+// Build adjacency list
+const buildAdj = (nodes: string[], edges: GraphEdge[]) => {
+  const adj = new Map<string, string[]>();
+  nodes.forEach((n) => adj.set(n, []));
+  edges.forEach((e) => {
+    if (!adj.has(e.from)) adj.set(e.from, []);
+    if (!adj.has(e.to)) adj.set(e.to, []);
+    adj.get(e.from)!.push(e.to);
+  });
+  return adj;
+};
+
+// Reverse adjacency (for SCC)
+const buildReverseAdj = (nodes: string[], edges: GraphEdge[]) => {
+  const radj = new Map<string, string[]>();
+  nodes.forEach((n) => radj.set(n, []));
+  edges.forEach((e) => {
+    if (!radj.has(e.to)) radj.set(e.to, []);
+    if (!radj.has(e.from)) radj.set(e.from, []);
+    radj.get(e.to)!.push(e.from);
+  });
+  return radj;
+};
+
+const dfsVisit = (start: string, adj: Map<string, string[]>, visited: Set<string>) => {
+  const stack = [start];
+  visited.add(start);
+  while (stack.length) {
+    const u = stack.pop()!;
+    const nxt = adj.get(u) ?? [];
+    for (const v of nxt) {
+      if (!visited.has(v)) {
+        visited.add(v);
+        stack.push(v);
+      }
+    }
+  }
+};
+
+const hasDirectedCycle = (nodes: string[], edges: GraphEdge[]) => {
+  const adj = buildAdj(nodes, edges);
+  const color = new Map<string, 0 | 1 | 2>(); // 0=unvisited,1=visiting,2=done
+  nodes.forEach((n) => color.set(n, 0));
+
+  const dfs = (u: string): boolean => {
+    color.set(u, 1);
+    for (const v of adj.get(u) ?? []) {
+      const c = color.get(v) ?? 0;
+      if (c === 1) return true; // back-edge
+      if (c === 0 && dfs(v)) return true;
+    }
+    color.set(u, 2);
+    return false;
+  };
+
+  for (const n of nodes) {
+    if ((color.get(n) ?? 0) === 0) {
+      if (dfs(n)) return true;
+    }
+  }
+  return false;
+};
+
+const isStronglyConnected = (nodes: string[], edges: GraphEdge[]) => {
+  if (nodes.length <= 1) return true;
+
+  const adj = buildAdj(nodes, edges);
+  const radj = buildReverseAdj(nodes, edges);
+
+  // pick first node
+  const start = nodes[0];
+
+  const vis1 = new Set<string>();
+  dfsVisit(start, adj, vis1);
+  if (vis1.size !== nodes.length) return false;
+
+  const vis2 = new Set<string>();
+  dfsVisit(start, radj, vis2);
+  if (vis2.size !== nodes.length) return false;
+
+  return true;
+};
+
+// Apply operations up to stepIndex (inclusive). stepIndex = -1 => empty
+const buildGraphFromOperations = (ops: DirectedGraphOperation[], stepIndex: number): GraphState => {
+  const vertexSet = new Set<string>();
+  let edges: GraphEdge[] = [];
+
+  const normalize = (s?: string | null) => (s ?? '').trim();
+
+  const removeVertex = (v: string) => {
+    if (!v) return;
+    vertexSet.delete(v);
+    edges = edges.filter((e) => e.from !== v && e.to !== v);
+  };
+
+  const removeEdge = (from: string, to: string) => {
+    if (!from || !to) return;
+    // ลบเส้นแรกที่ match (กันลบหมดถ้ามีซ้ำ)
+    const idx = edges.findIndex((e) => e.from === from && e.to === to);
+    if (idx >= 0) edges.splice(idx, 1);
+  };
+
+  const addVertex = (v: string) => {
+    if (!v) return;
+    vertexSet.add(v);
+  };
+
+  const addEdge = (from: string, to: string, weightRaw?: string | number | null) => {
+    if (!from || !to) return;
+
+    // auto add vertices
+    addVertex(from);
+    addVertex(to);
+
+    const w =
+      weightRaw === null || weightRaw === undefined || `${weightRaw}`.trim() === ''
+        ? null
+        : Number.isNaN(Number(weightRaw))
+          ? null
+          : Number(weightRaw);
+
+    edges.push({ from, to, weight: w });
+  };
+
+  for (let i = 0; i <= stepIndex; i++) {
+    const op = ops[i];
+    if (!op) continue;
+
+    switch (op.type) {
+      case 'add_vertex': {
+        const v = normalize(op.value);
+        addVertex(v);
+        break;
+      }
+
+      case 'remove_vertex': {
+        const v = normalize(op.value);
+        removeVertex(v);
+        break;
+      }
+
+      case 'add_edge': {
+        const from = normalize(op.fromVertex);
+        const to = normalize(op.toVertex);
+
+        // ใน UI ของน้อง "ช่องตัวเลข" มักถูกเก็บใน op.value
+        const weightRaw = op.value ?? op.newValue ?? null;
+        addEdge(from, to, weightRaw);
+        break;
+      }
+
+      case 'remove_edge': {
+        const from = normalize(op.fromVertex);
+        const to = normalize(op.toVertex);
+        removeEdge(from, to);
+        break;
+      }
+
+      // traversal / shortest_path ไม่เปลี่ยนโครงสร้างกราฟ
+      case 'traversal_bfs':
+      case 'traversal_dfs':
+      case 'shortest_path':
+      default:
+        break;
+    }
+  }
+
+  const nodes = Array.from(vertexSet);
+  const stats: GraphStats = {
+    vertexCount: nodes.length,
+    edgeCount: edges.length,
+    isStronglyConnected: isStronglyConnected(nodes, edges),
+    hasCycle: hasDirectedCycle(nodes, edges),
+  };
+
+  return { nodes, edges, stats };
+};
 
 const DragDropDirectedGraph = () => {
-  const pathname = usePathname();
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
     useDragDropDirectedGraph();
 
-  const [draggedItem, setDraggedItem] = useState<DirectedGraphDragComponent | null>(null);
-  const [selectedStep, setSelectedStep] = useState<number | null>(null);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
-  const [isLoading] = useState(false);
-  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
-  const dragCounter = useRef(0);
-  const visualizationRef = useRef<HTMLDivElement>(null);
-  const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleDragStart = (e: React.DragEvent, component: DirectedGraphDragComponent) => {
-    setDraggedItem(component);
-    e.dataTransfer.effectAllowed = 'copy';
-    // Mark as external drag - no JSON data means external
-    e.dataTransfer.setData('text/plain', 'external');
-  };
-
-  const handleTouchStart = (e: React.TouchEvent, component: DirectedGraphDragComponent) => {
-    // Don't call preventDefault here as it's a passive event
-    setDraggedItem(component);
-    // Simulate drop immediately for touch devices
-    handleDrop({ preventDefault: () => {} } as React.DragEvent);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-  };
-
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    dragCounter.current++;
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    dragCounter.current--;
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    dragCounter.current = 0;
-
-    if (draggedItem) {
-      const newOperation = {
-        type: draggedItem.type,
-        name: draggedItem.name,
-        value: ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type)
-          ? null
-          : '',
-        fromVertex: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-        toVertex: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-        startVertex: ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type)
-          ? ''
-          : null,
-        endVertex: ['shortest_path'].includes(draggedItem.type) ? '' : null,
-        color: draggedItem.color,
-        category: draggedItem.category,
-        position: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-        newValue: [
-          'add_edge',
-          'remove_edge',
-          'traversal_dfs',
-          'traversal_bfs',
-          'shortest_path',
-        ].includes(draggedItem.type)
-          ? ''
-          : null,
-      };
-
-      addOperation(newOperation);
-      setDraggedItem(null);
-    }
-  };
-
   const updateOperationValue = (id: number, value: string) => {
-    // Validate value based on operation type
-    const operation = state.operations.find((op) => op.id === id);
-    if (operation) {
-      if (operation.type === 'add_vertex' || operation.type === 'remove_vertex') {
-        // Clear any previous errors
-      } else if (operation.type === 'shortest_path') {
-        // Update endVertex when value changes for shortest path
-        updateOperation(id, { value, endVertex: value });
-        return;
-      }
-    }
     updateOperation(id, { value });
   };
 
   const updateOperationPosition = (id: number, position: string) => {
-    // For edge operations, this handles fromVertex
-    const operation = state.operations.find((op) => op.id === id);
-    if (operation && (operation.type === 'add_edge' || operation.type === 'remove_edge')) {
-      // Check for duplicate edge
-      if (operation.toVertex && position) {
-        if (checkDuplicateEdge(position, operation.toVertex)) {
-          toast.error(`Edge จาก ${position} ไป ${operation.toVertex} มีอยู่แล้วในกราฟ`);
-          return;
-        }
-      }
-
-      // Update fromVertex when position changes
-      updateOperation(id, { position, fromVertex: position });
-    } else {
-      updateOperation(id, { position });
-    }
-  };
-
-  // Check for duplicate edges
-  const checkDuplicateEdge = (fromVertex: string, toVertex: string): boolean => {
-    if (fromVertex === toVertex) return true; // Self-loop not allowed
-
-    // Check existing edges in current state
-    const existingEdge = state.edges.find(
-      (edge) => edge.from === fromVertex && edge.to === toVertex,
-    );
-
-    return !!existingEdge;
+    updateOperation(id, { position });
   };
 
   const updateOperationNewValue = (id: number, newValue: string) => {
-    // For edge operations, this handles toVertex
-    const operation = state.operations.find((op) => op.id === id);
-    if (operation && (operation.type === 'add_edge' || operation.type === 'remove_edge')) {
-      // Check for duplicate edge
-      if (operation.fromVertex && newValue) {
-        if (checkDuplicateEdge(operation.fromVertex, newValue)) {
-          toast.error(`Edge จาก ${operation.fromVertex} ไป ${newValue} มีอยู่แล้วในกราฟ`);
-          return;
-        }
-      }
-
-      // Update toVertex when newValue changes
-      updateOperation(id, { newValue, toVertex: newValue });
-    } else if (
-      operation &&
-      (operation.type === 'traversal_dfs' || operation.type === 'traversal_bfs')
-    ) {
-      // Update startVertex when newValue changes
-      updateOperation(id, { newValue, startVertex: newValue });
-    } else if (operation && operation.type === 'shortest_path') {
-      // Update startVertex when newValue changes for shortest path
-      updateOperation(id, { newValue, startVertex: newValue });
-    } else {
-      updateOperation(id, { newValue });
-    }
+    updateOperation(id, { newValue });
   };
 
-  const handleClearAll = () => {
-    clearAll();
-    setSelectedStep(null);
+  const [draggedItem, setDraggedItem] = useState<DirectedGraphDragComponent | null>(null);
+  const [selectedStep, setSelectedStep] = useState<number | null>(null);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+
+  const visualizationRef = useRef<HTMLDivElement>(null);
+  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
+
+  /* ================= Drag ================= */
+
+  const handleDragStart = (e: React.DragEvent, component: DirectedGraphDragComponent) => {
+    setDraggedItem(component);
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData('text/plain', 'external');
   };
 
-  const handleRemoveOperation = (id: number) => {
-    removeOperation(id);
-    // Reset step selection when removing operations
-    setSelectedStep(null);
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault(); // ⭐ สำคัญมาก
   };
 
-  const handleStepSelect = (stepIndex: number) => {
-    setSelectedStep(stepIndex);
-    // Stop auto play when manually selecting a step
-    if (isAutoPlaying) {
-      handleAutoPlay();
-    }
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
   };
 
-  const handlePrevious = () => {
-    if (selectedStep !== null && selectedStep > 0) {
-      setSelectedStep(selectedStep - 1);
-      // Trigger animation for the previous step
-      if (isAutoPlaying) {
-        // If auto playing, the animation will be handled by the auto play logic
-        return;
-      }
-      // If manually clicking previous, trigger a brief animation
-      setTimeout(() => {
-        // This will trigger the visualization animation
-      }, 100);
-    }
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
   };
 
-  const handleNext = () => {
-    if (selectedStep !== null && selectedStep < state.operations.length - 1) {
-      setSelectedStep(selectedStep + 1);
-      // Trigger animation for the next step
-      if (isAutoPlaying) {
-        // If auto playing, the animation will be handled by the auto play logic
-        return;
-      }
-      // If manually clicking next, trigger a brief animation
-      setTimeout(() => {
-        // This will trigger the visualization animation
-      }, 100);
-    }
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!draggedItem) return;
+
+    addOperation({
+      type: draggedItem.type,
+      name: draggedItem.name,
+      value: '',
+      position: null,
+      newValue: null,
+      fromVertex: null,
+      toVertex: null,
+      startVertex: null,
+      endVertex: null,
+      color: draggedItem.color,
+      category: draggedItem.category,
+    });
+
+    setDraggedItem(null);
   };
+
+  /* ================= Auto Play ================= */
 
   const handleAutoPlay = () => {
     if (isAutoPlaying) {
-      // Stop auto play
       setIsAutoPlaying(false);
-      if (autoPlayIntervalRef.current) {
-        clearInterval(autoPlayIntervalRef.current);
-        autoPlayIntervalRef.current = null;
-      }
-    } else {
-      // Start auto play
-      setIsAutoPlaying(true);
-      if (state.operations.length > 0) {
-        setSelectedStep(0);
-        autoPlayIntervalRef.current = setInterval(() => {
-          setSelectedStep((prev) => {
-            if (prev === null || prev >= state.operations.length - 1) {
-              // Auto play finished
-              setIsAutoPlaying(false);
-              if (autoPlayIntervalRef.current) {
-                clearInterval(autoPlayIntervalRef.current);
-                autoPlayIntervalRef.current = null;
-              }
-              return prev;
-            }
-            return prev + 1;
-          });
-        }, 1500); // Change step every 1.5 seconds for smoother experience
-      }
+      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+      return;
     }
+
+    if (state.operations.length === 0) return;
+
+    setIsAutoPlaying(true);
+    setSelectedStep(0);
+
+    autoPlayRef.current = setInterval(() => {
+      setSelectedStep((prev) => {
+        if (prev === null || prev >= state.operations.length - 1) {
+          setIsAutoPlaying(false);
+          if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 1500);
   };
 
-  // Cleanup auto play interval on unmount
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
-      if (autoPlayIntervalRef.current) {
-        clearInterval(autoPlayIntervalRef.current);
-      }
+      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
     };
   }, []);
 
-  // Calculate shortest path using Dijkstra's algorithm
-  const calculateShortestPath = (
-    nodes: DirectedGraphNode[],
-    edges: DirectedGraphEdge[],
-    start: string,
-    end: string,
-  ): string[] => {
-    if (start === end) return [start];
+  /* ================= Step Description ================= */
 
-    // Find start and end nodes by value
-    const startNode = nodes.find((n) => n.value === start);
-    const endNode = nodes.find((n) => n.value === end);
+  const getStepDescription = (op: Operation) => {
+    const dOp = op as DirectedGraphOperation;
+    switch (op.type) {
+      case 'add_vertex':
+        return `เพิ่ม Vertex ${op.value ?? ''}`;
+      case 'add_edge':
+        return `เพิ่ม Edge จาก ${dOp.fromVertex ?? '?'} → ${dOp.toVertex ?? '?'}`;
+      case 'remove_vertex':
+        return `ลบ Vertex ${op.value ?? ''}`;
+      case 'remove_edge':
+        return `ลบ Edge จาก ${dOp.fromVertex ?? '?'} → ${dOp.toVertex ?? '?'}`;
+      case 'traversal_dfs':
+        return `DFS เริ่มจาก ${dOp.startVertex ?? ''}`;
+      case 'traversal_bfs':
+        return `BFS เริ่มจาก ${dOp.startVertex ?? ''}`;
+      case 'shortest_path':
+        return `หาเส้นทางสั้นสุด ${dOp.startVertex ?? ''} → ${dOp.endVertex ?? ''}`;
+      default:
+        return op.name;
+    }
+  };
 
-    if (!startNode || !endNode) return [];
+  /* ================= ✅ Graph State (FIX Visualization) =================
+     ถ้าเลือก step -> ใช้ graph ของ step นั้น
+     ถ้าไม่เลือก step -> ใช้ graph ของ "operation สุดท้าย" (เต็มกราฟ)
+  ===================================================================== */
+  const graphState = useMemo<GraphState>(() => {
+    if (!state.operations || state.operations.length === 0) {
+      return {
+        nodes: [],
+        edges: [],
+        stats: {
+          vertexCount: 0,
+          edgeCount: 0,
+          isStronglyConnected: true,
+          hasCycle: false,
+        },
+      };
+    }
 
-    const distances: { [key: string]: number } = {};
-    const previous: { [key: string]: string | null } = {};
-    const visited = new Set<string>();
-    const unvisited = new Set<string>();
+    const stepIndex = selectedStep !== null ? selectedStep : state.operations.length - 1;
 
-    // Initialize distances using node IDs as keys
-    nodes.forEach((node) => {
-      distances[node.id] = node.id === startNode.id ? 0 : Infinity;
-      previous[node.id] = null;
-      unvisited.add(node.id);
+    return buildGraphFromOperations(state.operations as DirectedGraphOperation[], stepIndex);
+  }, [state.operations, selectedStep]);
+
+  /* ================= Python Code Generator ================= */
+
+  const pythonCode = useMemo(() => {
+    const lines: string[] = [
+      'class DirectedGraph:',
+      '    def __init__(self):',
+      '        self.graph = {}',
+      '',
+      '    def add_vertex(self, v):',
+      '        if v not in self.graph:',
+      '            self.graph[v] = []',
+      '',
+      '    def add_edge(self, u, v):',
+      '        self.add_vertex(u)',
+      '        self.add_vertex(v)',
+      '        self.graph[u].append(v)',
+      '',
+      '    def show(self):',
+      '        for v in self.graph:',
+      '            print(v, "->", self.graph[v])',
+      '',
+      'g = DirectedGraph()',
+      '',
+    ];
+
+    (state.operations as DirectedGraphOperation[]).forEach((op) => {
+      if (op.type === 'add_vertex' && op.value) {
+        lines.push(`g.add_vertex("${op.value}")`);
+      }
+
+      if (op.type === 'add_edge' && op.fromVertex && op.toVertex) {
+        lines.push(`g.add_edge("${op.fromVertex}", "${op.toVertex}")`);
+      }
     });
 
-    let iterations = 0;
-    const maxIterations = nodes.length * 2; // Safety check
+    lines.push('', 'g.show()');
 
-    while (unvisited.size > 0 && iterations < maxIterations) {
-      iterations++;
+    return lines.join('\n');
+  }, [state.operations]);
 
-      // Find node with minimum distance
-      let currentNodeId = '';
-      let minDistance = Infinity;
+  /* ================= Visualization Data Transform ================= */
 
-      for (const nodeId of unvisited) {
-        if (distances[nodeId] < minDistance) {
-          minDistance = distances[nodeId];
-          currentNodeId = nodeId;
-        }
-      }
+  const visualizationData = useMemo(() => {
+    const { nodes: rawNodes, edges: rawEdges } = graphState;
 
-      if (currentNodeId === '' || minDistance === Infinity) break;
+    // 1. Convert Edges & Calculate Degrees
+    const inDegree: Record<string, number> = {};
+    const outDegree: Record<string, number> = {};
+    rawNodes.forEach((n) => {
+      inDegree[n] = 0;
+      outDegree[n] = 0;
+    });
 
-      unvisited.delete(currentNodeId);
-      visited.add(currentNodeId);
+    const edges: DirectedGraphEdge[] = rawEdges.map((e, i) => {
+      const edgeId = `e-${e.from}-${e.to}-${i}`;
+      outDegree[e.from] = (outDegree[e.from] || 0) + 1;
+      inDegree[e.to] = (inDegree[e.to] || 0) + 1;
 
-      // Check outgoing neighbors only for directed graph
-      const currentNode = nodes.find((n) => n.id === currentNodeId);
-      if (!currentNode) break;
-
-      const outgoingEdges = edges.filter((edge) => edge.from === currentNodeId);
-      for (const edge of outgoingEdges) {
-        if (visited.has(edge.to)) continue;
-
-        const edgeWeight = edge.weight || 1;
-        // Ensure non-negative weights as required by Dijkstra's algorithm
-        if (edgeWeight < 0) {
-          console.warn(
-            `Negative weight detected: ${edgeWeight}. Dijkstra's algorithm requires non-negative weights.`,
-          );
-          continue;
-        }
-        const newDistance = distances[currentNodeId] + edgeWeight;
-
-        if (newDistance < distances[edge.to]) {
-          distances[edge.to] = newDistance;
-          previous[edge.to] = currentNodeId;
-        }
-      }
-    }
-
-    // Reconstruct path using node values
-    const path: string[] = [];
-    let currentId = endNode.id;
-    let pathIterations = 0;
-    const maxPathIterations = nodes.length; // Safety check
-
-    while (currentId !== null && pathIterations < maxPathIterations) {
-      pathIterations++;
-      const node = nodes.find((n) => n.id === currentId);
-      if (node) {
-        path.unshift(node.value);
-      }
-      currentId = previous[currentId] || '';
-    }
-
-    return path[0] === start ? path : [];
-  };
-
-  const getStepDescription = (operation: {
-    type: string;
-    value?: string | null;
-    fromVertex?: string | null;
-    toVertex?: string | null;
-    startVertex?: string | null;
-    endVertex?: string | null;
-    name: string;
-  }) => {
-    const descriptions: { [key: string]: string } = {
-      add_vertex: `เพิ่ม vertex ${operation.value} เข้าไปในกราฟ`,
-      add_edge: `เพิ่ม edge จาก ${operation.fromVertex} ไป ${operation.toVertex}`,
-      remove_vertex: `ลบ vertex ${operation.value} และ edge ที่เชื่อมกับมัน`,
-      remove_edge: `ลบ edge จาก ${operation.fromVertex} ไป ${operation.toVertex}`,
-      traversal_dfs: `เดินทางผ่านกราฟด้วย DFS เริ่มจาก ${operation.startVertex}`,
-      traversal_bfs: `เดินทางผ่านกราฟด้วย BFS เริ่มจาก ${operation.startVertex}`,
-      shortest_path: `หาเส้นทางที่สั้นที่สุดจาก ${operation.startVertex} ไป ${operation.endVertex}`,
-    };
-
-    return descriptions[operation.type] || `ดำเนินการ ${operation.name}`;
-  };
-
-  // Calculate state for selected step
-  const getStepState = useCallback(
-    (stepIndex: number) => {
-      if (stepIndex < 0 || stepIndex >= state.operations.length) {
-        return {
-          nodes: [],
-          edges: [],
-          stats: {
-            size: 0,
-            isEmpty: true,
-            vertices: 0,
-            edges: 0,
-            isStronglyConnected: true,
-            hasCycle: false,
-            inDegree: {},
-            outDegree: {},
-          },
-        };
-      }
-
-      let currentNodes: DirectedGraphNode[] = [];
-      let currentEdges: DirectedGraphEdge[] = [];
-
-      // Execute operations up to the selected step
-      for (let i = 0; i <= stepIndex; i++) {
-        const operation = state.operations[i];
-        if (!operation) continue;
-
-        switch (operation.type) {
-          case 'add_vertex':
-            if (operation.value) {
-              const newNode: DirectedGraphNode = {
-                id: `${operation.value}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
-                value: operation.value,
-                x: Math.random() * 400 + 50,
-                y: Math.random() * 300 + 50,
-                outgoingEdges: [],
-                incomingEdges: [],
-              };
-              currentNodes.push(newNode);
-            }
-            break;
-          case 'add_edge':
-            if (operation.fromVertex && operation.toVertex) {
-              const fromNode = currentNodes.find((n) => n.value === operation.fromVertex);
-              const toNode = currentNodes.find((n) => n.value === operation.toVertex);
-              if (fromNode && toNode) {
-                const newEdge: DirectedGraphEdge = {
-                  id: `edge-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-                  from: fromNode.id,
-                  to: toNode.id,
-                  weight: operation.value ? parseInt(operation.value, 10) : undefined,
-                  isDirected: true,
-                };
-                currentEdges.push(newEdge);
-                fromNode.outgoingEdges.push(newEdge.id);
-                toNode.incomingEdges.push(newEdge.id);
-              }
-            }
-            break;
-          case 'remove_vertex':
-            if (operation.value) {
-              const nodeToRemove = currentNodes.find((n) => n.value === operation.value);
-              if (nodeToRemove) {
-                currentNodes = currentNodes.filter((n) => n.id !== nodeToRemove.id);
-                currentEdges = currentEdges.filter(
-                  (e) => e.from !== nodeToRemove.id && e.to !== nodeToRemove.id,
-                );
-              }
-            }
-            break;
-          case 'remove_edge':
-            if (operation.fromVertex && operation.toVertex) {
-              currentEdges = currentEdges.filter(
-                (e) => !(e.from === operation.fromVertex && e.to === operation.toVertex),
-              );
-              const fromNode = currentNodes.find((n) => n.id === operation.fromVertex);
-              const toNode = currentNodes.find((n) => n.id === operation.toVertex);
-              if (fromNode)
-                fromNode.outgoingEdges = fromNode.outgoingEdges.filter(
-                  (e) => e !== operation.toVertex,
-                );
-              if (toNode)
-                toNode.incomingEdges = toNode.incomingEdges.filter(
-                  (e) => e !== operation.fromVertex,
-                );
-            }
-            break;
-          case 'shortest_path':
-            // Shortest path calculation will be handled in useEffect
-            break;
-        }
-      }
-
-      // Calculate stats
-      const currentStats = {
-        size: currentNodes.length,
-        isEmpty: currentNodes.length === 0,
-        vertices: currentNodes.length,
-        edges: currentEdges.length,
-        isStronglyConnected: currentNodes.length <= 1,
-        hasCycle: currentEdges.length >= currentNodes.length && currentNodes.length >= 3,
-        inDegree: {},
-        outDegree: {},
+      return {
+        id: edgeId,
+        from: e.from,
+        to: e.to,
+        weight: e.weight ?? undefined,
+        isDirected: true,
       };
+    });
 
-      return { nodes: currentNodes, edges: currentEdges, stats: currentStats };
-    },
-    [state.operations],
-  );
+    // 2. Convert Nodes with Auto-Layout (Circle)
+    const centerX = 400;
+    const centerY = 300;
+    const radius = 200;
+    const angleStep = rawNodes.length > 0 ? (2 * Math.PI) / rawNodes.length : 0;
 
-  // Get current visualization state based on selected step
-  const currentVisualizationState = useMemo(() => {
-    if (selectedStep !== null) {
-      return getStepState(selectedStep);
-    }
-    return { nodes: state.nodes, edges: state.edges, stats: state.stats };
-  }, [selectedStep, getStepState, state.nodes, state.edges, state.stats]);
+    const nodes: DirectedGraphNode[] = rawNodes.map((nodeId, i) => {
+      const angle = i * angleStep;
+      return {
+        id: nodeId,
+        value: nodeId,
+        x: centerX + radius * Math.cos(angle),
+        y: centerY + radius * Math.sin(angle),
+        outgoingEdges: edges.filter((e) => e.from === nodeId).map((e) => e.id),
+        incomingEdges: edges.filter((e) => e.to === nodeId).map((e) => e.id),
+      };
+    });
 
-  // Calculate shortest path using useMemo with stable dependencies
-  const shortestPath = useMemo(() => {
-    if (selectedStep !== null) {
-      const operation = state.operations[selectedStep];
-      if (operation?.type === 'shortest_path' && operation.startVertex && operation.endVertex) {
-        // Get current state directly instead of using currentVisualizationState
-        const currentState =
-          selectedStep !== null
-            ? getStepState(selectedStep)
-            : { nodes: state.nodes, edges: state.edges, stats: state.stats };
-        const { nodes, edges } = currentState;
-        const path = calculateShortestPath(
-          nodes,
-          edges,
-          operation.startVertex,
-          operation.endVertex,
-        );
+    return { nodes, edges, inDegree, outDegree };
+  }, [graphState]);
 
-        if (path.length > 0) {
-          return path;
-        }
-      }
-    }
-    return [];
-  }, [selectedStep, state.operations, state.nodes, state.edges, state.stats, getStepState]);
+  /* ================= Render ================= */
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div>
-            <h1 className="mb-2 text-xl font-bold text-gray-800 md:text-2xl lg:text-2xl dark:text-gray-100">
-              Drag & Drop Directed Graph
-            </h1>
-            <p className="text-sm text-gray-600 md:text-base dark:text-gray-400">
-              เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
-            </p>
-          </div>
-          <TutorialButton onClick={() => setIsTutorialOpen(true)} />
+        <div>
+          <h1 className="text-xl font-semibold">Drag & Drop Directed Graph</h1>
+          <p className="text-sm text-gray-500">Directed graph visualization + Python code</p>
         </div>
-        <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
+        <div className="flex gap-2">
+          <TutorialButton onClick={() => setIsTutorialOpen(true)} />
+          <ExportPNGButton visualizationRef={visualizationRef} />
+        </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-        {/* Left Side - Drag Components */}
-        <div className="sticky top-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
-          <Suspense
-            fallback={
-              <div className="h-64 w-full rounded-lg border bg-gray-50">
-                <div className="flex h-full items-center justify-center">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-                </div>
-              </div>
-            }
-          >
-            <DirectedGraphDragDropOperations
-              dragComponents={directedGraphDragComponents}
-              onDragStart={handleDragStart}
-              onTouchStart={handleTouchStart}
-            />
-          </Suspense>
-        </div>
+      {/* Operations */}
+      <div className="mb-6 rounded-xl border bg-white p-4">
+        <h2 className="mb-4 text-sm font-semibold">Graph Operations</h2>
 
-        {/* Right Side - Drop Zone */}
-        <div className="rounded-lg bg-white p-4 shadow md:p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-800">Drop Zone</h2>
-            <div className="space-x-2">
-              <button
-                onClick={handleClearAll}
-                className="bg-neutral hover:bg-neutral/50 rounded px-4 py-2 text-white transition-colors"
-              >
-                Clear
-              </button>
-            </div>
+        <Suspense fallback={null}>
+          <DirectedGraphOperations
+            dragComponents={directedGraphDragComponents}
+            onDragStart={handleDragStart}
+          />
+        </Suspense>
+      </div>
+
+      {/* Main */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div className="rounded-xl border bg-white p-4">
+          <div className="mb-3 flex justify-between">
+            <h2 className="text-sm font-semibold">Drop Zone</h2>
+            <button
+              onClick={() => {
+                clearAll();
+                setSelectedStep(null);
+              }}
+              className="text-sm text-red-600"
+            >
+              Clear
+            </button>
           </div>
 
           <DragDropZone
             operations={state.operations as Operation[]}
+            onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onRemoveOperation={handleRemoveOperation}
+            onRemoveOperation={removeOperation}
             onUpdateOperationValue={updateOperationValue}
             onUpdateOperationPosition={updateOperationPosition}
             onUpdateOperationNewValue={updateOperationNewValue}
             onReorderOperation={reorderOperation}
           />
         </div>
-      </div>
 
-      {/* Visualization */}
-      <div className="relative">
-        {/* Step Indicator */}
-        {isAutoPlaying && state.operations.length > 0 && selectedStep !== null && (
-          <Suspense
-            fallback={
-              <div className="mb-4 rounded-lg bg-blue-50 p-4">
-                <div className="flex h-6 items-center justify-center">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
-                </div>
-              </div>
-            }
-          >
-            <StepIndicator
-              stepNumber={selectedStep + 1}
-              totalSteps={state.operations.length}
-              message={getStepDescription(state.operations[selectedStep])}
-              isAutoPlaying={isAutoPlaying}
+        <div className="rounded-xl border bg-white p-4">
+          <h2 className="mb-4 text-sm font-semibold">Graph Visualization</h2>
+
+          <Suspense fallback={null}>
+            <DirectedGraphVisualization
+              ref={visualizationRef}
+              nodes={visualizationData.nodes}
+              edges={visualizationData.edges}
+              stats={{
+                vertices: graphState.stats.vertexCount,
+                edges: graphState.stats.edgeCount,
+                isStronglyConnected: graphState.stats.isStronglyConnected,
+                hasCycle: graphState.stats.hasCycle,
+                size: graphState.stats.vertexCount,
+                isEmpty: graphState.stats.vertexCount === 0,
+                inDegree: visualizationData.inDegree,
+                outDegree: visualizationData.outDegree,
+              }}
+              isRunning={isAutoPlaying}
+              currentOperation={
+                selectedStep !== null
+                  ? (state.operations as unknown as DirectedGraphOperation[])[selectedStep]?.type
+                  : undefined
+              }
+              currentOperationData={
+                selectedStep !== null
+                  ? (state.operations as unknown as DirectedGraphOperation[])[selectedStep]
+                  : undefined
+              }
             />
           </Suspense>
-        )}
-
-        <Suspense
-          fallback={
-            <div className="h-64 w-full rounded-lg border bg-gray-50">
-              <div className="flex h-full items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-              </div>
-            </div>
-          }
-        >
-          <DirectedGraphDragDropVisualization
-            ref={visualizationRef}
-            nodes={currentVisualizationState.nodes}
-            edges={currentVisualizationState.edges}
-            stats={currentVisualizationState.stats}
-            isRunning={isAutoPlaying}
-            currentOperation={
-              selectedStep !== null ? state.operations[selectedStep]?.type : undefined
-            }
-            selectedStep={
-              selectedStep !== null &&
-              (state.operations[selectedStep]?.type === 'traversal_dfs' ||
-                state.operations[selectedStep]?.type === 'traversal_bfs' ||
-                state.operations[selectedStep]?.type === 'shortest_path')
-                ? selectedStep
-                : null
-            }
-            currentOperationData={
-              selectedStep !== null ? state.operations[selectedStep] : undefined
-            }
-            shortestPath={shortestPath}
-          />
-        </Suspense>
+        </div>
       </div>
 
+      {/* Step Control */}
       <div className="mt-6">
-        {/* Step Selection */}
         <StepSelector
           operations={state.operations as Operation[]}
           selectedStep={selectedStep}
-          onStepSelect={handleStepSelect}
-          getStepDescription={getStepDescription}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
+          onStepSelect={setSelectedStep}
           onAutoPlay={handleAutoPlay}
           isAutoPlaying={isAutoPlaying}
+          getStepDescription={getStepDescription}
         />
+      </div>
+
+      {/* Python Code */}
+      <div className="mt-6 rounded-xl border bg-white p-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold">Generated Python Code</h2>
+          <CopyCodeButton code={pythonCode} />
+        </div>
+
+        <div className="mt-4 rounded-lg">
+          <CodeEditor
+            code={pythonCode}
+            disabled
+            height="400px"
+            onCodeChange={() => {}}
+          />
+        </div>
       </div>
 
       {/* Tutorial Overlay */}
@@ -671,7 +589,12 @@ const DragDropDirectedGraph = () => {
         isOpen={isTutorialOpen}
         onClose={() => setIsTutorialOpen(false)}
         steps={getTutorialSteps('dragdrop')}
-        storageKey={getTutorialStorageKey(pathname, 'dragdrop')}
+        storageKey={getTutorialStorageKey(
+          typeof window !== 'undefined'
+            ? window.location.pathname
+            : '/virtualization/dragdrop/graph/directed',
+          'dragdrop',
+        )}
       />
     </div>
   );

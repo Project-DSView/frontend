@@ -5,8 +5,8 @@ import React, { useState, useMemo } from 'react';
 import { UndirectedGraphOperationsProps, OperationCategory } from '@/types';
 import { graphCategories } from '@/data';
 
-import OperationCard from '../../shared/OperationCard';
-import OperationSearchFilter from '../../shared/OperationSearchFilter';
+import OperationCard from './OperationCard';
+import OperationSearchFilter from './OperationSearchFilter';
 
 const UndirectedGraphOperations: React.FC<UndirectedGraphOperationsProps> = ({
   dragComponents,
@@ -61,10 +61,10 @@ const UndirectedGraphOperations: React.FC<UndirectedGraphOperationsProps> = ({
                   name: component.name,
                   color: component.color,
                   category: component.category,
+                  description: component.description,
                 }}
                 onDragStart={(e) => onDragStart(e, component)}
                 onTouchStart={(e) => onTouchStart && onTouchStart(e, component)}
-                description={component.description}
               />
             ))}
           </div>

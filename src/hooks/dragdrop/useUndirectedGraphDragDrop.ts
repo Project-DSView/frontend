@@ -11,7 +11,7 @@ import {
   BaseState,
 } from '@/types';
 import { UndirectedGraphDragDropService } from '@/services';
-import { useBaseDataStructure } from './useBaseDataStructureDragDrop';
+import { useBaseDataStructure } from './useBaseDragDrop';
 
 // UndirectedGraph Service Adapter
 class UndirectedGraphServiceAdapter {

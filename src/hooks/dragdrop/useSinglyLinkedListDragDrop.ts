@@ -8,7 +8,7 @@ import {
   BaseState,
 } from '@/types';
 import { SinglyLinkedListDragDropService } from '@/services';
-import { useBaseDataStructure } from './useBaseDataStructureDragDrop';
+import { useBaseDataStructure } from './useBaseDragDrop';
 
 // SinglyLinkedList Service Adapter
 class SinglyLinkedListServiceAdapter {

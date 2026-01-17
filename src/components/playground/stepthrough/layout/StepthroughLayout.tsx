@@ -7,17 +7,19 @@ import { StepthroughLayoutProps, StepthroughData } from '@/types';
 import { stepthroughTutorialSteps, getTutorialStorageKey } from '@/data';
 
 // Lazy load heavy components
-const TutorialOverlay = lazy(() => import('@/components/playground/tutorial/TutorialOverlay'));
-const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
+const TutorialOverlay = lazy(
+  () => import('@/components/playground/shared/tutorial/TutorialOverlay'),
+);
+const StepIndicator = lazy(() => import('@/components/playground/shared/action/StepIndicator'));
 
 import CodeEditor from '@/components/editor/CodeEditor';
-import StepControl from '@/components/playground/shared/StepControl';
-import FileUploadButton from '@/components/playground/shared/FileUploadButton';
-import CopyCodeButton from '@/components/playground/shared/CopyCodeButton';
-import ExportPythonButton from '@/components/playground/shared/ExportPythonButton';
-import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
-import TutorialButton from '@/components/playground/shared/TutorialButton';
-import InputDialog from '@/components/playground/shared/InputDialog';
+import StepControl from '@/components/playground/shared/action/StepControl';
+import FileUploadButton from '@/components/playground/shared/action/FileUploadButton';
+import CopyCodeButton from '@/components/playground/shared/action/CopyCodeButton';
+import ExportPythonButton from '@/components/playground/shared/action/ExportPythonButton';
+import ExportPNGButton from '@/components/playground/shared/action/ExportPNGButton';
+import TutorialButton from '@/components/playground/shared/tutorial/TutorialButton';
+import InputDialog from '@/components/playground/stepthrough/InputDialog';
 
 const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   code,
@@ -162,7 +164,11 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
             </div>
           </div>
 
-          <div id="tutorial-code-editor" className="mb-2 min-w-0 overflow-hidden" style={{ height: '280px' }}>
+          <div
+            id="tutorial-code-editor"
+            className="mb-2 min-w-0 overflow-hidden"
+            style={{ height: '280px' }}
+          >
             <CodeEditor
               code={code}
               onCodeChange={onCodeChange}

@@ -136,6 +136,17 @@ export {
   getSpaceLevel,
 } from './utils/performance';
 
+// Code Generators (with base templates)
+export {
+  generateDragDropBSTCode,
+  generateDragDropStackCode,
+  generateDragDropQueueCode,
+  generateDragDropSinglyLinkedListCode,
+  generateDragDropDoublyLinkedListCode,
+  generateDragDropDirectedGraphCode,
+  generateDragDropUndirectedGraphCode,
+} from './dragdrop/dragDropGenerators';
+
 // Schemas
 export { pdfSubmissionSchema } from './schemas/pdf-submission.schema';
 export { gradingSchema } from './schemas/grading.schema';

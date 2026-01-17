@@ -303,7 +303,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
       setIsExternalDrag(false);
     }
-    onDragLeave(e);
+    onDragLeave?.(e);
   };
 
   return (

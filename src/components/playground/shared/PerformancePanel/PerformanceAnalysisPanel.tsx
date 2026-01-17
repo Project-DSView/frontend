@@ -14,16 +14,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 // Sub-components
-import PerformanceSummaryMetrics from './PerformancePanel/PerformanceSummaryMetrics';
-import PerformanceMetricsCards from './PerformancePanel/PerformanceMetricsCards';
-import PerformanceChart from './PerformancePanel/PerformanceChart';
-import HotspotsPanel from './PerformancePanel/HotspotsPanel';
-import TimelinePanel from './PerformancePanel/TimelinePanel';
-import { MemoryUsageBar, TimeUsageBar } from './PerformancePanel/ResourceUsageBar';
-import BigOOverview from './PerformancePanel/BigOOverview';
-import BigOAnalysisDetails from './PerformancePanel/BigOAnalysisDetails';
-import PerFunctionComplexity from './PerformancePanel/PerFunctionComplexity';
-import BigOChart from './PerformancePanel/BigOChart';
+import PerformanceSummaryMetrics from './PerformanceSummaryMetrics';
+import PerformanceMetricsCards from './PerformanceMetricsCards';
+import PerformanceChart from './PerformanceChart';
+import HotspotsPanel from './HotspotsPanel';
+import TimelinePanel from './TimelinePanel';
+import { MemoryUsageBar, TimeUsageBar } from './ResourceUsageBar';
+import BigOOverview from './BigOOverview';
+import BigOAnalysisDetails from './BigOAnalysisDetails';
+import PerFunctionComplexity from './PerFunctionComplexity';
+import BigOChart from './BigOChart';
 
 const PerformanceAnalysisPanel: React.FC<PerformanceAnalysisPanelProps> = ({
   steps,

@@ -10,7 +10,7 @@ import {
   BaseState,
 } from '@/types';
 import { BSTDragDropService } from '@/services';
-import { useBaseDataStructure } from './useBaseDataStructureDragDrop';
+import { useBaseDataStructure } from './useBaseDragDrop';
 
 // BST Service Adapter
 class BSTServiceAdapter {

@@ -7,7 +7,7 @@ import {
   BaseState,
 } from '@/types';
 import { DoublyLinkedListDragDropService } from '@/services';
-import { useBaseDataStructure } from './useBaseDataStructureDragDrop';
+import { useBaseDataStructure } from './useBaseDragDrop';
 
 class DoublyLinkedListServiceAdapter {
   private service: DoublyLinkedListDragDropService;

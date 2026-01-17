@@ -335,22 +335,11 @@ interface NestedSubMenuItemProps {
 // ============================================================================
 // Step Selector Props
 // ============================================================================
-interface Operation {
-  id: number;
-  type: string;
-  name: string;
-  value?: string | null;
-  position?: string | null;
-  newValue?: string | null;
-  color: string;
-  category: string;
-}
-
 interface StepSelectorProps {
-  operations: Operation[];
+  operations: DragDropOperation[];
   selectedStep: number | null;
   onStepSelect: (stepIndex: number) => void;
-  getStepDescription: (operation: Operation) => string;
+  getStepDescription: (operation: DragDropOperation) => string;
   onPrevious?: () => void;
   onNext?: () => void;
   onAutoPlay?: () => void;
@@ -528,13 +517,7 @@ interface StackOperationsProps {
 
 interface StackVisualizationProps {
   elements: string[];
-  stats: {
-    length: number;
-    count: number;
-    headValue: string | null;
-    tailValue: string | null;
-    isEmpty: boolean;
-  };
+  stats: DataStructureStats;
   isRunning?: boolean;
   currentOperation?: string;
   currentStep?: string;

@@ -6,8 +6,8 @@ import {
   UndirectedGraphEdge,
 } from '@/types';
 
-import GraphNode from '../../shared/GraphNode';
-import GraphEdge from '../../shared/GraphEdge';
+import GraphNode from '../../shared/common/GraphNode';
+import GraphEdge from '../../shared/common/GraphEdge';
 
 const UndirectedGraphVisualization = forwardRef<HTMLDivElement, UndirectedGraphVisualizationProps>(
   (

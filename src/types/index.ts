@@ -33,6 +33,7 @@ export type {
   OperationCategory,
   Category,
   OperationSearchFilterProps,
+  DragDropOperation,
 } from './dragdrop/common.types';
 
 export type {

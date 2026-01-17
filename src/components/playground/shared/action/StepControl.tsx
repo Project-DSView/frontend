@@ -72,7 +72,6 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           </div>
         </div>
 
-
         {/* Step Slider */}
         <div className="mb-2 flex flex-col items-center justify-center px-2 sm:mb-3">
           <Slider

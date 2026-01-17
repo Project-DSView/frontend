@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import FunctionComplexityTable from '../FunctionComplexityTable';
+import FunctionComplexityTable from './FunctionComplexityTable';
 import { PerFunctionComplexityProps } from '@/types';
 
 const PerFunctionComplexity: React.FC<PerFunctionComplexityProps> = ({ functionComplexities }) => {

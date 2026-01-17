@@ -8,7 +8,7 @@ import {
   BaseState,
 } from '@/types';
 import { QueueDragDropService } from '@/services';
-import { useBaseDataStructure } from './useBaseDataStructureDragDrop';
+import { useBaseDataStructure } from './useBaseDragDrop';
 
 class QueueServiceAdapter {
   private service: QueueDragDropService;

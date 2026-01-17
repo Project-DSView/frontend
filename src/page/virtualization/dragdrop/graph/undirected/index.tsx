@@ -11,14 +11,14 @@ import {
   Operation,
 } from '@/types';
 import { useDragDropUndirectedGraph } from '@/hooks';
-import { undirectedGraphDragComponents } from '@/data';
+import { undirectedGraphDragComponents, getTutorialSteps, getTutorialStorageKey } from '@/data';
 
-import DragDropZone from '@/components/playground/shared/DragDropZone';
-import StepSelector from '@/components/playground/shared/StepSelector';
-import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
-import TutorialButton from '@/components/playground/shared/TutorialButton';
-import TutorialOverlay from '@/components/playground/tutorial/TutorialOverlay';
-import { getTutorialSteps, getTutorialStorageKey } from '@/data/components/tutorial.data';
+import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
+import StepSelector from '@/components/playground/shared/action/StepSelector';
+import ExportPNGButton from '@/components/playground/shared/action/ExportPNGButton';
+import TutorialButton from '@/components/playground/shared/tutorial/TutorialButton';
+import TutorialOverlay from '@/components/playground/shared/tutorial/TutorialOverlay';
+
 // Lazy load heavy components
 const UndirectedGraphDragDropOperations = lazy(
   () => import('@/components/playground/dragdrop/opeartion/UndirectedGraph'),
@@ -26,8 +26,11 @@ const UndirectedGraphDragDropOperations = lazy(
 const UndirectedGraphDragDropVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/UndirectedGraph'),
 );
-const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
-
+const StepIndicator = lazy(() => import('@/components/playground/shared/action/StepIndicator'));
+const CopyCodeButton = lazy(
+  () => import('@/components/playground/shared/action/CopyCodeButton'),
+);
+const CodeEditor = lazy(() => import('@/components/editor/CodeEditor'));
 const DragDropUndirectedGraph = () => {
   const pathname = usePathname();
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
@@ -538,6 +541,47 @@ const DragDropUndirectedGraph = () => {
     return [];
   }, [selectedStep, state.operations, state.nodes, state.edges, state.stats, getStepState]);
 
+  /* ================= Python Code Generator ================= */
+
+  const pythonCode = useMemo(() => {
+    const lines: string[] = [
+      'class UndirectedGraph:',
+      '    def __init__(self):',
+      '        self.graph = {}',
+      '',
+      '    def add_vertex(self, v):',
+      '        if v not in self.graph:',
+      '            self.graph[v] = []',
+      '',
+      '    def add_edge(self, u, v):',
+      '        self.add_vertex(u)',
+      '        self.add_vertex(v)',
+      '        self.graph[u].append(v)',
+      '        self.graph[v].append(u)',
+      '',
+      '    def show(self):',
+      '        for v in self.graph:',
+      '            print(v, "->", self.graph[v])',
+      '',
+      'g = UndirectedGraph()',
+      '',
+    ];
+
+    state.operations.forEach((op) => {
+      if (op.type === 'add_vertex' && op.value) {
+        lines.push(`g.add_vertex("${op.value}")`);
+      }
+
+      if (op.type === 'add_edge' && op.fromVertex && op.toVertex) {
+        lines.push(`g.add_edge("${op.fromVertex}", "${op.toVertex}")`);
+      }
+    });
+
+    lines.push('', 'g.show()');
+
+    return lines.join('\\n');
+  }, [state.operations]);
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       {/* Header */}
@@ -682,8 +726,30 @@ const DragDropUndirectedGraph = () => {
         steps={getTutorialSteps('dragdrop')}
         storageKey={getTutorialStorageKey(pathname, 'dragdrop')}
       />
-    </div>
-  );
+
+      {/* Python Code */}
+      <div className="mt-6 rounded-xl border bg-white p-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold">Generated Python Code</h2>
+          <Suspense fallback={null}>
+            <CopyCodeButton code={pythonCode} />
+          </Suspense>
+        </div>
+
+        <div className="mt-4 rounded-lg">
+          <Suspense fallback={<div>Loading editor...</div>}>
+            <CodeEditor
+              code={pythonCode}
+              disabled
+              height="400px"
+              onCodeChange={() => {}}
+            />
+          </Suspense>
+        </div>
+      </div>
+  </div>
+);
 };
+
 
 export default DragDropUndirectedGraph;

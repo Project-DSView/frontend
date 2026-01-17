@@ -2,7 +2,7 @@ import React, { forwardRef, useState, useEffect } from 'react';
 
 import { QueueVisualizationProps } from '@/types';
 
-import ZoomableContainer from '../../shared/ZoomableContainer';
+import ZoomableContainer from '../../shared/action/ZoomableContainer';
 
 const QueueDragDropVisualization = forwardRef<HTMLDivElement, QueueVisualizationProps>(
   ({ elements, stats, isRunning = false, currentOperation, dequeuedElement }, ref) => {

@@ -5,9 +5,9 @@ import {
   UndirectedGraphNode,
   UndirectedGraphEdge,
 } from '@/types';
-import StepIndicator from '../../shared/StepIndicator';
-import ConsoleOutput from '../../shared/ConsoleOutput';
-import PerformanceAnalysisPanel from '../../shared/PerformanceAnalysisPanel';
+import StepIndicator from '../../shared/action/StepIndicator';
+import ConsoleOutput from '../ConsoleOutput';
+import PerformanceAnalysisPanel from '../../shared/performancepanel/PerformanceAnalysisPanel';
 
 // Extended props to include animation state from hook
 interface UndirectedGraphVisualizationProps
