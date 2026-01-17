@@ -96,7 +96,47 @@ interface StepthroughStep {
         };
       };
     };
+    // Dynamic class metadata for visualization labels
+    class_metadata?: {
+      classes?: Record<
+        string,
+        {
+          name: string;
+          attributes: Record<string, { name: string; role: string }>;
+          methods: string[];
+        }
+      >;
+      node_class?: string;
+      list_class?: string;
+      tree_class?: string;
+      tree_node_class?: string;
+      data_attr?: string;
+      next_attr?: string;
+      prev_attr?: string;
+      head_attr?: string;
+      tail_attr?: string;
+      count_attr?: string;
+      root_attr?: string;
+      left_attr?: string;
+      right_attr?: string;
+      tree_data_attr?: string;
+    };
+    // Thai code explanation for learning
+    explanation?: {
+      what?: string; // What this line does
+      why_visual?: string; // Why visualization changed
+      concept?: string; // Related data structure concept
+    };
   };
+}
+
+interface FunctionComplexity {
+  functionName: string;
+  timeComplexity: string;
+  spaceComplexity: string;
+  lineStart: number;
+  lineEnd: number;
+  timeComplexityRank: number;
 }
 
 interface ComplexityAnalysis {
@@ -112,6 +152,7 @@ interface ComplexityAnalysis {
     space_allocations?: string[];
     has_growing_structures?: boolean;
   };
+  functionComplexities?: FunctionComplexity[];
 }
 
 interface StepthroughResponse {
@@ -331,4 +372,5 @@ export type {
   Breakpoint,
   InputState,
   ComplexityAnalysis,
+  FunctionComplexity,
 };

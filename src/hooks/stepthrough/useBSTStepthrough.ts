@@ -17,23 +17,37 @@ class BSTStepthroughService implements BaseStepthroughService<BSTData, BSTStatsE
       return { root: null };
     }
 
+    // Search backward from current step to find the most recent step with valid BST data
+    // This ensures visualization persists even when stepping through lines without instances
+    for (let searchIndex = stepIndex; searchIndex >= 0; searchIndex--) {
+      const step = steps[searchIndex];
+      const state = step.state;
+
+      // Extract BST root from instances
+      let root: BSTNode | null = null;
+
+      if (state.instances) {
+        // Look for BST instances in the state
+        Object.entries(state.instances).forEach(([, instanceData]) => {
+          if (instanceData && typeof instanceData === 'object' && 'root' in instanceData) {
+            const instance = instanceData as Record<string, unknown>;
+            if (instance.root) {
+              root = this.convertToBSTNode(instance.root);
+            }
+          }
+        });
+
+        // If we found valid BST data, return it
+        if (root) {
+          return { root };
+        }
+      }
+    }
+
+    // If no instance data found via backward search, use fallback methods
     const step = steps[stepIndex];
     const state = step.state;
-
-    // Extract BST root from instances
     let root: BSTNode | null = null;
-
-    if (state.instances) {
-      // Look for BST instances in the state
-      Object.entries(state.instances).forEach(([, instanceData]) => {
-        if (instanceData && typeof instanceData === 'object' && 'root' in instanceData) {
-          const instance = instanceData as Record<string, unknown>;
-          if (instance.root) {
-            root = this.convertToBSTNode(instance.root);
-          }
-        }
-      });
-    }
 
     // If no root found, try to extract from step detail
     if (!root && state.step_detail) {

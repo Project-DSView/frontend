@@ -14,12 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InputDialogProps } from '@/types';
 
-const InputDialog: React.FC<InputDialogProps> = ({
-  isOpen,
-  prompts,
-  onSubmit,
-  onCancel,
-}) => {
+const InputDialog: React.FC<InputDialogProps> = ({ isOpen, prompts, onSubmit, onCancel }) => {
   const [inputValue, setInputValue] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
 

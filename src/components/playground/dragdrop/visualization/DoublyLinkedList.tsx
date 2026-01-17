@@ -2,7 +2,7 @@ import React, { forwardRef, useState, useEffect, useMemo } from 'react';
 
 import { DoublyLinkedListVisualizationProps } from '@/types';
 
-import ZoomableContainer from '../../shared/ZoomableContainer';
+import ZoomableContainer from '../../shared/action/ZoomableContainer';
 
 const DoublyLinkedDragDropListVisualization = forwardRef<
   HTMLDivElement,
@@ -392,9 +392,6 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
 
     return (
       <div ref={ref} className="mb-6 rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-        <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-100">
-          Doubly Linked List Visualization
-        </h2>
         {/* Linked List Visualization */}
         <ZoomableContainer
           className="min-h-[220px] rounded-lg bg-gray-50 dark:bg-gray-900"

@@ -19,9 +19,8 @@ export {
   stepthroughTutorialSteps,
   getTutorialSteps,
   getTutorialStorageKey,
-  namingGuides
+  namingGuides,
 } from './components/tutorial.data';
-
 
 // Drag Drop
 export { categories } from './dragdrop/common.data';
@@ -41,13 +40,22 @@ export {
 } from './dragdrop/categories.data';
 
 // Templates
-export { singlyLinkedListCodeTemplate } from './template/code.data';
-export { doublyLinkedListCodeTemplate } from './template/code.data';
-export { stackCodeTemplate } from './template/code.data';
-export { queueCodeTemplate } from './template/code.data';
-export { bstCodeTemplate } from './template/code.data';
-export { undirectedGraphCodeTemplate } from './template/code.data';
-export { directedGraphCodeTemplate } from './template/code.data';
+export {
+  singlyLinkedListCodeTemplate,
+  doublyLinkedListCodeTemplate,
+  stackCodeTemplate,
+  queueCodeTemplate,
+  bstCodeTemplate,
+  undirectedGraphCodeTemplate,
+  directedGraphCodeTemplate,
+  singlyLinkedListDragDropBaseTemplate,
+  doublyLinkedListDragDropBaseTemplate,
+  stackDragDropBaseTemplate,
+  queueDragDropBaseTemplate,
+  bstDragDropBaseTemplate,
+  undirectedGraphDragDropBaseTemplate,
+  directedGraphDragDropBaseTemplate,
+} from './template/code.data';
 
 // Submissions
 export { SUBMISSION_STATUS_CONFIG } from './components/submissions';

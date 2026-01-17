@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { namingGuides } from '@/data';
 import { TutorialOverlayProps } from '@/types';
 
-
 // Inline NamingGuideDropdown component for naming guide step
 const NamingGuideDropdown: React.FC = () => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
@@ -47,7 +46,7 @@ const NamingGuideDropdown: React.FC = () => {
                   <Code2 className="h-3 w-3" /> Methods:
                 </div>
                 <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                  {guide.supportedMethods.map(m => `${m}()`).join(', ')}
+                  {guide.supportedMethods.map((m) => `${m}()`).join(', ')}
                 </p>
               </div>
               <p className="text-xs text-green-600 dark:text-green-400">

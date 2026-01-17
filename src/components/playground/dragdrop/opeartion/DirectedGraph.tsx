@@ -5,10 +5,10 @@ import React, { useState, useMemo } from 'react';
 import { DirectedGraphOperationsProps, OperationCategory } from '@/types';
 import { graphCategories } from '@/data';
 
-import OperationCard from '../../shared/OperationCard';
-import OperationSearchFilter from '../../shared/OperationSearchFilter';
+import OperationCard from './OperationCard';
+import OperationSearchFilter from './OperationSearchFilter';
 
-const DirectedGraphDragDropOperations: React.FC<DirectedGraphOperationsProps> = ({
+const DirectedGraphOperations: React.FC<DirectedGraphOperationsProps> = ({
   dragComponents,
   onDragStart,
   onTouchStart,
@@ -61,10 +61,10 @@ const DirectedGraphDragDropOperations: React.FC<DirectedGraphOperationsProps> = 
                   name: component.name,
                   color: component.color,
                   category: component.category,
+                  description: component.description,
                 }}
                 onDragStart={(e) => onDragStart(e, component)}
                 onTouchStart={(e) => onTouchStart && onTouchStart(e, component)}
-                description={component.description}
               />
             ))}
           </div>
@@ -74,4 +74,4 @@ const DirectedGraphDragDropOperations: React.FC<DirectedGraphOperationsProps> = 
   );
 };
 
-export default DirectedGraphDragDropOperations;
+export default DirectedGraphOperations;

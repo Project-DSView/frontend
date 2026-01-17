@@ -125,6 +125,27 @@ export {
 } from './utils/file';
 
 export { getFlattenedLinks, getProcessedPlaygroundItems } from './utils/playground';
+export {
+  MEMORY_LIMIT_BYTES,
+  SIGNIFICANT_MEMORY_THRESHOLD,
+  SIGNIFICANT_TIME_THRESHOLD,
+  formatMemory,
+  formatTime as formatPerformanceTime,
+  truncateCode,
+  getTimeLevel,
+  getSpaceLevel,
+} from './utils/performance';
+
+// Code Generators (with base templates)
+export {
+  generateDragDropBSTCode,
+  generateDragDropStackCode,
+  generateDragDropQueueCode,
+  generateDragDropSinglyLinkedListCode,
+  generateDragDropDoublyLinkedListCode,
+  generateDragDropDirectedGraphCode,
+  generateDragDropUndirectedGraphCode,
+} from './dragdrop/dragDropGenerators';
 
 // Schemas
 export { pdfSubmissionSchema } from './schemas/pdf-submission.schema';

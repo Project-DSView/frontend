@@ -335,22 +335,11 @@ interface NestedSubMenuItemProps {
 // ============================================================================
 // Step Selector Props
 // ============================================================================
-interface Operation {
-  id: number;
-  type: string;
-  name: string;
-  value?: string | null;
-  position?: string | null;
-  newValue?: string | null;
-  color: string;
-  category: string;
-}
-
 interface StepSelectorProps {
-  operations: Operation[];
+  operations: DragDropOperation[];
   selectedStep: number | null;
   onStepSelect: (stepIndex: number) => void;
-  getStepDescription: (operation: Operation) => string;
+  getStepDescription: (operation: DragDropOperation) => string;
   onPrevious?: () => void;
   onNext?: () => void;
   onAutoPlay?: () => void;
@@ -528,13 +517,7 @@ interface StackOperationsProps {
 
 interface StackVisualizationProps {
   elements: string[];
-  stats: {
-    length: number;
-    count: number;
-    headValue: string | null;
-    tailValue: string | null;
-    isEmpty: boolean;
-  };
+  stats: DataStructureStats;
   isRunning?: boolean;
   currentOperation?: string;
   currentStep?: string;
@@ -753,4 +736,77 @@ export type {
   GraphEdgeProps,
   ConsoleOutputProps,
   BigOComplexityCardProps,
+  // Performance Panel
+  PerformanceAnalysisPanelProps,
+  PerformanceSummaryMetricsProps,
+  PerformanceMetricsCardsProps,
+  PerformanceChartProps,
+  HotspotsPanelProps,
+  TimelinePanelProps,
+  MemoryUsageBarProps,
+  TimeUsageBarProps,
+  BigOOverviewProps,
+  BigOAnalysisDetailsProps,
+  PerFunctionComplexityProps,
+  BigOChartProps,
 };
+
+// ============================================================================
+// Performance Panel Props
+// ============================================================================
+interface PerformanceAnalysisPanelProps {
+  steps: StepthroughStep[];
+  currentStepIndex: number;
+  complexity?: ComplexityAnalysis | null;
+}
+
+interface PerformanceSummaryMetricsProps {
+  memoryUsage: number;
+  totalExecutionTime: number;
+  complexity?: ComplexityAnalysis | null;
+}
+
+interface PerformanceMetricsCardsProps {
+  memoryUsage: number;
+  maxMemoryUsed: number;
+  totalExecutionTime: number;
+  stepCount: number;
+}
+
+interface PerformanceChartProps {
+  steps: StepthroughStep[];
+  currentStepIndex: number;
+}
+
+interface HotspotsPanelProps {
+  steps: StepthroughStep[];
+}
+
+interface TimelinePanelProps {
+  steps: StepthroughStep[];
+  currentStepIndex: number;
+}
+
+interface MemoryUsageBarProps {
+  memoryUsage: number;
+}
+
+interface TimeUsageBarProps {
+  totalExecutionTime: number;
+}
+
+interface BigOOverviewProps {
+  complexity: ComplexityAnalysis;
+}
+
+interface BigOAnalysisDetailsProps {
+  details: ComplexityAnalysis['analysisDetails'];
+}
+
+interface PerFunctionComplexityProps {
+  functionComplexities: NonNullable<ComplexityAnalysis['functionComplexities']>;
+}
+
+interface BigOChartProps {
+  timeComplexity: string;
+}

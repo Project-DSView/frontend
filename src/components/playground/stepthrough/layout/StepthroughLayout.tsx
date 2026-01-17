@@ -6,20 +6,20 @@ import { usePathname } from 'next/navigation';
 import { StepthroughLayoutProps, StepthroughData } from '@/types';
 import { stepthroughTutorialSteps, getTutorialStorageKey } from '@/data';
 
-
 // Lazy load heavy components
-const TutorialOverlay = lazy(() => import('@/components/playground/tutorial/TutorialOverlay'));
-const StepIndicator = lazy(() => import('@/components/playground/shared/StepIndicator'));
+const TutorialOverlay = lazy(
+  () => import('@/components/playground/shared/tutorial/TutorialOverlay'),
+);
+const StepIndicator = lazy(() => import('@/components/playground/shared/action/StepIndicator'));
 
 import CodeEditor from '@/components/editor/CodeEditor';
-import StepControl from '@/components/playground/shared/StepControl';
-import FileUploadButton from '@/components/playground/shared/FileUploadButton';
-import CopyCodeButton from '@/components/playground/shared/CopyCodeButton';
-import ExportPythonButton from '@/components/playground/shared/ExportPythonButton';
-import ExportPNGButton from '@/components/playground/shared/ExportPNGButton';
-import TutorialButton from '@/components/playground/shared/TutorialButton';
-import InputDialog from '@/components/playground/shared/InputDialog';
-
+import StepControl from '@/components/playground/shared/action/StepControl';
+import FileUploadButton from '@/components/playground/shared/action/FileUploadButton';
+import CopyCodeButton from '@/components/playground/shared/action/CopyCodeButton';
+import ExportPythonButton from '@/components/playground/shared/action/ExportPythonButton';
+import ExportPNGButton from '@/components/playground/shared/action/ExportPNGButton';
+import TutorialButton from '@/components/playground/shared/tutorial/TutorialButton';
+import InputDialog from '@/components/playground/stepthrough/InputDialog';
 
 const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   code,
@@ -104,22 +104,22 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   }, [isAutoPlaying]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-6 dark:bg-gray-900" suppressHydrationWarning>
+    <div className="min-h-screen bg-gray-50 p-2 sm:p-4 dark:bg-gray-900" suppressHydrationWarning>
       {/* Header */}
-      <div className="mb-4 sm:mb-6">
-        <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mb-2 sm:mb-3">
+        <div className="mb-2 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
             <div>
-              <h1 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl dark:text-gray-100">
+              <h1 className="mb-1 text-base font-bold text-gray-800 sm:text-lg dark:text-gray-100">
                 {title}
               </h1>
-              <p className="text-sm text-gray-600 sm:text-base dark:text-gray-400">{description}</p>
+              <p className="text-xs text-gray-600 sm:text-sm dark:text-gray-400">{description}</p>
             </div>
             <TutorialButton onClick={() => setIsTutorialOpen(true)} />
           </div>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
             {/* Export Buttons */}
-            <div id="tutorial-export-buttons" className="flex flex-wrap gap-2 sm:gap-3">
+            <div id="tutorial-export-buttons" className="flex flex-wrap gap-1 sm:gap-2">
               <FileUploadButton onFileLoad={onFileLoad} disabled={isLoading} />
               <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
               <ExportPythonButton code={code} disabled={isLoading} />
@@ -129,23 +129,23 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
         </div>
       </div>
 
-      <div className="mb-4 grid grid-cols-1 gap-4 sm:mb-6 sm:gap-6 lg:grid-cols-2">
+      <div className="mb-2 grid grid-cols-1 gap-2 sm:mb-3 sm:gap-3 lg:grid-cols-[2fr_3fr]">
         {/* Left Side - Code Editor with Step Control */}
-        <div className="rounded-lg bg-white p-3 shadow sm:p-6 dark:bg-gray-800">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-              <h2 className="text-base font-semibold text-gray-800 sm:text-lg dark:text-gray-100">
+        <div className="min-w-0 overflow-hidden rounded-lg bg-white p-2 shadow sm:p-3 dark:bg-gray-800">
+          <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+              <h2 className="text-sm font-semibold text-gray-800 sm:text-base dark:text-gray-100">
                 Code Editor
               </h2>
               <div className="bg-neutral/20 dark:bg-neutral/80 rounded-md px-2 py-1 font-mono text-xs text-black/70 sm:px-3 sm:text-sm dark:text-gray-300">
                 {filename}
               </div>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-2">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:space-x-1">
               <button
                 onClick={onReset}
                 disabled={isLoading}
-                className="bg-neutral/20 dark:bg-neutral/80 hover:bg-neutral/80 dark:hover:bg-neutral/40 rounded px-3 py-2 text-xs text-black/70 transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm md:px-5 md:py-2.5 md:text-sm lg:px-6 lg:py-3 lg:text-base dark:text-gray-200"
+                className="bg-neutral/20 dark:bg-neutral/80 hover:bg-neutral/80 dark:hover:bg-neutral/40 rounded px-2 py-1 text-xs text-black/70 transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-3 sm:py-1.5 sm:text-xs dark:text-gray-200"
               >
                 Reset Code
               </button>
@@ -153,7 +153,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
                 id="tutorial-run-button"
                 onClick={onExecute}
                 disabled={isLoading || !code.trim()}
-                className={`rounded px-3 py-2 text-xs text-white transition-colors sm:px-4 sm:text-sm md:px-5 md:py-2.5 md:text-sm lg:px-6 lg:py-3 lg:text-base ${
+                className={`rounded px-2 py-1 text-xs text-white transition-colors sm:px-3 sm:py-1.5 sm:text-xs ${
                   isLoading || !code.trim()
                     ? 'bg-neutral/20 cursor-not-allowed'
                     : 'bg-primary hover:bg-primary/80'
@@ -164,11 +164,15 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
             </div>
           </div>
 
-          <div id="tutorial-code-editor" className="mb-4" style={{ height: '400px' }}>
+          <div
+            id="tutorial-code-editor"
+            className="mb-2 min-w-0 overflow-hidden"
+            style={{ height: '280px' }}
+          >
             <CodeEditor
               code={code}
               onCodeChange={onCodeChange}
-              height="400px"
+              height="280px"
               currentStep={
                 steps.length > 0 && currentStepIndex < steps.length
                   ? {
@@ -187,7 +191,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
           <div
             id="tutorial-step-control"
             ref={stepControlRef}
-            className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700"
+            className="mt-2 border-t border-gray-200 pt-2 dark:border-gray-700"
           >
             <StepControl
               steps={steps}
@@ -211,7 +215,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
         {/* Right Side - Visualization */}
         <Suspense
           fallback={
-            <div className="flex h-48 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 sm:h-64 dark:border-gray-700 dark:bg-gray-800">
+            <div className="flex h-32 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 sm:h-48 dark:border-gray-700 dark:bg-gray-800">
               <div className="text-center">
                 <div className="text-sm text-gray-500 sm:text-base dark:text-gray-400">
                   Loading visualization...
@@ -239,10 +243,10 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
         steps.length > 0 &&
         currentStepIndex !== null &&
         currentStepIndex < steps.length && (
-          <div className="sticky top-4 z-40 mb-4">
+          <div className="sticky top-2 z-40 mb-2">
             <Suspense
               fallback={
-                <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/30">
+                <div className="rounded-lg bg-blue-50 p-2 dark:bg-blue-900/30">
                   <div className="flex h-6 items-center justify-center">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent dark:border-blue-400"></div>
                   </div>

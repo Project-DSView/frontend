@@ -5,8 +5,8 @@ import React, { useState, useMemo } from 'react';
 import { QueueDragComponent, OperationCategory } from '@/types';
 import { queueCategories } from '@/data';
 
-import OperationCard from '../../shared/OperationCard';
-import OperationSearchFilter from '../../shared/OperationSearchFilter';
+import OperationCard from './OperationCard';
+import OperationSearchFilter from './OperationSearchFilter';
 
 interface QueueOperationsProps {
   dragComponents: QueueDragComponent[];
@@ -67,10 +67,10 @@ const QueueDragDropOperations: React.FC<QueueOperationsProps> = ({
                   name: component.name,
                   color: component.color,
                   category: component.category,
+                  description: component.description,
                 }}
                 onDragStart={(e) => onDragStart(e, component)}
                 onTouchStart={onTouchStart ? (e) => onTouchStart(e, component) : undefined}
-                description={component.description}
               />
             ))}
           </div>

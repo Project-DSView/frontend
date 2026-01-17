@@ -13,18 +13,13 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
   onAutoPlay,
   isAutoPlaying,
   debugState,
-  onToggleDebugMode,
-  onStepOver,
-  onStepInto,
-  onStepOut,
-  onContinue,
 }) => {
   if (steps.length === 0) {
     return (
-      <div className="h-full rounded-lg bg-white p-3 shadow sm:p-6 dark:bg-gray-800">
+      <div className="h-full rounded-lg bg-white p-2 shadow sm:p-3 dark:bg-gray-800">
         <div className="flex h-full items-center justify-center">
           <div className="text-center">
-            <h3 className="mb-2 text-base font-semibold text-gray-600 sm:text-lg dark:text-gray-300">
+            <h3 className="mb-1 text-sm font-semibold text-gray-600 sm:text-base dark:text-gray-300">
               No Steps Available
             </h3>
             <p className="text-xs text-gray-500 sm:text-sm dark:text-gray-400">
@@ -51,10 +46,10 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
     <main className="flex h-full flex-col" suppressHydrationWarning>
       <section className="min-h-0 flex-1">
         {/* Header with Step Counter */}
-        <div className="mb-3 sm:mb-4">
+        <div className="mb-2 sm:mb-3">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-semibold text-gray-800 sm:text-lg dark:text-gray-100">
+              <h3 className="text-sm font-semibold text-gray-800 sm:text-base dark:text-gray-100">
                 Step Control
               </h3>
               <p className="text-xs text-gray-600 sm:text-sm dark:text-gray-400">
@@ -63,13 +58,13 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
             </div>
             <div className="flex items-center gap-2">
               {debugState?.isDebugMode && (
-                <div className="flex items-center gap-2 rounded-lg bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
-                  <div className="h-2 w-2 rounded-full bg-purple-500"></div>
+                <div className="flex items-center gap-1 rounded-lg bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                  <div className="h-1.5 w-1.5 rounded-full bg-purple-500"></div>
                   Debug Mode
                 </div>
               )}
               {isAutoPlaying && (
-                <div className="animate-pulse text-xl font-medium text-green-600 dark:text-green-500">
+                <div className="animate-pulse text-sm font-medium text-green-600 dark:text-green-500">
                   กำลังเล่น...
                 </div>
               )}
@@ -77,76 +72,8 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           </div>
         </div>
 
-        {/* Debug Mode Toggle */}
-        {onToggleDebugMode && (
-          <div className="mb-3 sm:mb-4">
-            <button
-              onClick={onToggleDebugMode}
-              className={`w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                debugState?.isDebugMode
-                  ? 'bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              {debugState?.isDebugMode ? '🔴 ปิด Debug Mode' : '🐛 เปิด Debug Mode'}
-            </button>
-          </div>
-        )}
-
-        {/* Debug Controls */}
-        {debugState?.isDebugMode && (
-          <div className="mb-3 rounded-lg border border-purple-200 bg-purple-50 p-3 sm:mb-4 dark:border-purple-800 dark:bg-purple-900/20">
-            <div className="mb-2 text-xs font-semibold text-purple-700 dark:text-purple-400">
-              Debug Controls
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {onStepOver && (
-                <button
-                  onClick={onStepOver}
-                  disabled={isLastStep}
-                  className="rounded-md border border-purple-300 bg-white px-3 py-2 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-purple-700 dark:bg-gray-800 dark:text-purple-400 dark:hover:bg-purple-900/30"
-                >
-                  Step Over
-                </button>
-              )}
-              {onStepInto && (
-                <button
-                  onClick={onStepInto}
-                  disabled={isLastStep}
-                  className="rounded-md border border-purple-300 bg-white px-3 py-2 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-purple-700 dark:bg-gray-800 dark:text-purple-400 dark:hover:bg-purple-900/30"
-                >
-                  Step Into
-                </button>
-              )}
-              {onStepOut && (
-                <button
-                  onClick={onStepOut}
-                  disabled={isLastStep}
-                  className="rounded-md border border-purple-300 bg-white px-3 py-2 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-purple-700 dark:bg-gray-800 dark:text-purple-400 dark:hover:bg-purple-900/30"
-                >
-                  Step Out
-                </button>
-              )}
-              {onContinue && (
-                <button
-                  onClick={onContinue}
-                  disabled={isLastStep}
-                  className="rounded-md border border-purple-300 bg-white px-3 py-2 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-purple-700 dark:bg-gray-800 dark:text-purple-400 dark:hover:bg-purple-900/30"
-                >
-                  Continue
-                </button>
-              )}
-            </div>
-            {debugState.breakpoints.length > 0 && (
-              <div className="mt-2 text-xs text-purple-600 dark:text-purple-400">
-                Breakpoints: {debugState.breakpoints.filter((bp) => bp.enabled).length}
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Step Slider */}
-        <div className="mb-3 flex flex-col items-center justify-center px-2 sm:mb-4">
+        <div className="mb-2 flex flex-col items-center justify-center px-2 sm:mb-3">
           <Slider
             value={[currentStepIndex]}
             onValueChange={(value) => onStepSelect(value[0])}
@@ -156,7 +83,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
             className="w-full"
             isAnimating={isAutoPlaying}
           />
-          <div className="mt-2 mb-2 flex items-center justify-center">
+          <div className="mt-1 mb-1 flex items-center justify-center">
             <span className="text-xs text-gray-500 sm:text-sm dark:text-gray-400">
               {currentStepIndex + 1} / {steps.length}
             </span>
@@ -164,11 +91,11 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
         </div>
 
         {/* Navigation Controls */}
-        <div className="mb-4 flex flex-wrap items-center justify-center gap-1 sm:mb-6 sm:gap-3">
+        <div className="mb-2 flex flex-wrap items-center justify-center gap-1 sm:mb-3 sm:gap-2">
           <button
             onClick={() => onStepSelect(0)}
             disabled={isFirstStep}
-            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-1 sm:px-3 sm:py-2 sm:text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             <svg
               className="h-3 w-3 sm:h-4 sm:w-4"
@@ -189,7 +116,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           <button
             onClick={onPrevious}
             disabled={isFirstStep}
-            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-1 sm:px-3 sm:py-2 sm:text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             <svg
               className="h-3 w-3 sm:h-4 sm:w-4"
@@ -210,7 +137,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           {/* Auto Play Button - Center */}
           <button
             onClick={onAutoPlay}
-            className={`flex transform items-center space-x-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl sm:px-6 sm:py-3 sm:text-base ${
+            className={`flex transform items-center space-x-1 rounded-xl px-3 py-1.5 text-xs font-semibold shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl sm:px-4 sm:py-2 sm:text-sm ${
               isAutoPlaying
                 ? 'bg-error hover:bg-error/80 animate-pulse text-white'
                 : 'bg-success hover:bg-success/80 text-white'
@@ -218,14 +145,14 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           >
             {isAutoPlaying ? (
               <>
-                <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
                 </svg>
                 <span className="hidden sm:inline">Stop</span>
               </>
             ) : (
               <>
-                <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
                 <span className="hidden sm:inline">Play</span>
@@ -236,7 +163,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           <button
             onClick={onNext}
             disabled={isLastStep}
-            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-1 sm:px-3 sm:py-2 sm:text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             <span className="hidden sm:inline">Next</span>
 
@@ -253,7 +180,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
           <button
             onClick={() => onStepSelect(steps.length - 1)}
             disabled={isLastStep}
-            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-2 sm:px-4 sm:py-3 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-1 sm:px-3 sm:py-2 sm:text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             <span className="hidden sm:inline">Last</span>
 
@@ -274,12 +201,12 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
         </div>
 
         {/* Current Step Details - Scrollable */}
-        <div className="flex-1 overflow-y-auto border-t border-gray-200 pt-4 dark:border-gray-700">
+        <div className="flex-1 overflow-y-auto border-t border-gray-200 pt-2 dark:border-gray-700">
           {currentStep && (
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-2 sm:space-y-3">
               {/* Combined Step Information Card */}
               <div
-                className={`rounded-lg border p-4 shadow-sm sm:p-6 ${
+                className={`rounded-lg border p-2 shadow-sm sm:p-3 ${
                   hasError
                     ? 'border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
                     : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
@@ -287,15 +214,15 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
               >
                 {/* Step Header */}
                 <div
-                  className={`mb-4 flex items-center justify-between border-b pb-3 ${
+                  className={`mb-2 flex items-center justify-between border-b pb-2 ${
                     hasError
                       ? 'border-red-200 dark:border-red-800'
                       : 'border-gray-100 dark:border-gray-700'
                   }`}
                 >
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2">
                     <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                      className={`flex h-6 w-6 items-center justify-center rounded-full ${
                         hasError
                           ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
                           : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
@@ -318,12 +245,12 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
 
                 {/* Code Section */}
                 {currentStep.code && (
-                  <div className="mb-4">
-                    <div className="mb-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <div className="mb-2">
+                    <div className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                       Code:
                     </div>
-                    <div className="rounded-md bg-gray-50 p-3 dark:bg-gray-900">
-                      <pre className="text-xs break-words whitespace-pre-wrap text-gray-800 sm:text-sm dark:text-gray-200">
+                    <div className="rounded-md bg-gray-50 p-2 dark:bg-gray-900">
+                      <pre className="text-xs break-words whitespace-pre-wrap text-gray-800 dark:text-gray-200">
                         {currentStep.code}
                       </pre>
                     </div>
@@ -332,10 +259,10 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
 
                 {/* Error Message - Show prominently if exists */}
                 {hasError && errorMessage && (
-                  <div className="mb-4 rounded-lg border border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/30">
-                    <div className="mb-2 flex items-center space-x-2">
+                  <div className="mb-2 rounded-lg border border-red-300 bg-red-50 p-2 dark:border-red-700 dark:bg-red-900/30">
+                    <div className="mb-1 flex items-center space-x-2">
                       <svg
-                        className="h-5 w-5 text-red-600 dark:text-red-400"
+                        className="h-4 w-4 text-red-600 dark:text-red-400"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -359,11 +286,11 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
 
                 {/* Message/Description */}
                 {!hasError && (
-                  <div className="mb-4">
-                    <div className="mb-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <div className="mb-2">
+                    <div className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                       Description:
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                    <div className="text-xs text-gray-600 dark:text-gray-300">
                       {currentStep.state?.message || 'No description available'}
                     </div>
                   </div>
@@ -372,10 +299,10 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
                 {/* Step Details */}
                 {currentStep.state?.step_detail && (
                   <div>
-                    <div className="mb-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                    <div className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                       Operation Details:
                     </div>
-                    <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2 sm:text-sm">
+                    <div className="grid grid-cols-1 gap-1 text-xs sm:grid-cols-2">
                       <div className="flex">
                         <span className="w-20 font-medium text-gray-600 dark:text-gray-400">
                           Operation:
@@ -415,6 +342,53 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
                         </div>
                       )}
                     </div>
+                  </div>
+                )}
+
+                {/* Thai Code Explanation Panel */}
+                {currentStep.state?.explanation && (
+                  <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-2 dark:border-blue-800 dark:bg-blue-900/20">
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+                        คำอธิบายการทำงาน
+                      </span>
+                    </div>
+
+                    {/* What does this line do */}
+                    {currentStep.state.explanation.what && (
+                      <div className="mb-2">
+                        <div className="mb-0.5 flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400">
+                          <span>บรรทัดนี้ทำอะไร:</span>
+                        </div>
+                        <div className="text-xs text-blue-900 dark:text-blue-200">
+                          {currentStep.state.explanation.what}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Why visualization changed */}
+                    {currentStep.state.explanation.why_visual && (
+                      <div className="mb-2">
+                        <div className="mb-0.5 flex items-center gap-1 text-xs font-medium text-purple-600 dark:text-purple-400">
+                          <span>ทำไมรูปถึงเปลี่ยน:</span>
+                        </div>
+                        <div className="text-xs text-purple-900 dark:text-purple-200">
+                          {currentStep.state.explanation.why_visual}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Related concept */}
+                    {currentStep.state.explanation.concept && (
+                      <div>
+                        <div className="mb-0.5 flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400">
+                          <span>Concept:</span>
+                        </div>
+                        <div className="text-xs text-green-900 dark:text-green-200">
+                          {currentStep.state.explanation.concept}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

@@ -1,75 +1,34 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React from 'react';
+import { BSTDragComponent } from '@/types';
 
-import { BSTOperationsProps, OperationCategory } from '@/types';
-import { bstCategories } from '@/data';
+interface Props {
+  dragComponents: BSTDragComponent[];
+  onDragStart: (e: React.DragEvent, component: BSTDragComponent) => void;
+  onTouchStart?: (component: BSTDragComponent) => void;
+}
 
-import OperationCard from '../../shared/OperationCard';
-import OperationSearchFilter from '../../shared/OperationSearchFilter';
-
-const BSTDragDropOperations: React.FC<BSTOperationsProps> = ({
-  dragComponents,
-  onDragStart,
-  onTouchStart,
-}) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<OperationCategory | 'all'>('all');
-
-  // Use categories from data
-  const categories = bstCategories;
-
-  // Filter components based on search term and category
-  const filteredComponents = useMemo(() => {
-    return dragComponents.filter((component) => {
-      const matchesSearch =
-        component.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        component.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || component.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-  }, [dragComponents, searchTerm, selectedCategory]);
-
+const BSTDragDropOperations: React.FC<Props> = ({ dragComponents, onDragStart, onTouchStart }) => {
   return (
-    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-      <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-100">
-        BST Operations
-      </h2>
+    <div className="space-y-4">
+      <h2 className="mb-4 text-xl font-semibold">BST Operations</h2>
 
-      {/* Search and Filter */}
-      <OperationSearchFilter
-        onSearchChange={setSearchTerm}
-        onCategoryChange={setSelectedCategory}
-        searchTerm={searchTerm}
-        selectedCategory={selectedCategory}
-        categories={categories}
-      />
+      {dragComponents.map((op) => (
+        <div
+          key={op.type}
+          draggable
+          onDragStart={(e) => onDragStart(e, op)}
+          onTouchStart={() => onTouchStart && onTouchStart(op)}
+          className={`cursor-grab rounded-xl border-2 border-dashed p-4 ${op.color}`}
+        >
+          {/* หัวข้อ */}
+          <div className="text-lg font-bold">{op.name}</div>
 
-      {/* Operations Grid - Show filtered operations */}
-      <div className="space-y-3">
-        {filteredComponents.length === 0 ? (
-          <div className="py-8 text-center text-gray-500 dark:text-gray-400">
-            <p>ไม่มี operations</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-3">
-            {filteredComponents.map((component) => (
-              <OperationCard
-                key={component.id}
-                component={{
-                  id: component.id,
-                  name: component.name,
-                  color: component.color,
-                  category: component.category,
-                }}
-                onDragStart={(e) => onDragStart(e, component)}
-                onTouchStart={(e) => onTouchStart && onTouchStart(e, component)}
-                description={component.description}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+          {/* คำอธิบาย */}
+          <div className="mt-1 text-sm text-gray-600">{op.description}</div>
+        </div>
+      ))}
     </div>
   );
 };

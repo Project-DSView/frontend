@@ -1,9 +1,9 @@
 import React, { forwardRef, useMemo, useState, useEffect, memo, useCallback, useRef } from 'react';
 import { StepthroughVisualizationProps, BSTNode, PositionedNode, BSTData } from '@/types';
-import ZoomableContainer from '../../shared/ZoomableContainer';
-import StepIndicator from '../../shared/StepIndicator';
-import ConsoleOutput from '../../shared/ConsoleOutput';
-import BigOComplexityCard from '../../shared/BigOComplexityCard';
+import ZoomableContainer from '../../shared/action/ZoomableContainer';
+import StepIndicator from '../../shared/action/StepIndicator';
+import ConsoleOutput from '../ConsoleOutput';
+import PerformanceAnalysisPanel from '../../shared/performancepanel/PerformanceAnalysisPanel';
 
 const BSTStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -1246,7 +1246,11 @@ const BSTStepthroughVisualization = forwardRef<
       <ConsoleOutput steps={steps} currentStepIndex={currentStepIndex} />
 
       {/* Big O Analysis */}
-      <BigOComplexityCard complexity={complexity} />
+      <PerformanceAnalysisPanel
+        steps={steps}
+        currentStepIndex={currentStepIndex}
+        complexity={complexity}
+      />
 
       {/* Legend */}
       <div className="mt-4 flex flex-wrap gap-4 text-xs">

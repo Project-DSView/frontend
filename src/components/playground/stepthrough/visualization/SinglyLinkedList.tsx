@@ -1,9 +1,9 @@
 import React, { forwardRef, useState, useEffect, Fragment, useRef } from 'react';
 import { StepthroughVisualizationProps, LinkedListData } from '@/types';
-import ZoomableContainer from '../../shared/ZoomableContainer';
-import StepIndicator from '../../shared/StepIndicator';
-import ConsoleOutput from '../../shared/ConsoleOutput';
-import BigOComplexityCard from '../../shared/BigOComplexityCard';
+import ZoomableContainer from '../../shared/action/ZoomableContainer';
+import StepIndicator from '../../shared/action/StepIndicator';
+import ConsoleOutput from '../ConsoleOutput';
+import PerformanceAnalysisPanel from '../../shared/performancepanel/PerformanceAnalysisPanel';
 import { gsap } from 'gsap';
 
 // Type for storing node state at each step
@@ -24,6 +24,7 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
   const [enteringNodes, setEnteringNodes] = useState<Set<number>>(new Set());
   const [exitingNodes, setExitingNodes] = useState<Set<string>>(new Set());
   const [nodesToRender, setNodesToRender] = useState<string[]>(data.nodes);
+  const [isInstantiated, setIsInstantiated] = useState(false);
 
   // Track the current (last inserted) node and history for when nodes are deleted
   // Using refs to avoid useEffect dependency array size changes
@@ -224,6 +225,34 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
     }
   }, [steps, currentStepIndex]);
 
+  // Check if the list has been instantiated (SinglyLinkedList.__init__ was called)
+  useEffect(() => {
+    if (steps.length === 0) {
+      setIsInstantiated(false);
+      return;
+    }
+
+    // Check up to current step for instantiation
+    for (let i = 0; i <= currentStepIndex && i < steps.length; i++) {
+      const step = steps[i];
+      const stepDetail = step.state?.step_detail;
+
+      // Check for instantiate operation
+      if (stepDetail?.operation === 'instantiate') {
+        setIsInstantiated(true);
+        return;
+      }
+
+      // Also check if there are instances (already created list)
+      if (step.state?.instances && Object.keys(step.state.instances).length > 0) {
+        setIsInstantiated(true);
+        return;
+      }
+    }
+
+    setIsInstantiated(false);
+  }, [steps, currentStepIndex]);
+
   // Determine which node should be highlighted based on currentInsertedValue
   // Current node is ALWAYS the last inserted node across ALL steps
   useEffect(() => {
@@ -398,7 +427,9 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
           {/* Labels below node - always show to maintain consistent height */}
           <div className="flex text-sm text-gray-600 dark:text-gray-400" style={{ width: '100%' }}>
             <div className="w-1/2"></div>
-            <div className={`w-1/2 text-center ${isLast ? 'invisible' : ''}`}>next</div>
+            <div className={`w-1/2 text-center ${isLast ? 'invisible' : ''}`}>
+              {data.classMetadata?.next_attr || 'next'}
+            </div>
           </div>
         </div>
       </div>
@@ -430,7 +461,7 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
 
       {/* Visualization Area */}
       <ZoomableContainer
-        className="min-h-[220px] rounded-lg bg-gray-50 dark:bg-gray-800"
+        className="min-h-[320px] rounded-lg bg-gray-50 dark:bg-gray-800"
         minZoom={0.5}
         maxZoom={2}
         initialZoom={1}
@@ -451,48 +482,62 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
 
         {/* Root Node and Data Nodes - Root on top, nodes below */}
         <div className="p-6">
-          {/* Root Node Section */}
-          <div className="mb-2">
-            {/* Root Label */}
-            <div className="mb-1 text-lg font-bold text-gray-800 italic dark:text-gray-200">
-              root
-            </div>
-
-            {/* Root Node Box */}
-            <div className="inline-flex rounded-lg border-4 border-gray-900 bg-blue-100 dark:border-gray-300 dark:bg-blue-900/20">
-              {/* Count Section */}
-              <div className="flex min-w-[60px] flex-col items-center justify-center border-r-4 border-gray-900 px-4 py-2 dark:border-gray-300">
-                <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                  {nodesToRender.length}
-                </span>
-              </div>
-              {/* Head Pointer Section */}
-              <div className="flex min-w-[50px] items-center justify-center px-4 py-2">
-                {nodesToRender.length > 0 ? (
-                  /* Just a dot to indicate pointer exists */
-                  <div className="h-3 w-3"></div>
-                ) : (
-                  /* X mark for null */
-                  <div className="relative h-6 w-6">
-                    <div className="absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 rotate-45 transform bg-gray-900 dark:bg-gray-300"></div>
-                    <div className="absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 -rotate-45 transform bg-gray-900 dark:bg-gray-300"></div>
-                  </div>
-                )}
+          {/* Empty State - Show when list is not yet instantiated */}
+          {!isInstantiated && (
+            <div className="flex min-h-[150px] items-center justify-center">
+              <div className="text-center text-gray-500 dark:text-gray-400">
+                <p className="text-lg font-medium">Empty Singly Linked List</p>
+                <p className="mt-1 text-sm">
+                  Run your code to see Singly Linked List visualization
+                </p>
               </div>
             </div>
+          )}
 
-            {/* Labels below Root Node */}
-            <div
-              className="flex text-sm text-gray-600 dark:text-gray-400"
-              style={{ width: '130px' }}
-            >
-              <div className="w-1/2 text-center">count</div>
-              <div className="w-1/2 text-center">head</div>
+          {/* Root Node Section - Only show after list is instantiated */}
+          {isInstantiated && (
+            <div className="mb-2">
+              {/* Root Label - Use dynamic class name or fallback */}
+              <div className="mb-1 text-lg font-bold text-gray-800 italic dark:text-gray-200">
+                {data.classMetadata?.list_class || 'root'}
+              </div>
+
+              {/* Root Node Box */}
+              <div className="inline-flex rounded-lg border-4 border-gray-900 bg-blue-100 dark:border-gray-300 dark:bg-blue-900/20">
+                {/* Count Section */}
+                <div className="flex min-w-[60px] flex-col items-center justify-center border-r-4 border-gray-900 px-4 py-2 dark:border-gray-300">
+                  <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                    {nodesToRender.length}
+                  </span>
+                </div>
+                {/* Head Pointer Section */}
+                <div className="flex min-w-[50px] items-center justify-center px-4 py-2">
+                  {nodesToRender.length > 0 ? (
+                    /* Just a dot to indicate pointer exists */
+                    <div className="h-3 w-3"></div>
+                  ) : (
+                    /* X mark for null */
+                    <div className="relative h-6 w-6">
+                      <div className="absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 rotate-45 transform bg-gray-900 dark:bg-gray-300"></div>
+                      <div className="absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 -rotate-45 transform bg-gray-900 dark:bg-gray-300"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Labels below Root Node - Use dynamic attribute names */}
+              <div
+                className="flex text-sm text-gray-600 dark:text-gray-400"
+                style={{ width: '130px' }}
+              >
+                <div className="w-1/2 text-center">{data.classMetadata?.count_attr || 'count'}</div>
+                <div className="w-1/2 text-center">{data.classMetadata?.head_attr || 'head'}</div>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Connector from Root to First Node */}
-          {nodesToRender.length > 0 && (
+          {isInstantiated && nodesToRender.length > 0 && (
             <div className="mb-2 ml-[85px] flex">
               {/* Vertical line going down */}
               <div className="flex flex-col items-center">
@@ -557,7 +602,11 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
       <ConsoleOutput steps={steps} currentStepIndex={currentStepIndex} />
 
       {/* Big O Analysis */}
-      <BigOComplexityCard complexity={complexity} />
+      <PerformanceAnalysisPanel
+        steps={steps}
+        currentStepIndex={currentStepIndex}
+        complexity={complexity}
+      />
 
       {/* Current Operation Status */}
       {isRunning && steps.length > 0 && currentStepIndex < steps.length && (

@@ -14,7 +14,7 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({
   return (
     <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5 rounded-xl bg-white/95 p-2 shadow-lg ring-1 ring-black/5 backdrop-blur-sm dark:bg-gray-800/95 dark:ring-white/10">
       {/* Zoom Level Display */}
-      <div className="rounded-md bg-gray-100 px-2 py-1 text-center text-xs font-semibold tabular-nums text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+      <div className="rounded-md bg-gray-100 px-2 py-1 text-center text-xs font-semibold text-gray-700 tabular-nums dark:bg-gray-700 dark:text-gray-200">
         {Math.round(zoom * 100)}%
       </div>
 

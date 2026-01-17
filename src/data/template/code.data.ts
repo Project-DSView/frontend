@@ -883,7 +883,493 @@ myGraph.bfs("A")
 myGraph.dfs("A")
 `;
 
+// =============================================================================
+// DRAGDROP BASE TEMPLATES (Class definitions only, no example code)
+// =============================================================================
+
+const bstDragDropBaseTemplate = `class BSTNode:
+    def __init__(self, data):
+        self.data = data
+        self.left = None
+        self.right = None
+
+class BST:
+    def __init__(self):
+        self.root = None
+
+    def is_empty(self):
+        return self.root is None
+
+    def insert(self, data):
+        new_node = BSTNode(data)
+        if self.is_empty():
+            self.root = new_node
+        else:
+            current_node = self.root
+            while True:
+                if data < current_node.data:
+                    if current_node.left is None:
+                        current_node.left = new_node
+                        return
+                    current_node = current_node.left
+                else:
+                    if current_node.right is None:
+                        current_node.right = new_node
+                        return
+                    current_node = current_node.right
+
+    def delete(self, data):
+        def find_min_node(node):
+            current = node
+            while current.left is not None:
+                current = current.left
+            return current
+
+        def _delete_recursive(root, key):
+            if root is None:
+                return root
+            if key < root.data:
+                root.left = _delete_recursive(root.left, key)
+            elif key > root.data:
+                root.right = _delete_recursive(root.right, key)
+            else:
+                if root.left is None:
+                    return root.right
+                elif root.right is None:
+                    return root.left
+                temp = find_min_node(root.right)
+                root.data = temp.data
+                root.right = _delete_recursive(root.right, temp.data)
+            return root
+
+        self.root = _delete_recursive(self.root, data)
+
+    def search(self, data):
+        current = self.root
+        while current:
+            if data == current.data:
+                return True
+            elif data < current.data:
+                current = current.left
+            else:
+                current = current.right
+        return False
+
+    def inorder(self, node=None, first=True):
+        if first:
+            node = self.root
+        result = []
+        if node:
+            result += self.inorder(node.left, False)
+            result.append(node.data)
+            result += self.inorder(node.right, False)
+        return result
+
+    def preorder(self, node=None, first=True):
+        if first:
+            node = self.root
+        result = []
+        if node:
+            result.append(node.data)
+            result += self.preorder(node.left, False)
+            result += self.preorder(node.right, False)
+        return result
+
+    def postorder(self, node=None, first=True):
+        if first:
+            node = self.root
+        result = []
+        if node:
+            result += self.postorder(node.left, False)
+            result += self.postorder(node.right, False)
+            result.append(node.data)
+        return result
+`;
+
+const stackDragDropBaseTemplate = `class ArrayStack:
+    def __init__(self):
+        self.data = []
+
+    def size(self):
+        return len(self.data)
+
+    def is_empty(self):
+        return self.data == []
+
+    def push(self, input_data):
+        self.data.append(input_data)
+
+    def pop(self):
+        if self.data == []:
+            print("Underflow: Cannot pop from empty stack")
+            return None
+        return self.data.pop()
+
+    def peek(self):
+        if self.data == []:
+            return None
+        return self.data[-1]
+
+    def print_stack(self):
+        print("Stack:", self.data)
+`;
+
+const queueDragDropBaseTemplate = `class ArrayQueue:
+    def __init__(self):
+        self.data = []
+
+    def size(self):
+        return len(self.data)
+
+    def is_empty(self):
+        return self.data == []
+
+    def enqueue(self, input_data):
+        self.data.append(input_data)
+
+    def dequeue(self):
+        if self.data == []:
+            print("Underflow: Cannot dequeue from empty queue")
+            return None
+        return self.data.pop(0)
+
+    def front(self):
+        if self.data == []:
+            return None
+        return self.data[0]
+
+    def back(self):
+        if self.data == []:
+            return None
+        return self.data[-1]
+
+    def print_queue(self):
+        print("Queue:", self.data)
+`;
+
+const singlyLinkedListDragDropBaseTemplate = `class Node:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
+
+class SinglyLinkedList:
+    def __init__(self):
+        self.head = None
+
+    def insert_beginning(self, data):
+        node = Node(data)
+        node.next = self.head
+        self.head = node
+
+    def insert_end(self, data):
+        node = Node(data)
+        if not self.head:
+            self.head = node
+            return
+        cur = self.head
+        while cur.next:
+            cur = cur.next
+        cur.next = node
+
+    def insert_position(self, data, pos):
+        if pos <= 0:
+            return self.insert_beginning(data)
+        node = Node(data)
+        cur = self.head
+        for _ in range(pos - 1):
+            if cur is None:
+                return
+            cur = cur.next
+        if cur is None:
+            return
+        node.next = cur.next
+        cur.next = node
+
+    def delete_beginning(self):
+        if self.head:
+            self.head = self.head.next
+
+    def delete_end(self):
+        if not self.head:
+            return
+        if not self.head.next:
+            self.head = None
+            return
+        cur = self.head
+        while cur.next.next:
+            cur = cur.next
+        cur.next = None
+
+    def delete_position(self, pos):
+        if not self.head or pos < 0:
+            return
+        if pos == 0:
+            return self.delete_beginning()
+        cur = self.head
+        for _ in range(pos - 1):
+            if cur.next is None:
+                return
+            cur = cur.next
+        if cur.next:
+            cur.next = cur.next.next
+
+    def traverse(self):
+        result = []
+        cur = self.head
+        while cur:
+            result.append(cur.data)
+            cur = cur.next
+        return result
+`;
+
+const doublyLinkedListDragDropBaseTemplate = `class Node:
+    def __init__(self, data):
+        self.data = data
+        self.prev = None
+        self.next = None
+
+class DoublyLinkedList:
+    def __init__(self):
+        self.head = None
+        self.tail = None
+
+    def insert_beginning(self, data):
+        node = Node(data)
+        if self.head is None:
+            self.head = node
+            self.tail = node
+        else:
+            node.next = self.head
+            self.head.prev = node
+            self.head = node
+
+    def insert_end(self, data):
+        node = Node(data)
+        if self.tail is None:
+            self.head = node
+            self.tail = node
+        else:
+            self.tail.next = node
+            node.prev = self.tail
+            self.tail = node
+
+    def insert_position(self, data, pos):
+        if pos <= 0:
+            return self.insert_beginning(data)
+        cur = self.head
+        for _ in range(pos):
+            if cur is None:
+                return self.insert_end(data)
+            cur = cur.next
+        if cur is None:
+            return self.insert_end(data)
+        node = Node(data)
+        prev_node = cur.prev
+        prev_node.next = node
+        node.prev = prev_node
+        node.next = cur
+        cur.prev = node
+
+    def delete_beginning(self):
+        if self.head is None:
+            return
+        if self.head == self.tail:
+            self.head = None
+            self.tail = None
+        else:
+            self.head = self.head.next
+            self.head.prev = None
+
+    def delete_end(self):
+        if self.tail is None:
+            return
+        if self.head == self.tail:
+            self.head = None
+            self.tail = None
+        else:
+            self.tail = self.tail.prev
+            self.tail.next = None
+
+    def delete_position(self, pos):
+        if self.head is None or pos < 0:
+            return
+        if pos == 0:
+            return self.delete_beginning()
+        cur = self.head
+        for _ in range(pos):
+            if cur is None:
+                return
+            cur = cur.next
+        if cur is None:
+            return
+        if cur == self.tail:
+            return self.delete_end()
+        cur.prev.next = cur.next
+        cur.next.prev = cur.prev
+
+    def update_position(self, pos, new_data):
+        cur = self.head
+        for _ in range(pos):
+            if cur is None:
+                return False
+            cur = cur.next
+        if cur:
+            cur.data = new_data
+            return True
+        return False
+
+    def traverse_forward(self):
+        result = []
+        cur = self.head
+        while cur:
+            result.append(cur.data)
+            cur = cur.next
+        return result
+
+    def traverse_backward(self):
+        result = []
+        cur = self.tail
+        while cur:
+            result.append(cur.data)
+            cur = cur.prev
+        return result
+`;
+
+const directedGraphDragDropBaseTemplate = `from collections import deque
+
+class DirectedGraph:
+    def __init__(self):
+        self.adjacency_list = {}
+
+    def add_vertex(self, vertex):
+        if vertex not in self.adjacency_list:
+            self.adjacency_list[vertex] = []
+
+    def add_edge(self, from_vertex, to_vertex):
+        if from_vertex not in self.adjacency_list:
+            self.adjacency_list[from_vertex] = []
+        if to_vertex not in self.adjacency_list:
+            self.adjacency_list[to_vertex] = []
+        if to_vertex not in self.adjacency_list[from_vertex]:
+            self.adjacency_list[from_vertex].append(to_vertex)
+
+    def remove_vertex(self, vertex):
+        if vertex in self.adjacency_list:
+            del self.adjacency_list[vertex]
+            for v in self.adjacency_list:
+                if vertex in self.adjacency_list[v]:
+                    self.adjacency_list[v].remove(vertex)
+
+    def remove_edge(self, from_vertex, to_vertex):
+        if from_vertex in self.adjacency_list:
+            if to_vertex in self.adjacency_list[from_vertex]:
+                self.adjacency_list[from_vertex].remove(to_vertex)
+
+    def bfs(self, start_vertex):
+        if start_vertex not in self.adjacency_list:
+            return []
+        visited = set()
+        queue = deque([start_vertex])
+        result = []
+        visited.add(start_vertex)
+        while queue:
+            vertex = queue.popleft()
+            result.append(vertex)
+            for neighbor in self.adjacency_list[vertex]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+        return result
+
+    def dfs(self, start_vertex):
+        if start_vertex not in self.adjacency_list:
+            return []
+        visited = set()
+        result = []
+        def _dfs(v):
+            visited.add(v)
+            result.append(v)
+            for neighbor in self.adjacency_list[v]:
+                if neighbor not in visited:
+                    _dfs(neighbor)
+        _dfs(start_vertex)
+        return result
+
+    def display(self):
+        for vertex, neighbors in self.adjacency_list.items():
+            print(f"{vertex}: {neighbors}")
+`;
+
+const undirectedGraphDragDropBaseTemplate = `from collections import deque
+
+class UndirectedGraph:
+    def __init__(self):
+        self.adjacency_list = {}
+
+    def add_vertex(self, vertex):
+        if vertex not in self.adjacency_list:
+            self.adjacency_list[vertex] = []
+
+    def add_edge(self, vertex1, vertex2):
+        if vertex1 not in self.adjacency_list:
+            self.adjacency_list[vertex1] = []
+        if vertex2 not in self.adjacency_list:
+            self.adjacency_list[vertex2] = []
+        if vertex2 not in self.adjacency_list[vertex1]:
+            self.adjacency_list[vertex1].append(vertex2)
+        if vertex1 not in self.adjacency_list[vertex2]:
+            self.adjacency_list[vertex2].append(vertex1)
+
+    def remove_vertex(self, vertex):
+        if vertex in self.adjacency_list:
+            for v in self.adjacency_list:
+                if vertex in self.adjacency_list[v]:
+                    self.adjacency_list[v].remove(vertex)
+            del self.adjacency_list[vertex]
+
+    def remove_edge(self, vertex1, vertex2):
+        if vertex1 in self.adjacency_list and vertex2 in self.adjacency_list[vertex1]:
+            self.adjacency_list[vertex1].remove(vertex2)
+        if vertex2 in self.adjacency_list and vertex1 in self.adjacency_list[vertex2]:
+            self.adjacency_list[vertex2].remove(vertex1)
+
+    def bfs(self, start_vertex):
+        if start_vertex not in self.adjacency_list:
+            return []
+        visited = set()
+        queue = deque([start_vertex])
+        result = []
+        visited.add(start_vertex)
+        while queue:
+            vertex = queue.popleft()
+            result.append(vertex)
+            for neighbor in self.adjacency_list[vertex]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+        return result
+
+    def dfs(self, start_vertex):
+        if start_vertex not in self.adjacency_list:
+            return []
+        visited = set()
+        result = []
+        def _dfs(v):
+            visited.add(v)
+            result.append(v)
+            for neighbor in self.adjacency_list[v]:
+                if neighbor not in visited:
+                    _dfs(neighbor)
+        _dfs(start_vertex)
+        return result
+
+    def display(self):
+        for vertex, neighbors in self.adjacency_list.items():
+            print(f"{vertex}: {neighbors}")
+`;
+
 export {
+  // Original stepthrough templates
   singlyLinkedListCodeTemplate,
   doublyLinkedListCodeTemplate,
   stackCodeTemplate,
@@ -891,4 +1377,13 @@ export {
   bstCodeTemplate,
   undirectedGraphCodeTemplate,
   directedGraphCodeTemplate,
+
+  // DragDrop base templates (class definitions only)
+  bstDragDropBaseTemplate,
+  stackDragDropBaseTemplate,
+  queueDragDropBaseTemplate,
+  singlyLinkedListDragDropBaseTemplate,
+  doublyLinkedListDragDropBaseTemplate,
+  directedGraphDragDropBaseTemplate,
+  undirectedGraphDragDropBaseTemplate,
 };

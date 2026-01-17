@@ -49,10 +49,7 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
   }, [minZoom, maxZoom, zoom]);
 
   return (
-    <div
-      ref={containerRef}
-      className={`relative overflow-hidden ${className}`}
-    >
+    <div ref={containerRef} className={`relative overflow-hidden ${className}`}>
       <div
         ref={contentRef}
         className="origin-center transition-transform duration-200 ease-out"

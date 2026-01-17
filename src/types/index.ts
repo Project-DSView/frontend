@@ -33,6 +33,7 @@ export type {
   OperationCategory,
   Category,
   OperationSearchFilterProps,
+  DragDropOperation,
 } from './dragdrop/common.types';
 
 export type {
@@ -203,6 +204,19 @@ export type {
   GraphEdgeProps,
   ConsoleOutputProps,
   BigOComplexityCardProps,
+  // Performance Panel
+  PerformanceAnalysisPanelProps,
+  PerformanceSummaryMetricsProps,
+  PerformanceMetricsCardsProps,
+  PerformanceChartProps,
+  HotspotsPanelProps,
+  TimelinePanelProps,
+  MemoryUsageBarProps,
+  TimeUsageBarProps,
+  BigOOverviewProps,
+  BigOAnalysisDetailsProps,
+  PerFunctionComplexityProps,
+  BigOChartProps,
 } from './props/props.types';
 
 // Services - All service types in one file
@@ -315,11 +329,12 @@ export type {
   StepthroughLayoutProps,
   StepthroughData,
   ComplexityAnalysis,
+  FunctionComplexity,
 } from './stepthrough/common.types';
 
 export type { DirectedGraphData } from './stepthrough/DirectedGraph.types';
 
-export type { LinkedListData } from './stepthrough/LinkedList.types';
+export type { LinkedListData, ClassMetadata } from './stepthrough/LinkedList.types';
 
 export type { StackData, StackInstanceData, StackStepDetail } from './stepthrough/Stack.types';
 

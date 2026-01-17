@@ -1,9 +1,9 @@
 import React, { forwardRef, useState, useEffect, Fragment, useRef } from 'react';
 import { StepthroughVisualizationProps, LinkedListData } from '@/types';
-import ZoomableContainer from '../../shared/ZoomableContainer';
-import StepIndicator from '../../shared/StepIndicator';
-import ConsoleOutput from '../../shared/ConsoleOutput';
-import BigOComplexityCard from '../../shared/BigOComplexityCard';
+import ZoomableContainer from '../../shared/action/ZoomableContainer';
+import StepIndicator from '../../shared/action/StepIndicator';
+import ConsoleOutput from '../ConsoleOutput';
+import PerformanceAnalysisPanel from '../../shared/performancepanel/PerformanceAnalysisPanel';
 import { gsap } from 'gsap';
 
 // Type for storing node state at each step
@@ -677,7 +677,11 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
       <ConsoleOutput steps={steps} currentStepIndex={currentStepIndex} />
 
       {/* Big O Analysis */}
-      <BigOComplexityCard complexity={complexity} />
+      <PerformanceAnalysisPanel
+        steps={steps}
+        currentStepIndex={currentStepIndex}
+        complexity={complexity}
+      />
 
       {/* Current Operation Status */}
       {isRunning && steps.length > 0 && currentStepIndex < steps.length && (

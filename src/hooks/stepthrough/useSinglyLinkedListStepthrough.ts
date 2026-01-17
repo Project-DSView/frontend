@@ -18,37 +18,51 @@ class SinglyLinkedListStepthroughService
       return { nodes: [] };
     }
 
-    const step = steps[stepIndex];
+    // Extract class_metadata from any step that has it (usually from the first step)
+    let classMetadata = undefined;
+    for (let i = 0; i <= stepIndex; i++) {
+      if (steps[i].state.class_metadata) {
+        classMetadata = steps[i].state.class_metadata;
+        break;
+      }
+    }
 
-    // First, try to extract nodes from instances field if available
-    // The backend sends instances as objects with nodes, count, head, tail
-    if (step.state.instances) {
-      // Find the first instance that has a 'nodes' array (could be 'mylist', 'self', 'list', etc.)
-      for (const [, instanceValue] of Object.entries(step.state.instances)) {
-        if (
-          instanceValue &&
-          typeof instanceValue === 'object' &&
-          'nodes' in instanceValue &&
-          Array.isArray((instanceValue as { nodes: string[] }).nodes)
-        ) {
-          const instance = instanceValue as {
-            nodes: string[];
-            count?: number;
-            head?: string | null;
-            tail?: string | null;
-          };
-          return {
-            nodes: instance.nodes,
-            head: instance.head ?? (instance.nodes.length > 0 ? instance.nodes[0] : undefined),
-            tail:
-              instance.tail ??
-              (instance.nodes.length > 0 ? instance.nodes[instance.nodes.length - 1] : undefined),
-            count: instance.count ?? instance.nodes.length,
-          };
-        }
-        // Backward compatibility: if instanceValue is directly an array
-        if (Array.isArray(instanceValue)) {
-          return { nodes: instanceValue as string[] };
+    // Search backward from current step to find the most recent step with valid instance data
+    // This ensures visualization persists even when stepping through lines without instances
+    for (let searchIndex = stepIndex; searchIndex >= 0; searchIndex--) {
+      const step = steps[searchIndex];
+
+      // Try to extract nodes from instances field if available
+      // The backend sends instances as objects with nodes, count, head, tail
+      if (step.state.instances) {
+        // Find the first instance that has a 'nodes' array (could be 'mylist', 'self', 'list', etc.)
+        for (const [, instanceValue] of Object.entries(step.state.instances)) {
+          if (
+            instanceValue &&
+            typeof instanceValue === 'object' &&
+            'nodes' in instanceValue &&
+            Array.isArray((instanceValue as { nodes: string[] }).nodes)
+          ) {
+            const instance = instanceValue as {
+              nodes: string[];
+              count?: number;
+              head?: string | null;
+              tail?: string | null;
+            };
+            return {
+              nodes: instance.nodes,
+              head: instance.head ?? (instance.nodes.length > 0 ? instance.nodes[0] : undefined),
+              tail:
+                instance.tail ??
+                (instance.nodes.length > 0 ? instance.nodes[instance.nodes.length - 1] : undefined),
+              count: instance.count ?? instance.nodes.length,
+              classMetadata,
+            };
+          }
+          // Backward compatibility: if instanceValue is directly an array
+          if (Array.isArray(instanceValue)) {
+            return { nodes: instanceValue as string[], classMetadata };
+          }
         }
       }
     }

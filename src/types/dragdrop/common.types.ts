@@ -8,6 +8,9 @@ interface Operation {
   color: string;
   category: string;
   endVertex?: string | null;
+  startVertex?: string | null;
+  fromVertex?: string | null;
+  toVertex?: string | null;
   sourceStack?: string | null; // For copyStack operation
   targetStack?: string | null; // For copyStack operation
 }
@@ -63,6 +66,16 @@ interface OperationSearchFilterProps {
   categories: { key: OperationCategory | 'all'; title: string; color: string }[];
 }
 
+interface DragDropOperation {
+  type: string;
+  value?: string | null;
+  position?: string | null;
+  newValue?: string | null;
+  fromVertex?: string | null;
+  toVertex?: string | null;
+  startVertex?: string | null;
+}
+
 export type {
   Operation,
   DragComponent,
@@ -72,4 +85,5 @@ export type {
   OperationCategory,
   Category,
   OperationSearchFilterProps,
+  DragDropOperation,
 };
