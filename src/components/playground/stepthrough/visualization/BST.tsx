@@ -1,9 +1,9 @@
 import React, { forwardRef, useMemo, useState, useEffect, memo, useCallback, useRef } from 'react';
 import { StepthroughVisualizationProps, BSTNode, PositionedNode, BSTData } from '@/types';
-import ZoomableContainer from '../../shared/action/ZoomableContainer';
-import StepIndicator from '../../shared/action/StepIndicator';
-import ConsoleOutput from '../ConsoleOutput';
-import PerformanceAnalysisPanel from '../../shared/performancepanel/PerformanceAnalysisPanel';
+import ZoomableContainer from '@/components/playground/shared/action/ZoomableContainer';
+import StepIndicator from '@/components/playground/shared/action/StepIndicator';
+import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
+import PerformanceAnalysisPanel from '@/components/playground/shared/performancepanel/PerformanceAnalysisPanel';
 
 const BSTStepthroughVisualization = forwardRef<
   HTMLDivElement,
