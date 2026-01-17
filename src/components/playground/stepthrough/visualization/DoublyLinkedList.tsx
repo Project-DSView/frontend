@@ -1,9 +1,9 @@
 import React, { forwardRef, useState, useEffect, Fragment, useRef } from 'react';
 import { StepthroughVisualizationProps, LinkedListData } from '@/types';
-import ZoomableContainer from '../../shared/action/ZoomableContainer';
-import StepIndicator from '../../shared/action/StepIndicator';
-import ConsoleOutput from '../ConsoleOutput';
-import PerformanceAnalysisPanel from '../../shared/performancepanel/PerformanceAnalysisPanel';
+import ZoomableContainer from '@/components/playground/shared/action/ZoomableContainer';
+import StepIndicator from '@/components/playground/shared/action/StepIndicator';
+import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
+import PerformanceAnalysisPanel from '@/components/playground/shared/performancepanel/PerformanceAnalysisPanel';
 import { gsap } from 'gsap';
 
 // Type for storing node state at each step

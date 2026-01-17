@@ -5,11 +5,11 @@ import {
   DirectedGraphNode,
   DirectedGraphEdge,
 } from '@/types';
-import ZoomableContainer from '../../shared/action/ZoomableContainer';
-import GraphEdge from '../../shared/common/GraphEdge';
-import StepIndicator from '../../shared/action/StepIndicator';
-import ConsoleOutput from '../ConsoleOutput';
-import PerformanceAnalysisPanel from '../../shared/performancepanel/PerformanceAnalysisPanel';
+import ZoomableContainer from '@/components/playground/shared/action/ZoomableContainer';
+import GraphEdge from '@/components/playground/shared/common/GraphEdge';
+import StepIndicator from '@/components/playground/shared/action/StepIndicator';
+import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
+import PerformanceAnalysisPanel from '@/components/playground/shared/performancepanel/PerformanceAnalysisPanel';
 
 // Extended props to include animation state from hook
 interface DirectedGraphVisualizationProps extends StepthroughVisualizationProps<DirectedGraphData> {
