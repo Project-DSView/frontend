@@ -2,19 +2,9 @@
  * AST Node Type Definitions with Educational Explanations
  * Provides descriptions and learning context for different AST node types
  */
+import { ASTNodeTypeInfo } from '@/types';
 
-export interface ASTNodeTypeInfo {
-  type: string;
-  displayName: string;
-  description: string;
-  thaiDescription: string;
-  category: string;
-  example: string;
-  whyShapedThisWay: string;
-  executionFlow: string;
-}
-
-export const AST_NODE_TYPES: Record<string, ASTNodeTypeInfo> = {
+const AST_NODE_TYPES: Record<string, ASTNodeTypeInfo> = {
   Module: {
     type: 'Module',
     displayName: 'Module',
@@ -191,21 +181,21 @@ export const AST_NODE_TYPES: Record<string, ASTNodeTypeInfo> = {
 /**
  * Get information about an AST node type
  */
-export function getASTNodeInfo(nodeType: string): ASTNodeTypeInfo | null {
+function getASTNodeInfo(nodeType: string): ASTNodeTypeInfo | null {
   return AST_NODE_TYPES[nodeType] || null;
 }
 
 /**
  * Get all AST node types in a category
  */
-export function getASTNodesByCategory(category: string): ASTNodeTypeInfo[] {
+function getASTNodesByCategory(category: string): ASTNodeTypeInfo[] {
   return Object.values(AST_NODE_TYPES).filter((info) => info.category === category);
 }
 
 /**
  * Get educational explanation for why AST is shaped a certain way
  */
-export function getWhyShapedThisWay(nodeType: string): string {
+function getWhyShapedThisWay(nodeType: string): string {
   const info = getASTNodeInfo(nodeType);
   return info?.whyShapedThisWay || 'This node type represents a specific Python construct.';
 }
@@ -213,7 +203,9 @@ export function getWhyShapedThisWay(nodeType: string): string {
 /**
  * Get execution flow explanation for a node type
  */
-export function getExecutionFlow(nodeType: string): string {
+function getExecutionFlow(nodeType: string): string {
   const info = getASTNodeInfo(nodeType);
   return info?.executionFlow || "This node is executed according to Python's execution model.";
 }
+
+export { getASTNodeInfo, getASTNodesByCategory, getWhyShapedThisWay, getExecutionFlow };

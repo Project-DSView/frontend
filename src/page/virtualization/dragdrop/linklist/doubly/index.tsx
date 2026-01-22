@@ -390,12 +390,7 @@ const DragDropDoublyLinkedListPage = () => {
 
         <div className="mt-3 rounded-xl">
           <React.Suspense fallback={<div>Loading editor...</div>}>
-            <CodeEditor
-              code={generatedCode}
-              disabled
-              height="400px"
-              onCodeChange={() => {}}
-            />
+            <CodeEditor code={generatedCode} disabled height="400px" onCodeChange={() => {}} />
           </React.Suspense>
         </div>
       </div>

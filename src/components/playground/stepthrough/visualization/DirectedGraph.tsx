@@ -1,7 +1,6 @@
 import React, { forwardRef, useMemo, useState, useEffect, memo, useCallback } from 'react';
 import {
-  StepthroughVisualizationProps,
-  DirectedGraphData,
+  DirectedGraphStepthroughVisualizationProps,
   DirectedGraphNode,
   DirectedGraphEdge,
 } from '@/types';
@@ -10,17 +9,12 @@ import GraphEdge from '@/components/playground/shared/common/GraphEdge';
 import StepIndicator from '@/components/playground/shared/action/StepIndicator';
 import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
 import PerformanceAnalysisPanel from '@/components/playground/shared/PerformancePanel/PerformanceAnalysisPanel';
-
-// Extended props to include animation state from hook
-interface DirectedGraphVisualizationProps extends StepthroughVisualizationProps<DirectedGraphData> {
-  insertedVertex?: string | null;
-  insertedEdge?: string | null;
-  currentVertex?: string | null;
-}
+import MemoryAddress from '@/components/playground/shared/common/MemoryAddress';
+import VisualizationSettings from '@/components/playground/shared/common/VisualizationSettings';
 
 const DirectedGraphStepthroughVisualization = forwardRef<
   HTMLDivElement,
-  DirectedGraphVisualizationProps
+  DirectedGraphStepthroughVisualizationProps
 >(
   (
     {
@@ -47,6 +41,18 @@ const DirectedGraphStepthroughVisualization = forwardRef<
       {},
     );
     const [isTransitioning, setIsTransitioning] = useState(false);
+    const [showMemoryAddress, setShowMemoryAddress] = useState(false);
+
+    const generateMemoryAddress = (value: string) => {
+      // Generate distinct address based on value hash
+      let hash = 0;
+      for (let i = 0; i < value.length; i++) {
+        hash = value.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      // Base address 0x400 for Graph
+      const offset = Math.abs(hash) % 0xfff;
+      return `0x${(0x400 + offset).toString(16).toUpperCase().padStart(3, '0')}`;
+    };
 
     // Extract current step information
     const currentStep = useMemo(() => {
@@ -302,6 +308,14 @@ const DirectedGraphStepthroughVisualization = forwardRef<
                 <div className="absolute inset-0 animate-ping rounded-full border-2 border-blue-300" />
               )}
             </div>
+
+            {/* Memory Address */}
+            <div className="absolute top-14 left-1/2 -translate-x-1/2 whitespace-nowrap">
+              <MemoryAddress
+                address={generateMemoryAddress(node.value)}
+                isVisible={showMemoryAddress}
+              />
+            </div>
           </div>
         );
       },
@@ -418,6 +432,10 @@ const DirectedGraphStepthroughVisualization = forwardRef<
               <span>Running...</span>
             </div>
           )}
+          <VisualizationSettings
+            showMemoryAddress={showMemoryAddress}
+            onToggleMemoryAddress={setShowMemoryAddress}
+          />
         </div>
 
         {/* Current Step Info */}

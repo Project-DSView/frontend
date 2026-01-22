@@ -5,6 +5,8 @@ import StepIndicator from '@/components/playground/shared/action/StepIndicator';
 import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
 import PerformanceAnalysisPanel from '@/components/playground/shared/PerformancePanel/PerformanceAnalysisPanel';
 import { gsap } from 'gsap';
+import MemoryAddress from '@/components/playground/shared/common/MemoryAddress';
+import VisualizationSettings from '@/components/playground/shared/common/VisualizationSettings';
 
 const StackStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -33,6 +35,12 @@ const StackStepthroughVisualization = forwardRef<
     const previousElementsRef = useRef<string[]>(data.elements);
     const elementRefs = useRef<Map<string, HTMLDivElement>>(new Map());
     const [elements, setElements] = useState(data.elements);
+    const [showMemoryAddress, setShowMemoryAddress] = useState(false);
+
+    const generateMemoryAddress = (index: number) => {
+      // Base address 0x100 for stack
+      return `0x${(0x100 + index * 4).toString(16).toUpperCase()}`;
+    };
 
     // Update elements when data.elements actually changes and detect push/pop
     useEffect(() => {
@@ -302,6 +310,13 @@ const StackStepthroughVisualization = forwardRef<
 
           {/* Index indicator */}
           <div className="mt-1 text-center text-xs text-gray-500 dark:text-gray-400">[{index}]</div>
+
+          {/* Memory Address */}
+          <MemoryAddress
+            address={generateMemoryAddress(index)}
+            isVisible={showMemoryAddress}
+            className="mt-1"
+          />
         </div>
       );
     };
@@ -356,6 +371,14 @@ const StackStepthroughVisualization = forwardRef<
               <span>Running...</span>
             </div>
           )}
+        </div>
+
+        {/* Global Settings Toggle */}
+        <div className="mb-4 flex justify-end">
+          <VisualizationSettings
+            showMemoryAddress={showMemoryAddress}
+            onToggleMemoryAddress={setShowMemoryAddress}
+          />
         </div>
 
         {/* Current Step Info */}

@@ -10,11 +10,7 @@ import {
   DirectedGraphEdge,
 } from '@/types';
 import { useDragDropDirectedGraph } from '@/hooks';
-import {
-  directedGraphDragComponents,
-  getTutorialSteps,
-  getTutorialStorageKey,
-} from '@/data';
+import { directedGraphDragComponents, getTutorialSteps, getTutorialStorageKey } from '@/data';
 
 import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
 import StepSelector from '@/components/playground/shared/action/StepSelector';
@@ -575,12 +571,7 @@ const DragDropDirectedGraph = () => {
         </div>
 
         <div className="mt-4 rounded-lg">
-          <CodeEditor
-            code={pythonCode}
-            disabled
-            height="400px"
-            onCodeChange={() => {}}
-          />
+          <CodeEditor code={pythonCode} disabled height="400px" onCodeChange={() => {}} />
         </div>
       </div>
 

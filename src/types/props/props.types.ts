@@ -26,7 +26,22 @@ import { StackDragComponent } from '../dragdrop/Stack.types';
 import { QueueDragComponent } from '../dragdrop/Queue.types';
 import { UndirectedGraphNode, UndirectedGraphEdge } from '../dragdrop/UndirectedGraph.types';
 import { DirectedGraphNode, DirectedGraphEdge } from '../dragdrop/DirectedGraph.types';
-import { StepthroughStep, ComplexityAnalysis } from '../stepthrough/common.types';
+import {
+  StepthroughStep,
+  ComplexityAnalysis,
+  StepthroughVisualizationProps,
+} from '../stepthrough/common.types';
+import { DirectedGraphData } from '../stepthrough/DirectedGraph.types';
+
+// ============================================================================
+// Stepthrough Props
+// ============================================================================
+interface DirectedGraphStepthroughVisualizationProps
+  extends StepthroughVisualizationProps<DirectedGraphData> {
+  insertedVertex?: string | null;
+  insertedEdge?: string | null;
+  currentVertex?: string | null;
+}
 
 // ============================================================================
 // Button Props
@@ -749,6 +764,12 @@ export type {
   BigOAnalysisDetailsProps,
   PerFunctionComplexityProps,
   BigOChartProps,
+  // Stepthrough
+  DirectedGraphStepthroughVisualizationProps,
+  // Memory Address & Pointer Animation
+  MemoryAddressComponentProps,
+  VisualizationSettingsComponentProps,
+  PointerArrowComponentProps,
 };
 
 // ============================================================================
@@ -809,4 +830,28 @@ interface PerFunctionComplexityProps {
 
 interface BigOChartProps {
   timeComplexity: string;
+}
+
+// ============================================================================
+// Memory Address & Pointer Animation Props
+// ============================================================================
+interface MemoryAddressComponentProps {
+  address: string;
+  isVisible: boolean;
+  className?: string;
+}
+
+interface VisualizationSettingsComponentProps {
+  showMemoryAddress: boolean;
+  onToggleMemoryAddress: (value: boolean) => void;
+  className?: string;
+}
+
+interface PointerArrowComponentProps {
+  fromPosition: { x: number; y: number };
+  toPosition: { x: number; y: number };
+  isAnimating: boolean;
+  label?: string;
+  color?: string;
+  onAnimationComplete?: () => void;
 }

@@ -1,17 +1,14 @@
 import React, { forwardRef, useState, useEffect, Fragment, useRef } from 'react';
-import { StepthroughVisualizationProps, LinkedListData } from '@/types';
+import { StepthroughVisualizationProps, LinkedListData, StepNodeState } from '@/types';
 import ZoomableContainer from '@/components/playground/shared/action/ZoomableContainer';
 import StepIndicator from '@/components/playground/shared/action/StepIndicator';
 import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
 import PerformanceAnalysisPanel from '@/components/playground/shared/PerformancePanel/PerformanceAnalysisPanel';
+import MemoryAddress, {
+  generateMemoryAddress,
+} from '@/components/playground/shared/common/MemoryAddress';
+import VisualizationSettings from '@/components/playground/shared/common/VisualizationSettings';
 import { gsap } from 'gsap';
-
-// Type for storing node state at each step
-interface StepNodeState {
-  nodes: string[];
-  currentInsertedValue: string | null;
-  insertHistory: string[];
-}
 
 const SinglyLinkedListStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -20,11 +17,21 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
   const [highlightedNodeIndex, setHighlightedNodeIndex] = useState(-1);
   const [, setHeadPosition] = useState(0);
   const [isTraversing, setIsTraversing] = useState(false);
+  const [traverseIndex, setTraverseIndex] = useState(-1);
+  // Track all visited nodes during traverse (cumulative highlighting)
+  const [visitedTraverseNodes, setVisitedTraverseNodes] = useState<Set<number>>(new Set());
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [enteringNodes, setEnteringNodes] = useState<Set<number>>(new Set());
   const [exitingNodes, setExitingNodes] = useState<Set<string>>(new Set());
   const [nodesToRender, setNodesToRender] = useState<string[]>(data.nodes);
   const [isInstantiated, setIsInstantiated] = useState(false);
+  // Track pending/floating nodes (created but not yet connected to the list)
+  const [pendingNodes, setPendingNodes] = useState<Array<{ variable: string; value: string }>>([]);
+
+  // Memory Address and Pointer Animation settings
+  const [showMemoryAddress, setShowMemoryAddress] = useState(false);
+  const [pointerAnimationIndex, setPointerAnimationIndex] = useState(-1);
+  const [isPointerAnimating, setIsPointerAnimating] = useState(false);
 
   // Track the current (last inserted) node and history for when nodes are deleted
   // Using refs to avoid useEffect dependency array size changes
@@ -41,6 +48,8 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
   const stepStateCache = useRef<Map<number, StepNodeState>>(new Map());
   const previousStepIndexRef = useRef<number>(currentStepIndex);
   const isInitializedRef = useRef<boolean>(false);
+  // Ref to track pending nodes across steps
+  const pendingNodesRef = useRef<Array<{ variable: string; value: string }>>([]);
 
   // Update nodes when data.nodes changes or step changes - with caching for navigation
   useEffect(() => {
@@ -58,6 +67,9 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
       setCurrentInsertedValue(cachedState.currentInsertedValue);
       currentInsertedValueRef.current = cachedState.currentInsertedValue;
       insertHistoryRef.current = cachedState.insertHistory;
+      // Restore pending nodes from cache
+      setPendingNodes(cachedState.pendingNodes || []);
+      pendingNodesRef.current = cachedState.pendingNodes || [];
       previousNodesRef.current = cachedState.nodes;
       nodesRef.current = cachedState.nodes;
       previousStepIndexRef.current = currentStepIndex;
@@ -186,11 +198,12 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
       nodesRef.current = data.nodes;
       setNodes(currentNodes);
 
-      // Cache the current state for this step
+      // Cache the current state for this step (pendingNodes will be updated by the separate useEffect)
       stepStateCache.current.set(currentStepIndex, {
         nodes: currentNodes,
         currentInsertedValue: newCurrentInsertedValue,
         insertHistory: newInsertHistory,
+        pendingNodes: pendingNodesRef.current,
       });
 
       isInitializedRef.current = true;
@@ -200,30 +213,113 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
     previousStepIndexRef.current = currentStepIndex;
   }, [data.nodes, currentStepIndex]);
 
-  // Handle traverse animation - just pulse, no movement
+  // Handle traverse animation - STEP-BASED with CUMULATIVE highlighting
+  // This tracks all visited nodes during traverse, not just the current one
   useEffect(() => {
     if (steps.length > 0 && currentStepIndex < steps.length) {
       const currentStep = steps[currentStepIndex];
-      const message = currentStep.state?.message || '';
-      const code = currentStep.code || '';
+      const stepDetail = currentStep.state?.step_detail as
+        | {
+            operation?: string;
+            is_traverse_step?: boolean;
+            traverse_node?: string;
+            current_node?: string;
+          }
+        | undefined;
 
-      // Check if this is a traverse operation
-      if (
-        message.includes('traverse') ||
-        message.includes('current.data') ||
-        code.includes('traverse()')
-      ) {
-        // Just set traversing flag for pulse animation, no index movement
+      // Check if this is a traverse step
+      const isTraverseStep =
+        stepDetail?.is_traverse_step === true || stepDetail?.operation === 'traverse';
+
+      if (isTraverseStep) {
         setIsTraversing(true);
-        // Don't change traverseIndex - it's not used for current pointer anymore
+
+        // Get the traverse node value from step_detail
+        const traverseNodeValue = stepDetail?.traverse_node || stepDetail?.current_node;
+
+        if (traverseNodeValue) {
+          // Find the index of this node in the rendered nodes
+          const nodeIndex = nodesToRender.findIndex((node) => node === traverseNodeValue);
+          if (nodeIndex !== -1) {
+            setTraverseIndex(nodeIndex);
+            // Add to visited nodes (cumulative)
+            setVisitedTraverseNodes((prev) => {
+              const newSet = new Set(prev);
+              newSet.add(nodeIndex);
+              return newSet;
+            });
+          } else {
+            // Node not found - might be end of list (None)
+            setTraverseIndex(-1);
+          }
+        } else {
+          // No traverse node specified - might be at start or end
+          setTraverseIndex(-1);
+        }
       } else {
-        // Reset when not traversing
+        // Not a traverse step - reset
         setIsTraversing(false);
+        setTraverseIndex(-1);
+        // Clear visited nodes when exiting traverse mode
+        setVisitedTraverseNodes(new Set());
       }
     } else {
       setIsTraversing(false);
+      setTraverseIndex(-1);
+      setVisitedTraverseNodes(new Set());
     }
-  }, [steps, currentStepIndex]);
+  }, [steps, currentStepIndex, nodesToRender]);
+
+  // Handle pointer animation for traverse operations
+  // Detects pointer movement patterns like `current = current.next` or `start = start.next`
+  useEffect(() => {
+    if (steps.length > 0 && currentStepIndex < steps.length) {
+      const currentStep = steps[currentStepIndex];
+      const code = currentStep.code || '';
+      const stepDetail = currentStep.state?.step_detail as
+        | {
+            operation?: string;
+            is_traverse_step?: boolean;
+            traverse_node?: string;
+            current_node?: string;
+          }
+        | undefined;
+
+      // Check if this is a pointer movement operation
+      const isPointerMove =
+        code.includes('current = current.next') ||
+        code.includes('current=current.next') ||
+        code.includes('start = start.next') ||
+        code.includes('start=start.next');
+
+      if (isPointerMove && stepDetail?.is_traverse_step) {
+        // Use traverse_node from step_detail for accurate positioning
+        const traverseNodeValue = stepDetail?.traverse_node || stepDetail?.current_node;
+
+        if (traverseNodeValue) {
+          const newIndex = nodesToRender.findIndex((node) => node === traverseNodeValue);
+
+          if (newIndex !== -1 && newIndex !== pointerAnimationIndex) {
+            setPointerAnimationIndex(newIndex);
+            setIsPointerAnimating(true);
+
+            // Stop animation after duration
+            setTimeout(() => {
+              setIsPointerAnimating(false);
+            }, 600);
+          }
+        }
+      }
+    }
+  }, [steps, currentStepIndex, nodesToRender, pointerAnimationIndex]);
+
+  // Reset pointer animation when steps reset
+  useEffect(() => {
+    if (steps.length === 0 || currentStepIndex === 0) {
+      setPointerAnimationIndex(-1);
+      setIsPointerAnimating(false);
+    }
+  }, [steps.length, currentStepIndex]);
 
   // Check if the list has been instantiated (SinglyLinkedList.__init__ was called)
   useEffect(() => {
@@ -252,6 +348,80 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
 
     setIsInstantiated(false);
   }, [steps, currentStepIndex]);
+
+  // Extract pending nodes (floating nodes) from step_detail
+  // Improved logic: Track lifecycle of floating nodes
+  // - Created -> Added to pending
+  // - Appears in list -> Removed from pending
+  // - This prevents deleted nodes (which were in list but removed) from reappearing as pending
+  useEffect(() => {
+    if (steps.length === 0) {
+      setPendingNodes([]);
+      pendingNodesRef.current = [];
+      return;
+    }
+
+    // Map of Value -> Node Info for currently floating nodes
+    const currentFloating = new Map<string, { variable: string; value: string }>();
+
+    // Scan all steps up to current to simulate floating state
+    for (let i = 0; i <= currentStepIndex && i < steps.length; i++) {
+      const step = steps[i];
+      const stepDetail = step.state?.step_detail as
+        | {
+            operation?: string;
+            node_variable?: string;
+            node_value?: string;
+          }
+        | undefined;
+
+      // 1. Check for Node Creation -> Add to floating
+      // If same value created again, it refreshes the floating status
+      if (stepDetail?.operation === 'node_creation') {
+        const nodeValue = stepDetail.node_value || '';
+        if (nodeValue) {
+          currentFloating.set(nodeValue, { variable: nodeValue, value: nodeValue });
+        }
+      }
+
+      // 2. Check for Node Landing (Appearance in List) -> Remove from floating
+      // We check the instances at this step to see if any floating nodes have entered the list
+      const instances = step.state?.instances || {};
+      const nodesInList = new Set<string>();
+
+      Object.values(instances).forEach((val: unknown) => {
+        const instance = val as { type?: string; nodes?: string[] };
+        if (instance.type === 'LinkedList' && Array.isArray(instance.nodes)) {
+          instance.nodes.forEach((nodeVal: string) => nodesInList.add(nodeVal));
+        }
+      });
+
+      // If a floating node is now in the list, it's no longer floating
+      // (It has been "consumed" by the list)
+      nodesInList.forEach((nodeVal) => {
+        if (currentFloating.has(nodeVal)) {
+          currentFloating.delete(nodeVal);
+        }
+      });
+    }
+
+    // Convert map to array
+    const result = Array.from(currentFloating.values());
+
+    // Final check against CURRENT data.nodes just in case
+    // (though the loop above should handle it if data.nodes is consistent with instances)
+    const finalPending = result.filter((p) => !data.nodes.includes(p.value));
+
+    // Update ref and state
+    pendingNodesRef.current = finalPending;
+    setPendingNodes(finalPending);
+
+    // Update the cache with current pending nodes
+    const cachedState = stepStateCache.current.get(currentStepIndex);
+    if (cachedState) {
+      cachedState.pendingNodes = finalPending;
+    }
+  }, [steps, currentStepIndex, data.nodes]);
 
   // Determine which node should be highlighted based on currentInsertedValue
   // Current node is ALWAYS the last inserted node across ALL steps
@@ -292,27 +462,45 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
 
   // Refs for GSAP animations
   const nodeRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const arrowRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
-  // GSAP animations for entering nodes
+  // GSAP animations for arrows when new nodes are added
   useEffect(() => {
     enteringNodes.forEach((index) => {
-      const node = nodesToRender[index];
-      if (node) {
-        const element = nodeRefs.current.get(`${node}-${index}`);
-        if (element) {
+      // Animate the arrow that points TO this node (arrow from index-1 to index)
+      if (index > 0) {
+        const arrowIndex = index - 1;
+        const arrowElement = arrowRefs.current.get(arrowIndex);
+        if (arrowElement) {
+          // Animate the arrow growing from left to right
           gsap.fromTo(
-            element,
+            arrowElement,
             {
-              opacity: 0,
-              scale: 0.2,
-              y: 50,
+              scaleX: 0,
+              transformOrigin: 'left center',
             },
             {
-              opacity: 1,
-              scale: 1,
-              y: 0,
-              duration: 1.8,
-              ease: 'back.out(1.7)',
+              scaleX: 1,
+              duration: 0.6,
+              ease: 'power2.out',
+            },
+          );
+        }
+      }
+      // Also animate the arrow from root to first node if index is 0
+      if (index === 0) {
+        const rootArrowElement = document.getElementById('root-to-first-arrow');
+        if (rootArrowElement) {
+          gsap.fromTo(
+            rootArrowElement,
+            {
+              scaleY: 0,
+              transformOrigin: 'top center',
+            },
+            {
+              scaleY: 1,
+              duration: 0.5,
+              ease: 'power2.out',
             },
           );
         }
@@ -346,8 +534,10 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
     const isHighlighted = highlightedNodeIndex === index;
     // Current node is the one where latest operation occurred (not traverse)
     const isCurrentNode = highlightedNodeIndex === index && !isTraversing;
-    // For traverse, all nodes should pulse
-    const isTraversePulse = isTraversing;
+    // For traverse: check if this node has been visited (cumulative green)
+    const isTraverseVisited = isTraversing && visitedTraverseNodes.has(index);
+    // Current traverse position (for the pointer indicator)
+    const isCurrentTraverseNode = isTraversing && index === traverseIndex;
     const isLast = index === nodesToRender.length - 1;
     const nodeKey = `${value}-${index}`;
 
@@ -363,64 +553,108 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
           }
         }}
       >
-        {/* Node Container - Same style as Root */}
-        <div className="relative">
-          {/* Node Box */}
-          <div
-            className={`inline-flex rounded-lg border-4 transition-all duration-300 ${
-              isCurrentNode
-                ? 'border-blue-500 bg-blue-100 shadow-lg dark:border-blue-400 dark:bg-blue-900/30'
-                : isTraversePulse
-                  ? 'animate-pulse border-gray-900 bg-blue-100 dark:border-gray-300 dark:bg-blue-900/30'
-                  : isHighlighted
-                    ? 'border-yellow-500 bg-yellow-100 shadow-lg dark:border-yellow-400 dark:bg-yellow-900/20'
-                    : isTransitioning
-                      ? 'animate-pulse border-gray-900 bg-blue-100 dark:border-gray-300 dark:bg-blue-900/30'
-                      : 'border-gray-900 bg-white dark:border-gray-300 dark:bg-gray-700'
-            }`}
-          >
-            {/* Data Section - Left */}
+        {/* Node Container */}
+        <div>
+          {/* Node Box Wrapper - For pointer positioning */}
+          <div className="relative">
+            {/* Current Pointer - Static indicator for highlighted node */}
+            {isCurrentNode && !isPointerAnimating && (
+              <div className="absolute -bottom-14 left-1/2 z-10 -translate-x-1/2 transform">
+                <div className="flex flex-col items-center">
+                  <div className="h-0 w-0 border-r-[6px] border-b-[8px] border-l-[6px] border-r-transparent border-b-blue-500 border-l-transparent"></div>
+                  <div className="h-4 w-1 bg-blue-500"></div>
+                </div>
+                <div className="px-1 py-0.5 text-sm font-semibold whitespace-nowrap text-blue-600">
+                  เพิ่มล่าสุด
+                </div>
+              </div>
+            )}
+
+            {/* Animated Pointer - Shows during traverse animation on CURRENT traverse node */}
+            {((isPointerAnimating && index === pointerAnimationIndex) || isCurrentTraverseNode) && (
+              <div
+                className="absolute -bottom-20 left-1/2 z-20 -translate-x-1/2 transform"
+                style={{ animation: 'bounceIn 0.6s ease-out forwards' }}
+              >
+                <div className="flex flex-col items-center">
+                  <div className="h-0 w-0 border-r-[6px] border-b-[8px] border-l-[6px] border-r-transparent border-b-green-500 border-l-transparent"></div>
+                  <div className="h-6 w-1 bg-green-500"></div>
+                </div>
+                <div className="px-1 py-0.5 text-sm font-bold whitespace-nowrap text-green-600">
+                  traverse
+                </div>
+              </div>
+            )}
+
+            {/* Node Box */}
             <div
-              className={`flex min-w-[60px] items-center justify-center border-r-4 px-4 py-2 ${
+              className={`inline-flex rounded-lg border-4 transition-all duration-300 ${
                 isCurrentNode
-                  ? 'border-blue-500 dark:border-blue-400'
-                  : 'border-gray-900 dark:border-gray-300'
+                  ? 'border-blue-500 bg-blue-100 shadow-lg dark:border-blue-400 dark:bg-blue-900/30'
+                  : isCurrentTraverseNode
+                    ? 'scale-110 border-green-500 bg-green-100 shadow-lg dark:border-green-400 dark:bg-green-900/30'
+                    : isTraverseVisited
+                      ? 'border-green-500 bg-green-100 shadow-lg dark:border-green-400 dark:bg-green-900/30'
+                      : isHighlighted
+                        ? 'border-yellow-500 bg-yellow-100 shadow-lg dark:border-yellow-400 dark:bg-yellow-900/20'
+                        : isTransitioning
+                          ? 'animate-pulse border-gray-900 bg-blue-100 dark:border-gray-300 dark:bg-blue-900/30'
+                          : 'border-gray-900 bg-white dark:border-gray-300 dark:bg-gray-700'
               }`}
             >
-              <span
-                className={`font-bold ${
+              {/* Data Section - Left */}
+              <div
+                className={`flex min-w-[60px] items-center justify-center border-r-4 px-4 py-2 ${
                   isCurrentNode
-                    ? 'text-blue-700 dark:text-blue-300'
-                    : 'text-gray-900 dark:text-gray-100'
-                } ${value.length > 15 ? 'text-xs' : value.length > 8 ? 'text-sm' : 'text-lg'}`}
+                    ? 'border-blue-500 dark:border-blue-400'
+                    : isTraverseVisited || isCurrentTraverseNode
+                      ? 'border-green-500 dark:border-green-400'
+                      : 'border-gray-900 dark:border-gray-300'
+                }`}
               >
-                {value}
-              </span>
-            </div>
-            {/* Pointer Section - Right */}
-            <div className="flex min-w-[50px] items-center justify-center px-4 py-2">
-              {isLast ? (
-                /* X mark for null - last node */
-                <div className="relative h-6 w-6">
+                <span
+                  className={`font-bold ${
+                    isCurrentNode
+                      ? 'text-blue-700 dark:text-blue-300'
+                      : isTraverseVisited || isCurrentTraverseNode
+                        ? 'text-green-700 dark:text-green-300'
+                        : 'text-gray-900 dark:text-gray-100'
+                  } ${value.length > 15 ? 'text-xs' : value.length > 8 ? 'text-sm' : 'text-lg'}`}
+                >
+                  {value}
+                </span>
+              </div>
+              {/* Pointer Section - Right */}
+              <div className="flex min-w-[50px] items-center justify-center px-4 py-2">
+                {isLast ? (
+                  /* X mark for null - last node */
+                  <div className="relative h-6 w-6">
+                    <div
+                      className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 rotate-45 transform ${
+                        isCurrentNode
+                          ? 'bg-blue-500 dark:bg-blue-400'
+                          : isTraverseVisited || isCurrentTraverseNode
+                            ? 'bg-green-500 dark:bg-green-400'
+                            : 'bg-gray-900 dark:bg-gray-300'
+                      }`}
+                    ></div>
+                    <div
+                      className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 -rotate-45 transform ${
+                        isCurrentNode
+                          ? 'bg-blue-500 dark:bg-blue-400'
+                          : isTraverseVisited || isCurrentTraverseNode
+                            ? 'bg-green-500 dark:bg-green-400'
+                            : 'bg-gray-900 dark:bg-gray-300'
+                      }`}
+                    ></div>
+                  </div>
+                ) : (
+                  /* Dot for pointer - same as root head section */
                   <div
-                    className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 rotate-45 transform ${
-                      isCurrentNode
-                        ? 'bg-blue-500 dark:bg-blue-400'
-                        : 'bg-gray-900 dark:bg-gray-300'
-                    }`}
+                    className={` ${isCurrentNode ? 'bg-blue-500 dark:bg-blue-400' : isTraverseVisited || isCurrentTraverseNode ? 'bg-green-500 dark:bg-green-400' : ''}`}
                   ></div>
-                  <div
-                    className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 -rotate-45 transform ${
-                      isCurrentNode
-                        ? 'bg-blue-500 dark:bg-blue-400'
-                        : 'bg-gray-900 dark:bg-gray-300'
-                    }`}
-                  ></div>
-                </div>
-              ) : (
-                /* Dot for pointer - same as root head section */
-                <div className={` ${isCurrentNode ? 'bg-blue-500 dark:bg-blue-400' : ''}`}></div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 
@@ -431,6 +665,9 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
               {data.classMetadata?.next_attr || 'next'}
             </div>
           </div>
+
+          {/* Memory Address - shown when toggle is enabled */}
+          <MemoryAddress address={generateMemoryAddress(index)} isVisible={showMemoryAddress} />
         </div>
       </div>
     );
@@ -442,12 +679,19 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
           Singly Linked List Visualization
         </h2>
-        {isRunning && (
-          <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-400" />
-            <span>Running...</span>
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {/* Visualization Settings Toggle */}
+          <VisualizationSettings
+            showMemoryAddress={showMemoryAddress}
+            onToggleMemoryAddress={setShowMemoryAddress}
+          />
+          {isRunning && (
+            <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-400" />
+              <span>Running...</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Current Step Info */}
@@ -498,8 +742,8 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
           {isInstantiated && (
             <div className="mb-2">
               {/* Root Label - Use dynamic class name or fallback */}
-              <div className="mb-1 text-lg font-bold text-gray-800 italic dark:text-gray-200">
-                {data.classMetadata?.list_class || 'root'}
+              <div className="mb-1 text-lg font-bold text-gray-800 dark:text-gray-200">
+                {data.classMetadata?.list_class || 'Head'}
               </div>
 
               {/* Root Node Box */}
@@ -540,7 +784,7 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
           {isInstantiated && nodesToRender.length > 0 && (
             <div className="mb-2 ml-[85px] flex">
               {/* Vertical line going down */}
-              <div className="flex flex-col items-center">
+              <div id="root-to-first-arrow" className="flex flex-col items-center">
                 <div className="h-8 w-0.5 bg-gray-900 dark:bg-gray-300"></div>
                 {/* Arrow pointing down */}
                 <div className="h-0 w-0 border-t-[6px] border-r-[5px] border-l-[5px] border-t-gray-900 border-r-transparent border-l-transparent dark:border-t-gray-300"></div>
@@ -549,30 +793,28 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
           )}
 
           {/* Data Nodes Row - Horizontal */}
-          <div className="flex flex-row flex-nowrap items-center">
+          <div
+            className={`flex flex-row flex-nowrap items-center ${nodesToRender.length === 0 && pendingNodes.length > 0 ? 'mt-8' : ''}`}
+          >
             {nodesToRender.map((value, index) => {
               const isExiting = exitingNodes.has(value);
               return (
                 <Fragment key={`${value}-${index}`}>
-                  <div className="relative">
-                    {/* Current Pointer */}
-                    {index === highlightedNodeIndex && !isTraversing && (
-                      <div className="absolute -bottom-16 left-1/2 z-10 -translate-x-1/2 transform">
-                        <div className="flex flex-col items-center">
-                          <div className="h-0 w-0 border-r-[6px] border-b-[8px] border-l-[6px] border-r-transparent border-b-blue-500 border-l-transparent"></div>
-                          <div className="h-4 w-1 bg-blue-500"></div>
-                        </div>
-                        <div className="px-2 py-1 text-lg font-semibold text-blue-600">current</div>
-                      </div>
-                    )}
-
-                    {/* Node */}
-                    {renderNode(value, index)}
-                  </div>
+                  {/* Node - pointer indicators are now inside renderNode */}
+                  {renderNode(value, index)}
 
                   {/* Arrow between nodes */}
                   {index < nodesToRender.length - 1 && !isExiting && (
-                    <div className="mx-2 mb-5 flex flex-shrink-0 items-center">
+                    <div
+                      className={`mx-2 flex flex-shrink-0 items-center ${showMemoryAddress ? 'mb-10' : 'mb-5'}`}
+                      ref={(el) => {
+                        if (el) {
+                          arrowRefs.current.set(index, el);
+                        } else {
+                          arrowRefs.current.delete(index);
+                        }
+                      }}
+                    >
                       <div className="h-1 w-8 bg-gray-900 dark:bg-gray-300"></div>
                       <div className="h-0 w-0 border-t-[6px] border-b-[6px] border-l-[10px] border-t-transparent border-b-transparent border-l-gray-900 dark:border-l-gray-300"></div>
                     </div>
@@ -580,21 +822,92 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
                 </Fragment>
               );
             })}
+
+            {/* Floating Nodes - Displayed inline without arrows, same spacing as connected nodes */}
+            {pendingNodes.length > 0 && (
+              <>
+                {/* Same spacing as arrow between nodes */}
+                {nodesToRender.length > 0 && (
+                  <div className="mx-2 mb-5 flex w-[50px] flex-shrink-0 items-center"></div>
+                )}
+                {pendingNodes.map((pendingNode, index) => (
+                  <div
+                    key={`floating-${pendingNode.variable}-${index}`}
+                    className="flex items-center"
+                  >
+                    <div className="relative">
+                      {/* Node Box - Same style as normal nodes but with orange accent */}
+                      <div className="inline-flex animate-pulse rounded-lg border-4 border-orange-500 bg-orange-100 shadow-lg dark:border-orange-400 dark:bg-orange-900/30">
+                        {/* Data Section - Left */}
+                        <div className="flex min-w-[60px] items-center justify-center border-r-4 border-orange-500 px-4 py-2 dark:border-orange-400">
+                          <span className="font-bold text-orange-700 dark:text-orange-300">
+                            {pendingNode.value}
+                          </span>
+                        </div>
+                        {/* Pointer Section - Right - X mark for null (not connected) */}
+                        <div className="flex min-w-[50px] items-center justify-center px-4 py-2">
+                          <div className="relative h-6 w-6">
+                            <div className="absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 rotate-45 transform bg-orange-500 dark:bg-orange-400"></div>
+                            <div className="absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 -rotate-45 transform bg-orange-500 dark:bg-orange-400"></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Labels below node */}
+                      <div
+                        className="flex text-sm text-orange-600 dark:text-orange-400"
+                        style={{ width: '100%' }}
+                      >
+                        <div className="w-1/2 text-center">
+                          {data.classMetadata?.data_attr || 'Name'}
+                        </div>
+                        <div className="w-1/2 text-center">
+                          {data.classMetadata?.next_attr || 'Next'}
+                        </div>
+                      </div>
+                    </div>
+                    {/* Same spacing as arrow between nodes */}
+                    {index < pendingNodes.length - 1 && (
+                      <div className="mx-2 mb-5 flex w-[50px] flex-shrink-0 items-center"></div>
+                    )}
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
       </ZoomableContainer>
 
       {/* Stats */}
-      <div className="mt-4 flex space-x-6 text-sm text-gray-600 dark:text-gray-400">
-        <div>
-          <span className="font-semibold">จำนวน Nodes:</span> {nodes.length}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex space-x-6 text-sm text-gray-600 dark:text-gray-400">
+          <div>
+            <span className="font-semibold">จำนวน Nodes:</span> {nodes.length}
+          </div>
+          <div>
+            <span className="font-semibold">Head Value:</span>{' '}
+            {nodes.length > 0 ? nodes[0] : 'None'}
+          </div>
+          <div>
+            <span className="font-semibold">Tail Value:</span>{' '}
+            {nodes.length > 0 ? nodes[nodes.length - 1] : 'None'}
+          </div>
         </div>
-        <div>
-          <span className="font-semibold">Head Value:</span> {nodes.length > 0 ? nodes[0] : 'None'}
-        </div>
-        <div>
-          <span className="font-semibold">Tail Value:</span>{' '}
-          {nodes.length > 0 ? nodes[nodes.length - 1] : 'None'}
+
+        {/* Color Legend */}
+        <div className="flex items-center space-x-4 text-xs">
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-gray-900 bg-white dark:border-gray-300 dark:bg-gray-700"></div>
+            <span className="text-gray-600 dark:text-gray-400">Node ในลิสต์</span>
+          </div>
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-blue-500 bg-blue-100 dark:border-blue-400 dark:bg-blue-900/30"></div>
+            <span className="text-gray-600 dark:text-gray-400">Node ปัจจุบัน</span>
+          </div>
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-orange-500 bg-orange-100 dark:border-orange-400 dark:bg-orange-900/30"></div>
+            <span className="text-gray-600 dark:text-gray-400">Node ที่สร้างใหม่</span>
+          </div>
         </div>
       </div>
 

@@ -27,9 +27,7 @@ const UndirectedGraphDragDropVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/UndirectedGraph'),
 );
 const StepIndicator = lazy(() => import('@/components/playground/shared/action/StepIndicator'));
-const CopyCodeButton = lazy(
-  () => import('@/components/playground/shared/action/CopyCodeButton'),
-);
+const CopyCodeButton = lazy(() => import('@/components/playground/shared/action/CopyCodeButton'));
 const CodeEditor = lazy(() => import('@/components/editor/CodeEditor'));
 const DragDropUndirectedGraph = () => {
   const pathname = usePathname();
@@ -738,18 +736,12 @@ const DragDropUndirectedGraph = () => {
 
         <div className="mt-4 rounded-lg">
           <Suspense fallback={<div>Loading editor...</div>}>
-            <CodeEditor
-              code={pythonCode}
-              disabled
-              height="400px"
-              onCodeChange={() => {}}
-            />
+            <CodeEditor code={pythonCode} disabled height="400px" onCodeChange={() => {}} />
           </Suspense>
         </div>
       </div>
-  </div>
-);
+    </div>
+  );
 };
-
 
 export default DragDropUndirectedGraph;

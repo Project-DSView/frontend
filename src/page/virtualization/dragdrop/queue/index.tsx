@@ -293,12 +293,7 @@ const QueuePage = () => {
 
             <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900">
               <React.Suspense fallback={<div>Loading editor...</div>}>
-                <CodeEditor
-                  code={generatedCode}
-                  disabled
-                  height="400px"
-                  onCodeChange={() => {}}
-                />
+                <CodeEditor code={generatedCode} disabled height="400px" onCodeChange={() => {}} />
               </React.Suspense>
             </div>
           </div>

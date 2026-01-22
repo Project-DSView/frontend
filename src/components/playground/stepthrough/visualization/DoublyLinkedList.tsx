@@ -1,17 +1,14 @@
 import React, { forwardRef, useState, useEffect, Fragment, useRef } from 'react';
-import { StepthroughVisualizationProps, LinkedListData } from '@/types';
+import { StepthroughVisualizationProps, LinkedListData, StepNodeState } from '@/types';
 import ZoomableContainer from '@/components/playground/shared/action/ZoomableContainer';
 import StepIndicator from '@/components/playground/shared/action/StepIndicator';
 import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
 import PerformanceAnalysisPanel from '@/components/playground/shared/PerformancePanel/PerformanceAnalysisPanel';
+import MemoryAddress, {
+  generateMemoryAddress,
+} from '@/components/playground/shared/common/MemoryAddress';
+import VisualizationSettings from '@/components/playground/shared/common/VisualizationSettings';
 import { gsap } from 'gsap';
-
-// Type for storing node state at each step
-interface StepNodeState {
-  nodes: string[];
-  currentInsertedValue: string | null;
-  insertHistory: string[];
-}
 
 const DoublyLinkedListStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -21,10 +18,17 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
   const [, setHeadPosition] = useState(0);
   const [isTraversing, setIsTraversing] = useState(false);
   const [isReverseTraversing, setIsReverseTraversing] = useState(false);
+  const [traverseIndex, setTraverseIndex] = useState(-1);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [enteringNodes, setEnteringNodes] = useState<Set<number>>(new Set());
   const [exitingNodes, setExitingNodes] = useState<Set<string>>(new Set());
   const [nodesToRender, setNodesToRender] = useState<string[]>(data.nodes);
+
+  // Memory Address and Pointer Animation settings
+  const [showMemoryAddress, setShowMemoryAddress] = useState(false);
+  const [pointerAnimationIndex, setPointerAnimationIndex] = useState(-1);
+  const [previousPointerIndex, setPreviousPointerIndex] = useState(-1);
+  const [isPointerAnimating, setIsPointerAnimating] = useState(false);
 
   // Track the current (last inserted) node and history for when nodes are deleted
   // Using refs to avoid useEffect dependency array size changes
@@ -200,7 +204,7 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
     previousStepIndexRef.current = currentStepIndex;
   }, [data.nodes, currentStepIndex]);
 
-  // Handle traverse animation - just pulse, no movement
+  // Handle traverse animation - automatic movement
   useEffect(() => {
     if (steps.length > 0 && currentStepIndex < steps.length) {
       const currentStep = steps[currentStepIndex];
@@ -210,32 +214,114 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
       // Check if this is a traverse operation
       if (
         message.includes('traverse') ||
-        message.includes('current.data') ||
-        code.includes('traverse()')
+        message.includes('Traverse') ||
+        (code.includes('traverse()') && !code.includes('def traverse'))
       ) {
-        // Just set traversing flag for pulse animation, no index movement
         if (
           message.includes('traverseReverse') ||
           message.includes('reverse') ||
           code.includes('traverseReverse()')
         ) {
+          // Reverse Traversal
           setIsReverseTraversing(true);
           setIsTraversing(false);
+          setTraverseIndex(nodesToRender.length - 1);
+
+          const interval = setInterval(() => {
+            setTraverseIndex((prev) => {
+              const next = prev - 1;
+              if (next < 0) {
+                clearInterval(interval);
+                setIsReverseTraversing(false);
+                return prev;
+              }
+              return next;
+            });
+          }, 800);
+          return () => clearInterval(interval);
         } else {
+          // Forward Traversal
           setIsTraversing(true);
           setIsReverseTraversing(false);
+          setTraverseIndex(0);
+
+          const interval = setInterval(() => {
+            setTraverseIndex((prev) => {
+              const next = prev + 1;
+              if (next >= nodesToRender.length) {
+                clearInterval(interval);
+                setIsTraversing(false);
+                return prev;
+              }
+              return next;
+            });
+          }, 800);
+          return () => clearInterval(interval);
         }
-        // Don't change traverseIndex - it's not used for current pointer anymore
       } else {
         // Reset when not traversing
         setIsTraversing(false);
         setIsReverseTraversing(false);
+        setTraverseIndex(-1);
       }
     } else {
       setIsTraversing(false);
       setIsReverseTraversing(false);
+      setTraverseIndex(-1);
     }
-  }, [steps, currentStepIndex]);
+  }, [steps, currentStepIndex, nodesToRender.length]);
+
+  // Handle pointer animation for traverse operations
+  // Detects `current = current.next` or `current = current.prev` pattern and animates pointer movement
+  useEffect(() => {
+    if (steps.length > 0 && currentStepIndex < steps.length) {
+      const currentStep = steps[currentStepIndex];
+      const code = currentStep.code || '';
+
+      // Check if this is a forward pointer movement operation
+      if (code.includes('current = current.next') || code.includes('current=current.next')) {
+        const prevIndex = previousPointerIndex >= 0 ? previousPointerIndex : 0;
+        const newIndex = Math.min(prevIndex + 1, nodesToRender.length - 1);
+
+        if (newIndex !== prevIndex && newIndex >= 0) {
+          setPreviousPointerIndex(prevIndex);
+          setPointerAnimationIndex(newIndex);
+          setIsPointerAnimating(true);
+
+          setTimeout(() => {
+            setIsPointerAnimating(false);
+            setPreviousPointerIndex(newIndex);
+          }, 600);
+        }
+      }
+      // Check if this is a backward pointer movement operation
+      else if (code.includes('current = current.prev') || code.includes('current=current.prev')) {
+        const prevIndex =
+          previousPointerIndex >= 0 ? previousPointerIndex : nodesToRender.length - 1;
+        const newIndex = Math.max(prevIndex - 1, 0);
+
+        if (newIndex !== prevIndex && newIndex >= 0) {
+          setPreviousPointerIndex(prevIndex);
+          setPointerAnimationIndex(newIndex);
+          setIsPointerAnimating(true);
+
+          setTimeout(() => {
+            setIsPointerAnimating(false);
+            setPreviousPointerIndex(newIndex);
+          }, 600);
+        }
+      }
+    }
+  }, [steps, currentStepIndex, nodesToRender.length, previousPointerIndex]);
+
+  // Reset pointer animation when steps reset
+  useEffect(() => {
+    if (steps.length === 0 || currentStepIndex === 0) {
+      setPreviousPointerIndex(-1);
+      setPointerAnimationIndex(-1);
+      setIsPointerAnimating(false);
+    }
+  }, [steps.length, currentStepIndex]);
 
   // Determine which node should be highlighted based on currentInsertedValue
   // Current node is ALWAYS the last inserted node across ALL steps
@@ -350,103 +436,133 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
           }
         }}
       >
-        {/* Node Container - 3 Section Layout */}
-        <div className="relative">
-          {/* Node Box */}
-          <div
-            className={`inline-flex rounded-lg border-4 transition-all duration-300 ${
-              isCurrentNode
-                ? 'border-blue-500 bg-blue-100 shadow-lg dark:border-blue-400 dark:bg-blue-900/30'
-                : isTraversePulse
-                  ? 'animate-pulse border-gray-900 bg-blue-100 dark:border-gray-300 dark:bg-blue-900/30'
-                  : isHighlighted
-                    ? 'border-yellow-500 bg-yellow-100 shadow-lg dark:border-yellow-400 dark:bg-yellow-900/20'
-                    : isExiting
-                      ? 'opacity-0'
-                      : isTransitioning
-                        ? 'animate-pulse border-gray-900 bg-blue-100 dark:border-gray-300 dark:bg-blue-900/30'
-                        : 'border-gray-900 bg-white dark:border-gray-300 dark:bg-gray-700'
-            }`}
-          >
-            {/* Prev Section - Left */}
-            <div
-              className={`flex min-w-[40px] items-center justify-center px-2 py-2 ${
-                isCurrentNode
-                  ? 'border-blue-500 dark:border-blue-400'
-                  : 'border-gray-900 dark:border-gray-300'
-              }`}
-            >
-              {isFirst ? (
-                /* X mark for null - first node has no prev */
-                <div className="relative h-5 w-5">
-                  <div
-                    className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 rotate-45 transform ${
-                      isCurrentNode
-                        ? 'bg-blue-500 dark:bg-blue-400'
-                        : 'bg-gray-900 dark:bg-gray-300'
-                    }`}
-                  ></div>
-                  <div
-                    className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 -rotate-45 transform ${
-                      isCurrentNode
-                        ? 'bg-blue-500 dark:bg-blue-400'
-                        : 'bg-gray-900 dark:bg-gray-300'
-                    }`}
-                  ></div>
+        {/* Node Container */}
+        <div>
+          {/* Node Box Wrapper - For pointer positioning */}
+          <div className="relative">
+            {/* Current Pointer - Static indicator for highlighted node */}
+            {isCurrentNode && !isPointerAnimating && (
+              <div className="absolute -bottom-14 left-1/2 z-10 -translate-x-1/2 transform">
+                <div className="flex flex-col items-center">
+                  <div className="h-0 w-0 border-r-[6px] border-b-[8px] border-l-[6px] border-r-transparent border-b-blue-500 border-l-transparent"></div>
+                  <div className="h-4 w-1 bg-blue-500"></div>
                 </div>
-              ) : (
-                <div className={`h-2 w-2`}></div>
-              )}
-            </div>
+                <div className="px-2 py-1 text-lg font-semibold text-blue-600">current</div>
+              </div>
+            )}
 
-            {/* Data Section - Center */}
-            <div
-              className={`flex min-w-[60px] items-center justify-center border-x-4 px-4 py-2 ${
-                isCurrentNode
-                  ? 'border-blue-500 bg-blue-100 dark:border-blue-400 dark:bg-blue-900/30'
-                  : 'border-gray-900 bg-white dark:border-gray-300 dark:bg-gray-700'
-              }`}
-            >
-              <span
-                className={`font-bold ${
-                  isCurrentNode
-                    ? 'text-blue-700 dark:text-blue-300'
-                    : 'text-gray-900 dark:text-gray-100'
-                } ${value.length > 15 ? 'text-xs' : value.length > 8 ? 'text-sm' : 'text-lg'}`}
+            {/* Animated Pointer - Shows during traverse animation */}
+            {((isPointerAnimating && index === pointerAnimationIndex) ||
+              ((isTraversing || isReverseTraversing) && index === traverseIndex)) && (
+              <div
+                className="absolute -bottom-14 left-1/2 z-20 -translate-x-1/2 transform"
+                style={{ animation: 'bounceIn 0.6s ease-out forwards' }}
               >
-                {value}
-              </span>
-            </div>
+                <div className="flex flex-col items-center">
+                  <div className="h-0 w-0 border-r-[8px] border-b-[10px] border-l-[8px] border-r-transparent border-b-green-500 border-l-transparent"></div>
+                  <div className="h-5 w-1.5 bg-green-500"></div>
+                </div>
+                <div className="px-2 py-1 text-lg font-bold text-green-600">current →</div>
+              </div>
+            )}
 
-            {/* Next Section - Right */}
+            {/* Node Box */}
             <div
-              className={`flex min-w-[40px] items-center justify-center px-2 py-2 ${
+              className={`inline-flex rounded-lg border-4 transition-all duration-300 ${
                 isCurrentNode
-                  ? 'border-blue-500 dark:border-blue-400'
-                  : 'border-gray-900 dark:border-gray-300'
+                  ? 'border-blue-500 bg-blue-100 shadow-lg dark:border-blue-400 dark:bg-blue-900/30'
+                  : isTraversePulse ||
+                      ((isTraversing || isReverseTraversing) && index === traverseIndex)
+                    ? 'scale-110 border-green-500 bg-green-100 shadow-lg dark:border-green-400 dark:bg-green-900/30'
+                    : isHighlighted
+                      ? 'border-yellow-500 bg-yellow-100 shadow-lg dark:border-yellow-400 dark:bg-yellow-900/20'
+                      : isExiting
+                        ? 'opacity-0'
+                        : isTransitioning
+                          ? 'animate-pulse border-gray-900 bg-blue-100 dark:border-gray-300 dark:bg-blue-900/30'
+                          : 'border-gray-900 bg-white dark:border-gray-300 dark:bg-gray-700'
               }`}
             >
-              {isLast ? (
-                /* X mark for null - last node has no next */
-                <div className="relative h-5 w-5">
-                  <div
-                    className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 rotate-45 transform ${
-                      isCurrentNode
-                        ? 'bg-blue-500 dark:bg-blue-400'
-                        : 'bg-gray-900 dark:bg-gray-300'
-                    }`}
-                  ></div>
-                  <div
-                    className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 -rotate-45 transform ${
-                      isCurrentNode
-                        ? 'bg-blue-500 dark:bg-blue-400'
-                        : 'bg-gray-900 dark:bg-gray-300'
-                    }`}
-                  ></div>
-                </div>
-              ) : (
-                <div className={`h-2 w-2`}></div>
-              )}
+              {/* Prev Section - Left */}
+              <div
+                className={`flex min-w-[40px] items-center justify-center px-2 py-2 ${
+                  isCurrentNode
+                    ? 'border-blue-500 dark:border-blue-400'
+                    : 'border-gray-900 dark:border-gray-300'
+                }`}
+              >
+                {isFirst ? (
+                  /* X mark for null - first node has no prev */
+                  <div className="relative h-5 w-5">
+                    <div
+                      className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 rotate-45 transform ${
+                        isCurrentNode
+                          ? 'bg-blue-500 dark:bg-blue-400'
+                          : 'bg-gray-900 dark:bg-gray-300'
+                      }`}
+                    ></div>
+                    <div
+                      className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 -rotate-45 transform ${
+                        isCurrentNode
+                          ? 'bg-blue-500 dark:bg-blue-400'
+                          : 'bg-gray-900 dark:bg-gray-300'
+                      }`}
+                    ></div>
+                  </div>
+                ) : (
+                  <div className={`h-2 w-2`}></div>
+                )}
+              </div>
+
+              {/* Data Section - Center */}
+              <div
+                className={`flex min-w-[60px] items-center justify-center border-x-4 px-4 py-2 ${
+                  isCurrentNode
+                    ? 'border-blue-500 bg-blue-100 dark:border-blue-400 dark:bg-blue-900/30'
+                    : 'border-gray-900 bg-white dark:border-gray-300 dark:bg-gray-700'
+                }`}
+              >
+                <span
+                  className={`font-bold ${
+                    isCurrentNode
+                      ? 'text-blue-700 dark:text-blue-300'
+                      : 'text-gray-900 dark:text-gray-100'
+                  } ${value.length > 15 ? 'text-xs' : value.length > 8 ? 'text-sm' : 'text-lg'}`}
+                >
+                  {value}
+                </span>
+              </div>
+
+              {/* Next Section - Right */}
+              <div
+                className={`flex min-w-[40px] items-center justify-center px-2 py-2 ${
+                  isCurrentNode
+                    ? 'border-blue-500 dark:border-blue-400'
+                    : 'border-gray-900 dark:border-gray-300'
+                }`}
+              >
+                {isLast ? (
+                  /* X mark for null - last node has no next */
+                  <div className="relative h-5 w-5">
+                    <div
+                      className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 rotate-45 transform ${
+                        isCurrentNode
+                          ? 'bg-blue-500 dark:bg-blue-400'
+                          : 'bg-gray-900 dark:bg-gray-300'
+                      }`}
+                    ></div>
+                    <div
+                      className={`absolute top-0 left-1/2 h-full w-0.5 -translate-x-1/2 -rotate-45 transform ${
+                        isCurrentNode
+                          ? 'bg-blue-500 dark:bg-blue-400'
+                          : 'bg-gray-900 dark:bg-gray-300'
+                      }`}
+                    ></div>
+                  </div>
+                ) : (
+                  <div className={`h-2 w-2`}></div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -456,6 +572,9 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
             <div className="w-1/3"></div>
             <div className={`w-1/3 text-center ${isLast ? 'invisible' : ''}`}>next</div>
           </div>
+
+          {/* Memory Address - shown when toggle is enabled */}
+          <MemoryAddress address={generateMemoryAddress(index)} isVisible={showMemoryAddress} />
         </div>
       </div>
     );
@@ -467,12 +586,19 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
           Doubly Linked List Visualization
         </h2>
-        {isRunning && (
-          <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-400" />
-            <span>Running...</span>
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {/* Visualization Settings Toggle */}
+          <VisualizationSettings
+            showMemoryAddress={showMemoryAddress}
+            onToggleMemoryAddress={setShowMemoryAddress}
+          />
+          {isRunning && (
+            <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-400" />
+              <span>Running...</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Current Step Info */}
@@ -579,27 +705,16 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
               const isExiting = exitingNodes.has(value);
               return (
                 <Fragment key={`${value}-${index}`}>
-                  <div className="relative">
-                    {/* Current Pointer */}
-                    {index === highlightedNodeIndex && !isTraversing && !isReverseTraversing && (
-                      <div className="absolute -bottom-16 left-1/2 z-10 -translate-x-1/2 transform">
-                        <div className="flex flex-col items-center">
-                          <div className="h-0 w-0 border-r-[6px] border-b-[8px] border-l-[6px] border-r-transparent border-b-blue-500 border-l-transparent"></div>
-                          <div className="h-4 w-1 bg-blue-500"></div>
-                        </div>
-                        <div className="px-2 py-1 text-lg font-semibold text-blue-600">current</div>
-                      </div>
-                    )}
-
-                    {/* Node */}
-                    {renderNode(value, index)}
-                  </div>
+                  {/* Node - pointer indicators are now inside renderNode */}
+                  {renderNode(value, index)}
 
                   {/* Bidirectional Arrow between nodes */}
                   {index < nodesToRender.length - 1 &&
                     !isExiting &&
                     !exitingNodes.has(nodesToRender[index + 1]) && (
-                      <div className="mx-2 mb-5 flex flex-shrink-0 items-center">
+                      <div
+                        className={`mx-2 flex flex-shrink-0 items-center ${showMemoryAddress ? 'mb-10' : 'mb-5'}`}
+                      >
                         <svg width="60" height="30" viewBox="0 0 60 30">
                           <defs>
                             <marker

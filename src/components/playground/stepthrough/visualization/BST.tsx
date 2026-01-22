@@ -4,6 +4,8 @@ import ZoomableContainer from '@/components/playground/shared/action/ZoomableCon
 import StepIndicator from '@/components/playground/shared/action/StepIndicator';
 import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
 import PerformanceAnalysisPanel from '@/components/playground/shared/PerformancePanel/PerformanceAnalysisPanel';
+import MemoryAddress from '@/components/playground/shared/common/MemoryAddress';
+import VisualizationSettings from '@/components/playground/shared/common/VisualizationSettings';
 
 const BSTStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -26,6 +28,18 @@ const BSTStepthroughVisualization = forwardRef<
   const [completedConnections, setCompletedConnections] = useState<Set<string>>(new Set()); // Connections that animation has completed
   const previousRootRef = useRef<BSTNode | null>(null);
   const rootPositionRef = useRef<{ x: number; y: number } | null>(null); // Store root position to prevent movement
+  const [showMemoryAddress, setShowMemoryAddress] = useState(false);
+
+  const generateMemoryAddress = (value: string) => {
+    // Generate distinct address based on value hash
+    let hash = 0;
+    for (let i = 0; i < value.length; i++) {
+      hash = value.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    // Base address 0x300 for BST
+    const offset = Math.abs(hash) % 0xfff;
+    return `0x${(0x300 + offset).toString(16).toUpperCase().padStart(3, '0')}`;
+  };
 
   // Helper function to convert backend tree data to BSTNode
   const convertToBSTNode = useCallback((nodeData: unknown): BSTNode | null => {
@@ -825,6 +839,14 @@ const BSTStepthroughVisualization = forwardRef<
           {(isTraverseSelected || isCurrentlyTraversing) && (
             <div className="absolute -top-2 -right-2 h-4 w-4 rounded-full bg-green-400" />
           )}
+
+          {/* Memory Address */}
+          <div className="absolute top-14 left-1/2 -translate-x-1/2 whitespace-nowrap">
+            <MemoryAddress
+              address={generateMemoryAddress(node.value)}
+              isVisible={showMemoryAddress}
+            />
+          </div>
         </div>
       </div>
     ),
@@ -1139,6 +1161,10 @@ const BSTStepthroughVisualization = forwardRef<
             <span>Running...</span>
           </div>
         )}
+        <VisualizationSettings
+          showMemoryAddress={showMemoryAddress}
+          onToggleMemoryAddress={setShowMemoryAddress}
+        />
       </div>
 
       {/* Current Step Info */}

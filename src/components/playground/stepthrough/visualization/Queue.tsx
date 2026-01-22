@@ -6,6 +6,8 @@ import { QueueData } from '@/types/stepthrough/Queue.types';
 import ZoomableContainer from '@/components/playground/shared/action/ZoomableContainer';
 import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
 import PerformanceAnalysisPanel from '@/components/playground/shared/PerformancePanel/PerformanceAnalysisPanel';
+import MemoryAddress from '@/components/playground/shared/common/MemoryAddress';
+import VisualizationSettings from '@/components/playground/shared/common/VisualizationSettings';
 
 const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
   steps,
@@ -19,6 +21,12 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
   const [exitingElements, setExitingElements] = useState<Set<string>>(new Set());
   const [elementsToRender, setElementsToRender] = useState<string[]>([]);
   const previousElementsRef = useRef<string[]>([]);
+  const [showMemoryAddress, setShowMemoryAddress] = useState(false);
+
+  const generateMemoryAddress = (index: number) => {
+    // Base address 0x200 for queue
+    return `0x${(0x200 + index * 4).toString(16).toUpperCase()}`;
+  };
 
   // Get queue elements from step state
   const getQueueElements = (): string[] => {
@@ -225,6 +233,12 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
             {value}
           </span>
         </div>
+        {/* Memory Address */}
+        <MemoryAddress
+          address={generateMemoryAddress(index)}
+          isVisible={showMemoryAddress}
+          className="mt-1"
+        />
       </div>
     );
   };
@@ -235,6 +249,10 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
           Queue Visualization
         </h2>
+        <VisualizationSettings
+          showMemoryAddress={showMemoryAddress}
+          onToggleMemoryAddress={setShowMemoryAddress}
+        />
       </div>
 
       {/* Underflow/Overflow Warning Banner */}

@@ -26,4 +26,12 @@ interface LinkedListData {
   classMetadata?: ClassMetadata;
 }
 
-export type { LinkedListData, ClassMetadata };
+// Type for storing node state at each step
+interface StepNodeState {
+  nodes: string[];
+  currentInsertedValue: string | null;
+  insertHistory: string[];
+  pendingNodes?: Array<{ variable: string; value: string }>;
+}
+
+export type { LinkedListData, ClassMetadata, StepNodeState };

@@ -11,9 +11,7 @@ import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
 const BSTDragDropVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/BST'),
 );
-const CopyCodeButton = lazy(
-  () => import('@/components/playground/shared/action/CopyCodeButton'),
-);
+const CopyCodeButton = lazy(() => import('@/components/playground/shared/action/CopyCodeButton'));
 const CodeEditor = lazy(() => import('@/components/editor/CodeEditor'));
 
 const safeUUID = () =>
@@ -263,12 +261,7 @@ const DragDropBST = () => {
             </div>
 
             <div className="rounded-lg border border-gray-200 dark:border-gray-700">
-              <CodeEditor
-                code={generatedCode}
-                disabled
-                height="400px"
-                onCodeChange={() => {}}
-              />
+              <CodeEditor code={generatedCode} disabled height="400px" onCodeChange={() => {}} />
             </div>
           </div>
         );

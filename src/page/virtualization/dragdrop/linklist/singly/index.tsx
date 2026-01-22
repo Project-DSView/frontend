@@ -296,12 +296,7 @@ const DragDropSinglyLinkedListPage = () => {
             </div>
             <div className="mt-2 rounded">
               <React.Suspense fallback={<div>Loading editor...</div>}>
-                <CodeEditor
-                  code={generatedCode}
-                  disabled
-                  height="400px"
-                  onCodeChange={() => {}}
-                />
+                <CodeEditor code={generatedCode} disabled height="400px" onCodeChange={() => {}} />
               </React.Suspense>
             </div>
           </div>
