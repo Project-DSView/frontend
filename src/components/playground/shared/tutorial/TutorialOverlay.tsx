@@ -339,7 +339,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
           </CardHeader>
 
           <CardContent className="space-y-4">
-            <p className="text-sm leading-relaxed">{step.description}</p>
+            <p className="text-sm leading-relaxed whitespace-pre-line">{step.description}</p>
             {step.customContent === 'naming-guide' && <NamingGuideDropdown />}
             {step.image && (
               <div className="bg-muted relative h-32 w-full overflow-hidden rounded-md">

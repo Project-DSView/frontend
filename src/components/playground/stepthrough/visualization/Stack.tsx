@@ -393,6 +393,7 @@ const StackStepthroughVisualization = forwardRef<
           <div className="flex items-center gap-3">
             {/* Variable Panel Toggle */}
             <button
+              id="tutorial-variables-toggle"
               onClick={() => setShowVariablePanel(!showVariablePanel)}
               className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
                 showVariablePanel
@@ -428,6 +429,7 @@ const StackStepthroughVisualization = forwardRef<
             )}
             {/* Common Errors Button */}
             <button
+              id="tutorial-common-errors"
               onClick={() => setIsPitfallPopupOpen(true)}
               className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:hover:bg-amber-900/60"
               title="ดูข้อผิดพลาดที่พบบ่อย"

@@ -64,6 +64,42 @@ const stepthroughTutorialSteps: TutorialStep[] = [
     disableNextUntilVisible: true,
   },
   {
+    title: 'Variables Panel',
+    description:
+      'ปุ่ม Variables ใช้สำหรับแสดง/ซ่อน แผงตัวแปร (Variable State Panel) ที่แสดงค่าตัวแปรทั้งหมดในขณะที่โปรแกรมทำงาน ช่วยให้เห็นการเปลี่ยนแปลงของค่าตัวแปรในแต่ละ step',
+    highlightSelector: '#tutorial-variables-toggle',
+    placement: 'bottom',
+    spotlightPadding: 8,
+    disableNextUntilVisible: true,
+  },
+  {
+    title: 'Technical / Analogy View',
+    description:
+      'สลับระหว่าง 2 มุมมอง:\n• Technical View - แสดงโครงสร้างข้อมูลในรูปแบบเทคนิค (Node, Pointer, Address)\n• Analogy View - แสดงเป็นภาพอุปมาอุปไมย เช่น รถไฟสำหรับ Linked List, จานสำหรับ Stack ช่วยให้เข้าใจแนวคิดได้ง่ายขึ้น',
+    highlightSelector: '#tutorial-view-mode-switcher',
+    placement: 'bottom',
+    spotlightPadding: 8,
+    disableNextUntilVisible: true,
+  },
+  {
+    title: 'Memory Address',
+    description:
+      'ปุ่ม Memory Address ใช้แสดงตำแหน่งหน่วยความจำ (Address) ของแต่ละ Node เช่น 0x100, 0x104 ช่วยให้เข้าใจว่าในความเป็นจริง แต่ละ Node ถูกเก็บอยู่ที่ตำแหน่งใดใน Memory',
+    highlightSelector: '#tutorial-memory-address-toggle',
+    placement: 'bottom',
+    spotlightPadding: 8,
+    disableNextUntilVisible: true,
+  },
+  {
+    title: 'Common Errors',
+    description:
+      'ปุ่ม Common Errors แสดงข้อผิดพลาดที่พบบ่อยในการเขียนโค้ดของ Data Structure นี้ เช่น:\n• ลืมอัพเดท pointer\n• ไม่ได้เช็ค null ก่อนเข้าถึง\n• Memory leak\nช่วยให้เรียนรู้จากข้อผิดพลาดที่มักเกิดขึ้น',
+    highlightSelector: '#tutorial-common-errors',
+    placement: 'bottom',
+    spotlightPadding: 8,
+    disableNextUntilVisible: true,
+  },
+  {
     title: 'Export Tools',
     description: 'บันทึกและแชร์ผลงานของคุณเป็นไฟล์ภาพ หรือ Source Code ได้ที่นี่',
     highlightSelector: '#tutorial-export-buttons',
