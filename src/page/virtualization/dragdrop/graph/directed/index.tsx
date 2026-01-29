@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, lazy, Suspense, useMemo, useEffect } from 'react';
+import React, { useState, useRef, Suspense, useMemo, useEffect } from 'react';
 
 import {
   DirectedGraphDragComponent,
@@ -19,13 +19,10 @@ import TutorialButton from '@/components/playground/shared/tutorial/TutorialButt
 import TutorialOverlay from '@/components/playground/shared/tutorial/TutorialOverlay';
 import CopyCodeButton from '@/components/playground/shared/action/CopyCodeButton';
 
-const DirectedGraphOperations = lazy(
-  () => import('@/components/playground/dragdrop/opeartion/DirectedGraph'),
-);
-const DirectedGraphVisualization = lazy(
+const DirectedGraphVisualization = React.lazy(
   () => import('@/components/playground/dragdrop/visualization/DirectedGraph'),
 );
-const CodeEditor = lazy(() => import('@/components/editor/CodeEditor'));
+const CodeEditor = React.lazy(() => import('@/components/editor/CodeEditor'));
 
 type GraphEdge = {
   from: string;
@@ -94,7 +91,7 @@ const hasDirectedCycle = (nodes: string[], edges: GraphEdge[]) => {
     color.set(u, 1);
     for (const v of adj.get(u) ?? []) {
       const c = color.get(v) ?? 0;
-      if (c === 1) return true; // back-edge
+      if (c === 1) return true;
       if (c === 0 && dfs(v)) return true;
     }
     color.set(u, 2);
@@ -109,13 +106,12 @@ const hasDirectedCycle = (nodes: string[], edges: GraphEdge[]) => {
   return false;
 };
 
-const isStronglyConnected = (nodes: string[], edges: GraphEdge[]) => {
+const isStronglyConnectedFn = (nodes: string[], edges: GraphEdge[]) => {
   if (nodes.length <= 1) return true;
 
   const adj = buildAdj(nodes, edges);
   const radj = buildReverseAdj(nodes, edges);
 
-  // pick first node
   const start = nodes[0];
 
   const vis1 = new Set<string>();
@@ -144,7 +140,6 @@ const buildGraphFromOperations = (ops: DirectedGraphOperation[], stepIndex: numb
 
   const removeEdge = (from: string, to: string) => {
     if (!from || !to) return;
-    // ลบเส้นแรกที่ match (กันลบหมดถ้ามีซ้ำ)
     const idx = edges.findIndex((e) => e.from === from && e.to === to);
     if (idx >= 0) edges.splice(idx, 1);
   };
@@ -157,7 +152,6 @@ const buildGraphFromOperations = (ops: DirectedGraphOperation[], stepIndex: numb
   const addEdge = (from: string, to: string, weightRaw?: string | number | null) => {
     if (!from || !to) return;
 
-    // auto add vertices
     addVertex(from);
     addVertex(to);
 
@@ -177,38 +171,24 @@ const buildGraphFromOperations = (ops: DirectedGraphOperation[], stepIndex: numb
 
     switch (op.type) {
       case 'add_vertex': {
-        const v = normalize(op.value);
-        addVertex(v);
+        addVertex(normalize(op.value));
         break;
       }
-
       case 'remove_vertex': {
-        const v = normalize(op.value);
-        removeVertex(v);
+        removeVertex(normalize(op.value));
         break;
       }
-
       case 'add_edge': {
         const from = normalize(op.fromVertex);
         const to = normalize(op.toVertex);
-
-        // ใน UI ของน้อง "ช่องตัวเลข" มักถูกเก็บใน op.value
         const weightRaw = op.value ?? op.newValue ?? null;
         addEdge(from, to, weightRaw);
         break;
       }
-
       case 'remove_edge': {
-        const from = normalize(op.fromVertex);
-        const to = normalize(op.toVertex);
-        removeEdge(from, to);
+        removeEdge(normalize(op.fromVertex), normalize(op.toVertex));
         break;
       }
-
-      // traversal / shortest_path ไม่เปลี่ยนโครงสร้างกราฟ
-      case 'traversal_bfs':
-      case 'traversal_dfs':
-      case 'shortest_path':
       default:
         break;
     }
@@ -218,7 +198,7 @@ const buildGraphFromOperations = (ops: DirectedGraphOperation[], stepIndex: numb
   const stats: GraphStats = {
     vertexCount: nodes.length,
     edgeCount: edges.length,
-    isStronglyConnected: isStronglyConnected(nodes, edges),
+    isStronglyConnected: isStronglyConnectedFn(nodes, edges),
     hasCycle: hasDirectedCycle(nodes, edges),
   };
 
@@ -228,18 +208,6 @@ const buildGraphFromOperations = (ops: DirectedGraphOperation[], stepIndex: numb
 const DragDropDirectedGraph = () => {
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
     useDragDropDirectedGraph();
-
-  const updateOperationValue = (id: number, value: string) => {
-    updateOperation(id, { value });
-  };
-
-  const updateOperationPosition = (id: number, position: string) => {
-    updateOperation(id, { position });
-  };
-
-  const updateOperationNewValue = (id: number, newValue: string) => {
-    updateOperation(id, { newValue });
-  };
 
   const [draggedItem, setDraggedItem] = useState<DirectedGraphDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
@@ -258,17 +226,7 @@ const DragDropDirectedGraph = () => {
   };
 
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault(); // ⭐ สำคัญมาก
-  };
-
-  const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -300,7 +258,6 @@ const DragDropDirectedGraph = () => {
       if (autoPlayRef.current) clearInterval(autoPlayRef.current);
       return;
     }
-
     if (state.operations.length === 0) return;
 
     setIsAutoPlaying(true);
@@ -323,6 +280,12 @@ const DragDropDirectedGraph = () => {
       if (autoPlayRef.current) clearInterval(autoPlayRef.current);
     };
   }, []);
+
+  /* ================= Update helpers ================= */
+
+  const updateOperationValue = (id: number, value: string) => updateOperation(id, { value });
+  const updateOperationPosition = (id: number, position: string) => updateOperation(id, { position });
+  const updateOperationNewValue = (id: number, newValue: string) => updateOperation(id, { newValue });
 
   /* ================= Step Description ================= */
 
@@ -348,30 +311,20 @@ const DragDropDirectedGraph = () => {
     }
   };
 
-  /* ================= ✅ Graph State (FIX Visualization) =================
-     ถ้าเลือก step -> ใช้ graph ของ step นั้น
-     ถ้าไม่เลือก step -> ใช้ graph ของ "operation สุดท้าย" (เต็มกราฟ)
-  ===================================================================== */
+  /* ================= Graph State (for visualization) ================= */
+
   const graphState = useMemo<GraphState>(() => {
     if (!state.operations || state.operations.length === 0) {
       return {
         nodes: [],
         edges: [],
-        stats: {
-          vertexCount: 0,
-          edgeCount: 0,
-          isStronglyConnected: true,
-          hasCycle: false,
-        },
+        stats: { vertexCount: 0, edgeCount: 0, isStronglyConnected: true, hasCycle: false },
       };
     }
-
     const stepIndex = selectedStep !== null ? selectedStep : state.operations.length - 1;
-
     return buildGraphFromOperations(state.operations as DirectedGraphOperation[], stepIndex);
   }, [state.operations, selectedStep]);
 
-  /* ================= Python Code Generator ================= */
 
   const pythonCode = useMemo(() => {
     const lines: string[] = [
@@ -397,17 +350,13 @@ const DragDropDirectedGraph = () => {
     ];
 
     (state.operations as DirectedGraphOperation[]).forEach((op) => {
-      if (op.type === 'add_vertex' && op.value) {
-        lines.push(`g.add_vertex("${op.value}")`);
-      }
-
+      if (op.type === 'add_vertex' && op.value) lines.push(`g.add_vertex("${op.value}")`);
       if (op.type === 'add_edge' && op.fromVertex && op.toVertex) {
         lines.push(`g.add_edge("${op.fromVertex}", "${op.toVertex}")`);
       }
     });
 
     lines.push('', 'g.show()');
-
     return lines.join('\n');
   }, [state.operations]);
 
@@ -416,7 +365,6 @@ const DragDropDirectedGraph = () => {
   const visualizationData = useMemo(() => {
     const { nodes: rawNodes, edges: rawEdges } = graphState;
 
-    // 1. Convert Edges & Calculate Degrees
     const inDegree: Record<string, number> = {};
     const outDegree: Record<string, number> = {};
     rawNodes.forEach((n) => {
@@ -438,10 +386,10 @@ const DragDropDirectedGraph = () => {
       };
     });
 
-    // 2. Convert Nodes with Auto-Layout (Circle)
+    // circle layout
     const centerX = 400;
-    const centerY = 300;
-    const radius = 200;
+    const centerY = 240; // ✅ ลดลงนิดให้สมดุล
+    const radius = 180;
     const angleStep = rawNodes.length > 0 ? (2 * Math.PI) / rawNodes.length : 0;
 
     const nodes: DirectedGraphNode[] = rawNodes.map((nodeId, i) => {
@@ -451,8 +399,8 @@ const DragDropDirectedGraph = () => {
         value: nodeId,
         x: centerX + radius * Math.cos(angle),
         y: centerY + radius * Math.sin(angle),
-        outgoingEdges: edges.filter((e) => e.from === nodeId).map((e) => e.id),
-        incomingEdges: edges.filter((e) => e.to === nodeId).map((e) => e.id),
+        outgoingEdges: edges.filter((x) => x.from === nodeId).map((x) => x.id),
+        incomingEdges: edges.filter((x) => x.to === nodeId).map((x) => x.id),
       };
     });
 
@@ -464,7 +412,7 @@ const DragDropDirectedGraph = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Drag & Drop Directed Graph</h1>
           <p className="text-sm text-gray-500">Directed graph visualization + Python code</p>
@@ -475,20 +423,28 @@ const DragDropDirectedGraph = () => {
         </div>
       </div>
 
-      {/* Operations */}
-      <div className="mb-6 rounded-xl border bg-white p-4">
-        <h2 className="mb-4 text-sm font-semibold">Graph Operations</h2>
+      {/* ✅ Graph Operations (เหมือนในรูป: แถบเล็ก + ปุ่ม pill) */}
+      <div className="mb-4 rounded-lg border bg-white p-3">
+        <h2 className="text-sm font-semibold text-gray-800">Graph Operations</h2>
 
-        <Suspense fallback={null}>
-          <DirectedGraphOperations
-            dragComponents={directedGraphDragComponents}
-            onDragStart={handleDragStart}
-          />
-        </Suspense>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {directedGraphDragComponents.map((op) => (
+            <button
+              key={op.type}
+              draggable
+              onDragStart={(e) => handleDragStart(e, op)}
+              className="rounded-full border px-3 py-1 text-xs font-medium text-gray-800 hover:bg-gray-100"
+              title={op.description}
+            >
+              {op.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Main */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        {/* Drop Zone */}
         <div className="rounded-xl border bg-white p-4">
           <div className="mb-3 flex justify-between">
             <h2 className="text-sm font-semibold">Drop Zone</h2>
@@ -507,18 +463,17 @@ const DragDropDirectedGraph = () => {
             operations={state.operations as Operation[]}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
             onRemoveOperation={removeOperation}
-            onUpdateOperationValue={updateOperationValue}
+            onUpdateOperationValue={updateOperationValue} 
             onUpdateOperationPosition={updateOperationPosition}
             onUpdateOperationNewValue={updateOperationNewValue}
             onReorderOperation={reorderOperation}
           />
         </div>
 
+        {/* Visualization */}
         <div className="rounded-xl border bg-white p-4">
-          <h2 className="mb-4 text-sm font-semibold">Graph Visualization</h2>
+          <h2 className="mb-3 text-sm font-semibold">Graph Visualization</h2>
 
           <Suspense fallback={null}>
             <DirectedGraphVisualization
@@ -571,7 +526,9 @@ const DragDropDirectedGraph = () => {
         </div>
 
         <div className="mt-4 rounded-lg">
-          <CodeEditor code={pythonCode} disabled height="400px" onCodeChange={() => {}} />
+          <Suspense fallback={null}>
+            <CodeEditor code={pythonCode} disabled height="400px" onCodeChange={() => {}} />
+          </Suspense>
         </div>
       </div>
 

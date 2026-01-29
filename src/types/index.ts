@@ -226,6 +226,7 @@ export type {
   PitfallPopupProps,
   CommonPitfallsWarningProps,
   UndirectedGraphVisualizationProps,
+  UndirectedGraphDragDropVisualizationProps,
 } from './props/props.types';
 
 // Services - All service types in one file

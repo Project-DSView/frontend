@@ -24,7 +24,12 @@ import { SinglyLinkedListDragComponent } from '../dragdrop/SinglyLinkedList.type
 import { DoublyLinkedListDragComponent } from '../dragdrop/DoublyLinkedList.types';
 import { StackDragComponent } from '../dragdrop/Stack.types';
 import { QueueDragComponent } from '../dragdrop/Queue.types';
-import { UndirectedGraphNode, UndirectedGraphEdge } from '../dragdrop/UndirectedGraph.types';
+import {
+  UndirectedGraphNode,
+  UndirectedGraphEdge,
+  UndirectedGraphStats,
+  UndirectedGraphOperation,
+} from '../dragdrop/UndirectedGraph.types';
 import { DirectedGraphNode, DirectedGraphEdge } from '../dragdrop/DirectedGraph.types';
 import {
   StepthroughStep,
@@ -568,11 +573,24 @@ interface QueueVisualizationProps {
   currentStep?: string;
 }
 
+interface UndirectedGraphDragDropVisualizationProps {
+  nodes: UndirectedGraphNode[];
+  edges: UndirectedGraphEdge[];
+  stats: UndirectedGraphStats;
+  isRunning?: boolean;
+  currentStep?: string;
+  searchPath?: string[];
+  shortestPath?: string[];
+  currentOperation?: string;
+  selectedStep?: number | null;
+  currentOperationData?: UndirectedGraphOperation;
+}
+
 interface DragDropZoneProps {
   operations: DragDropOperation[];
   onDragOver: (e: React.DragEvent) => void;
-  onDragEnter: (e: React.DragEvent) => void;
-  onDragLeave: (e: React.DragEvent) => void;
+  onDragEnter?: (e: React.DragEvent) => void;
+  onDragLeave?: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   onRemoveOperation: (id: number) => void;
   onUpdateOperationValue: (id: number, value: string) => void;
@@ -897,6 +915,7 @@ export type {
   QueueVisualizationProps,
   DragDropZoneProps,
   FeatureCardProps,
+  UndirectedGraphDragDropVisualizationProps,
   // Playground Shared Components
   ZoomControlsProps,
   ZoomableContainerProps,
