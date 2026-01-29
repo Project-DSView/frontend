@@ -21,6 +21,7 @@ const VisualizationSettings: React.FC<VisualizationSettingsProps> = ({
     <div className={`flex items-center gap-3 ${className}`}>
       {/* Memory Address Toggle */}
       <button
+        id="tutorial-memory-address-toggle"
         onClick={() => onToggleMemoryAddress(!showMemoryAddress)}
         className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
           showMemoryAddress

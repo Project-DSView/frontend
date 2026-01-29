@@ -9,7 +9,7 @@ const ViewModeSwitcher: React.FC<ViewModeSwitcherProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`flex items-center rounded-lg bg-gray-100 p-1 dark:bg-gray-800 ${className}`}>
+    <div id="tutorial-view-mode-switcher" className={`flex items-center rounded-lg bg-gray-100 p-1 dark:bg-gray-800 ${className}`}>
       <button
         onClick={() => onModeChange('technical')}
         className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
