@@ -23,6 +23,8 @@ const MemoryAddress: React.FC<MemoryAddressProps> = ({ address, isVisible, class
   );
 };
 
+import { generateMemoryAddress as generateAuthoredAddress } from '@/lib/utils/memory';
+
 /**
  * Utility function to generate a simulated memory address
  * @param index - Node index (0-based)
@@ -30,8 +32,7 @@ const MemoryAddress: React.FC<MemoryAddressProps> = ({ address, isVisible, class
  * @returns Formatted hex address string
  */
 export const generateMemoryAddress = (index: number, baseAddress: number = 0x100): string => {
-  const address = baseAddress + index * 8; // Each node is 8 bytes apart
-  return `0x${address.toString(16).toUpperCase().padStart(3, '0')}`;
+  return generateAuthoredAddress(index, baseAddress);
 };
 
 export default MemoryAddress;

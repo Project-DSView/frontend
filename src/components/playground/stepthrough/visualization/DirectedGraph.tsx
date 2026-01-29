@@ -10,7 +10,12 @@ import StepIndicator from '@/components/playground/shared/action/StepIndicator';
 import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
 import PerformanceAnalysisPanel from '@/components/playground/shared/PerformancePanel/PerformanceAnalysisPanel';
 import MemoryAddress from '@/components/playground/shared/common/MemoryAddress';
-import VisualizationSettings from '@/components/playground/shared/common/VisualizationSettings';
+import { generateHashMemoryAddress } from '@/lib/utils/memory';
+import VisualizationViewControls from '@/components/playground/shared/common/VisualizationViewControls';
+import { ViewMode } from '@/types';
+import VariableStatePanel from '@/components/playground/stepthrough/VariableStatePanel';
+import CommonPitfallsWarning from '@/components/playground/stepthrough/CommonPitfallsWarning';
+import PitfallPopup from '@/components/playground/stepthrough/PitfallPopup';
 
 const DirectedGraphStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -31,6 +36,7 @@ const DirectedGraphStepthroughVisualization = forwardRef<
     ref,
   ) => {
     const [highlightedNodes, setHighlightedNodes] = useState<string[]>([]);
+    const [viewMode, setViewMode] = useState<ViewMode>('technical');
     const [highlightedEdges, setHighlightedEdges] = useState<string[]>([]);
     const [searchPath] = useState<string[]>([]);
     const [traverseIndex, setTraverseIndex] = useState(0);
@@ -42,17 +48,25 @@ const DirectedGraphStepthroughVisualization = forwardRef<
     );
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [showMemoryAddress, setShowMemoryAddress] = useState(false);
+    const [showVariablePanel, setShowVariablePanel] = useState(true);
+    const [isPitfallPopupOpen, setIsPitfallPopupOpen] = useState(false);
 
-    const generateMemoryAddress = (value: string) => {
-      // Generate distinct address based on value hash
-      let hash = 0;
-      for (let i = 0; i < value.length; i++) {
-        hash = value.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      // Base address 0x400 for Graph
-      const offset = Math.abs(hash) % 0xfff;
-      return `0x${(0x400 + offset).toString(16).toUpperCase().padStart(3, '0')}`;
-    };
+    // Extract warnings from current step
+    const currentWarnings =
+      steps.length > 0 && currentStepIndex < steps.length
+        ? (
+            steps[currentStepIndex].state?.step_detail as {
+              warnings?: Array<{
+                type: string;
+                severity: 'info' | 'warning' | 'error';
+                message: string;
+                tip: string;
+              }>;
+            }
+          )?.warnings || []
+        : [];
+
+    // Memory address generation via utility
 
     // Extract current step information
     const currentStep = useMemo(() => {
@@ -312,7 +326,7 @@ const DirectedGraphStepthroughVisualization = forwardRef<
             {/* Memory Address */}
             <div className="absolute top-14 left-1/2 -translate-x-1/2 whitespace-nowrap">
               <MemoryAddress
-                address={generateMemoryAddress(node.value)}
+                address={generateHashMemoryAddress(node.value, 0x400)}
                 isVisible={showMemoryAddress}
               />
             </div>
@@ -426,17 +440,64 @@ const DirectedGraphStepthroughVisualization = forwardRef<
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
             Directed Graph Visualization
           </h2>
-          {isRunning && (
-            <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-400" />
-              <span>Running...</span>
-            </div>
-          )}
-          <VisualizationSettings
-            showMemoryAddress={showMemoryAddress}
-            onToggleMemoryAddress={setShowMemoryAddress}
-          />
+          <div className="flex items-center gap-3">
+            {/* Variable Panel Toggle */}
+            <button
+              onClick={() => setShowVariablePanel(!showVariablePanel)}
+              className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+                showVariablePanel
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+              }`}
+              title="Toggle Variable State Panel"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+              Variables
+            </button>
+            {isRunning && (
+              <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-400" />
+                <span>Running...</span>
+              </div>
+            )}
+            <VisualizationViewControls
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              showMemoryAddress={showMemoryAddress}
+              onToggleMemoryAddress={setShowMemoryAddress}
+            />
+            {/* Common Errors Button */}
+            <button
+              onClick={() => setIsPitfallPopupOpen(true)}
+              className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:hover:bg-amber-900/60"
+              title="ดูข้อผิดพลาดที่พบบ่อย"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              Common Errors
+            </button>
+          </div>
         </div>
+
+        {/* Pitfall Warnings - Show if any */}
+        {currentWarnings.length > 0 && (
+          <div className="mb-4">
+            <CommonPitfallsWarning warnings={currentWarnings} />
+          </div>
+        )}
 
         {/* Current Step Info */}
         {currentStep && !error && (
@@ -447,44 +508,74 @@ const DirectedGraphStepthroughVisualization = forwardRef<
           </div>
         )}
 
-        {/* Graph Visualization */}
-        <ZoomableContainer
-          className="min-h-[400px] rounded-lg bg-gray-50 dark:bg-gray-800"
-          minZoom={0.3}
-          maxZoom={2}
-          initialZoom={1}
-          enablePan={true}
-          enableWheelZoom={true}
-          enableKeyboardZoom={true}
-          showControls={true}
-        >
-          {/* Step Indicator */}
-          {isRunning && steps.length > 0 && (
-            <StepIndicator
-              stepNumber={currentStepIndex + 1}
-              totalSteps={steps.length}
-              message={steps[currentStepIndex]?.state?.message}
-              isAutoPlaying={isRunning}
-            />
+        {/* Main Content - Flex layout with Variable Panel */}
+        <div className="flex gap-4">
+          {/* Left Side - Variable State Panel */}
+          {showVariablePanel && (
+            <div className="flex-shrink-0">
+              <VariableStatePanel
+                steps={steps}
+                currentStepIndex={currentStepIndex}
+                nodes={data.nodes.map((n) => n.value)}
+              />
+            </div>
           )}
 
-          {data.nodes.length > 0 ? (
-            <div className="relative h-full min-h-[400px] w-full p-6">
-              {/* Render edges first (behind nodes) */}
-              {data.edges.map(renderEdge)}
-
-              {/* Render nodes */}
-              {data.nodes.map(renderNode)}
-            </div>
-          ) : (
-            <div className="flex h-96 items-center justify-center text-gray-400 dark:text-gray-500">
-              <div className="text-center">
-                <div className="text-lg font-medium">Empty Graph</div>
-                <div className="text-sm">Run your code to see graph visualization</div>
+          {/* Right Side - Graph Visualization */}
+          <div className="min-w-0 flex-1">
+            {viewMode === 'analogy' ? (
+              <div className="flex min-h-[400px] items-center justify-center rounded-lg bg-gray-50 p-6 text-center dark:bg-gray-800">
+                <div className="max-w-md">
+                  <h3 className="mb-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                    Analogy View Coming Soon
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    We are working on adding conceptual analogies for Directed Graphs. Please switch
+                    back to Technical View for now.
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
-        </ZoomableContainer>
+            ) : (
+              <ZoomableContainer
+                className="min-h-[400px] rounded-lg bg-gray-50 dark:bg-gray-800"
+                minZoom={0.3}
+                maxZoom={2}
+                initialZoom={1}
+                enablePan={true}
+                enableWheelZoom={true}
+                enableKeyboardZoom={true}
+                showControls={true}
+              >
+                {/* Step Indicator */}
+                {isRunning && steps.length > 0 && (
+                  <StepIndicator
+                    stepNumber={currentStepIndex + 1}
+                    totalSteps={steps.length}
+                    message={steps[currentStepIndex]?.state?.message}
+                    isAutoPlaying={isRunning}
+                  />
+                )}
+
+                {data.nodes.length > 0 ? (
+                  <div className="relative h-full min-h-[400px] w-full p-6">
+                    {/* Render edges first (behind nodes) */}
+                    {data.edges.map(renderEdge)}
+
+                    {/* Render nodes */}
+                    {data.nodes.map(renderNode)}
+                  </div>
+                ) : (
+                  <div className="flex h-96 items-center justify-center text-gray-400 dark:text-gray-500">
+                    <div className="text-center">
+                      <div className="text-lg font-medium">Empty Graph</div>
+                      <div className="text-sm">Run your code to see graph visualization</div>
+                    </div>
+                  </div>
+                )}
+              </ZoomableContainer>
+            )}
+          </div>
+        </div>
 
         {/* Stats Display */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -541,25 +632,32 @@ const DirectedGraphStepthroughVisualization = forwardRef<
           complexity={complexity}
         />
 
-        {/* Legend */}
-        <div className="mt-4 flex flex-wrap gap-4 text-xs">
-          <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 rounded-full border border-yellow-400 bg-yellow-200" />
-            <span>Inserted</span>
+        {/* Color Legend */}
+        <section className="mt-4 flex flex-wrap items-center gap-3 text-xs">
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-gray-600 bg-white dark:border-gray-300 dark:bg-gray-700"></div>
+            <span className="text-gray-600 dark:text-gray-400">Node ปกติ</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 rounded-full border border-orange-400 bg-orange-200" />
-            <span>Current</span>
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-yellow-400 bg-yellow-200 dark:border-yellow-500 dark:bg-yellow-900/30"></div>
+            <span className="text-gray-600 dark:text-gray-400">Inserted (Active)</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 rounded-full border border-green-400 bg-green-200" />
-            <span>Traversing</span>
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-orange-400 bg-orange-200 dark:border-orange-500 dark:bg-orange-900/30"></div>
+            <span className="text-gray-600 dark:text-gray-400">Current</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 rounded-full border border-gray-600 bg-white" />
-            <span>Normal Node</span>
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-green-400 bg-green-200 dark:border-green-500 dark:bg-green-900/30"></div>
+            <span className="text-gray-600 dark:text-gray-400">Traversing</span>
           </div>
-        </div>
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-blue-400 bg-blue-200 dark:border-blue-500 dark:bg-blue-900/30"></div>
+            <span className="text-gray-600 dark:text-gray-400">In Path</span>
+          </div>
+        </section>
+
+        {/* Pitfall Popup */}
+        <PitfallPopup isOpen={isPitfallPopupOpen} onClose={() => setIsPitfallPopupOpen(false)} />
       </div>
     );
   },

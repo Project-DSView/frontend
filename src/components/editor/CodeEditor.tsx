@@ -367,6 +367,24 @@ class BreakpointMarker extends GutterMarker {
   }
 }
 
+// Visual change indicator gutter marker (shows which line causes visualization changes)
+class VisualChangeMarker extends GutterMarker {
+  toDOM() {
+    const marker = document.createElement('div');
+    marker.className = 'cm-visual-change-marker';
+    marker.innerHTML = '◆';
+    marker.style.cssText = `
+      color: red;
+      font-size: 16px;
+      line-height: 1.4;
+      text-align: center;
+      animation: pulse-marker 1.5s ease-in-out infinite;
+    `;
+    marker.title = 'This line changes visualization';
+    return marker;
+  }
+}
+
 const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
   code,
   onCodeChange,
@@ -461,6 +479,52 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
     ];
   }, [executableLines]);
 
+  // Create extension for enhanced current line highlighting
+  const currentLineHighlight = useMemo(() => {
+    if (!currentStep?.line) return [];
+
+    const currentLineMark = Decoration.line({
+      class: 'current-executing-line',
+    });
+
+    return [
+      EditorView.decorations.of((view) => {
+        const decorations = [];
+        try {
+          const line = view.state.doc.line(currentStep.line);
+          decorations.push(currentLineMark.range(line.from));
+        } catch {
+          // Line doesn't exist, skip
+        }
+        return Decoration.set(decorations);
+      }),
+    ];
+  }, [currentStep?.line]);
+
+  // Gutter for visual change indicator
+  const visualChangeGutter = useMemo(() => {
+    if (!currentStep?.line) return [];
+
+    const visualChangeGutterExtension = gutter({
+      class: 'cm-visual-change-gutter',
+      markers: (view) => {
+        if (!currentStep?.line) return RangeSet.empty;
+        const markers: Range<GutterMarker>[] = [];
+        try {
+          const line = view.state.doc.line(currentStep.line);
+          if (line) {
+            markers.push(new VisualChangeMarker().range(line.from));
+          }
+        } catch {
+          // Line doesn't exist
+        }
+        return RangeSet.of(markers);
+      },
+    });
+
+    return [visualChangeGutterExtension];
+  }, [currentStep?.line]);
+
   // Memoize extensions to prevent re-creation
   const extensions = useMemo(
     () => [
@@ -473,6 +537,8 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
       lintGutter(),
       ...breakpointGutter,
       ...executableLinesHighlight,
+      ...currentLineHighlight,
+      ...visualChangeGutter,
       EditorView.baseTheme({
         '& .cm-activeLine': {
           backgroundColor: '#FFFF0040 !important',
@@ -486,6 +552,19 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
         },
         '& .cm-line.executable-line.dark': {
           backgroundColor: '#1e3a5f !important',
+        },
+        // Enhanced current executing line highlight
+        '& .cm-line.current-executing-line': {
+          background:
+            'linear-gradient(90deg, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0.08) 50%, transparent 100%) !important',
+          borderLeft: '4px solid #3B82F6 !important',
+          boxShadow: 'inset 0 0 12px rgba(59, 130, 246, 0.2)',
+          animation: 'pulse-highlight 2s ease-in-out infinite',
+          position: 'relative',
+        },
+        // Visual change gutter
+        '& .cm-visual-change-gutter': {
+          width: '16px',
         },
         // Error highlighting styles
         '& .cm-lint-marker-error': {
@@ -545,6 +624,7 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
         // Debug line highlight
         '& .cm-line': {
           position: 'relative',
+          transition: 'background-color 0.3s ease, border-left 0.3s ease',
         },
         // Enable horizontal scrolling
         '& .cm-scroller': {
@@ -555,7 +635,7 @@ const CodeEditor: React.FC<StepthroughCodeEditorProps> = ({
         },
       }),
     ],
-    [breakpointGutter, executableLinesHighlight],
+    [breakpointGutter, executableLinesHighlight, currentLineHighlight, visualChangeGutter],
   );
 
   // Scroll to and highlight current step line
