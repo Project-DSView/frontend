@@ -24,9 +24,37 @@ import { SinglyLinkedListDragComponent } from '../dragdrop/SinglyLinkedList.type
 import { DoublyLinkedListDragComponent } from '../dragdrop/DoublyLinkedList.types';
 import { StackDragComponent } from '../dragdrop/Stack.types';
 import { QueueDragComponent } from '../dragdrop/Queue.types';
-import { UndirectedGraphNode, UndirectedGraphEdge } from '../dragdrop/UndirectedGraph.types';
+import {
+  UndirectedGraphNode,
+  UndirectedGraphEdge,
+  UndirectedGraphStats,
+  UndirectedGraphOperation,
+} from '../dragdrop/UndirectedGraph.types';
 import { DirectedGraphNode, DirectedGraphEdge } from '../dragdrop/DirectedGraph.types';
-import { StepthroughStep, ComplexityAnalysis } from '../stepthrough/common.types';
+import {
+  StepthroughStep,
+  ComplexityAnalysis,
+  StepthroughVisualizationProps,
+} from '../stepthrough/common.types';
+import { DirectedGraphData } from '../stepthrough/DirectedGraph.types';
+import { UndirectedGraphData } from '../stepthrough/UndirectedGraph.types';
+
+// ============================================================================
+// Stepthrough Props
+// ============================================================================
+export interface UndirectedGraphVisualizationProps
+  extends StepthroughVisualizationProps<UndirectedGraphData> {
+  insertedVertex?: string | null;
+  insertedEdge?: string | null;
+  currentVertex?: string | null;
+}
+
+export interface DirectedGraphStepthroughVisualizationProps
+  extends StepthroughVisualizationProps<DirectedGraphData> {
+  insertedVertex?: string | null;
+  insertedEdge?: string | null;
+  currentVertex?: string | null;
+}
 
 // ============================================================================
 // Button Props
@@ -545,11 +573,24 @@ interface QueueVisualizationProps {
   currentStep?: string;
 }
 
+interface UndirectedGraphDragDropVisualizationProps {
+  nodes: UndirectedGraphNode[];
+  edges: UndirectedGraphEdge[];
+  stats: UndirectedGraphStats;
+  isRunning?: boolean;
+  currentStep?: string;
+  searchPath?: string[];
+  shortestPath?: string[];
+  currentOperation?: string;
+  selectedStep?: number | null;
+  currentOperationData?: UndirectedGraphOperation;
+}
+
 interface DragDropZoneProps {
   operations: DragDropOperation[];
   onDragOver: (e: React.DragEvent) => void;
-  onDragEnter: (e: React.DragEvent) => void;
-  onDragLeave: (e: React.DragEvent) => void;
+  onDragEnter?: (e: React.DragEvent) => void;
+  onDragLeave?: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   onRemoveOperation: (id: number) => void;
   onUpdateOperationValue: (id: number, value: string) => void;
@@ -643,6 +684,155 @@ interface BigOComplexityCardProps {
 }
 
 // ============================================================================
+// Variable State Panel Props
+// ============================================================================
+interface VariableInfo {
+  name: string;
+  value: string | null;
+  pointsToNode?: string;
+  changed: boolean;
+}
+
+interface VariableStatePanelProps {
+  steps: StepthroughStep[];
+  currentStepIndex: number;
+  nodes?: string[]; // Optional, kept for backward compatibility
+  defaultWidth?: number; // Default panel width
+  minWidth?: number; // Minimum panel width
+  maxWidth?: number; // Maximum panel width
+}
+
+// ============================================================================
+// Pitfall Props
+// ============================================================================
+import { PitfallWarning } from '../stepthrough/pitfalls.types';
+
+interface PitfallPopupProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+interface CommonPitfallsWarningProps {
+  warnings: PitfallWarning[];
+}
+
+// ============================================================================
+// Analogy Props
+// ============================================================================
+interface ConceptualAnalogyPanelProps {
+  type: 'linked-list' | 'doubly-linked-list' | 'stack' | 'queue';
+  data: {
+    nodes?: string[];
+    elements?: string[]; // For Stack/Queue
+  };
+  className?: string;
+  isVisible?: boolean;
+}
+
+// ============================================================================
+// Performance Panel Props
+// ============================================================================
+interface PerformanceAnalysisPanelProps {
+  steps: StepthroughStep[];
+  currentStepIndex: number;
+  complexity?: ComplexityAnalysis | null;
+}
+
+interface PerformanceSummaryMetricsProps {
+  memoryUsage: number;
+  totalExecutionTime: number;
+  complexity?: ComplexityAnalysis | null;
+}
+
+interface PerformanceMetricsCardsProps {
+  memoryUsage: number;
+  maxMemoryUsed: number;
+  totalExecutionTime: number;
+  stepCount: number;
+}
+
+interface PerformanceChartProps {
+  steps: StepthroughStep[];
+  currentStepIndex: number;
+}
+
+interface HotspotsPanelProps {
+  steps: StepthroughStep[];
+}
+
+interface TimelinePanelProps {
+  steps: StepthroughStep[];
+  currentStepIndex: number;
+}
+
+interface MemoryUsageBarProps {
+  memoryUsage: number;
+}
+
+interface TimeUsageBarProps {
+  totalExecutionTime: number;
+}
+
+interface BigOOverviewProps {
+  complexity: ComplexityAnalysis;
+}
+
+interface BigOAnalysisDetailsProps {
+  details: ComplexityAnalysis['analysisDetails'];
+}
+
+interface PerFunctionComplexityProps {
+  functionComplexities: NonNullable<ComplexityAnalysis['functionComplexities']>;
+}
+
+interface BigOChartProps {
+  timeComplexity: string;
+}
+
+// ============================================================================
+// Memory Address & Pointer Animation Props
+// ============================================================================
+interface MemoryAddressComponentProps {
+  address: string;
+  isVisible: boolean;
+  className?: string;
+}
+
+interface VisualizationSettingsComponentProps {
+  showMemoryAddress: boolean;
+  onToggleMemoryAddress: (value: boolean) => void;
+  className?: string;
+}
+
+interface PointerArrowComponentProps {
+  fromPosition: { x: number; y: number };
+  toPosition: { x: number; y: number };
+  isAnimating: boolean;
+  label?: string;
+  color?: string;
+  onAnimationComplete?: () => void;
+}
+
+// ============================================================================
+// View Control Props
+// ============================================================================
+type ViewMode = 'technical' | 'analogy';
+
+interface VisualizationViewControlsProps {
+  viewMode: ViewMode;
+  onViewModeChange: (mode: ViewMode) => void;
+  showMemoryAddress: boolean;
+  onToggleMemoryAddress: (value: boolean) => void;
+  className?: string;
+}
+
+interface ViewModeSwitcherProps {
+  currentMode: ViewMode;
+  onModeChange: (mode: ViewMode) => void;
+  className?: string;
+}
+
+// ============================================================================
 // Exports
 // ============================================================================
 export type {
@@ -725,6 +915,7 @@ export type {
   QueueVisualizationProps,
   DragDropZoneProps,
   FeatureCardProps,
+  UndirectedGraphDragDropVisualizationProps,
   // Playground Shared Components
   ZoomControlsProps,
   ZoomableContainerProps,
@@ -749,64 +940,21 @@ export type {
   BigOAnalysisDetailsProps,
   PerFunctionComplexityProps,
   BigOChartProps,
+  // Stepthrough
+  // Memory Address & Pointer Animation
+  MemoryAddressComponentProps,
+  VisualizationSettingsComponentProps,
+  PointerArrowComponentProps,
+  // Variable State Panel
+  VariableInfo,
+  VariableStatePanelProps,
+  // Analogy
+  ConceptualAnalogyPanelProps,
+  // View Controls
+  ViewMode,
+  VisualizationViewControlsProps,
+  ViewModeSwitcherProps,
+  // Pitfall
+  PitfallPopupProps,
+  CommonPitfallsWarningProps,
 };
-
-// ============================================================================
-// Performance Panel Props
-// ============================================================================
-interface PerformanceAnalysisPanelProps {
-  steps: StepthroughStep[];
-  currentStepIndex: number;
-  complexity?: ComplexityAnalysis | null;
-}
-
-interface PerformanceSummaryMetricsProps {
-  memoryUsage: number;
-  totalExecutionTime: number;
-  complexity?: ComplexityAnalysis | null;
-}
-
-interface PerformanceMetricsCardsProps {
-  memoryUsage: number;
-  maxMemoryUsed: number;
-  totalExecutionTime: number;
-  stepCount: number;
-}
-
-interface PerformanceChartProps {
-  steps: StepthroughStep[];
-  currentStepIndex: number;
-}
-
-interface HotspotsPanelProps {
-  steps: StepthroughStep[];
-}
-
-interface TimelinePanelProps {
-  steps: StepthroughStep[];
-  currentStepIndex: number;
-}
-
-interface MemoryUsageBarProps {
-  memoryUsage: number;
-}
-
-interface TimeUsageBarProps {
-  totalExecutionTime: number;
-}
-
-interface BigOOverviewProps {
-  complexity: ComplexityAnalysis;
-}
-
-interface BigOAnalysisDetailsProps {
-  details: ComplexityAnalysis['analysisDetails'];
-}
-
-interface PerFunctionComplexityProps {
-  functionComplexities: NonNullable<ComplexityAnalysis['functionComplexities']>;
-}
-
-interface BigOChartProps {
-  timeComplexity: string;
-}

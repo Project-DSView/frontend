@@ -69,6 +69,8 @@ class SinglyLinkedListStepthroughService
 
     // If instances not available, build from step_detail and operation data
     let nodes: string[] = [];
+    // Track pending nodes (created but not yet connected to the list)
+    const pendingNodes: Array<{ variable: string; value: string }> = [];
 
     // Build nodes by simulating the operations up to current step
     for (let i = 0; i <= stepIndex; i++) {
@@ -81,6 +83,40 @@ class SinglyLinkedListStepthroughService
         if (operation === 'instantiate') {
           // Initialize empty list
           nodes = [];
+        } else if (operation === 'node_creation') {
+          // Node created but NOT yet connected to the list
+          // Add to pending nodes (will be shown as floating node)
+          const nodeValue = (stepDetail as { node_value?: string }).node_value || '';
+          if (nodeValue) {
+            // Track by value since backend uses 'self' as variable inside __init__
+            const existingIndex = pendingNodes.findIndex((n) => n.value === nodeValue);
+            if (existingIndex >= 0) {
+              pendingNodes.splice(existingIndex, 1);
+            }
+            pendingNodes.push({ variable: nodeValue, value: nodeValue });
+          }
+        } else if (
+          operation === 'pointer_assignment' ||
+          operation === 'chained_pointer_assignment'
+        ) {
+          // Node is being connected to the list - move from pending to connected
+          const isHeadAssignment = (stepDetail as { is_head_assignment?: boolean })
+            .is_head_assignment;
+          const createsConnection = (stepDetail as { creates_connection?: boolean })
+            .creates_connection;
+
+          // When connection is made, move the most recent pending node to the list
+          if (createsConnection && pendingNodes.length > 0) {
+            const pendingNode = pendingNodes.pop()!;
+            // Move to connected nodes
+            if (isHeadAssignment) {
+              // Insert at front
+              nodes.unshift(pendingNode.value);
+            } else {
+              // Chained assignment usually means insert after head
+              nodes.push(pendingNode.value);
+            }
+          }
         } else if (operation === 'method_call') {
           const methodName = stepDetail.method_name;
           const parameters = stepDetail.parameters || '';
@@ -127,7 +163,7 @@ class SinglyLinkedListStepthroughService
       }
     }
 
-    return { nodes };
+    return { nodes, pendingNodes: pendingNodes.length > 0 ? pendingNodes : undefined };
   }
 
   extractStatsFromSteps(

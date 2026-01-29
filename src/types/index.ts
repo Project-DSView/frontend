@@ -106,7 +106,6 @@ export type {
   UndirectedGraphState,
   UndirectedGraphExecutionStep,
   UndirectedGraphOperationsProps,
-  UndirectedGraphVisualizationProps,
   PositionedUndirectedGraphNode,
   UndirectedGraphStatsExtended,
   UndirectedGraphStateExtended,
@@ -217,6 +216,17 @@ export type {
   BigOAnalysisDetailsProps,
   PerFunctionComplexityProps,
   BigOChartProps,
+  DirectedGraphStepthroughVisualizationProps,
+  VariableInfo,
+  VariableStatePanelProps,
+  ConceptualAnalogyPanelProps,
+  ViewMode,
+  VisualizationViewControlsProps,
+  ViewModeSwitcherProps,
+  PitfallPopupProps,
+  CommonPitfallsWarningProps,
+  UndirectedGraphVisualizationProps,
+  UndirectedGraphDragDropVisualizationProps,
 } from './props/props.types';
 
 // Services - All service types in one file
@@ -334,7 +344,7 @@ export type {
 
 export type { DirectedGraphData } from './stepthrough/DirectedGraph.types';
 
-export type { LinkedListData, ClassMetadata } from './stepthrough/LinkedList.types';
+export type { LinkedListData, ClassMetadata, StepNodeState } from './stepthrough/LinkedList.types';
 
 export type { StackData, StackInstanceData, StackStepDetail } from './stepthrough/Stack.types';
 
@@ -346,8 +356,11 @@ export type {
   ASTInfo,
   ASTClassification,
   ASTVisualizationProps,
+  ASTNodeTypeInfo,
 } from './stepthrough/ast.types';
 export type { InputState } from './stepthrough/common.types';
+
+export type { PitfallWarning, CommonError } from './stepthrough/pitfalls.types';
 
 // Schemas - All schema types in one file
 export type {

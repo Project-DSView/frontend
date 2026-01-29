@@ -55,6 +55,11 @@ interface SinglyLinkedListData {
   tail?: string | null;
   count?: number;
   classMetadata?: ClassMetadata; // Dynamic labels from user's class definitions
+  // Progressive rendering: nodes created but not yet connected to the list
+  pendingNodes?: Array<{
+    variable: string; // Variable name (e.g., "pNew")
+    value: string; // Node value (e.g., "John")
+  }>;
 }
 
 interface SinglyLinkedListStatsExtended extends BaseStats {

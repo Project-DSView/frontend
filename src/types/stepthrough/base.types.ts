@@ -84,9 +84,9 @@ interface BaseStepthroughHookReturn<TData, TStats> {
   handleInputCancel?: () => void;
 }
 
-export type { BaseStepthroughState, BaseStepthroughHookReturn, BaseStepthroughService, InputState };
-
 interface BaseStepthroughService<TData, TStats> {
   extractDataFromSteps(steps: StepthroughStep[], stepIndex: number): TData;
   extractStatsFromSteps(steps: StepthroughStep[], stepIndex: number): TStats;
 }
+
+export type { BaseStepthroughState, BaseStepthroughHookReturn, BaseStepthroughService, InputState };

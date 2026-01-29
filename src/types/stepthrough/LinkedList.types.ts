@@ -8,14 +8,14 @@ interface ClassMetadata {
       methods: string[];
     }
   >;
-  node_class?: string; // Class name of node (e.g., "DataNode")
-  list_class?: string; // Class name of list (e.g., "SinglyLinkedList")
-  data_attr?: string; // Node's data attribute (e.g., "name")
-  next_attr?: string; // Node's next pointer (e.g., "next")
-  prev_attr?: string; // Node's prev pointer for doubly linked
-  head_attr?: string; // List's head pointer (e.g., "head")
-  tail_attr?: string; // List's tail pointer (e.g., "tail")
-  count_attr?: string; // List's size counter (e.g., "count")
+  node_class?: string;
+  list_class?: string;
+  data_attr?: string;
+  next_attr?: string;
+  prev_attr?: string;
+  head_attr?: string;
+  tail_attr?: string;
+  count_attr?: string;
 }
 
 interface LinkedListData {
@@ -26,4 +26,13 @@ interface LinkedListData {
   classMetadata?: ClassMetadata;
 }
 
-export type { LinkedListData, ClassMetadata };
+interface StepNodeState {
+  nodes: string[];
+  currentInsertedValue: string | null;
+  insertHistory: string[];
+  pendingNodes?: Array<{ variable: string; value: string }>;
+  visitedTraverseNodes?: number[];
+  isInTraverseSequence?: boolean;
+}
+
+export type { LinkedListData, ClassMetadata, StepNodeState };

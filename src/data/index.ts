@@ -70,3 +70,6 @@ export {
 
 // About
 export { advisor, developers } from './components/about.data';
+
+// Pitfalls
+export { COMMON_ERRORS, getPitfallInfo } from './components/pitfalls.data';

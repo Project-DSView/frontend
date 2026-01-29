@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { ConsoleOutputProps } from '@/types';
 
 const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ steps, currentStepIndex }) => {
@@ -23,7 +24,11 @@ const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ steps, currentStepIndex }
   }
 
   return (
-    <div className="mt-4 overflow-hidden rounded-lg bg-gray-100 shadow-inner dark:bg-gray-900">
+    <div
+      className="mt-4 overflow-hidden rounded-lg bg-gray-100 shadow-inner dark:bg-gray-900"
+      role="region"
+      aria-label="Console Output"
+    >
       <div className="border-b border-gray-300 bg-gray-200 px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
         <div className="flex items-center space-x-2">
           <svg
@@ -44,7 +49,11 @@ const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ steps, currentStepIndex }
           </span>
         </div>
       </div>
-      <div className="max-h-40 min-h-[60px] overflow-y-auto p-4 font-mono text-sm">
+      <div
+        className="max-h-40 min-h-[60px] overflow-y-auto p-4 font-mono text-sm"
+        role="log"
+        aria-live="polite"
+      >
         {output.length === 0 ? (
           <div className="text-gray-500 italic dark:text-gray-500">No output generated...</div>
         ) : (

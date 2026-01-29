@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+
+import { InputDialogProps } from '@/types';
+
 import {
   AlertDialog,
   AlertDialogContent,
@@ -12,7 +15,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { InputDialogProps } from '@/types';
 
 const InputDialog: React.FC<InputDialogProps> = ({ isOpen, prompts, onSubmit, onCancel }) => {
   const [inputValue, setInputValue] = useState<string>('');
@@ -75,14 +77,14 @@ const InputDialog: React.FC<InputDialogProps> = ({ isOpen, prompts, onSubmit, on
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="space-y-4 py-2">
+        <section className="space-y-4 py-2">
           {/* Prompt display */}
           {currentPrompt && currentPrompt !== 'Enter value' && (
-            <div className="rounded-md border border-blue-100 bg-blue-50 px-3 py-2 dark:border-blue-800 dark:bg-blue-900/20">
+            <aside className="rounded-md border border-blue-100 bg-blue-50 px-3 py-2 dark:border-blue-800 dark:bg-blue-900/20">
               <p className="text-sm text-blue-800 dark:text-blue-300">
                 <span className="font-medium">Prompt:</span> {currentPrompt}
               </p>
-            </div>
+            </aside>
           )}
 
           {/* Input field */}
@@ -103,7 +105,7 @@ const InputDialog: React.FC<InputDialogProps> = ({ isOpen, prompts, onSubmit, on
             />
             <p className="text-xs text-gray-500 dark:text-gray-400">กด Enter เพื่อส่งค่า</p>
           </div>
-        </div>
+        </section>
 
         <AlertDialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={handleCancel} size="sm">

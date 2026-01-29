@@ -136,6 +136,15 @@ export {
   getSpaceLevel,
 } from './utils/performance';
 
+export { generateMemoryAddress, generateHashMemoryAddress } from './utils/memory';
+
+export {
+  isNodeLike,
+  formatObjectValue,
+  generateHashAddress,
+  convertToBSTNode,
+} from './utils/stepthrough';
+
 // Code Generators (with base templates)
 export {
   generateDragDropBSTCode,

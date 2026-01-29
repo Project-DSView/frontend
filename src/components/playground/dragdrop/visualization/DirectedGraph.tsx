@@ -110,7 +110,7 @@ const DirectedGraphDragDropVisualization = forwardRef<
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      <h2 className="mb-4 text-lg font-semibold">Directed Graph Visualization</h2>
+      <h2 className="mb-4 text-lg font-semibold"></h2>
 
       <ZoomableContainer className="min-h-[400px] rounded-lg bg-gray-50" showControls>
         {nodes.length === 0 ? (

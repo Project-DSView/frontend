@@ -1,10 +1,19 @@
 import React, { forwardRef, useState, useEffect, useRef } from 'react';
-import { StepthroughVisualizationProps, StackData } from '@/types';
+import { gsap } from 'gsap';
+
+import { StepthroughVisualizationProps, StackData, ViewMode } from '@/types';
+import { generateMemoryAddress } from '@/lib';
+
 import ZoomableContainer from '@/components/playground/shared/action/ZoomableContainer';
 import StepIndicator from '@/components/playground/shared/action/StepIndicator';
 import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
 import PerformanceAnalysisPanel from '@/components/playground/shared/PerformancePanel/PerformanceAnalysisPanel';
-import { gsap } from 'gsap';
+import MemoryAddress from '@/components/playground/shared/common/MemoryAddress';
+import VisualizationViewControls from '@/components/playground/shared/common/VisualizationViewControls';
+import VariableStatePanel from '@/components/playground/stepthrough/VariableStatePanel';
+import CommonPitfallsWarning from '@/components/playground/stepthrough/CommonPitfallsWarning';
+import PitfallPopup from '@/components/playground/stepthrough/PitfallPopup';
+import ConceptualAnalogyPanel from '@/components/playground/shared/analogy/ConceptualAnalogyPanel';
 
 const StackStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -22,17 +31,41 @@ const StackStepthroughVisualization = forwardRef<
     ref,
   ) => {
     const [highlightedElementIndex, setHighlightedElementIndex] = useState(-1);
+    const [viewMode, setViewMode] = useState<ViewMode>('technical');
     const [isAnimating, setIsAnimating] = useState(false);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [enteringElements, setEnteringElements] = useState<Set<number>>(new Set());
     const [exitingElements, setExitingElements] = useState<Set<string>>(new Set());
     const [elementsToRender, setElementsToRender] = useState<string[]>(data.elements);
+    const [elements, setElements] = useState(data.elements);
+    const [showMemoryAddress, setShowMemoryAddress] = useState(false);
+    const [showVariablePanel, setShowVariablePanel] = useState(true);
+    const [isPitfallPopupOpen, setIsPitfallPopupOpen] = useState(false);
 
-    // Use ref to store elements to prevent unnecessary re-renders
     const elementsRef = useRef(data.elements);
     const previousElementsRef = useRef<string[]>(data.elements);
     const elementRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-    const [elements, setElements] = useState(data.elements);
+
+    // Extract warnings from current step
+    const currentWarnings =
+      steps.length > 0 && currentStepIndex < steps.length
+        ? (
+            steps[currentStepIndex].state?.step_detail as {
+              warnings?: Array<{
+                type: string;
+                severity: 'info' | 'warning' | 'error';
+                message: string;
+                tip: string;
+              }>;
+            }
+          )?.warnings || []
+        : [];
+
+    // Generate random memory address for stack nodes (Base 0x100)
+    const getMemoryAddress = (index: number) => {
+      // Base address 0x100 for stack is default in utility
+      return generateMemoryAddress(index);
+    };
 
     // Update elements when data.elements actually changes and detect push/pop
     useEffect(() => {
@@ -302,6 +335,13 @@ const StackStepthroughVisualization = forwardRef<
 
           {/* Index indicator */}
           <div className="mt-1 text-center text-xs text-gray-500 dark:text-gray-400">[{index}]</div>
+
+          {/* Memory Address */}
+          <MemoryAddress
+            address={getMemoryAddress(index)}
+            isVisible={showMemoryAddress}
+            className="mt-1"
+          />
         </div>
       );
     };
@@ -350,13 +390,67 @@ const StackStepthroughVisualization = forwardRef<
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
             Stack Visualization
           </h2>
-          {isRunning && (
-            <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-400" />
-              <span>Running...</span>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {/* Variable Panel Toggle */}
+            <button
+              onClick={() => setShowVariablePanel(!showVariablePanel)}
+              className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+                showVariablePanel
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+              }`}
+              title="Toggle Variable State Panel"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+              Variables
+            </button>
+
+            {/* View Controls */}
+            <VisualizationViewControls
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              showMemoryAddress={showMemoryAddress}
+              onToggleMemoryAddress={setShowMemoryAddress}
+            />
+
+            {isRunning && (
+              <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-400" />
+                <span>Running...</span>
+              </div>
+            )}
+            {/* Common Errors Button */}
+            <button
+              onClick={() => setIsPitfallPopupOpen(true)}
+              className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:hover:bg-amber-900/60"
+              title="ดูข้อผิดพลาดที่พบบ่อย"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              Common Errors
+            </button>
+          </div>
         </div>
+
+        {/* Pitfall Warnings - Show if any */}
+        {currentWarnings.length > 0 && (
+          <div className="mb-4">
+            <CommonPitfallsWarning warnings={currentWarnings} />
+          </div>
+        )}
 
         {/* Current Step Info */}
         {steps.length > 0 && currentStepIndex < steps.length && !error && (
@@ -371,7 +465,6 @@ const StackStepthroughVisualization = forwardRef<
         {errorInfo && (
           <div className="mb-4 animate-pulse rounded-lg border-2 border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/20">
             <div className="flex items-center space-x-2">
-              <span className="text-xl">⚠️</span>
               <span className="font-semibold text-red-800 dark:text-red-200">
                 {errorInfo.message}
               </span>
@@ -379,70 +472,94 @@ const StackStepthroughVisualization = forwardRef<
           </div>
         )}
 
-        {/* Stack Container */}
-        <ZoomableContainer
-          className="min-h-[300px] rounded-lg bg-gray-50 dark:bg-gray-800"
-          minZoom={0.5}
-          maxZoom={2}
-          initialZoom={1}
-          enablePan={true}
-          enableWheelZoom={true}
-          enableKeyboardZoom={true}
-          showControls={true}
-        >
-          {/* Step Indicator */}
-          {isRunning && steps.length > 0 && (
-            <StepIndicator
-              stepNumber={currentStepIndex + 1}
-              totalSteps={steps.length}
-              message={steps[currentStepIndex]?.state?.message}
-              isAutoPlaying={isRunning}
-            />
+        {/* Main Content - Flex layout with Variable Panel */}
+        <div className="flex gap-4">
+          {/* Left Side - Variable State Panel */}
+          {showVariablePanel && (
+            <div className="flex-shrink-0">
+              <VariableStatePanel
+                steps={steps}
+                currentStepIndex={currentStepIndex}
+                nodes={elements}
+              />
+            </div>
           )}
 
-          {showMultipleStacks ? (
-            <div className="space-y-6 p-6">
-              <div className="flex justify-center space-x-8">
-                {data.allStacks &&
-                  Object.entries(data.allStacks).map(([stackName, stackData]) =>
-                    renderSingleStack(stackData.data, `Stack ${stackName}`, stackName),
-                  )}
-              </div>
-            </div>
-          ) : (
-            <div className="flex min-h-[200px] flex-col items-center justify-end p-6">
-              {elementsToRender.length === 0 ? (
-                <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
-                  <div className="text-center text-gray-500 dark:text-gray-400">
-                    <div className="font-semibold">Stack is Empty</div>
-                    <div className="text-sm">Add elements using Push operation</div>
-                  </div>
-                </div>
-              ) : (
-                <div className="relative w-36">
-                  {/* Stack Frame - กรอบสี่เหลี่ยมไม่มีเส้นด้านบน */}
-                  <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black dark:border-gray-300"></div>
+          {/* Right Side - Stack Container */}
+          <div className="min-w-0 flex-1">
+            {viewMode === 'analogy' ? (
+              <ConceptualAnalogyPanel
+                type="stack"
+                data={{ elements: elementsToRender }}
+                className="min-h-[300px]"
+              />
+            ) : (
+              <ZoomableContainer
+                className="min-h-[300px] rounded-lg bg-gray-50 dark:bg-gray-800"
+                minZoom={0.5}
+                maxZoom={2}
+                initialZoom={1}
+                enablePan={true}
+                enableWheelZoom={true}
+                enableKeyboardZoom={true}
+                showControls={true}
+              >
+                {/* Step Indicator */}
+                {isRunning && steps.length > 0 && (
+                  <StepIndicator
+                    stepNumber={currentStepIndex + 1}
+                    totalSteps={steps.length}
+                    message={steps[currentStepIndex]?.state?.message}
+                    isAutoPlaying={isRunning}
+                  />
+                )}
 
-                  {/* Stack Elements - อยู่ติดกันไม่มีช่องว่าง */}
-                  <div className="flex flex-col-reverse">
-                    {elementsToRender.map((element, index) => {
-                      const isExiting = exitingElements.has(element);
-                      // Don't render exiting elements after animation
-                      if (isExiting && !isTransitioning) {
-                        return null;
-                      }
-                      return (
-                        <div key={`${element}-${index}`} className="relative">
-                          {renderStackElement(element, index, elementsToRender.length)}
+                {showMultipleStacks ? (
+                  <div className="space-y-6 p-6">
+                    <div className="flex justify-center space-x-8">
+                      {data.allStacks &&
+                        Object.entries(data.allStacks).map(([stackName, stackData]) =>
+                          renderSingleStack(stackData.data, `Stack ${stackName}`, stackName),
+                        )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex min-h-[200px] flex-col items-center justify-end p-6">
+                    {elementsToRender.length === 0 ? (
+                      <div className="flex h-32 w-40 items-center justify-center border-r-2 border-b-2 border-l-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+                        <div className="text-center text-gray-500 dark:text-gray-400">
+                          <div className="font-semibold">Stack is Empty</div>
+                          <div className="text-sm">Add elements using Push operation</div>
                         </div>
-                      );
-                    })}
+                      </div>
+                    ) : (
+                      <div className="relative w-36">
+                        {/* Stack Frame - กรอบสี่เหลี่ยมไม่มีเส้นด้านบน */}
+                        <div className="pointer-events-none absolute inset-0 border-r-2 border-b-2 border-l-2 border-black dark:border-gray-300"></div>
+
+                        {/* Stack Elements - อยู่ติดกันไม่มีช่องว่าง */}
+                        <div className="flex flex-col-reverse">
+                          {elementsToRender.map((element, index) => {
+                            const isExiting = exitingElements.has(element);
+                            // Don't render exiting elements after animation
+                            if (isExiting && !isTransitioning) {
+                              return null;
+                            }
+                            return (
+                              <div key={`${element}-${index}`} className="relative">
+                                {renderStackElement(element, index, elementsToRender.length)}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
-            </div>
-          )}
-        </ZoomableContainer>
+                )}
+              </ZoomableContainer>
+            )}
+          </div>
+        </div>
 
         {/* Stack Info */}
         <div className="mt-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
@@ -529,17 +646,35 @@ const StackStepthroughVisualization = forwardRef<
         </div>
 
         {/* Stats */}
-        <div className="mt-4 flex space-x-6 text-sm text-gray-600 dark:text-gray-400">
-          <div>
-            <span className="font-semibold">จำนวน Elements:</span> {data.count || elements.length}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex space-x-6 text-sm text-gray-600 dark:text-gray-400">
+            <div>
+              <span className="font-semibold">จำนวน Elements:</span> {data.count || elements.length}
+            </div>
+            <div>
+              <span className="font-semibold">Size:</span> {elements.length}
+            </div>
+            <div>
+              <span className="font-semibold">Top Value:</span>{' '}
+              {elements.length > 0 ? elements[elements.length - 1] : 'None'}
+            </div>
           </div>
-          <div>
-            <span className="font-semibold">Size:</span> {elements.length}
-          </div>
-          <div>
-            <span className="font-semibold">Top Value:</span>{' '}
-            {elements.length > 0 ? elements[elements.length - 1] : 'None'}
-          </div>
+
+          {/* Color Legend */}
+          <section className="flex flex-wrap items-center gap-3 text-xs">
+            <div className="flex items-center">
+              <div className="mr-1.5 h-3 w-3 rounded border border-gray-300 bg-gray-100 dark:border-gray-600 dark:bg-gray-700"></div>
+              <span className="text-gray-600 dark:text-gray-400">ปกติ</span>
+            </div>
+            <div className="flex items-center">
+              <div className="mr-1.5 h-3 w-3 rounded border border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/30"></div>
+              <span className="text-gray-600 dark:text-gray-400">ถูกเลือก (Top/Act)</span>
+            </div>
+            <div className="flex items-center">
+              <div className="border-accent mr-1.5 h-3 w-3 rounded border bg-blue-50 dark:border-blue-400 dark:bg-blue-900/30"></div>
+              <span className="text-gray-600 dark:text-gray-400">Push/Pop</span>
+            </div>
+          </section>
         </div>
 
         {/* Console Output */}
@@ -566,6 +701,9 @@ const StackStepthroughVisualization = forwardRef<
             </p>
           </div>
         )}
+
+        {/* Pitfall Popup */}
+        <PitfallPopup isOpen={isPitfallPopupOpen} onClose={() => setIsPitfallPopupOpen(false)} />
       </div>
     );
   },

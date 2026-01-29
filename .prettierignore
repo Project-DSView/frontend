@@ -1,0 +1,28 @@
+# Dependencies
+node_modules
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist
+build
+.out
+.next
+coverage
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Generated files
+*.min.js
+*.min.css
+*.bundle.js
+
+# Logs
+*.log
+
+# Public / static (ถ้าไม่อยากให้ prettier ไปยุ่ง)
+public

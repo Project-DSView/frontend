@@ -2,7 +2,7 @@
  * AST-related types for stepthrough visualization
  */
 
-export interface ASTNodeMetadata {
+interface ASTNodeMetadata {
   type: string;
   typeDisplay?: string;
   line?: number;
@@ -18,7 +18,7 @@ export interface ASTNodeMetadata {
   parentId?: string | null;
 }
 
-export interface ASTInfo {
+interface ASTInfo {
   node_count: number;
   has_input: boolean;
   classes?: string[];
@@ -26,7 +26,7 @@ export interface ASTInfo {
   executable_lines?: number[];
 }
 
-export interface ASTClassification {
+interface ASTClassification {
   has_class_definitions: boolean;
   has_method_calls: boolean;
   has_assignments: boolean;
@@ -36,9 +36,22 @@ export interface ASTClassification {
   visualization_type: string;
 }
 
-export interface ASTVisualizationProps {
+interface ASTVisualizationProps {
   astNodes?: ASTNodeMetadata[];
   currentASTNodeIndex?: number;
   astInfo?: ASTInfo;
   classification?: ASTClassification;
 }
+
+interface ASTNodeTypeInfo {
+  type: string;
+  displayName: string;
+  description: string;
+  thaiDescription: string;
+  category: string;
+  example: string;
+  whyShapedThisWay: string;
+  executionFlow: string;
+}
+
+export type { ASTNodeMetadata, ASTInfo, ASTClassification, ASTVisualizationProps, ASTNodeTypeInfo };

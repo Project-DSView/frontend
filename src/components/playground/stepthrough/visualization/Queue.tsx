@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { StepthroughVisualizationProps } from '@/types';
-import { QueueData } from '@/types/stepthrough/Queue.types';
+import { StepthroughVisualizationProps, ViewMode, QueueData } from '@/types';
 
 import ZoomableContainer from '@/components/playground/shared/action/ZoomableContainer';
 import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
 import PerformanceAnalysisPanel from '@/components/playground/shared/PerformancePanel/PerformanceAnalysisPanel';
+import MemoryAddress from '@/components/playground/shared/common/MemoryAddress';
+import { generateMemoryAddress } from '@/lib/utils/memory';
+import VisualizationViewControls from '@/components/playground/shared/common/VisualizationViewControls';
+import ConceptualAnalogyPanel from '@/components/playground/shared/analogy/ConceptualAnalogyPanel';
+import VariableStatePanel from '@/components/playground/stepthrough/VariableStatePanel';
+import CommonPitfallsWarning from '@/components/playground/stepthrough/CommonPitfallsWarning';
+import PitfallPopup from '@/components/playground/stepthrough/PitfallPopup';
 
 const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
   steps,
@@ -15,10 +21,34 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
 }) => {
   const currentStep = steps[currentStepIndex];
   const queueData = data as QueueData;
+  const [viewMode, setViewMode] = useState<ViewMode>('technical');
   const [, setEnteringElements] = useState<Set<number>>(new Set());
   const [exitingElements, setExitingElements] = useState<Set<string>>(new Set());
   const [elementsToRender, setElementsToRender] = useState<string[]>([]);
+  const [showMemoryAddress, setShowMemoryAddress] = useState(false);
+  const [showVariablePanel, setShowVariablePanel] = useState(true);
+  const [isPitfallPopupOpen, setIsPitfallPopupOpen] = useState(false);
+
   const previousElementsRef = useRef<string[]>([]);
+
+  // Extract warnings from current step
+  const currentWarnings =
+    steps.length > 0 && currentStepIndex < steps.length
+      ? (
+          steps[currentStepIndex].state?.step_detail as {
+            warnings?: Array<{
+              type: string;
+              severity: 'info' | 'warning' | 'error';
+              message: string;
+              tip: string;
+            }>;
+          }
+        )?.warnings || []
+      : [];
+
+  const getMemoryAddress = (index: number) => {
+    return generateMemoryAddress(index, 0x200);
+  };
 
   // Get queue elements from step state
   const getQueueElements = (): string[] => {
@@ -225,6 +255,12 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
             {value}
           </span>
         </div>
+        {/* Memory Address */}
+        <MemoryAddress
+          address={getMemoryAddress(index)}
+          isVisible={showMemoryAddress}
+          className="mt-1"
+        />
       </div>
     );
   };
@@ -235,13 +271,63 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
           Queue Visualization
         </h2>
+        <div className="flex items-center gap-3">
+          {/* Variable Panel Toggle */}
+          <button
+            onClick={() => setShowVariablePanel(!showVariablePanel)}
+            className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+              showVariablePanel
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+            }`}
+            title="Toggle Variable State Panel"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
+            </svg>
+            Variables
+          </button>
+          <VisualizationViewControls
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            showMemoryAddress={showMemoryAddress}
+            onToggleMemoryAddress={setShowMemoryAddress}
+          />
+          {/* Common Errors Button */}
+          <button
+            onClick={() => setIsPitfallPopupOpen(true)}
+            className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:hover:bg-amber-900/60"
+            title="ดูข้อผิดพลาดที่พบบ่อย"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            Common Errors
+          </button>
+        </div>
       </div>
+
+      {/* Pitfall Warnings - Show if any */}
+      {currentWarnings.length > 0 && (
+        <div className="mb-4">
+          <CommonPitfallsWarning warnings={currentWarnings} />
+        </div>
+      )}
 
       {/* Underflow/Overflow Warning Banner */}
       {errorInfo && (
         <div className="mb-4 animate-pulse rounded-lg border-2 border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/20">
           <div className="flex items-center space-x-2">
-            <span className="text-xl">⚠️</span>
             <span className="font-semibold text-red-800 dark:text-red-200">
               {errorInfo.message}
             </span>
@@ -249,77 +335,105 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
         </div>
       )}
 
-      <ZoomableContainer
-        className="min-h-[300px] rounded-lg bg-gray-50 dark:bg-gray-800"
-        minZoom={0.5}
-        maxZoom={2}
-        initialZoom={1}
-        enablePan={true}
-        enableWheelZoom={true}
-        enableKeyboardZoom={true}
-        showControls={true}
-      >
-        <div className="p-6">
-          {/* แบ่งเป็น 2 ส่วน: ซ้าย (Queue), ขวา (Dequeued) */}
-          <div className="flex min-h-[250px] flex-row gap-6">
-            {/* ส่วนซ้าย: Queue */}
-            <div className="flex flex-1 flex-col items-center justify-center">
-              <div className="mb-2 text-center text-sm font-semibold text-gray-600 dark:text-gray-400">
-                Queue
-              </div>
-              <div className="relative min-h-[120px] w-full overflow-x-auto rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                {elementsToRender.length === 0 ? (
-                  <div className="flex h-24 w-full items-center justify-center border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
-                    <div className="text-center text-gray-500 dark:text-gray-400">
-                      <div className="text-xs font-semibold">Empty Queue</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative flex items-center justify-center">
-                    {/* Queue Elements - horizontal layout, no gaps, aligned on same baseline */}
-                    <div className="z-10 flex items-center">
-                      {elementsToRender.map((element, index) => {
-                        const isExiting = exitingElements.has(element);
-                        // Don't render exiting elements after animation
-                        if (isExiting && elementsToRender.length > elements.length) {
-                          return null;
-                        }
-                        return (
-                          <div key={`${element}-${index}`} className="relative flex items-center">
-                            {renderQueueElement(element, index, elementsToRender.length)}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ส่วนขวา: Dequeued Element */}
-            <div className="flex flex-1 flex-col items-center justify-center">
-              <div className="mb-2 text-center text-sm font-semibold text-gray-600 dark:text-gray-400">
-                Dequeued Element
-              </div>
-              {dequeuedElement ? (
-                <div className="flex items-center justify-center">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-red-400 bg-gradient-to-br from-red-100 to-red-200 shadow-lg dark:border-red-500 dark:from-red-900/30 dark:to-red-800/30">
-                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                      {dequeuedElement}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex h-20 w-32 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
-                  <div className="text-center text-xs text-gray-500 dark:text-gray-400">
-                    No element dequeued
-                  </div>
-                </div>
-              )}
-            </div>
+      {/* Main Content - Flex layout with Variable Panel */}
+      <div className="flex gap-4">
+        {/* Left Side - Variable State Panel */}
+        {showVariablePanel && (
+          <div className="flex-shrink-0">
+            <VariableStatePanel
+              steps={steps}
+              currentStepIndex={currentStepIndex}
+              nodes={elements}
+            />
           </div>
+        )}
+
+        {/* Right Side - Queue Container */}
+        <div className="min-w-0 flex-1">
+          {viewMode === 'analogy' ? (
+            <ConceptualAnalogyPanel
+              type="queue"
+              data={{ elements: elementsToRender.length > 0 ? elementsToRender : elements }}
+              className="min-h-[300px]"
+            />
+          ) : (
+            <ZoomableContainer
+              className="min-h-[300px] rounded-lg bg-gray-50 dark:bg-gray-800"
+              minZoom={0.5}
+              maxZoom={2}
+              initialZoom={1}
+              enablePan={true}
+              enableWheelZoom={true}
+              enableKeyboardZoom={true}
+              showControls={true}
+            >
+              <div className="p-6">
+                {/* แบ่งเป็น 2 ส่วน: ซ้าย (Queue), ขวา (Dequeued) */}
+                <div className="flex min-h-[250px] flex-row gap-6">
+                  {/* ส่วนซ้าย: Queue */}
+                  <div className="flex flex-1 flex-col items-center justify-center">
+                    <div className="mb-2 text-center text-sm font-semibold text-gray-600 dark:text-gray-400">
+                      Queue
+                    </div>
+                    <div className="relative min-h-[120px] w-full overflow-x-auto rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+                      {elementsToRender.length === 0 ? (
+                        <div className="flex h-24 w-full items-center justify-center border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+                          <div className="text-center text-gray-500 dark:text-gray-400">
+                            <div className="text-xs font-semibold">Empty Queue</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative flex items-center justify-center">
+                          {/* Queue Elements - horizontal layout, no gaps, aligned on same baseline */}
+                          <div className="z-10 flex items-center">
+                            {elementsToRender.map((element, index) => {
+                              const isExiting = exitingElements.has(element);
+                              // Don't render exiting elements after animation
+                              if (isExiting && elementsToRender.length > elements.length) {
+                                return null;
+                              }
+                              return (
+                                <div
+                                  key={`${element}-${index}`}
+                                  className="relative flex items-center"
+                                >
+                                  {renderQueueElement(element, index, elementsToRender.length)}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* ส่วนขวา: Dequeued Element */}
+                  <div className="flex flex-1 flex-col items-center justify-center">
+                    <div className="mb-2 text-center text-sm font-semibold text-gray-600 dark:text-gray-400">
+                      Dequeued Element
+                    </div>
+                    {dequeuedElement ? (
+                      <div className="flex items-center justify-center">
+                        <div className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-red-400 bg-gradient-to-br from-red-100 to-red-200 shadow-lg dark:border-red-500 dark:from-red-900/30 dark:to-red-800/30">
+                          <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                            {dequeuedElement}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex h-20 w-32 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+                        <div className="text-center text-xs text-gray-500 dark:text-gray-400">
+                          No element dequeued
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </ZoomableContainer>
+          )}
         </div>
-      </ZoomableContainer>
+      </div>
 
       {/* Queue Info */}
       <div className="mt-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
@@ -354,6 +468,22 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
             </span>
           </div>
         </div>
+
+        {/* Color Legend */}
+        <section className="mt-4 flex flex-wrap items-center gap-3 border-t border-gray-200 pt-3 text-xs dark:border-gray-600">
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-green-500 bg-gray-100 dark:border-green-400 dark:bg-green-900/30"></div>
+            <span className="text-gray-600 dark:text-gray-400">Head (Front)</span>
+          </div>
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-blue-500 bg-gray-100 dark:border-blue-400 dark:bg-blue-900/30"></div>
+            <span className="text-gray-600 dark:text-gray-400">Tail (Back)</span>
+          </div>
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-gray-300 bg-gradient-to-br from-gray-100 to-gray-200 dark:border-gray-600 dark:from-gray-700 dark:to-gray-800"></div>
+            <span className="text-gray-600 dark:text-gray-400">ปกติ</span>
+          </div>
+        </section>
       </div>
 
       {/* Console Output */}
@@ -366,21 +496,8 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
         complexity={complexity}
       />
 
-      {/* Legend */}
-      <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-700 dark:text-gray-300">
-        <div className="flex items-center space-x-2">
-          <div className="h-3 w-3 rounded-full border border-green-400 bg-green-200 dark:border-green-500 dark:bg-green-700" />
-          <span>Head</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="h-3 w-3 rounded-full border border-blue-400 bg-blue-200 dark:border-blue-500 dark:bg-blue-700" />
-          <span>Tail</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="h-3 w-3 rounded-full border border-red-400 bg-red-200 dark:border-red-500 dark:bg-red-700" />
-          <span>Dequeue</span>
-        </div>
-      </div>
+      {/* Pitfall Popup */}
+      <PitfallPopup isOpen={isPitfallPopupOpen} onClose={() => setIsPitfallPopupOpen(false)} />
     </div>
   );
 };

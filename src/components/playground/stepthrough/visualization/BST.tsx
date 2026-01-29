@@ -1,55 +1,60 @@
 import React, { forwardRef, useMemo, useState, useEffect, memo, useCallback, useRef } from 'react';
 import { StepthroughVisualizationProps, BSTNode, PositionedNode, BSTData } from '@/types';
 import ZoomableContainer from '@/components/playground/shared/action/ZoomableContainer';
-import StepIndicator from '@/components/playground/shared/action/StepIndicator';
 import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
 import PerformanceAnalysisPanel from '@/components/playground/shared/PerformancePanel/PerformanceAnalysisPanel';
+import MemoryAddress from '@/components/playground/shared/common/MemoryAddress';
+import VisualizationViewControls from '@/components/playground/shared/common/VisualizationViewControls';
+import { ViewMode } from '@/types';
+
+import VariableStatePanel from '@/components/playground/stepthrough/VariableStatePanel';
+import CommonPitfallsWarning from '@/components/playground/stepthrough/CommonPitfallsWarning';
+import PitfallPopup from '@/components/playground/stepthrough/PitfallPopup';
+import { generateHashAddress, convertToBSTNode } from '@/lib';
 
 const BSTStepthroughVisualization = forwardRef<
   HTMLDivElement,
   StepthroughVisualizationProps<BSTData>
 >(({ steps, currentStepIndex, data, isRunning, error, complexity }, ref) => {
-  const [searchPath, setSearchPath] = useState<string[]>([]);
+  const [searchPath] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>('technical');
   const [traverseIndex, setTraverseIndex] = useState(0);
   const [isTraversing, setIsTraversing] = useState(false);
   const [traversalOrder, setTraversalOrder] = useState<string[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [previousNodes, setPreviousNodes] = useState<PositionedNode[]>([]);
   const [exitingNodes, setExitingNodes] = useState<Set<string>>(new Set());
-  const [insertedNode, setInsertedNode] = useState<string | null>(null); // Latest inserted node (highlighted)
-  const [currentNode, setCurrentNode] = useState<string | null>(null); // Current node from backend (orange highlight)
-  const [pathNodes, setPathNodes] = useState<Set<string>>(new Set()); // Nodes in the path to current node
-  const [activeConnectionIndex, setActiveConnectionIndex] = useState<number | null>(null); // Connection that is currently animating
-  const [connectionProgress, setConnectionProgress] = useState<number>(0); // Progress of current connection (0-1)
-  const [activeParentNode, setActiveParentNode] = useState<string | null>(null); // Parent node of currently animating connection (fill orange)
-  const [animatedNodes, setAnimatedNodes] = useState<Set<string>>(new Set()); // Nodes that animation has passed (change to border orange)
-  const [completedConnections, setCompletedConnections] = useState<Set<string>>(new Set()); // Connections that animation has completed
+  const [insertedNode, setInsertedNode] = useState<string | null>(null);
+  const [currentNode, setCurrentNode] = useState<string | null>(null);
+  const [pathNodes, setPathNodes] = useState<Set<string>>(new Set());
+  const [activeConnectionIndex, setActiveConnectionIndex] = useState<number | null>(null);
+  const [connectionProgress, setConnectionProgress] = useState<number>(0);
+  const [activeParentNode, setActiveParentNode] = useState<string | null>(null);
+  const [animatedNodes, setAnimatedNodes] = useState<Set<string>>(new Set());
+  const [completedConnections, setCompletedConnections] = useState<Set<string>>(new Set());
+  const [showMemoryAddress, setShowMemoryAddress] = useState(false);
+  const [showVariablePanel, setShowVariablePanel] = useState(true);
+  const [isPitfallPopupOpen, setIsPitfallPopupOpen] = useState(false);
+
   const previousRootRef = useRef<BSTNode | null>(null);
-  const rootPositionRef = useRef<{ x: number; y: number } | null>(null); // Store root position to prevent movement
+  const rootPositionRef = useRef<{ x: number; y: number } | null>(null);
+  const nodeRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const connectionRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  // Helper function to convert backend tree data to BSTNode
-  const convertToBSTNode = useCallback((nodeData: unknown): BSTNode | null => {
-    if (!nodeData || typeof nodeData !== 'object') {
-      return null;
-    }
-
-    const data = nodeData as Record<string, unknown>;
-    const node: BSTNode = {
-      value: String(data.data || data.value || ''),
-      left: null,
-      right: null,
-      id: Math.random().toString(36).substring(2, 11),
-    };
-
-    if (data.left) {
-      node.left = convertToBSTNode(data.left);
-    }
-    if (data.right) {
-      node.right = convertToBSTNode(data.right);
-    }
-
-    return node;
-  }, []);
+  // Extract warnings from current step
+  const currentWarnings =
+    steps.length > 0 && currentStepIndex < steps.length
+      ? (
+          steps[currentStepIndex].state?.step_detail as {
+            warnings?: Array<{
+              type: string;
+              severity: 'info' | 'warning' | 'error';
+              message: string;
+              tip: string;
+            }>;
+          }
+        )?.warnings || []
+      : [];
 
   // Extract all BST instances from data or steps data
   const allTrees = useMemo(() => {
@@ -110,7 +115,7 @@ const BSTStepthroughVisualization = forwardRef<
     }
 
     return trees;
-  }, [data, steps, currentStepIndex, convertToBSTNode]);
+  }, [data, steps, currentStepIndex]);
 
   // Get the first tree as the main root for backward compatibility
   const root = useMemo(() => {
@@ -138,7 +143,7 @@ const BSTStepthroughVisualization = forwardRef<
     }
 
     return null;
-  }, [allTrees, steps, currentStepIndex, convertToBSTNode]);
+  }, [allTrees, steps, currentStepIndex]);
 
   // Generate traversal results for a tree
   const generateTraversalResults = useCallback((node: BSTNode | null) => {
@@ -226,7 +231,7 @@ const BSTStepthroughVisualization = forwardRef<
     return result;
   }, []);
 
-  // Handle animation based on current step
+  // Handle animation based on current step (Traversal only)
   useEffect(() => {
     if (steps.length > 0 && currentStepIndex < steps.length) {
       const currentStep = steps[currentStepIndex];
@@ -254,26 +259,11 @@ const BSTStepthroughVisualization = forwardRef<
         }, 1000); // Move to next node every 1 second
 
         return () => clearInterval(interval);
-      }
-      // Insert operation - don't set highlightedNodes (use insertedNode instead)
-      // Check if this is a delete operation
-      else if (message.includes('delete') || message.includes('Delete')) {
-        setSearchPath([]);
-        setIsTraversing(false);
-      } else if (
-        message.includes('insert') ||
-        message.includes('Insert') ||
-        message.includes('เพิ่ม')
-      ) {
-        // Insert operation - use insertedNode for highlighting instead
-        setSearchPath([]);
-        setIsTraversing(false);
       } else {
-        setSearchPath([]);
+        // Not traversing, reset traversal state
         setIsTraversing(false);
       }
     } else {
-      setSearchPath([]);
       setIsTraversing(false);
     }
   }, [steps, currentStepIndex, root, generateTraversalOrder]);
@@ -364,10 +354,8 @@ const BSTStepthroughVisualization = forwardRef<
     return nodes;
   }, []);
 
-  // Calculate tree layout for the main root (backward compatibility)
-  const positionedNodes = useMemo(() => {
-    return calculateTreeLayout(root);
-  }, [root, calculateTreeLayout]);
+  // Pre-calculate positioned nodes for the main tree (used by animations & variable panel)
+  const positionedNodes = useMemo(() => calculateTreeLayout(root), [root, calculateTreeLayout]);
 
   // Extract all node values from a tree
   const extractNodeValues = useCallback((node: BSTNode | null): Set<string> => {
@@ -474,10 +462,6 @@ const BSTStepthroughVisualization = forwardRef<
     },
     [],
   );
-
-  // Refs for node elements
-  const nodeRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const connectionRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Detect entering and exiting nodes
   useEffect(() => {
@@ -650,9 +634,10 @@ const BSTStepthroughVisualization = forwardRef<
       return;
     }
 
-    // Get path connections
+    // Get path connections based on current layout
     const pathValues = Array.from(pathNodes);
-    const pathConnections = getPathConnections(root, pathValues, positionedNodes);
+    const layoutNodes = calculateTreeLayout(root);
+    const pathConnections = getPathConnections(root, pathValues, layoutNodes);
 
     if (pathConnections.length === 0) {
       setActiveConnectionIndex(null);
@@ -730,7 +715,7 @@ const BSTStepthroughVisualization = forwardRef<
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [currentNode, pathNodes, root, positionedNodes, getPathConnections]);
+  }, [currentNode, pathNodes, root, calculateTreeLayout, getPathConnections]);
 
   // Memoized node component
   const NodeComponent = memo<{
@@ -825,6 +810,14 @@ const BSTStepthroughVisualization = forwardRef<
           {(isTraverseSelected || isCurrentlyTraversing) && (
             <div className="absolute -top-2 -right-2 h-4 w-4 rounded-full bg-green-400" />
           )}
+
+          {/* Memory Address */}
+          <div className="absolute top-14 left-1/2 -translate-x-1/2 whitespace-nowrap">
+            <MemoryAddress
+              address={generateHashAddress(node.value)}
+              isVisible={showMemoryAddress}
+            />
+          </div>
         </div>
       </div>
     ),
@@ -908,9 +901,9 @@ const BSTStepthroughVisualization = forwardRef<
 
         // Calculate positions to match the node positioning
         const parentX = parent.x;
-        const parentY = parent.y + 24; // เพิ่ม offset เพื่อให้เส้นเชื่อมจากขอบ node
+        const parentY = parent.y + 24;
         const childX = child.x;
-        const childY = child.y - 24; // ลด offset เพื่อให้เส้นเชื่อมไปที่ขอบ node
+        const childY = child.y - 24;
 
         // Calculate line properties
         const deltaX = childX - parentX;
@@ -1123,23 +1116,87 @@ const BSTStepthroughVisualization = forwardRef<
   // Check if we need to show multiple trees
   const showMultipleTrees = Object.keys(allTrees).length > 1;
 
+  // Main tree metadata (for single-tree display)
+  const mainTreeData = useMemo(() => {
+    const entries = Object.entries(allTrees);
+    if (entries.length === 0) return undefined;
+    const [, treeData] = entries[0];
+    return {
+      size: treeData.size,
+      isEmpty: treeData.isEmpty,
+      height: treeData.height,
+    };
+  }, [allTrees]);
+
   return (
-    <div
+    <section
       ref={ref}
       className="rounded-lg bg-white p-6 shadow dark:bg-gray-800"
       suppressHydrationWarning
+      aria-label="BST Stepthrough Visualization"
     >
-      <div className="mb-4 flex items-center justify-between">
+      <header className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
           BST Visualization
         </h2>
-        {isRunning && (
-          <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
-            <div className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" />
-            <span>Running...</span>
-          </div>
-        )}
-      </div>
+        <div className="flex items-center gap-3">
+          {/* Variable Panel Toggle */}
+          <button
+            onClick={() => setShowVariablePanel(!showVariablePanel)}
+            className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+              showVariablePanel
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+            }`}
+            title="Toggle Variable State Panel"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
+            </svg>
+            Variables
+          </button>
+          {isRunning && (
+            <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-400" />
+              <span>Running...</span>
+            </div>
+          )}
+          <VisualizationViewControls
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            showMemoryAddress={showMemoryAddress}
+            onToggleMemoryAddress={setShowMemoryAddress}
+          />
+          {/* Common Errors Button */}
+          <button
+            onClick={() => setIsPitfallPopupOpen(true)}
+            className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:hover:bg-amber-900/60"
+            title="ดูข้อผิดพลาดที่พบบ่อย"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            Common Errors
+          </button>
+        </div>
+      </header>
+
+      {/* Pitfall Warnings - Show if any */}
+      {currentWarnings.length > 0 && (
+        <div className="mb-4">
+          <CommonPitfallsWarning warnings={currentWarnings} />
+        </div>
+      )}
 
       {/* Current Step Info */}
       {steps.length > 0 && currentStepIndex < steps.length && !error && (
@@ -1150,63 +1207,66 @@ const BSTStepthroughVisualization = forwardRef<
         </div>
       )}
 
-      {/* Tree Visualization */}
-      {showMultipleTrees ? (
-        <div className="space-y-6">
-          <div className="grid gap-6">
-            {Object.entries(allTrees)
-              .filter(([, treeData]) => treeData.root !== null)
-              .map(([treeName, treeData]) => (
-                <div
-                  key={treeName}
-                  className="rounded-lg border bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
-                >
-                  {renderSingleTree(treeData.root, `Tree ${treeName}`, treeData)}
-                </div>
-              ))}
-          </div>
-        </div>
-      ) : (
-        <ZoomableContainer
-          className="min-h-[400px] rounded-lg bg-gray-50 dark:bg-gray-800"
-          minZoom={0.3}
-          maxZoom={2}
-          initialZoom={1}
-          enablePan={true}
-          enableWheelZoom={true}
-          enableKeyboardZoom={true}
-          showControls={true}
-        >
-          {/* Step Indicator */}
-          {isRunning && steps.length > 0 && (
-            <StepIndicator
-              stepNumber={currentStepIndex + 1}
-              totalSteps={steps.length}
-              message={steps[currentStepIndex]?.state?.message}
-              isAutoPlaying={isRunning}
+      {/* Main Content - Flex layout with Variable Panel */}
+      <div className="flex gap-4">
+        {/* Left Side - Variable State Panel */}
+        {showVariablePanel && (
+          <aside className="flex-shrink-0" aria-label="Variable State Panel">
+            <VariableStatePanel
+              steps={steps}
+              currentStepIndex={currentStepIndex}
+              nodes={positionedNodes.map((n) => n.value)}
             />
-          )}
+          </aside>
+        )}
 
-          {root ? (
-            <div className="relative flex h-full min-h-[400px] w-full justify-center">
-              <div className="relative" style={{ minWidth: '800px', minHeight: '400px' }}>
-                {/* Render connections first (behind nodes) */}
-                {renderConnections(root, positionedNodes)}
-
-                {/* Render nodes */}
-                {positionedNodes.map(renderNode)}
+        {/* Right Side - Tree Visualization */}
+        <div className="min-w-0 flex-1">
+          <ZoomableContainer>
+            {viewMode === 'analogy' ? (
+              <div className="flex min-h-[500px] items-center justify-center rounded-lg bg-gray-50 p-6 text-center dark:bg-gray-800">
+                <div className="max-w-md">
+                  <h3 className="mb-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                    Analogy View Coming Soon
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    We are working on adding conceptual analogies for Binary Search Trees. Please
+                    switch back to Technical View for now.
+                  </p>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex h-96 items-center justify-center text-gray-400">
-              <div className="text-center">
-                <div className="text-lg font-medium">Empty BST</div>
-                <div className="text-sm">Run your code to see BST visualization</div>
+            ) : showMultipleTrees ? (
+              <div className="space-y-6">
+                <div className="grid gap-6">
+                  {Object.entries(allTrees)
+                    .filter(([, treeData]) => treeData.root !== null)
+                    .map(([treeName, treeData]) => (
+                      <div
+                        key={treeName}
+                        className="rounded-lg bg-white p-4 shadow-sm dark:bg-gray-900"
+                      >
+                        {renderSingleTree(treeData.root, treeName, {
+                          size: treeData.size,
+                          isEmpty: treeData.isEmpty,
+                          height: treeData.height,
+                        })}
+                      </div>
+                    ))}
+                </div>
               </div>
-            </div>
-          )}
-        </ZoomableContainer>
-      )}
+            ) : root ? (
+              renderSingleTree(root, 'Main Tree', mainTreeData)
+            ) : (
+              <div className="flex h-96 items-center justify-center text-gray-400">
+                <div className="text-center">
+                  <div className="text-lg font-medium">Empty BST</div>
+                  <div className="text-sm">Run your code to see BST visualization</div>
+                </div>
+              </div>
+            )}
+          </ZoomableContainer>
+        </div>
+      </div>
 
       {/* Traversal Order Display - Multiple Trees */}
       {showMultipleTrees && Object.keys(allTrees).length > 0 && (
@@ -1253,17 +1313,32 @@ const BSTStepthroughVisualization = forwardRef<
       />
 
       {/* Legend */}
-      <div className="mt-4 flex flex-wrap gap-4 text-xs">
+      <footer className="mt-4 flex flex-wrap gap-4 text-xs">
         <div className="flex items-center space-x-2">
-          <div className="h-3 w-3 rounded-full border border-green-400 bg-green-200" />
-          <span>Traversing</span>
+          <div className="h-3 w-3 rounded border border-gray-900 bg-white dark:border-gray-500 dark:bg-gray-800" />
+          <span className="text-gray-600 dark:text-gray-400">Node ปกติ</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="h-3 w-3 rounded-full border border-gray-600 bg-white" />
-          <span>Normal Node</span>
+          <div className="h-3 w-3 rounded border border-green-400 bg-green-200 dark:border-green-500 dark:bg-green-900/30" />
+          <span className="text-gray-600 dark:text-gray-400">Traversing</span>
         </div>
-      </div>
-    </div>
+        <div className="flex items-center space-x-2">
+          <div className="h-3 w-3 rounded border border-orange-500 bg-orange-200 dark:border-orange-400 dark:bg-orange-900/30" />
+          <span className="text-gray-600 dark:text-gray-400">Current</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="h-3 w-3 rounded border border-yellow-400 bg-yellow-200 dark:border-yellow-500 dark:bg-yellow-900/30" />
+          <span className="text-gray-600 dark:text-gray-400">Inserted (Active)</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="h-3 w-3 rounded border border-blue-400 bg-blue-200 dark:border-blue-500 dark:bg-blue-900/30" />
+          <span className="text-gray-600 dark:text-gray-400">In Path</span>
+        </div>
+      </footer>
+
+      {/* Pitfall Popup */}
+      <PitfallPopup isOpen={isPitfallPopupOpen} onClose={() => setIsPitfallPopupOpen(false)} />
+    </section>
   );
 });
 

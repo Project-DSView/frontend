@@ -61,6 +61,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   const pathname = usePathname();
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const visualizationRef = useRef<HTMLDivElement | null>(null);
+  const codeEditorRef = useRef<HTMLDivElement | null>(null);
   const stepControlRef = useRef<HTMLDivElement | null>(null);
 
   // Auto-show tutorial
@@ -106,7 +107,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   return (
     <div className="min-h-screen bg-gray-50 p-2 sm:p-4 dark:bg-gray-900" suppressHydrationWarning>
       {/* Header */}
-      <div className="mb-2 sm:mb-3">
+      <header className="mb-2 sm:mb-3">
         <div className="mb-2 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
             <div>
@@ -127,11 +128,14 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="mb-2 grid grid-cols-1 gap-2 sm:mb-3 sm:gap-3 lg:grid-cols-[2fr_3fr]">
+      <main className="mb-2 grid grid-cols-1 gap-2 sm:mb-3 sm:gap-3 lg:grid-cols-[2fr_3fr]">
         {/* Left Side - Code Editor with Step Control */}
-        <div className="min-w-0 overflow-hidden rounded-lg bg-white p-2 shadow sm:p-3 dark:bg-gray-800">
+        <section
+          className="min-w-0 overflow-hidden rounded-lg bg-white p-2 shadow sm:p-3 dark:bg-gray-800"
+          aria-label="Code Editor"
+        >
           <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
               <h2 className="text-sm font-semibold text-gray-800 sm:text-base dark:text-gray-100">
@@ -166,6 +170,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
 
           <div
             id="tutorial-code-editor"
+            ref={codeEditorRef}
             className="mb-2 min-w-0 overflow-hidden"
             style={{ height: '280px' }}
           >
@@ -210,7 +215,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
               onContinue={onContinue}
             />
           </div>
-        </div>
+        </section>
 
         {/* Right Side - Visualization */}
         <Suspense
@@ -224,7 +229,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
             </div>
           }
         >
-          <div id="tutorial-visualization" ref={visualizationRef}>
+          <section id="tutorial-visualization" ref={visualizationRef} aria-label="Visualization">
             <VisualizationComponent
               steps={steps}
               currentStepIndex={currentStepIndex}
@@ -234,9 +239,9 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
               terminalOutput={terminalOutput}
               complexity={complexity}
             />
-          </div>
+          </section>
         </Suspense>
-      </div>
+      </main>
 
       {/* Step Indicator - Sticky */}
       {isAutoPlaying &&
