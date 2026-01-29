@@ -306,9 +306,6 @@ const UndirectedGraphVisualization = forwardRef<HTMLDivElement, UndirectedGraphV
         onMouseLeave={handleMouseUp}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-            Undirected Graph Visualization
-          </h2>
           {isRunning && (
             <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
               <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-500" />
