@@ -284,8 +284,10 @@ const DragDropDirectedGraph = () => {
   /* ================= Update helpers ================= */
 
   const updateOperationValue = (id: number, value: string) => updateOperation(id, { value });
-  const updateOperationPosition = (id: number, position: string) => updateOperation(id, { position });
-  const updateOperationNewValue = (id: number, newValue: string) => updateOperation(id, { newValue });
+  const updateOperationPosition = (id: number, position: string) =>
+    updateOperation(id, { position });
+  const updateOperationNewValue = (id: number, newValue: string) =>
+    updateOperation(id, { newValue });
 
   /* ================= Step Description ================= */
 
@@ -324,7 +326,6 @@ const DragDropDirectedGraph = () => {
     const stepIndex = selectedStep !== null ? selectedStep : state.operations.length - 1;
     return buildGraphFromOperations(state.operations as DirectedGraphOperation[], stepIndex);
   }, [state.operations, selectedStep]);
-
 
   const pythonCode = useMemo(() => {
     const lines: string[] = [
@@ -464,7 +465,7 @@ const DragDropDirectedGraph = () => {
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onRemoveOperation={removeOperation}
-            onUpdateOperationValue={updateOperationValue} 
+            onUpdateOperationValue={updateOperationValue}
             onUpdateOperationPosition={updateOperationPosition}
             onUpdateOperationNewValue={updateOperationNewValue}
             onReorderOperation={reorderOperation}

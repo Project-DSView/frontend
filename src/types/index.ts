@@ -340,6 +340,7 @@ export type {
   StepthroughData,
   ComplexityAnalysis,
   FunctionComplexity,
+  StepInfoPanelProps,
 } from './stepthrough/common.types';
 
 export type { DirectedGraphData } from './stepthrough/DirectedGraph.types';

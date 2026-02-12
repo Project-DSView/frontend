@@ -11,6 +11,7 @@ import VisualizationViewControls from '@/components/playground/shared/common/Vis
 import ConceptualAnalogyPanel from '@/components/playground/shared/analogy/ConceptualAnalogyPanel';
 import VariableStatePanel from '@/components/playground/stepthrough/VariableStatePanel';
 import CommonPitfallsWarning from '@/components/playground/stepthrough/CommonPitfallsWarning';
+import StepInfoPanel from '@/components/playground/stepthrough/StepInfoPanel';
 import PitfallPopup from '@/components/playground/stepthrough/PitfallPopup';
 
 const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
@@ -18,6 +19,7 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
   currentStepIndex,
   data,
   complexity,
+  code,
 }) => {
   const currentStep = steps[currentStepIndex];
   const queueData = data as QueueData;
@@ -266,12 +268,12 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
   };
 
   return (
-    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+    <div className="rounded-lg bg-white p-3 shadow sm:p-6 dark:bg-gray-800">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-base font-semibold text-gray-800 sm:text-lg dark:text-gray-100">
           Queue Visualization
         </h2>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {/* Variable Panel Toggle */}
           <button
             id="tutorial-variables-toggle"
@@ -291,14 +293,18 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
               />
             </svg>
-            Variables
+            <span className="hidden sm:inline">Variables</span>
           </button>
-          <VisualizationViewControls
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            showMemoryAddress={showMemoryAddress}
-            onToggleMemoryAddress={setShowMemoryAddress}
-          />
+
+          <div className="mx-0 sm:mx-2">
+            <VisualizationViewControls
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              showMemoryAddress={showMemoryAddress}
+              onToggleMemoryAddress={setShowMemoryAddress}
+            />
+          </div>
+
           {/* Common Errors Button */}
           <button
             id="tutorial-common-errors"
@@ -314,7 +320,8 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
               />
             </svg>
-            Common Errors
+            <span className="hidden sm:inline">Common Errors</span>
+            <span className="sm:hidden">Errors</span>
           </button>
         </div>
       </div>
@@ -337,11 +344,20 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
         </div>
       )}
 
+      {/* Current Step Info */}
+      {steps.length > 0 && currentStepIndex < steps.length && (
+        <StepInfoPanel
+          stepNumber={steps[currentStepIndex].stepNumber}
+          message={steps[currentStepIndex].state.message}
+          userCommand={steps[currentStepIndex].state?.step_detail?.user_command}
+        />
+      )}
+
       {/* Main Content - Flex layout with Variable Panel */}
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row">
         {/* Left Side - Variable State Panel */}
         {showVariablePanel && (
-          <div className="flex-shrink-0">
+          <div className="w-full flex-shrink-0 lg:w-auto">
             <VariableStatePanel
               steps={steps}
               currentStepIndex={currentStepIndex}
@@ -370,8 +386,8 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
               showControls={true}
             >
               <div className="p-6">
-                {/* แบ่งเป็น 2 ส่วน: ซ้าย (Queue), ขวา (Dequeued) */}
-                <div className="flex min-h-[250px] flex-row gap-6">
+                {/* แบ่งเป็น 2 ส่วน: ซ้าย (Queue), ขวา (Dequeued) - Stacks vertically on mobile */}
+                <div className="flex min-h-[250px] flex-col gap-6 md:flex-row">
                   {/* ส่วนซ้าย: Queue */}
                   <div className="flex flex-1 flex-col items-center justify-center">
                     <div className="mb-2 text-center text-sm font-semibold text-gray-600 dark:text-gray-400">
@@ -496,6 +512,7 @@ const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
         steps={steps}
         currentStepIndex={currentStepIndex}
         complexity={complexity}
+        code={code}
       />
 
       {/* Pitfall Popup */}

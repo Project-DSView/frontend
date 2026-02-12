@@ -39,6 +39,10 @@ const ConceptualAnalogyPanel: React.FC<ConceptualAnalogyPanelProps> = ({
           )}
           {type === 'stack' && <StackAnalogy elements={data.elements || data.nodes || []} />}
 
+          {type === 'bst' && (
+            <div className="text-center text-gray-500">BST Analogy (Coming Soon)</div>
+          )}
+
           {type === 'queue' && (
             <div className="text-center text-gray-500">Queue Analogy (Coming Soon)</div>
           )}

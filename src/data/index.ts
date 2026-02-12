@@ -41,6 +41,7 @@ export {
 
 // Templates
 export {
+  defaultCodeTemplate,
   singlyLinkedListCodeTemplate,
   doublyLinkedListCodeTemplate,
   stackCodeTemplate,

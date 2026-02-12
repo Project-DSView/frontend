@@ -19,3 +19,10 @@ services:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - frontend
+    networks:
+      - default
+      - backend_app-network
+
+networks:
+  backend_app-network:
+    external: true
