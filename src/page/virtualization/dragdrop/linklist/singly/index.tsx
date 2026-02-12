@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { SinglyLinkedListDragComponent, Operation } from '@/types';
 import { useDragDropSinglyLinkedList } from '@/hooks';
-import { singlyLinkedListDragComponents, singlyLinkedListDragDropBaseTemplate } from '@/data';
+import {
+  singlyLinkedListDragComponents,
+  singlyLinkedListDragDropBaseTemplate,
+} from '@/data';
 import { generateDragDropSinglyLinkedListCode } from '@/lib';
 
 import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
@@ -17,18 +20,42 @@ import CopyCodeButton from '@/components/playground/shared/action/CopyCodeButton
 const CodeEditor = React.lazy(() => import('@/components/editor/CodeEditor'));
 
 const DragDropSinglyLinkedListPage = () => {
-  // const pathname = usePathname();
-  const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
-    useDragDropSinglyLinkedList();
+  const {
+    state,
+    addOperation,
+    updateOperation,
+    removeOperation,
+    clearAll,
+    reorderOperation,
+  } = useDragDropSinglyLinkedList();
 
-  const [draggedItem, setDraggedItem] = useState<SinglyLinkedListDragComponent | null>(null);
+  /* ================= State ================= */
+
+  const [draggedItem, setDraggedItem] =
+    useState<SinglyLinkedListDragComponent | null>(null);
+
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [autoFollow, setAutoFollow] = useState(true); // 🔥 key
 
   const visualizationRef = useRef<HTMLDivElement>(null);
-  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleDragStart = (e: React.DragEvent, component: SinglyLinkedListDragComponent) => {
+  /* ================= Auto follow latest step ================= */
+
+  useEffect(() => {
+    if (!autoFollow) return;
+    if (state.operations.length === 0) {
+      setSelectedStep(null);
+      return;
+    }
+    setSelectedStep(state.operations.length - 1);
+  }, [state.operations, autoFollow]);
+
+  /* ================= Drag ================= */
+
+  const handleDragStart = (
+    e: React.DragEvent,
+    component: SinglyLinkedListDragComponent,
+  ) => {
     setDraggedItem(component);
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData('text/plain', 'external');
@@ -43,6 +70,8 @@ const DragDropSinglyLinkedListPage = () => {
     e.preventDefault();
     if (!draggedItem) return;
 
+    setAutoFollow(true);
+
     addOperation({
       type: draggedItem.type,
       name: draggedItem.name,
@@ -56,26 +85,30 @@ const DragDropSinglyLinkedListPage = () => {
     setDraggedItem(null);
   };
 
-  const updateOperationValue = (id: number, value: string) => updateOperation(id, { value });
-  const updateOperationPosition = (id: number, position: string) =>
-    updateOperation(id, { position });
-  const updateOperationNewValue = (id: number, newValue: string) =>
-    updateOperation(id, { newValue });
+  /* ================= Update Operation ================= */
 
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const updateOperationValue = (id: number, value: string) => {
+    setAutoFollow(true);
+    updateOperation(id, { value });
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const updateOperationPosition = (id: number, position: string) => {
+    setAutoFollow(true);
+    updateOperation(id, { position });
+  };
+
+  const updateOperationNewValue = (id: number, newValue: string) => {
+    setAutoFollow(true);
+    updateOperation(id, { newValue });
   };
 
   const handleClearAll = () => {
     clearAll();
     setSelectedStep(null);
+    setAutoFollow(true);
   };
+
+  /* ================= Step Description ================= */
 
   const getStepDescription = (op: Operation) => {
     switch (op.type) {
@@ -97,12 +130,12 @@ const DragDropSinglyLinkedListPage = () => {
         return `Update value → ${op.newValue}`;
       case 'update_position':
         return `Update position ${op.position} → ${op.newValue}`;
-      case 'traverse':
-        return 'Traverse linked list';
       default:
         return op.name;
     }
   };
+
+  /* ================= Step Simulation ================= */
 
   const getStepState = (step: number) => {
     let nodes: string[] = [];
@@ -154,8 +187,6 @@ const DragDropSinglyLinkedListPage = () => {
             if (pos >= 0 && pos < nodes.length) nodes[pos] = op.newValue;
           }
           break;
-        case 'traverse':
-          break;
       }
     }
 
@@ -171,30 +202,11 @@ const DragDropSinglyLinkedListPage = () => {
   };
 
   const visualizationState =
-    selectedStep !== null ? getStepState(selectedStep) : { nodes: state.nodes, stats: state.stats };
+    selectedStep !== null
+      ? getStepState(selectedStep)
+      : { nodes: state.nodes, stats: state.stats };
 
-  const handleAutoPlay = () => {
-    if (isAutoPlaying) {
-      setIsAutoPlaying(false);
-      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-      return;
-    }
-    if (state.operations.length === 0) return;
-
-    setIsAutoPlaying(true);
-    setSelectedStep(0);
-
-    autoPlayRef.current = setInterval(() => {
-      setSelectedStep((prev) => {
-        if (prev === null || prev >= state.operations.length - 1) {
-          setIsAutoPlaying(false);
-          if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-          return prev;
-        }
-        return prev + 1;
-      });
-    }, 1200);
-  };
+  /* ================= Render ================= */
 
   return (
     <div className="min-h-screen bg-gray-50 px-3 py-4 md:px-6 dark:bg-gray-900">
@@ -241,30 +253,32 @@ const DragDropSinglyLinkedListPage = () => {
 
           <DragDropZone
             operations={state.operations}
+            selectedStep={selectedStep}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onRemoveOperation={removeOperation}
+            onRemoveOperation={(id) => {
+              setAutoFollow(true);
+              removeOperation(id);
+            }}
             onUpdateOperationValue={updateOperationValue}
             onUpdateOperationPosition={updateOperationPosition}
             onUpdateOperationNewValue={updateOperationNewValue}
-            onReorderOperation={reorderOperation}
+            onReorderOperation={(from, to) => {
+              setAutoFollow(true);
+              reorderOperation(from, to);
+            }}
           />
         </div>
 
-        {/* Visualization */}
         <div className="rounded-lg border bg-white p-3 dark:bg-gray-800">
-          <h2 className="mb-2 text-sm font-semibold">Singly Linked List Visualization</h2>
+          <h2 className="mb-2 text-sm font-semibold">
+            Singly Linked List Visualization
+          </h2>
 
           <SinglyLinkedListVisualization
             ref={visualizationRef}
             nodes={visualizationState.nodes}
             stats={visualizationState.stats}
-            isRunning={isAutoPlaying}
-            currentOperation={
-              selectedStep !== null ? state.operations[selectedStep]?.type : undefined
-            }
           />
         </div>
       </div>
@@ -273,35 +287,40 @@ const DragDropSinglyLinkedListPage = () => {
         <StepSelector
           operations={state.operations}
           selectedStep={selectedStep}
-          onStepSelect={setSelectedStep}
+          onStepSelect={(step) => {
+            // ผู้ใช้ scrub ดูย้อนหลัง
+            setAutoFollow(false);
+            setSelectedStep(step);
+          }}
           getStepDescription={getStepDescription}
-          onAutoPlay={handleAutoPlay}
-          isAutoPlaying={isAutoPlaying}
         />
       </div>
 
-      {/* Generated Code Logic */}
-      {(() => {
-        const generatedCode =
-          state.operations.length === 0
-            ? singlyLinkedListDragDropBaseTemplate +
-              '\n\n# === User Operations ===\nmyList = SinglyLinkedList()\n\n# Drop operations above to generate code here...'
-            : generateDragDropSinglyLinkedListCode(state.operations);
+      <div className="mt-4 rounded-lg border bg-white p-3 dark:bg-gray-800">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-sm font-semibold">Generated Python Code</h2>
+          <CopyCodeButton
+            code={
+              state.operations.length === 0
+                ? singlyLinkedListDragDropBaseTemplate
+                : generateDragDropSinglyLinkedListCode(state.operations)
+            }
+          />
+        </div>
 
-        return (
-          <div className="mt-4 rounded-lg border bg-white p-3 dark:bg-gray-800">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-semibold">Generated Python Code</h2>
-              <CopyCodeButton code={generatedCode} />
-            </div>
-            <div className="mt-2 rounded">
-              <React.Suspense fallback={<div>Loading editor...</div>}>
-                <CodeEditor code={generatedCode} disabled height="400px" onCodeChange={() => {}} />
-              </React.Suspense>
-            </div>
-          </div>
-        );
-      })()}
+        <React.Suspense fallback={<div>Loading editor...</div>}>
+          <CodeEditor
+            code={
+              state.operations.length === 0
+                ? singlyLinkedListDragDropBaseTemplate
+                : generateDragDropSinglyLinkedListCode(state.operations)
+            }
+            disabled
+            height="400px"
+            onCodeChange={() => {}}
+          />
+        </React.Suspense>
+      </div>
     </div>
   );
 };

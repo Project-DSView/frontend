@@ -23,10 +23,30 @@ const QueuePage = () => {
   const [draggedItem, setDraggedItem] = useState<QueueDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+
+  // ✅ NEW: auto-follow latest step
+  const [autoFollow, setAutoFollow] = useState(true);
+
   const [, setIsTutorialOpen] = useState(false);
 
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  /* ================= Auto follow latest ================= */
+
+  useEffect(() => {
+    if (!autoFollow) return;
+    if (isAutoPlaying) return;
+
+    if (state.operations.length === 0) {
+      setSelectedStep(null);
+      return;
+    }
+
+    setSelectedStep(state.operations.length - 1);
+  }, [state.operations, autoFollow, isAutoPlaying]);
+
+  /* ================= Drag ================= */
 
   const handleDragStart = (e: React.DragEvent, component: QueueDragComponent) => {
     setDraggedItem(component);
@@ -42,6 +62,9 @@ const QueuePage = () => {
     e.preventDefault();
     if (!draggedItem) return;
 
+    // ✅ user plays -> follow latest
+    setAutoFollow(true);
+
     addOperation({
       type: draggedItem.type,
       name: draggedItem.name,
@@ -52,17 +75,29 @@ const QueuePage = () => {
       newValue: null,
     });
 
-    if (selectedStep === null) setSelectedStep(0);
     setDraggedItem(null);
   };
 
+  /* ================= Update / Remove / Reorder ================= */
+
   const updateOperationValue = (id: number, value: string) => {
+    setAutoFollow(true);
     updateOperation(id, { value });
   };
 
+  const updateOperationPosition = (id: number, position: string) => {
+    setAutoFollow(true);
+    updateOperation(id, { position });
+  };
+
+  const updateOperationNewValue = (id: number, newValue: string) => {
+    setAutoFollow(true);
+    updateOperation(id, { newValue });
+  };
+
   const handleRemoveOperation = (id: number) => {
+    setAutoFollow(true);
     removeOperation(id);
-    setSelectedStep(null);
   };
 
   const handleDragEnter = (e: React.DragEvent) => {
@@ -75,13 +110,7 @@ const QueuePage = () => {
     e.stopPropagation();
   };
 
-  const updateOperationPosition = (id: number, position: string) => {
-    updateOperation(id, { position });
-  };
-
-  const updateOperationNewValue = (id: number, newValue: string) => {
-    updateOperation(id, { newValue });
-  };
+  /* ================= AutoPlay ================= */
 
   const stopAutoPlay = () => {
     setIsAutoPlaying(false);
@@ -95,25 +124,28 @@ const QueuePage = () => {
     stopAutoPlay();
     clearAll();
     setSelectedStep(null);
+    setAutoFollow(true);
   };
 
   const handleStepSelect = (step: number) => {
+    // ✅ manual scrub -> stop follow
+    setAutoFollow(false);
     setSelectedStep(step);
     if (isAutoPlaying) stopAutoPlay();
   };
 
   const handlePrevious = () => {
-    if (selectedStep !== null && selectedStep > 0) {
-      stopAutoPlay();
-      setSelectedStep(selectedStep - 1);
-    }
+    if (state.operations.length === 0) return;
+    stopAutoPlay();
+    setAutoFollow(false);
+    setSelectedStep((prev) => Math.max(0, (prev ?? 0) - 1));
   };
 
   const handleNext = () => {
-    if (selectedStep !== null && selectedStep < state.operations.length - 1) {
-      stopAutoPlay();
-      setSelectedStep(selectedStep + 1);
-    }
+    if (state.operations.length === 0) return;
+    stopAutoPlay();
+    setAutoFollow(false);
+    setSelectedStep((prev) => Math.min(state.operations.length - 1, (prev ?? 0) + 1));
   };
 
   const handleAutoPlay = () => {
@@ -124,6 +156,8 @@ const QueuePage = () => {
 
     if (state.operations.length === 0) return;
 
+    // autoplay = manual timeline
+    setAutoFollow(false);
     setIsAutoPlaying(true);
     setSelectedStep(0);
 
@@ -147,6 +181,8 @@ const QueuePage = () => {
       if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
     };
   }, []);
+
+  /* ================= Step logic ================= */
 
   const getStepDescription = (op: Operation) => {
     switch (op.type) {
@@ -182,7 +218,10 @@ const QueuePage = () => {
     };
   };
 
-  const visualizationState = selectedStep !== null ? getStepState(selectedStep) : state;
+  const visualizationState =
+    selectedStep !== null ? getStepState(selectedStep) : state;
+
+  /* ================= Render ================= */
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-5 md:px-8 dark:bg-gray-900">
@@ -201,7 +240,7 @@ const QueuePage = () => {
         </div>
       </div>
 
-      {/* Operations (ย่อให้เล็กลง) */}
+      {/* Operations */}
       <div className="mb-4 rounded-md border bg-white p-3 shadow-sm dark:bg-gray-800">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Queue Operations</h2>
 
@@ -232,6 +271,7 @@ const QueuePage = () => {
           <div className="flex-1 overflow-auto">
             <DragDropZone
               operations={state.operations}
+              selectedStep={selectedStep}
               onDragOver={handleDragOver}
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
@@ -240,12 +280,14 @@ const QueuePage = () => {
               onUpdateOperationValue={updateOperationValue}
               onUpdateOperationPosition={updateOperationPosition}
               onUpdateOperationNewValue={updateOperationNewValue}
-              onReorderOperation={reorderOperation}
+              onReorderOperation={(from, to) => {
+                setAutoFollow(true);
+                reorderOperation(from, to);
+              }}
             />
           </div>
         </div>
 
-        {/* Visualization */}
         <div className="flex flex-col rounded-xl border bg-white p-3 shadow-sm lg:h-[520px] dark:bg-gray-800">
           <h2 className="mb-2 text-sm font-semibold">Queue Visualization</h2>
 
@@ -260,7 +302,6 @@ const QueuePage = () => {
         </div>
       </div>
 
-      {/* Step Control */}
       <div className="mt-6">
         <StepSelector
           operations={state.operations}
@@ -274,7 +315,6 @@ const QueuePage = () => {
         />
       </div>
 
-      {/* Generated Code Logic */}
       {(() => {
         const generatedCode =
           state.operations.length === 0
