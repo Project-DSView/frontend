@@ -591,8 +591,8 @@ interface DragDropZoneProps {
 
   // step control
   selectedStep?: number | null;
-  onSelectStep?: (index: number) => void;   // ✅ เพิ่ม
-  onUserInteract?: () => void;              // ✅ เพิ่ม (คุณส่ง prop นี้ด้วย)
+  onSelectStep?: (index: number) => void;  
+  onUserInteract?: () => void;              
 
   onDragOver: (e: React.DragEvent) => void;
   onDragEnter?: (e: React.DragEvent) => void;
