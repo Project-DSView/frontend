@@ -99,9 +99,13 @@ const DragDropUndirectedGraph = () => {
       color: draggedItem.color,
       category: draggedItem.category,
       position: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-      newValue: ['add_edge', 'remove_edge', 'traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(
-        draggedItem.type,
-      )
+      newValue: [
+        'add_edge',
+        'remove_edge',
+        'traversal_dfs',
+        'traversal_bfs',
+        'shortest_path',
+      ].includes(draggedItem.type)
         ? ''
         : null,
     };
@@ -160,7 +164,10 @@ const DragDropUndirectedGraph = () => {
         }
       }
       updateOperation(id, { newValue, toVertex: newValue });
-    } else if (operation && (operation.type === 'traversal_dfs' || operation.type === 'traversal_bfs')) {
+    } else if (
+      operation &&
+      (operation.type === 'traversal_dfs' || operation.type === 'traversal_bfs')
+    ) {
       updateOperation(id, { newValue, startVertex: newValue });
     } else if (operation && operation.type === 'shortest_path') {
       updateOperation(id, { newValue, startVertex: newValue });
@@ -452,7 +459,12 @@ const DragDropUndirectedGraph = () => {
       const op = state.operations[selectedStep];
       if (op?.type === 'shortest_path' && op.startVertex && op.endVertex) {
         const currentState = getStepState(selectedStep);
-        return calculateShortestPath(currentState.nodes, currentState.edges, op.startVertex, op.endVertex);
+        return calculateShortestPath(
+          currentState.nodes,
+          currentState.edges,
+          op.startVertex,
+          op.endVertex,
+        );
       }
     }
     return [];
@@ -578,7 +590,9 @@ const DragDropUndirectedGraph = () => {
               edges={currentVisualizationState.edges}
               stats={currentVisualizationState.stats}
               isRunning={isAutoPlaying}
-              currentOperation={selectedStep !== null ? state.operations[selectedStep]?.type : undefined}
+              currentOperation={
+                selectedStep !== null ? state.operations[selectedStep]?.type : undefined
+              }
               selectedStep={
                 selectedStep !== null &&
                 ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(
@@ -587,7 +601,9 @@ const DragDropUndirectedGraph = () => {
                   ? selectedStep
                   : null
               }
-              currentOperationData={selectedStep !== null ? state.operations[selectedStep] : undefined}
+              currentOperationData={
+                selectedStep !== null ? state.operations[selectedStep] : undefined
+              }
               shortestPath={shortestPath}
             />
           </Suspense>

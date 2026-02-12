@@ -83,6 +83,26 @@ const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
+      // Touch events support
+      onTouchStart={(e) => {
+        if (!enablePan) return;
+        setIsDragging(true);
+        const touch = e.touches[0];
+        startPanRef.current = { x: touch.clientX - pan.x, y: touch.clientY - pan.y };
+      }}
+      onTouchMove={(e) => {
+        if (!isDragging || !enablePan) return;
+        // Prevent default only if we are actually dragging/panning to stop page scroll
+        // But we might want page scroll if we are at edge? For now prevent default to act like a canvas app
+        if (e.cancelable) e.preventDefault();
+        const touch = e.touches[0];
+        const newX = touch.clientX - startPanRef.current.x;
+        const newY = touch.clientY - startPanRef.current.y;
+        setPan({ x: newX, y: newY });
+      }}
+      onTouchEnd={() => {
+        setIsDragging(false);
+      }}
     >
       <div
         ref={contentRef}

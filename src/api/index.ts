@@ -4,7 +4,7 @@ import { getSafeHeaders, getMinimalHeaders } from '@/lib';
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   withCredentials: true,
-  timeout: 10000, // 10 second timeout
+  timeout: 90000, // 90 second timeout
   headers: {
     [process.env.NEXT_PUBLIC_API_KEY_NAME || 'dsview-api-key']:
       process.env.NEXT_PUBLIC_API_KEY || '',
@@ -18,6 +18,14 @@ api.interceptors.request.use(
     const isDevelopment = process.env.NODE_ENV === 'development';
     const headers = isDevelopment ? getMinimalHeaders() : getSafeHeaders();
     Object.assign(config.headers, headers);
+
+    // Add Authorization header if token exists in sessionStorage
+    if (typeof window !== 'undefined') {
+      const token = sessionStorage.getItem('accessToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
 
     return config;
   },
@@ -84,7 +92,7 @@ export {
   getCourseInvitations,
   enrollViaInvitation,
 } from './course';
-export { executeStepthrough } from './playground';
+export { executeStepthrough, analyzePerformance, analyzeWithLLM } from './playground';
 export { getGoogleAuthUrl, logout, refreshToken, fetchProfile } from './auth';
 
 // Submissions

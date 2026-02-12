@@ -13,6 +13,7 @@ import VisualizationViewControls from '@/components/playground/shared/common/Vis
 import VariableStatePanel from '@/components/playground/stepthrough/VariableStatePanel';
 import CommonPitfallsWarning from '@/components/playground/stepthrough/CommonPitfallsWarning';
 import PitfallPopup from '@/components/playground/stepthrough/PitfallPopup';
+import StepInfoPanel from '@/components/playground/stepthrough/StepInfoPanel';
 import ConceptualAnalogyPanel from '@/components/playground/shared/analogy/ConceptualAnalogyPanel';
 
 const StackStepthroughVisualization = forwardRef<
@@ -27,6 +28,7 @@ const StackStepthroughVisualization = forwardRef<
       isRunning,
       error,
       complexity,
+      code,
     }: StepthroughVisualizationProps<StackData>,
     ref,
   ) => {
@@ -383,14 +385,14 @@ const StackStepthroughVisualization = forwardRef<
     return (
       <div
         ref={ref}
-        className="rounded-lg bg-white p-6 shadow dark:bg-gray-800"
+        className="rounded-lg bg-white p-3 shadow sm:p-6 dark:bg-gray-800"
         suppressHydrationWarning
       >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-base font-semibold text-gray-800 sm:text-lg dark:text-gray-100">
             Stack Visualization
           </h2>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* Variable Panel Toggle */}
             <button
               id="tutorial-variables-toggle"
@@ -410,19 +412,21 @@ const StackStepthroughVisualization = forwardRef<
                   d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                 />
               </svg>
-              Variables
+              <span className="hidden sm:inline">Variables</span>
             </button>
 
             {/* View Controls */}
-            <VisualizationViewControls
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-              showMemoryAddress={showMemoryAddress}
-              onToggleMemoryAddress={setShowMemoryAddress}
-            />
+            <div className="mx-0 sm:mx-2">
+              <VisualizationViewControls
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                showMemoryAddress={showMemoryAddress}
+                onToggleMemoryAddress={setShowMemoryAddress}
+              />
+            </div>
 
             {isRunning && (
-              <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+              <div className="hidden items-center space-x-2 text-sm text-blue-600 sm:flex dark:text-blue-400">
                 <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-400" />
                 <span>Running...</span>
               </div>
@@ -442,7 +446,8 @@ const StackStepthroughVisualization = forwardRef<
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                 />
               </svg>
-              Common Errors
+              <span className="hidden sm:inline">Common Errors</span>
+              <span className="sm:hidden">Errors</span>
             </button>
           </div>
         </div>
@@ -456,11 +461,11 @@ const StackStepthroughVisualization = forwardRef<
 
         {/* Current Step Info */}
         {steps.length > 0 && currentStepIndex < steps.length && !error && (
-          <div className="mb-4 rounded-lg bg-blue-50 p-3 dark:bg-blue-900/30">
-            <div className="text-sm font-medium text-blue-800 dark:text-blue-200">
-              Step {steps[currentStepIndex].stepNumber}: {steps[currentStepIndex].state.message}
-            </div>
-          </div>
+          <StepInfoPanel
+            stepNumber={steps[currentStepIndex].stepNumber}
+            message={steps[currentStepIndex].state.message}
+            userCommand={steps[currentStepIndex].state.step_detail?.user_command}
+          />
         )}
 
         {/* Underflow/Overflow Warning Banner */}
@@ -475,10 +480,10 @@ const StackStepthroughVisualization = forwardRef<
         )}
 
         {/* Main Content - Flex layout with Variable Panel */}
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-4 lg:flex-row">
           {/* Left Side - Variable State Panel */}
           {showVariablePanel && (
-            <div className="flex-shrink-0">
+            <div className="w-full flex-shrink-0 lg:w-auto">
               <VariableStatePanel
                 steps={steps}
                 currentStepIndex={currentStepIndex}
@@ -687,6 +692,7 @@ const StackStepthroughVisualization = forwardRef<
           steps={steps}
           currentStepIndex={currentStepIndex}
           complexity={complexity}
+          code={code}
         />
 
         {/* Current Operation Status */}
