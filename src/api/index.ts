@@ -11,9 +11,26 @@ export const api = axios.create({
   },
 });
 
-// Add safe headers to all requests
+// Add smart service routing and safe headers to all requests
 api.interceptors.request.use(
   (config) => {
+    // Smart Service Routing:
+    // Some endpoints belong to FastAPI, others to Go backend.
+    // Traefik expects /fastapi/api/... or /go/api/...
+    if (config.url && !config.url.startsWith('http')) {
+      const isFastAPI =
+        config.url.startsWith('/api/playground') ||
+        config.url.startsWith('/api/complexity') ||
+        config.url.startsWith('/api/exec');
+
+      const prefix = isFastAPI ? '/fastapi' : '/go';
+
+      // Only prefix if not already prefixed (to avoid double prefixing on retries)
+      if (!config.url.startsWith('/go') && !config.url.startsWith('/fastapi')) {
+        config.url = `${prefix}${config.url}`;
+      }
+    }
+
     // Use minimal headers in development to avoid CORS issues
     const isDevelopment = process.env.NODE_ENV === 'development';
     const headers = isDevelopment ? getMinimalHeaders() : getSafeHeaders();
