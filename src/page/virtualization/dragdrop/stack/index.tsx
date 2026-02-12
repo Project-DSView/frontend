@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 import { StackDragComponent, Operation } from '@/types';
 import { useDragDropStack } from '@/hooks';
@@ -24,6 +24,9 @@ const StackPage = () => {
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
 
+  // ✅ NEW: auto-follow step ล่าสุดตามการเล่นใน DropZone
+  const [autoFollow, setAutoFollow] = useState(true);
+
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -40,6 +43,9 @@ const StackPage = () => {
     e.preventDefault();
     if (!draggedItem) return;
 
+    // ✅ ถือว่าเป็น “การเล่น” → เปิด autoFollow
+    setAutoFollow(true);
+
     addOperation({
       type: draggedItem.type,
       name: draggedItem.name,
@@ -52,8 +58,8 @@ const StackPage = () => {
       newValue: null,
     });
 
-    // ถ้ายังไม่เลือก step ให้เริ่มที่ 0
-    if (selectedStep === null) setSelectedStep(0);
+    // ✅ ไปที่ step ล่าสุดทันที (index ล่าสุดหลังเพิ่ม = length เดิม)
+    setSelectedStep(state.operations.length);
 
     setDraggedItem(null);
   };
@@ -100,6 +106,7 @@ const StackPage = () => {
     stopAutoPlay();
     clearAll();
     setSelectedStep(null);
+    setAutoFollow(true);
   };
 
   /* ================= Step Description ================= */
@@ -128,13 +135,27 @@ const StackPage = () => {
       elements,
       stats: {
         length: elements.length,
-
         headValue: elements[elements.length - 1] ?? null,
         tailValue: elements[0] ?? null,
         isEmpty: elements.length === 0,
       },
     };
   };
+
+  // ✅ NEW: เมื่อ ops เปลี่ยน แล้ว autoFollow เปิดอยู่ ให้ตาม step ล่าสุด
+  const jumpToLatestStep = useCallback(() => {
+    if (state.operations.length === 0) {
+      setSelectedStep(null);
+      return;
+    }
+    setSelectedStep(state.operations.length - 1);
+  }, [state.operations.length]);
+
+  useEffect(() => {
+    if (!autoFollow) return;
+    if (isAutoPlaying) return;
+    jumpToLatestStep();
+  }, [state.operations, autoFollow, isAutoPlaying, jumpToLatestStep]);
 
   const visualizationState = selectedStep !== null ? getStepState(selectedStep) : state;
 
@@ -146,6 +167,7 @@ const StackPage = () => {
 
     if (state.operations.length === 0) return;
 
+    setAutoFollow(false); // autoplay ถือเป็น manual timeline
     setIsAutoPlaying(true);
     setSelectedStep(0);
 
@@ -195,7 +217,7 @@ const StackPage = () => {
         </div>
       </div>
 
-      {/* Operations (เล็กแบบในรูป) */}
+      {/* Operations */}
       <div className="mb-4 rounded-md border bg-white p-3 dark:bg-gray-800">
         <div className="mb-2">
           <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
@@ -218,7 +240,7 @@ const StackPage = () => {
         </div>
       </div>
 
-      {/* Drop Zone + Visualization (ทำให้เตี้ยลง + scroll ภายใน) */}
+      {/* Drop Zone + Visualization */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Drop Zone */}
         <div className="flex flex-col rounded-xl border bg-white p-3 lg:h-[520px] dark:bg-gray-800">
@@ -229,10 +251,20 @@ const StackPage = () => {
             </button>
           </div>
 
-          {/* ให้พื้นที่ข้างในเลื่อนแทน */}
           <div className="flex-1 overflow-auto">
             <DragDropZone
               operations={state.operations}
+              selectedStep={selectedStep}
+              onSelectStep={(i) => {
+                // ผู้ใช้คลิกเลือก step เอง -> manual
+                stopAutoPlay();
+                setAutoFollow(false);
+                setSelectedStep(i);
+              }}
+              onUserInteract={() => {
+                // ผู้ใช้เล่นใน DropZone -> กลับมา auto-follow
+                if (!isAutoPlaying) setAutoFollow(true);
+              }}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragEnter={handleDragEnter}
@@ -248,6 +280,7 @@ const StackPage = () => {
           </div>
         </div>
 
+        {/* Visualization */}
         <div className="flex flex-col rounded-xl border bg-white p-3 lg:h-[520px] dark:bg-gray-800">
           <h2 className="mb-2 text-sm font-semibold">Stack Visualization</h2>
           <div className="flex-1 overflow-hidden">
@@ -261,13 +294,15 @@ const StackPage = () => {
         </div>
       </div>
 
-      {/* Step Control (เล็กลงนิด) */}
+      {/* Step Control (คงไว้เหมือนเดิม) */}
       <div className="mt-6">
         <StepSelector
           operations={state.operations}
           selectedStep={selectedStep}
           onStepSelect={(i) => {
+            // กด step control -> manual
             stopAutoPlay();
+            setAutoFollow(false);
             setSelectedStep(i);
           }}
           getStepDescription={getStepDescription}
