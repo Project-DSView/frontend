@@ -588,19 +588,31 @@ interface UndirectedGraphDragDropVisualizationProps {
 
 interface DragDropZoneProps {
   operations: DragDropOperation[];
+
+  // step control
+  selectedStep?: number | null;
+  onSelectStep?: (index: number) => void;   // ✅ เพิ่ม
+  onUserInteract?: () => void;              // ✅ เพิ่ม (คุณส่ง prop นี้ด้วย)
+
   onDragOver: (e: React.DragEvent) => void;
   onDragEnter?: (e: React.DragEvent) => void;
   onDragLeave?: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
+
   onRemoveOperation: (id: number) => void;
   onUpdateOperationValue: (id: number, value: string) => void;
   onUpdateOperationPosition: (id: number, position: string) => void;
   onUpdateOperationNewValue: (id: number, newValue: string) => void;
+
   onUpdateOperationSourceStack?: (id: number, sourceStack: string) => void;
   onUpdateOperationTargetStack?: (id: number, targetStack: string) => void;
+
   onReorderOperation?: (fromIndex: number, toIndex: number) => void;
+
   children?: React.ReactNode;
 }
+
+
 
 // ============================================================================
 // Playground Shared Component Props
