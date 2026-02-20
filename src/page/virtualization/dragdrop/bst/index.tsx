@@ -8,6 +8,7 @@ import { generateDragDropBSTCode } from '@/lib';
 
 import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
 
+
 const BSTDragDropVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/BST'),
 );

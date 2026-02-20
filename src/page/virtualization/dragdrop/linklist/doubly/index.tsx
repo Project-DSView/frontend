@@ -177,11 +177,14 @@ const DragDropDoublyLinkedListPage = () => {
         case 'insert_before_position': {
           if (op.value && op.position !== null) {
             const pos = Number(op.position);
-            const target = Number.isFinite(pos) ? Math.max(0, pos - 1) : 0;
-            nodes.splice(Math.min(target, nodes.length), 0, op.value);
+
+            if (Number.isFinite(pos) && pos >= 0 && pos <= nodes.length) {
+              nodes.splice(pos, 0, op.value);
+            }
           }
           break;
         }
+
 
         case 'delete_beginning':
           nodes.shift();
@@ -201,14 +204,27 @@ const DragDropDoublyLinkedListPage = () => {
           break;
         }
 
-        case 'delete_before_position': {
-          if (op.position !== null) {
-            const pos = Number(op.position);
-            const target = Number.isFinite(pos) ? pos - 1 : -1;
-            if (target >= 0 && target < nodes.length) nodes.splice(target, 1);
+        case 'delete_value': {
+          if (op.value) {
+            const index = nodes.indexOf(op.value);
+            if (index !== -1) {
+              nodes.splice(index, 1);
+            }
           }
           break;
         }
+
+        case 'delete_before_position': {
+          if (op.position !== null) {
+            const pos = Number(op.position);
+
+            if (Number.isFinite(pos) && pos > 0 && pos <= nodes.length - 1) {
+              nodes.splice(pos - 1, 1);
+            }
+          }
+          break;
+        }
+
 
         case 'update_value': {
           if (op.value && op.newValue) {
