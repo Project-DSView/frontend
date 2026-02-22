@@ -278,7 +278,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
     } else {
       // External drag - show feedback and allow drop
       setIsExternalDrag(true);
-      onDragOver(e);
+      onDragOver?.(e);
     }
   };
 
@@ -297,7 +297,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
 
     // External drag - add to end
     setIsExternalDrag(false);
-    onDrop(e);
+    onDrop?.(e);
   };
 
   const handleMainDragLeave = (e: React.DragEvent) => {
@@ -559,7 +559,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                   )}
 
                   {/* Position input for other operations that need it */}
-                  {['delete_position', 'delete_before_position', 'search_position', 'update_position'].includes(op.type) && (
+                  {['delete_position', 'delete_before_position','search_position', 'update_position'].includes(op.type) && (
                     <input
                       type="number"
                       placeholder="Position"

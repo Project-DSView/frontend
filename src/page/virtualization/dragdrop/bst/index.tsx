@@ -8,7 +8,6 @@ import { generateDragDropBSTCode } from '@/lib';
 
 import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
 
-
 const BSTDragDropVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/BST'),
 );
@@ -41,11 +40,9 @@ const deleteNode = (root: BSTNode | null, value: string): BSTNode | null => {
   if (v < r) root.left = deleteNode(root.left, value);
   else if (v > r) root.right = deleteNode(root.right, value);
   else {
-    // No children
     if (!root.left) return root.right;
     if (!root.right) return root.left;
 
-    // 2 children
     let temp = root.right;
     while (temp.left) temp = temp.left;
 
@@ -75,53 +72,18 @@ const DragDropBST = () => {
     updateBSTState,
   } = useDragDropBST();
 
-  const draggedItemRef = useRef<BSTDragComponent | null>(null);
   const updateBSTStateRef = useRef(updateBSTState);
 
   React.useEffect(() => {
     updateBSTStateRef.current = updateBSTState;
   }, [updateBSTState]);
 
-  const handleDragStart = (e: React.DragEvent, component: BSTDragComponent) => {
-    draggedItemRef.current = component;
-    e.dataTransfer.setData('text/plain', 'external');
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-
-    const item = draggedItemRef.current;
-    if (!item) return;
-
-    const newOperation = {
-      id: Date.now(),
-      type: item.type,
-      name: item.name,
-      value: item.type.startsWith('traverse') ? null : '',
-      color: item.color,
-      category: item.category,
-      position: null,
-      newValue: null,
-    };
-
-    addOperation(newOperation);
-    draggedItemRef.current = null;
-  };
+  /* ================= Update ================= */
 
   const updateOperationValue = (id: number, value: string) => {
     const op = state.operations.find((o: BSTOperation) => o.id === id);
     if (op?.type === 'insert' && value && isNaN(parseFloat(value))) return;
     updateOperation(id, { value });
-  };
-
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
   };
 
   const updateOperationPosition = (id: number, position: string) => {
@@ -131,6 +93,8 @@ const DragDropBST = () => {
   const updateOperationNewValue = (id: number, newValue: string) => {
     updateOperation(id, { newValue });
   };
+
+  /* ================= Recalculate BST ================= */
 
   React.useEffect(() => {
     let root: BSTNode | null = null;
@@ -148,18 +112,21 @@ const DragDropBST = () => {
     updateBSTStateRef.current(root, calculateStats(root));
   }, [state.operations]);
 
+  /* ================= Render ================= */
+
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-5 md:px-8 dark:bg-gray-900">
       {/* Header */}
       <div className="mb-5">
         <h1 className="mb-1 text-xl font-semibold text-gray-800 dark:text-gray-100">
-          Drag & Drop Binary Search Tree
+          Binary Search Tree
         </h1>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          ลาก operation เพื่อสร้าง BST พร้อมโค้ด Python อัตโนมัติ
+          คลิก operation เพื่อสร้าง BST + Python code
         </p>
       </div>
 
+      {/* Operations */}
       <div className="mb-4 rounded-md border border-dashed border-gray-300 bg-white p-3 shadow-sm dark:bg-gray-800">
         <h2 className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-100">
           BST Operations
@@ -167,11 +134,20 @@ const DragDropBST = () => {
 
         <div className="flex flex-wrap gap-2">
           {bstDragComponents.map((component) => (
-            <div
+            <button
               key={component.id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, component)}
-              className="cursor-grab rounded-full border px-3 py-1 text-xs font-medium transition select-none hover:opacity-80"
+              onClick={() => {
+                addOperation({
+                  type: component.type,
+                  name: component.name,
+                  value: component.type.startsWith('traverse') ? null : '',
+                  color: component.color,
+                  category: component.category,
+                  position: null,
+                  newValue: null,
+                });
+              }}
+              className="rounded-full border px-3 py-1 text-xs font-medium transition hover:opacity-80 active:scale-95"
               style={{
                 background: component.color + '14',
                 borderColor: component.color,
@@ -180,21 +156,21 @@ const DragDropBST = () => {
               title={component.name}
             >
               {component.name}
-            </div>
+            </button>
           ))}
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Left: DROPZONE */}
+        {/* Drop Zone */}
         <div className="flex flex-col rounded-xl border border-dashed border-gray-300 bg-white p-3 shadow-sm lg:h-[520px] dark:bg-gray-800">
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Drop Zone</h2>
+            <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              Drop Zone
+            </h2>
 
             <button
-              onClick={() => {
-                clearAll();
-              }}
+              onClick={() => clearAll()}
               className="rounded-md bg-gray-700 px-3 py-1 text-xs font-medium text-white transition hover:bg-gray-600"
             >
               Clear
@@ -204,10 +180,6 @@ const DragDropBST = () => {
           <div className="flex-1 overflow-auto">
             <DragDropZone
               operations={state.operations}
-              onDrop={handleDrop}
-              onDragOver={(e) => e.preventDefault()}
-              onDragEnter={handleDragEnter}
-              onDragLeave={handleDragLeave}
               onRemoveOperation={removeOperation}
               onUpdateOperationValue={updateOperationValue}
               onUpdateOperationPosition={updateOperationPosition}
@@ -217,7 +189,7 @@ const DragDropBST = () => {
           </div>
         </div>
 
-        {/* Right: BST Visualization */}
+        {/* Visualization */}
         <div className="flex flex-col rounded-xl border border-dashed border-gray-300 bg-white p-3 shadow-sm lg:h-[520px] dark:bg-gray-800">
           <h2 className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-100">
             BST Visualization
@@ -237,17 +209,12 @@ const DragDropBST = () => {
         </div>
       </div>
 
-      {/* ==========================================
-            ⭐ GENERATED PYTHON CODE SECTION (ย่อให้เล็กลง)
-      =========================================== */}
-      {/* ==========================================
-            ⭐ GENERATED PYTHON CODE SECTION (ย่อให้เล็กลง)
-      =========================================== */}
+      {/* Generated Code */}
       {(() => {
         const generatedCode =
           state.operations.length === 0
             ? bstDragDropBaseTemplate +
-              '\n\n# === User Operations ===\nmyBST = BST()\n\n# Drop operations above to generate code here...'
+              '\n\n# === User Operations ===\nmyBST = BST()\n\n# Click operations above to generate code here...'
             : generateDragDropBSTCode(state.operations);
 
         return (

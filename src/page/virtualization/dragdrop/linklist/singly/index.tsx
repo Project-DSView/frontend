@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import { SinglyLinkedListDragComponent, Operation } from '@/types';
+import { Operation } from '@/types';
 import { useDragDropSinglyLinkedList } from '@/hooks';
 import {
   singlyLinkedListDragComponents,
@@ -31,9 +31,6 @@ const DragDropSinglyLinkedListPage = () => {
 
   /* ================= State ================= */
 
-  const [draggedItem, setDraggedItem] =
-    useState<SinglyLinkedListDragComponent | null>(null);
-
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [autoFollow, setAutoFollow] = useState(true); // 🔥 key
 
@@ -49,41 +46,6 @@ const DragDropSinglyLinkedListPage = () => {
     }
     setSelectedStep(state.operations.length - 1);
   }, [state.operations, autoFollow]);
-
-  /* ================= Drag ================= */
-
-  const handleDragStart = (
-    e: React.DragEvent,
-    component: SinglyLinkedListDragComponent,
-  ) => {
-    setDraggedItem(component);
-    e.dataTransfer.effectAllowed = 'copy';
-    e.dataTransfer.setData('text/plain', 'external');
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (!draggedItem) return;
-
-    setAutoFollow(true);
-
-    addOperation({
-      type: draggedItem.type,
-      name: draggedItem.name,
-      value: '',
-      position: null,
-      newValue: null,
-      color: draggedItem.color,
-      category: draggedItem.category,
-    });
-
-    setDraggedItem(null);
-  };
 
   /* ================= Update Operation ================= */
 
@@ -232,9 +194,20 @@ const DragDropSinglyLinkedListPage = () => {
           {singlyLinkedListDragComponents.map((op) => (
             <button
               key={op.type}
-              draggable
-              onDragStart={(e) => handleDragStart(e, op)}
-              className="rounded-full border px-3 py-1 text-xs hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={() => {
+                setAutoFollow(true);
+
+                addOperation({
+                  type: op.type,
+                  name: op.name,
+                  value: '',
+                  position: null,
+                  newValue: null,
+                  color: op.color,
+                  category: op.category,
+                });
+              }}
+              className="rounded-full border px-3 py-1 text-xs transition hover:bg-gray-100 active:scale-95 dark:hover:bg-gray-700"
             >
               {op.name}
             </button>
@@ -254,8 +227,6 @@ const DragDropSinglyLinkedListPage = () => {
           <DragDropZone
             operations={state.operations}
             selectedStep={selectedStep}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
             onRemoveOperation={(id) => {
               setAutoFollow(true);
               removeOperation(id);

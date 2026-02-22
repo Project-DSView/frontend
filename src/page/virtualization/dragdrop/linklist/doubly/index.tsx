@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 
-import { DoublyLinkedListDragComponent, Operation } from '@/types';
+import { Operation } from '@/types';
 import { useDragDropDoublyLinkedList } from '@/hooks';
 import { doublyLinkedListDragComponents, doublyLinkedListDragDropBaseTemplate } from '@/data';
 import { generateDragDropDoublyLinkedListCode } from '@/lib';
@@ -20,11 +20,8 @@ const DragDropDoublyLinkedListPage = () => {
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
     useDragDropDoublyLinkedList();
 
-  const [draggedItem, setDraggedItem] = useState<DoublyLinkedListDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
-
-  // ✅ NEW: auto-follow latest step
   const [autoFollow, setAutoFollow] = useState(true);
 
   const visualizationRef = useRef<HTMLDivElement>(null);
@@ -36,7 +33,6 @@ const DragDropDoublyLinkedListPage = () => {
     };
   }, []);
 
-  // ✅ follow latest whenever operations change (and not in manual / autoplay)
   useEffect(() => {
     if (!autoFollow) return;
     if (isAutoPlaying) return;
@@ -49,32 +45,8 @@ const DragDropDoublyLinkedListPage = () => {
     setSelectedStep(state.operations.length - 1);
   }, [state.operations, autoFollow, isAutoPlaying]);
 
-  const handleDragStart = (e: React.DragEvent, component: DoublyLinkedListDragComponent) => {
-    setDraggedItem(component);
-    e.dataTransfer.setData('text/plain', 'external');
-  };
+  /* ================= Update Operation ================= */
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (!draggedItem) return;
-
-    // ✅ user is "playing" -> follow latest
-    setAutoFollow(true);
-
-    addOperation({
-      type: draggedItem.type,
-      name: draggedItem.name,
-      value: '',
-      position: null,
-      newValue: null,
-      color: draggedItem.color,
-      category: draggedItem.category,
-    });
-
-    setDraggedItem(null);
-  };
-
-  // ✅ updates => follow latest
   const updateOperationValue = (id: number, value: string) => {
     setAutoFollow(true);
     updateOperation(id, { value });
@@ -90,16 +62,6 @@ const DragDropDoublyLinkedListPage = () => {
     updateOperation(id, { newValue });
   };
 
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
   const handleClearAll = () => {
     clearAll();
     setSelectedStep(null);
@@ -109,9 +71,7 @@ const DragDropDoublyLinkedListPage = () => {
     autoPlayRef.current = null;
   };
 
-  /* =========================
-      Step Description
-  ========================= */
+  /* ================= Step Description ================= */
 
   const getStepDescription = (op: Operation) => {
     switch (op.type) {
@@ -144,9 +104,7 @@ const DragDropDoublyLinkedListPage = () => {
     }
   };
 
-  /* =========================
-      Step Simulation
-  ========================= */
+  /* ================= Step Simulation ================= */
 
   const getStepState = (step: number) => {
     let nodes: string[] = [];
@@ -164,27 +122,16 @@ const DragDropDoublyLinkedListPage = () => {
           if (op.value) nodes = [...nodes, op.value];
           break;
 
-        case 'insert_position': {
-          if (op.value && op.position !== null) {
-            const pos = Number(op.position);
-            if (Number.isFinite(pos) && pos >= 0 && pos <= nodes.length) {
-              nodes.splice(pos, 0, op.value);
-            }
-          }
-          break;
-        }
-
+        case 'insert_position':
         case 'insert_before_position': {
           if (op.value && op.position !== null) {
             const pos = Number(op.position);
-
             if (Number.isFinite(pos) && pos >= 0 && pos <= nodes.length) {
               nodes.splice(pos, 0, op.value);
             }
           }
           break;
         }
-
 
         case 'delete_beginning':
           nodes.shift();
@@ -204,20 +151,9 @@ const DragDropDoublyLinkedListPage = () => {
           break;
         }
 
-        case 'delete_value': {
-          if (op.value) {
-            const index = nodes.indexOf(op.value);
-            if (index !== -1) {
-              nodes.splice(index, 1);
-            }
-          }
-          break;
-        }
-
         case 'delete_before_position': {
           if (op.position !== null) {
             const pos = Number(op.position);
-
             if (Number.isFinite(pos) && pos > 0 && pos <= nodes.length - 1) {
               nodes.splice(pos - 1, 1);
             }
@@ -225,6 +161,13 @@ const DragDropDoublyLinkedListPage = () => {
           break;
         }
 
+        case 'delete_value': {
+          if (op.value) {
+            const index = nodes.indexOf(op.value);
+            if (index !== -1) nodes.splice(index, 1);
+          }
+          break;
+        }
 
         case 'update_value': {
           if (op.value && op.newValue) {
@@ -237,14 +180,11 @@ const DragDropDoublyLinkedListPage = () => {
         case 'update_position': {
           if (op.position !== null && op.newValue) {
             const pos = Number(op.position);
-            if (Number.isFinite(pos) && pos >= 0 && pos < nodes.length) nodes[pos] = op.newValue;
+            if (Number.isFinite(pos) && pos >= 0 && pos < nodes.length)
+              nodes[pos] = op.newValue;
           }
           break;
         }
-
-        case 'traverse_forward':
-        case 'traverse_backward':
-          break;
 
         default:
           break;
@@ -265,78 +205,29 @@ const DragDropDoublyLinkedListPage = () => {
   const visualizationState =
     selectedStep !== null ? getStepState(selectedStep) : { nodes: state.nodes, stats: state.stats };
 
-  /* =========================
-      Prev / Next / Auto Play
-  ========================= */
-
-  const handlePrev = () => {
-    if (state.operations.length === 0) return;
-    setAutoFollow(false);
-    setSelectedStep((prev) => Math.max(0, (prev ?? 0) - 1));
-  };
-
-  const handleNext = () => {
-    if (state.operations.length === 0) return;
-    setAutoFollow(false);
-    setSelectedStep((prev) => Math.min(state.operations.length - 1, (prev ?? 0) + 1));
-  };
-
-  const handleAutoPlay = () => {
-    if (isAutoPlaying) {
-      setIsAutoPlaying(false);
-      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-      autoPlayRef.current = null;
-      return;
-    }
-
-    if (state.operations.length === 0) return;
-
-    // autoplay = manual timeline
-    setAutoFollow(false);
-    setIsAutoPlaying(true);
-    setSelectedStep(0);
-
-    autoPlayRef.current = setInterval(() => {
-      setSelectedStep((prev) => {
-        const cur = prev ?? 0;
-        if (cur >= state.operations.length - 1) {
-          setIsAutoPlaying(false);
-          if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-          autoPlayRef.current = null;
-          return cur;
-        }
-        return cur + 1;
-      });
-    }, 1500);
-  };
-
-  /* =========================
-      Python Code
-  ========================= */
+  /* ================= Python Code ================= */
 
   const generatedCode = useMemo(() => {
     if (state.operations.length === 0) {
       return (
         doublyLinkedListDragDropBaseTemplate +
-        '\n\n# === User Operations ===\nmyList = DoublyLinkedList()\n\n# Drop operations above to generate code here...'
+        '\n\n# === User Operations ===\nmyList = DoublyLinkedList()\n\n# Click operations above to generate code here...'
       );
     }
     return generateDragDropDoublyLinkedListCode(state.operations);
   }, [state.operations]);
 
-  /* =========================
-      Render
-  ========================= */
+  /* ================= Render ================= */
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-4 md:px-6 dark:bg-gray-900">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Drag & Drop Doubly Linked List
+            Doubly Linked List
           </h1>
           <p className="text-xs text-gray-600 dark:text-gray-400">
-            Doubly linked list visualization + Python code
+            Visualization + Python code
           </p>
         </div>
         <div className="flex gap-2">
@@ -346,17 +237,24 @@ const DragDropDoublyLinkedListPage = () => {
       </div>
 
       <div className="mb-4 rounded-xl border bg-white p-3 shadow-sm dark:bg-gray-800">
-        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-          Linked List Operations
-        </h2>
-
+        <h2 className="text-sm font-semibold">Linked List Operations</h2>
         <div className="mt-2 flex flex-wrap gap-2">
           {doublyLinkedListDragComponents.map((op) => (
             <button
               key={op.type}
-              draggable
-              onDragStart={(e) => handleDragStart(e, op)}
-              className="rounded-full border px-3 py-1 text-xs hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={() => {
+                setAutoFollow(true);
+                addOperation({
+                  type: op.type,
+                  name: op.name,
+                  value: '',
+                  position: null,
+                  newValue: null,
+                  color: op.color,
+                  category: op.category,
+                });
+              }}
+              className="rounded-full border px-3 py-1 text-xs transition hover:bg-gray-100 active:scale-95 dark:hover:bg-gray-700"
             >
               {op.name}
             </button>
@@ -376,10 +274,6 @@ const DragDropDoublyLinkedListPage = () => {
           <DragDropZone
             operations={state.operations}
             selectedStep={selectedStep}
-            onDrop={handleDrop}
-            onDragOver={(e) => e.preventDefault()}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
             onRemoveOperation={(id) => {
               setAutoFollow(true);
               removeOperation(id);
@@ -395,16 +289,11 @@ const DragDropDoublyLinkedListPage = () => {
         </div>
 
         <div className="rounded-xl border bg-white p-3 shadow-sm dark:bg-gray-800">
-          <h2 className="mb-2 text-sm font-semibold">Doubly Linked List Visualization</h2>
-
+          <h2 className="mb-2 text-sm font-semibold">Visualization</h2>
           <DoublyLinkedListVisualization
             ref={visualizationRef}
             nodes={visualizationState.nodes}
             stats={visualizationState.stats}
-            isRunning={isAutoPlaying}
-            currentOperation={selectedStep !== null ? state.operations[selectedStep]?.type : undefined}
-            selectedStep={selectedStep}
-            currentOperationData={selectedStep !== null ? state.operations[selectedStep] : undefined}
           />
         </div>
       </div>
@@ -414,14 +303,10 @@ const DragDropDoublyLinkedListPage = () => {
           operations={state.operations}
           selectedStep={selectedStep}
           onStepSelect={(step) => {
-            setAutoFollow(false); // scrub = manual
+            setAutoFollow(false);
             setSelectedStep(step);
           }}
           getStepDescription={getStepDescription}
-          onPrevious={handlePrev}
-          onNext={handleNext}
-          onAutoPlay={handleAutoPlay}
-          isAutoPlaying={isAutoPlaying}
         />
       </div>
 
@@ -431,7 +316,7 @@ const DragDropDoublyLinkedListPage = () => {
           <CopyCodeButton code={generatedCode} />
         </div>
 
-        <div className="mt-3 rounded-xl">
+        <div className="mt-3">
           <React.Suspense fallback={<div>Loading editor...</div>}>
             <CodeEditor code={generatedCode} disabled height="400px" onCodeChange={() => {}} />
           </React.Suspense>

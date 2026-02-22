@@ -589,15 +589,14 @@ interface UndirectedGraphDragDropVisualizationProps {
 interface DragDropZoneProps {
   operations: DragDropOperation[];
 
-  // step control
   selectedStep?: number | null;
-  onSelectStep?: (index: number) => void;   // ✅ เพิ่ม
-  onUserInteract?: () => void;              // ✅ เพิ่ม (คุณส่ง prop นี้ด้วย)
+  onSelectStep?: (index: number) => void;
+  onUserInteract?: () => void;
 
-  onDragOver: (e: React.DragEvent) => void;
+  onDragOver?: (e: React.DragEvent) => void;   // ✅ ทำให้ optional
   onDragEnter?: (e: React.DragEvent) => void;
   onDragLeave?: (e: React.DragEvent) => void;
-  onDrop: (e: React.DragEvent) => void;
+  onDrop?: (e: React.DragEvent) => void;       // ✅ ทำให้ optional
 
   onRemoveOperation: (id: number) => void;
   onUpdateOperationValue: (id: number, value: string) => void;
