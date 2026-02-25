@@ -1,51 +1,55 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, Suspense } from 'react';
 
 import { Operation } from '@/types';
 import { useDragDropDoublyLinkedList } from '@/hooks';
-import { doublyLinkedListDragComponents, doublyLinkedListDragDropBaseTemplate } from '@/data';
+import {
+  doublyLinkedListDragComponents,
+  doublyLinkedListDragDropBaseTemplate,
+  getTutorialSteps,
+  getTutorialStorageKey,
+} from '@/data';
 import { generateDragDropDoublyLinkedListCode } from '@/lib';
 
 import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
 import StepSelector from '@/components/playground/shared/action/StepSelector';
 import ExportPNGButton from '@/components/playground/shared/action/ExportPNGButton';
 import TutorialButton from '@/components/playground/shared/tutorial/TutorialButton';
+import TutorialOverlay from '@/components/playground/shared/tutorial/TutorialOverlay';
 import DoublyLinkedListVisualization from '@/components/playground/dragdrop/visualization/DoublyLinkedList';
 import CopyCodeButton from '@/components/playground/shared/action/CopyCodeButton';
 
 const CodeEditor = React.lazy(() => import('@/components/editor/CodeEditor'));
 
 const DragDropDoublyLinkedListPage = () => {
-  const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
-    useDragDropDoublyLinkedList();
+  const {
+    state,
+    addOperation,
+    updateOperation,
+    removeOperation,
+    clearAll,
+    reorderOperation,
+  } = useDragDropDoublyLinkedList();
 
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [autoFollow, setAutoFollow] = useState(true);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
 
   const visualizationRef = useRef<HTMLDivElement>(null);
-  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    return () => {
-      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-    };
-  }, []);
+  /* ================= Auto Follow ================= */
 
   useEffect(() => {
     if (!autoFollow) return;
-    if (isAutoPlaying) return;
-
     if (state.operations.length === 0) {
       setSelectedStep(null);
       return;
     }
-
     setSelectedStep(state.operations.length - 1);
-  }, [state.operations, autoFollow, isAutoPlaying]);
+  }, [state.operations, autoFollow]);
 
-  /* ================= Update Operation ================= */
+  /* ================= Update ================= */
 
   const updateOperationValue = (id: number, value: string) => {
     setAutoFollow(true);
@@ -66,9 +70,6 @@ const DragDropDoublyLinkedListPage = () => {
     clearAll();
     setSelectedStep(null);
     setAutoFollow(true);
-    setIsAutoPlaying(false);
-    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-    autoPlayRef.current = null;
   };
 
   /* ================= Step Description ================= */
@@ -117,76 +118,51 @@ const DragDropDoublyLinkedListPage = () => {
         case 'insert_beginning':
           if (op.value) nodes = [op.value, ...nodes];
           break;
-
         case 'insert_end':
           if (op.value) nodes = [...nodes, op.value];
           break;
-
         case 'insert_position':
-        case 'insert_before_position': {
+        case 'insert_before_position':
           if (op.value && op.position !== null) {
             const pos = Number(op.position);
-            if (Number.isFinite(pos) && pos >= 0 && pos <= nodes.length) {
-              nodes.splice(pos, 0, op.value);
-            }
+            if (pos >= 0 && pos <= nodes.length) nodes.splice(pos, 0, op.value);
           }
           break;
-        }
-
         case 'delete_beginning':
           nodes.shift();
           break;
-
         case 'delete_end':
           nodes.pop();
           break;
-
-        case 'delete_position': {
+        case 'delete_position':
           if (op.position !== null) {
             const pos = Number(op.position);
-            if (Number.isFinite(pos) && pos >= 0 && pos < nodes.length) {
-              nodes.splice(pos, 1);
-            }
+            if (pos >= 0 && pos < nodes.length) nodes.splice(pos, 1);
           }
           break;
-        }
-
-        case 'delete_before_position': {
+        case 'delete_before_position':
           if (op.position !== null) {
             const pos = Number(op.position);
-            if (Number.isFinite(pos) && pos > 0 && pos <= nodes.length - 1) {
-              nodes.splice(pos - 1, 1);
-            }
+            if (pos > 0 && pos <= nodes.length - 1) nodes.splice(pos - 1, 1);
           }
           break;
-        }
-
-        case 'delete_value': {
+        case 'delete_value':
           if (op.value) {
-            const index = nodes.indexOf(op.value);
-            if (index !== -1) nodes.splice(index, 1);
+            const idx = nodes.indexOf(op.value);
+            if (idx !== -1) nodes.splice(idx, 1);
           }
           break;
-        }
-
-        case 'update_value': {
+        case 'update_value':
           if (op.value && op.newValue) {
             const idx = nodes.indexOf(op.value);
             if (idx !== -1) nodes[idx] = op.newValue;
           }
           break;
-        }
-
-        case 'update_position': {
+        case 'update_position':
           if (op.position !== null && op.newValue) {
             const pos = Number(op.position);
-            if (Number.isFinite(pos) && pos >= 0 && pos < nodes.length)
-              nodes[pos] = op.newValue;
+            if (pos >= 0 && pos < nodes.length) nodes[pos] = op.newValue;
           }
-          break;
-        }
-
-        default:
           break;
       }
     }
@@ -203,39 +179,40 @@ const DragDropDoublyLinkedListPage = () => {
   };
 
   const visualizationState =
-    selectedStep !== null ? getStepState(selectedStep) : { nodes: state.nodes, stats: state.stats };
-
-  /* ================= Python Code ================= */
+    selectedStep !== null
+      ? getStepState(selectedStep)
+      : { nodes: state.nodes, stats: state.stats };
 
   const generatedCode = useMemo(() => {
     if (state.operations.length === 0) {
-      return (
-        doublyLinkedListDragDropBaseTemplate +
-        '\n\n# === User Operations ===\nmyList = DoublyLinkedList()\n\n# Click operations above to generate code here...'
-      );
+      return doublyLinkedListDragDropBaseTemplate;
     }
     return generateDragDropDoublyLinkedListCode(state.operations);
   }, [state.operations]);
 
-  /* ================= Render ================= */
-
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-4 md:px-6 dark:bg-gray-900">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Doubly Linked List
-          </h1>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Visualization + Python code
-          </p>
+    <div className="min-h-screen bg-gray-50 px-4 py-5 md:px-8 dark:bg-gray-900">
+
+      {/* Header */}
+      <div className="mb-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Drag & Drop Doubly Linked List
+            </h1>
+
+            <TutorialButton onClick={() => setIsTutorialOpen(true)} />
+          </div>
+
+          <ExportPNGButton visualizationRef={visualizationRef} />
         </div>
-        <div className="flex gap-2">
-          <TutorialButton onClick={() => {}} />
-          <ExportPNGButton visualizationRef={visualizationRef} disabled={false} />
-        </div>
+
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          คลิก operation เพื่อสร้าง Doubly Linked List + Python code
+        </p>
       </div>
 
+      {/* Operations */}
       <div className="mb-4 rounded-xl border bg-white p-3 shadow-sm dark:bg-gray-800">
         <h2 className="text-sm font-semibold">Linked List Operations</h2>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -262,6 +239,7 @@ const DragDropDoublyLinkedListPage = () => {
         </div>
       </div>
 
+      {/* Drop + Visualization */}
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-xl border bg-white p-3 shadow-sm dark:bg-gray-800">
           <div className="mb-2 flex items-center justify-between">
@@ -298,6 +276,7 @@ const DragDropDoublyLinkedListPage = () => {
         </div>
       </div>
 
+      {/* Step Selector */}
       <div className="mt-6">
         <StepSelector
           operations={state.operations}
@@ -310,6 +289,7 @@ const DragDropDoublyLinkedListPage = () => {
         />
       </div>
 
+      {/* Generated Code */}
       <div className="mt-6 rounded-xl border bg-white p-4 shadow-sm dark:bg-gray-800">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold">Generated Python Code</h2>
@@ -317,11 +297,29 @@ const DragDropDoublyLinkedListPage = () => {
         </div>
 
         <div className="mt-3">
-          <React.Suspense fallback={<div>Loading editor...</div>}>
-            <CodeEditor code={generatedCode} disabled height="400px" onCodeChange={() => {}} />
-          </React.Suspense>
+          <Suspense fallback={<div>Loading editor...</div>}>
+            <CodeEditor
+              code={generatedCode}
+              disabled
+              height="400px"
+              onCodeChange={() => {}}
+            />
+          </Suspense>
         </div>
       </div>
+
+      {/* Tutorial Overlay */}
+      <TutorialOverlay
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+        steps={getTutorialSteps('dragdrop')}
+        storageKey={getTutorialStorageKey(
+          typeof window !== 'undefined'
+            ? window.location.pathname
+            : '/virtualization/dragdrop/linkedlist/doubly',
+          'dragdrop'
+        )}
+      />
     </div>
   );
 };

@@ -156,9 +156,9 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
     if (field === 'value') {
       onUpdateOperationValue(op.id, value);
     } else if (field === 'position') {
-      onUpdateOperationPosition(op.id, value);
+      onUpdateOperationPosition?.(op.id, value);
     } else if (field === 'newValue') {
-      onUpdateOperationNewValue(op.id, value);
+      onUpdateOperationNewValue?.(op.id, value);
     } else if (field === 'endVertex') {
       onUpdateOperationValue(op.id, value); // endVertex is stored in value field
     } else if (field === 'sourceStack' && onUpdateOperationSourceStack) {
@@ -314,7 +314,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
       onDragEnter={onDragEnter}
       onDragLeave={handleMainDragLeave}
       onDrop={handleMainDrop}
-      className={`min-h-[300px] w-full rounded-lg border-2 border-dashed p-4 transition-all duration-200 ${
+      className={`flex h-[360px] w-full flex-col overflow-hidden rounded-lg border bg-white p-3 dark:bg-gray-800 ${
         isExternalDrag
           ? 'border-blue-400 bg-blue-50 shadow-lg dark:border-blue-600 dark:bg-blue-900/30'
           : 'border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800'
@@ -336,10 +336,10 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
           {/* Show existing blocks behind overlay */}
           <div className="opacity-50">
             <div
-              className={`space-y-3 ${operations.length >= 5 ? 'scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 max-h-96 overflow-y-auto' : ''}`}
+              className={`space-y-3 ${operations.length >= 5 ? 'scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 flex-1 overflow-y-auto' : ''}`}
             >
               {operations.map((op, index) => (
-                <div key={op.id} className={`${op.color} rounded-lg border p-3`}>
+                <div key={op.id} className={`${op.color} rounded-md border p-2`}>
                   <div className="mb-2 flex items-center space-x-3">
                     <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                       #{index + 1}

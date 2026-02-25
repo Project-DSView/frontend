@@ -1,23 +1,35 @@
 'use client';
 
-import React, { useRef, lazy, Suspense } from 'react';
-import { BSTDragComponent, BSTNode, BSTOperation } from '@/types';
+import React, { useRef, lazy, Suspense, useState, useEffect } from 'react';
+import { BSTNode, BSTOperation } from '@/types';
 import { useDragDropBST } from '@/hooks';
-import { bstDragComponents, bstDragDropBaseTemplate } from '@/data';
+import {
+  bstDragComponents,
+  bstDragDropBaseTemplate,
+  getTutorialSteps,
+  getTutorialStorageKey,
+} from '@/data';
 import { generateDragDropBSTCode } from '@/lib';
 
+import TutorialButton from '@/components/playground/shared/tutorial/TutorialButton';
+import TutorialOverlay from '@/components/playground/shared/tutorial/TutorialOverlay';
+import ExportPNGButton from '@/components/playground/shared/action/ExportPNGButton';
 import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
 
 const BSTDragDropVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/BST'),
 );
-const CopyCodeButton = lazy(() => import('@/components/playground/shared/action/CopyCodeButton'));
+const CopyCodeButton = lazy(
+  () => import('@/components/playground/shared/action/CopyCodeButton'),
+);
 const CodeEditor = lazy(() => import('@/components/editor/CodeEditor'));
 
 const safeUUID = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? (crypto as unknown as { randomUUID: () => string }).randomUUID()
     : Math.random().toString(36).substring(2, 11);
+
+/* ================= BST Logic ================= */
 
 const insertNode = (root: BSTNode | null, value: string): BSTNode => {
   if (!root) return { value, left: null, right: null, id: safeUUID() };
@@ -54,12 +66,16 @@ const deleteNode = (root: BSTNode | null, value: string): BSTNode | null => {
 };
 
 const calculateStats = (root: BSTNode | null) => {
-  const size = (n: BSTNode | null): number => (n ? 1 + size(n.left) + size(n.right) : 0);
+  const size = (n: BSTNode | null): number =>
+    n ? 1 + size(n.left) + size(n.right) : 0;
+
   const height = (n: BSTNode | null): number =>
     n ? 1 + Math.max(height(n.left), height(n.right)) : 0;
 
   return { size: size(root), height: height(root), isEmpty: !root };
 };
+
+/* ================= Component ================= */
 
 const DragDropBST = () => {
   const {
@@ -72,13 +88,16 @@ const DragDropBST = () => {
     updateBSTState,
   } = useDragDropBST();
 
+  const visualizationRef = useRef<HTMLDivElement>(null);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+
   const updateBSTStateRef = useRef(updateBSTState);
 
-  React.useEffect(() => {
+  useEffect(() => {
     updateBSTStateRef.current = updateBSTState;
   }, [updateBSTState]);
 
-  /* ================= Update ================= */
+  /* ================= Update Operation ================= */
 
   const updateOperationValue = (id: number, value: string) => {
     const op = state.operations.find((o: BSTOperation) => o.id === id);
@@ -86,6 +105,7 @@ const DragDropBST = () => {
     updateOperation(id, { value });
   };
 
+  // 🔥 เพิ่มสองตัวนี้เพื่อให้ type ครบ
   const updateOperationPosition = (id: number, position: string) => {
     updateOperation(id, { position });
   };
@@ -96,7 +116,7 @@ const DragDropBST = () => {
 
   /* ================= Recalculate BST ================= */
 
-  React.useEffect(() => {
+  useEffect(() => {
     let root: BSTNode | null = null;
 
     state.operations.forEach((op: BSTOperation) => {
@@ -116,12 +136,20 @@ const DragDropBST = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-5 md:px-8 dark:bg-gray-900">
-      {/* Header */}
+
       <div className="mb-5">
-        <h1 className="mb-1 text-xl font-semibold text-gray-800 dark:text-gray-100">
-          Binary Search Tree
-        </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+              Drag & Drop Binary Search Tree
+            </h1>
+            <TutorialButton onClick={() => setIsTutorialOpen(true)} />
+          </div>
+
+          <ExportPNGButton visualizationRef={visualizationRef} />
+        </div>
+
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
           คลิก operation เพื่อสร้าง BST + Python code
         </p>
       </div>
@@ -136,7 +164,7 @@ const DragDropBST = () => {
           {bstDragComponents.map((component) => (
             <button
               key={component.id}
-              onClick={() => {
+              onClick={() =>
                 addOperation({
                   type: component.type,
                   name: component.name,
@@ -145,15 +173,14 @@ const DragDropBST = () => {
                   category: component.category,
                   position: null,
                   newValue: null,
-                });
-              }}
-              className="rounded-full border px-3 py-1 text-xs font-medium transition hover:opacity-80 active:scale-95"
+                })
+              }
+              className="rounded-full border px-3 py-1 text-xs font-medium transition active:scale-95"
               style={{
                 background: component.color + '14',
                 borderColor: component.color,
                 color: component.color,
               }}
-              title={component.name}
             >
               {component.name}
             </button>
@@ -161,18 +188,12 @@ const DragDropBST = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Drop Zone */}
-        <div className="flex flex-col rounded-xl border border-dashed border-gray-300 bg-white p-3 shadow-sm lg:h-[520px] dark:bg-gray-800">
+      {/* Drop + Visualization */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="flex flex-col rounded-xl border bg-white p-3 shadow-sm dark:bg-gray-800">
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-              Drop Zone
-            </h2>
-
-            <button
-              onClick={() => clearAll()}
-              className="rounded-md bg-gray-700 px-3 py-1 text-xs font-medium text-white transition hover:bg-gray-600"
-            >
+            <h2 className="text-sm font-semibold">Drop Zone</h2>
+            <button onClick={clearAll} className="text-xs text-red-600 hover:underline">
               Clear
             </button>
           </div>
@@ -189,20 +210,13 @@ const DragDropBST = () => {
           </div>
         </div>
 
-        {/* Visualization */}
         <div className="flex flex-col rounded-xl border border-dashed border-gray-300 bg-white p-3 shadow-sm lg:h-[520px] dark:bg-gray-800">
           <h2 className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-100">
             BST Visualization
           </h2>
 
-          <div className="flex-1 overflow-hidden">
-            <Suspense
-              fallback={
-                <div className="flex h-[420px] items-center justify-center text-sm text-gray-500">
-                  Loading...
-                </div>
-              }
-            >
+          <div className="flex-1 overflow-hidden" ref={visualizationRef}>
+            <Suspense fallback={<div>Loading...</div>}>
               <BSTDragDropVisualization root={state.root} stats={state.stats} />
             </Suspense>
           </div>
@@ -210,30 +224,49 @@ const DragDropBST = () => {
       </div>
 
       {/* Generated Code */}
-      {(() => {
-        const generatedCode =
-          state.operations.length === 0
-            ? bstDragDropBaseTemplate +
-              '\n\n# === User Operations ===\nmyBST = BST()\n\n# Click operations above to generate code here...'
-            : generateDragDropBSTCode(state.operations);
+      <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+            Generated Python Code
+          </h3>
 
-        return (
-          <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                Generated Python Code
-              </h3>
-              <Suspense fallback={null}>
-                <CopyCodeButton code={generatedCode} />
-              </Suspense>
-            </div>
+          <Suspense fallback={null}>
+            <CopyCodeButton
+              code={
+                state.operations.length === 0
+                  ? bstDragDropBaseTemplate
+                  : generateDragDropBSTCode(state.operations)
+              }
+            />
+          </Suspense>
+        </div>
 
-            <div className="rounded-lg border border-gray-200 dark:border-gray-700">
-              <CodeEditor code={generatedCode} disabled height="400px" onCodeChange={() => {}} />
-            </div>
-          </div>
-        );
-      })()}
+        <div className="rounded-lg border border-gray-200 dark:border-gray-700">
+          <CodeEditor
+            code={
+              state.operations.length === 0
+                ? bstDragDropBaseTemplate
+                : generateDragDropBSTCode(state.operations)
+            }
+            disabled
+            height="400px"
+            onCodeChange={() => {}}
+          />
+        </div>
+      </div>
+
+      {/* Tutorial Overlay */}
+      <TutorialOverlay
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+        steps={getTutorialSteps('dragdrop')}
+        storageKey={getTutorialStorageKey(
+          typeof window !== 'undefined'
+            ? window.location.pathname
+            : '/virtualization/dragdrop/bst',
+          'dragdrop'
+        )}
+      />
     </div>
   );
 };

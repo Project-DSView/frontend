@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, Suspense } from 'react';
 
 import { Operation } from '@/types';
 import { useDragDropSinglyLinkedList } from '@/hooks';
 import {
   singlyLinkedListDragComponents,
   singlyLinkedListDragDropBaseTemplate,
+  getTutorialSteps,
+  getTutorialStorageKey,
 } from '@/data';
 import { generateDragDropSinglyLinkedListCode } from '@/lib';
 
@@ -14,6 +16,7 @@ import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
 import StepSelector from '@/components/playground/shared/action/StepSelector';
 import ExportPNGButton from '@/components/playground/shared/action/ExportPNGButton';
 import TutorialButton from '@/components/playground/shared/tutorial/TutorialButton';
+import TutorialOverlay from '@/components/playground/shared/tutorial/TutorialOverlay';
 import SinglyLinkedListVisualization from '@/components/playground/dragdrop/visualization/SinglyLinkedList';
 import CopyCodeButton from '@/components/playground/shared/action/CopyCodeButton';
 
@@ -29,14 +32,13 @@ const DragDropSinglyLinkedListPage = () => {
     reorderOperation,
   } = useDragDropSinglyLinkedList();
 
-  /* ================= State ================= */
-
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
-  const [autoFollow, setAutoFollow] = useState(true); // 🔥 key
+  const [autoFollow, setAutoFollow] = useState(true);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
 
   const visualizationRef = useRef<HTMLDivElement>(null);
 
-  /* ================= Auto follow latest step ================= */
+  /* ================= Auto follow latest ================= */
 
   useEffect(() => {
     if (!autoFollow) return;
@@ -47,7 +49,7 @@ const DragDropSinglyLinkedListPage = () => {
     setSelectedStep(state.operations.length - 1);
   }, [state.operations, autoFollow]);
 
-  /* ================= Update Operation ================= */
+  /* ================= Update ================= */
 
   const updateOperationValue = (id: number, value: string) => {
     setAutoFollow(true);
@@ -171,23 +173,27 @@ const DragDropSinglyLinkedListPage = () => {
   /* ================= Render ================= */
 
   return (
-    <div className="min-h-screen bg-gray-50 px-3 py-4 md:px-6 dark:bg-gray-900">
-      <div className="mb-3 flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-            Drag & Drop Singly Linked List
-          </h1>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Linked list visualization + Python code
-          </p>
+    <div className="min-h-screen bg-gray-50 px-4 py-4 md:px-6 dark:bg-gray-900">
+      {/* Header */}
+      <div className="mb-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Drag & Drop Singly Linked List
+            </h1>
+
+            <TutorialButton onClick={() => setIsTutorialOpen(true)} />
+          </div>
+
+          <ExportPNGButton visualizationRef={visualizationRef} />
         </div>
 
-        <div className="flex gap-2">
-          <TutorialButton onClick={() => {}} />
-          <ExportPNGButton visualizationRef={visualizationRef} disabled={false} />
-        </div>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          คลิก operation เพื่อสร้าง Singly Linked List + Python code
+        </p>
       </div>
 
+      {/* Operations */}
       <div className="mb-3 rounded-lg border bg-white p-3 dark:bg-gray-800">
         <h2 className="text-sm font-semibold">Linked List Operations</h2>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -196,7 +202,6 @@ const DragDropSinglyLinkedListPage = () => {
               key={op.type}
               onClick={() => {
                 setAutoFollow(true);
-
                 addOperation({
                   type: op.type,
                   name: op.name,
@@ -215,8 +220,9 @@ const DragDropSinglyLinkedListPage = () => {
         </div>
       </div>
 
-      <div className="grid gap-3 lg:grid-cols-2">
-        <div className="rounded-lg border bg-white p-3 dark:bg-gray-800">
+      {/* Drop + Visualization */}
+      <div className="grid gap-3 lg:grid-cols-2 lg:h-[420px]">
+        <div className="flex h-full flex-col rounded-lg border bg-white p-3 dark:bg-gray-800">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold">Drop Zone</h2>
             <button onClick={handleClearAll} className="text-xs text-red-600">
@@ -224,42 +230,44 @@ const DragDropSinglyLinkedListPage = () => {
             </button>
           </div>
 
-          <DragDropZone
-            operations={state.operations}
-            selectedStep={selectedStep}
-            onRemoveOperation={(id) => {
-              setAutoFollow(true);
-              removeOperation(id);
-            }}
-            onUpdateOperationValue={updateOperationValue}
-            onUpdateOperationPosition={updateOperationPosition}
-            onUpdateOperationNewValue={updateOperationNewValue}
-            onReorderOperation={(from, to) => {
-              setAutoFollow(true);
-              reorderOperation(from, to);
-            }}
-          />
+          <div className="flex-1">
+            <DragDropZone
+              operations={state.operations}
+              selectedStep={selectedStep}
+              onRemoveOperation={(id) => {
+                setAutoFollow(true);
+                removeOperation(id);
+              }}
+              onUpdateOperationValue={updateOperationValue}
+              onUpdateOperationPosition={updateOperationPosition}
+              onUpdateOperationNewValue={updateOperationNewValue}
+              onReorderOperation={(from, to) => {
+                setAutoFollow(true);
+                reorderOperation(from, to);
+              }}
+            />
+          </div>
         </div>
 
-        <div className="rounded-lg border bg-white p-3 dark:bg-gray-800">
-          <h2 className="mb-2 text-sm font-semibold">
-            Singly Linked List Visualization
-          </h2>
+        <div className="flex h-full flex-col rounded-lg border bg-white p-3 dark:bg-gray-800">
+          <h2 className="mb-2 text-sm font-semibold">Singly Linked List Visualization</h2>
 
-          <SinglyLinkedListVisualization
-            ref={visualizationRef}
-            nodes={visualizationState.nodes}
-            stats={visualizationState.stats}
-          />
+          <div className="flex-1 overflow-hidden">
+            <SinglyLinkedListVisualization
+              ref={visualizationRef}
+              nodes={visualizationState.nodes}
+              stats={visualizationState.stats}
+            />
+          </div>
         </div>
       </div>
 
+      {/* Step Selector */}
       <div className="mt-4">
         <StepSelector
           operations={state.operations}
           selectedStep={selectedStep}
           onStepSelect={(step) => {
-            // ผู้ใช้ scrub ดูย้อนหลัง
             setAutoFollow(false);
             setSelectedStep(step);
           }}
@@ -267,6 +275,7 @@ const DragDropSinglyLinkedListPage = () => {
         />
       </div>
 
+      {/* Generated Code */}
       <div className="mt-4 rounded-lg border bg-white p-3 dark:bg-gray-800">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold">Generated Python Code</h2>
@@ -279,7 +288,7 @@ const DragDropSinglyLinkedListPage = () => {
           />
         </div>
 
-        <React.Suspense fallback={<div>Loading editor...</div>}>
+        <Suspense fallback={<div>Loading editor...</div>}>
           <CodeEditor
             code={
               state.operations.length === 0
@@ -290,8 +299,21 @@ const DragDropSinglyLinkedListPage = () => {
             height="400px"
             onCodeChange={() => {}}
           />
-        </React.Suspense>
+        </Suspense>
       </div>
+
+      {/* Tutorial Overlay */}
+      <TutorialOverlay
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+        steps={getTutorialSteps('dragdrop')}
+        storageKey={getTutorialStorageKey(
+          typeof window !== 'undefined'
+            ? window.location.pathname
+            : '/virtualization/dragdrop/linkedlist/singly',
+          'dragdrop'
+        )}
+      />
     </div>
   );
 };

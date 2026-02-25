@@ -600,8 +600,8 @@ interface DragDropZoneProps {
 
   onRemoveOperation: (id: number) => void;
   onUpdateOperationValue: (id: number, value: string) => void;
-  onUpdateOperationPosition: (id: number, position: string) => void;
-  onUpdateOperationNewValue: (id: number, newValue: string) => void;
+  onUpdateOperationPosition?: (id: number, position: string) => void;
+  onUpdateOperationNewValue?: (id: number, newValue: string) => void;
 
   onUpdateOperationSourceStack?: (id: number, sourceStack: string) => void;
   onUpdateOperationTargetStack?: (id: number, targetStack: string) => void;

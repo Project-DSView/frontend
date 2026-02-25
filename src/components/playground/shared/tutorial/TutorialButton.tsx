@@ -7,6 +7,14 @@ import { Button } from '@/components/ui/button';
 import { TutorialButtonProps } from '@/types';
 
 const TutorialButton: React.FC<TutorialButtonProps> = ({ onClick, className = '' }) => {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   return (
     <Button
       variant="outline"

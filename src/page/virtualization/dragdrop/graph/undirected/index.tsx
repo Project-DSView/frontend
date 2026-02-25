@@ -1,6 +1,14 @@
 'use client';
 
-import React, { useState, useRef, lazy, Suspense, useMemo, useCallback, useEffect } from 'react';
+import React, {
+  useState,
+  useRef,
+  lazy,
+  Suspense,
+  useMemo,
+  useCallback,
+  useEffect,
+} from 'react';
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -11,7 +19,11 @@ import {
   Operation,
 } from '@/types';
 import { useDragDropUndirectedGraph } from '@/hooks';
-import { undirectedGraphDragComponents, getTutorialSteps, getTutorialStorageKey } from '@/data';
+import {
+  undirectedGraphDragComponents,
+  getTutorialSteps,
+  getTutorialStorageKey,
+} from '@/data';
 
 import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
 import StepSelector from '@/components/playground/shared/action/StepSelector';
@@ -26,11 +38,14 @@ const UndirectedGraphDragDropOperations = lazy(
 const UndirectedGraphDragDropVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/UndirectedGraph'),
 );
-const StepIndicator = lazy(() => import('@/components/playground/shared/action/StepIndicator'));
+const StepIndicator = lazy(
+  () => import('@/components/playground/shared/action/StepIndicator'),
+);
 const CopyCodeButton = lazy(
   () => import('@/components/playground/shared/action/CopyCodeButton'),
 );
 const CodeEditor = lazy(() => import('@/components/editor/CodeEditor'));
+
 const DragDropUndirectedGraph = () => {
   const pathname = usePathname();
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
@@ -47,15 +62,13 @@ const DragDropUndirectedGraph = () => {
     if (typeof window !== 'undefined') {
       const storageKey = getTutorialStorageKey(pathname, 'dragdrop');
       const hasSeenTutorial = localStorage.getItem(storageKey) === 'completed';
-
       if (!hasSeenTutorial) {
-        const timer = setTimeout(() => {
-          setIsTutorialOpen(true);
-        }, 500);
+        const timer = setTimeout(() => setIsTutorialOpen(true), 500);
         return () => clearTimeout(timer);
       }
     }
   }, [pathname]);
+
   const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -63,14 +76,11 @@ const DragDropUndirectedGraph = () => {
   const handleDragStart = (e: React.DragEvent, component: UndirectedGraphDragComponent) => {
     setDraggedItem(component);
     e.dataTransfer.effectAllowed = 'copy';
-    // Mark as external drag - no JSON data means external
     e.dataTransfer.setData('text/plain', 'external');
   };
 
   const handleTouchStart = (e: React.TouchEvent, component: UndirectedGraphDragComponent) => {
-    // Don't call preventDefault here as it's a passive event
     setDraggedItem(component);
-    // Simulate drop immediately for touch devices
     handleDrop({ preventDefault: () => {} } as React.DragEvent);
   };
 
@@ -93,112 +103,94 @@ const DragDropUndirectedGraph = () => {
     e.preventDefault();
     dragCounter.current = 0;
 
-    if (draggedItem) {
-      const newOperation = {
-        type: draggedItem.type,
-        name: draggedItem.name,
-        value: ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type)
-          ? null
-          : '',
-        fromVertex: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-        toVertex: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-        startVertex: ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type)
-          ? ''
-          : null,
-        endVertex: ['shortest_path'].includes(draggedItem.type) ? '' : null,
-        color: draggedItem.color,
-        category: draggedItem.category,
-        position: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-        newValue: [
-          'add_edge',
-          'remove_edge',
-          'traversal_dfs',
-          'traversal_bfs',
-          'shortest_path',
-        ].includes(draggedItem.type)
-          ? ''
-          : null,
-      };
+    if (!draggedItem) return;
 
-      addOperation(newOperation);
-      setDraggedItem(null);
-    }
+    const newOperation = {
+      type: draggedItem.type,
+      name: draggedItem.name,
+      value: ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type)
+        ? null
+        : '',
+      fromVertex: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
+      toVertex: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
+      startVertex: ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type)
+        ? ''
+        : null,
+      endVertex: ['shortest_path'].includes(draggedItem.type) ? '' : null,
+      color: draggedItem.color,
+      category: draggedItem.category,
+      position: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
+      newValue: [
+        'add_edge',
+        'remove_edge',
+        'traversal_dfs',
+        'traversal_bfs',
+        'shortest_path',
+      ].includes(draggedItem.type)
+        ? ''
+        : null,
+    };
+
+    addOperation(newOperation);
+    setDraggedItem(null);
   };
 
   const updateOperationValue = (id: number, value: string) => {
-    // Validate value based on operation type
     const operation = state.operations.find((op) => op.id === id);
-    if (operation) {
-      if (operation.type === 'add_vertex' || operation.type === 'remove_vertex') {
-        // Clear any previous errors
-      } else if (operation.type === 'shortest_path') {
-        // Update endVertex when value changes for shortest path
-        updateOperation(id, { value, endVertex: value });
-        return;
-      }
+    if (operation?.type === 'shortest_path') {
+      updateOperation(id, { value, endVertex: value });
+      return;
     }
     updateOperation(id, { value });
   };
 
-  const updateOperationPosition = (id: number, position: string) => {
-    // For edge operations, this handles fromVertex
-    const operation = state.operations.find((op) => op.id === id);
-    if (operation && (operation.type === 'add_edge' || operation.type === 'remove_edge')) {
-      // Check for duplicate edge
-      if (operation.toVertex && position) {
-        if (checkDuplicateEdge(position, operation.toVertex)) {
-          toast.error(`Edge ระหว่าง ${position} และ ${operation.toVertex} มีอยู่แล้วในกราฟ`);
-          return;
-        }
-      }
-
-      // Update fromVertex when position changes
-      updateOperation(id, { position, fromVertex: position });
-    } else {
-      updateOperation(id, { position });
-    }
-  };
-
-  // Check for duplicate edges
   const checkDuplicateEdge = (fromVertex: string, toVertex: string): boolean => {
-    if (fromVertex === toVertex) return true; // Self-loop not allowed
+    if (fromVertex === toVertex) return true;
 
-    // Check existing edges in current state
     const existingEdge = state.edges.find(
       (edge) =>
         (edge.from === fromVertex && edge.to === toVertex) ||
         (edge.from === toVertex && edge.to === fromVertex),
     );
-
     return !!existingEdge;
   };
 
-  const updateOperationNewValue = (id: number, newValue: string) => {
-    // For edge operations, this handles toVertex
+  const updateOperationPosition = (id: number, position: string) => {
     const operation = state.operations.find((op) => op.id === id);
     if (operation && (operation.type === 'add_edge' || operation.type === 'remove_edge')) {
-      // Check for duplicate edge
-      if (operation.fromVertex && newValue) {
-        if (checkDuplicateEdge(operation.fromVertex, newValue)) {
-          toast.error(`Edge ระหว่าง ${operation.fromVertex} และ ${newValue} มีอยู่แล้วในกราฟ`);
-          return;
-        }
+      if (operation.toVertex && position && checkDuplicateEdge(position, operation.toVertex)) {
+        toast.error(`Edge ระหว่าง ${position} และ ${operation.toVertex} มีอยู่แล้วในกราฟ`);
+        return;
       }
-
-      // Update toVertex when newValue changes
-      updateOperation(id, { newValue, toVertex: newValue });
-    } else if (
-      operation &&
-      (operation.type === 'traversal_dfs' || operation.type === 'traversal_bfs')
-    ) {
-      // Update startVertex when newValue changes
-      updateOperation(id, { newValue, startVertex: newValue });
-    } else if (operation && operation.type === 'shortest_path') {
-      // Update startVertex when newValue changes for shortest path
-      updateOperation(id, { newValue, startVertex: newValue });
-    } else {
-      updateOperation(id, { newValue });
+      updateOperation(id, { position, fromVertex: position });
+      return;
     }
+    updateOperation(id, { position });
+  };
+
+  const updateOperationNewValue = (id: number, newValue: string) => {
+    const operation = state.operations.find((op) => op.id === id);
+
+    if (operation && (operation.type === 'add_edge' || operation.type === 'remove_edge')) {
+      if (operation.fromVertex && newValue && checkDuplicateEdge(operation.fromVertex, newValue)) {
+        toast.error(`Edge ระหว่าง ${operation.fromVertex} และ ${newValue} มีอยู่แล้วในกราฟ`);
+        return;
+      }
+      updateOperation(id, { newValue, toVertex: newValue });
+      return;
+    }
+
+    if (operation && (operation.type === 'traversal_dfs' || operation.type === 'traversal_bfs')) {
+      updateOperation(id, { newValue, startVertex: newValue });
+      return;
+    }
+
+    if (operation && operation.type === 'shortest_path') {
+      updateOperation(id, { newValue, startVertex: newValue });
+      return;
+    }
+
+    updateOperation(id, { newValue });
   };
 
   const handleClearAll = () => {
@@ -208,89 +200,55 @@ const DragDropUndirectedGraph = () => {
 
   const handleRemoveOperation = (id: number) => {
     removeOperation(id);
-    // Reset step selection when removing operations
     setSelectedStep(null);
   };
 
   const handleStepSelect = (stepIndex: number) => {
     setSelectedStep(stepIndex);
-    // Stop auto play when manually selecting a step
-    if (isAutoPlaying) {
-      handleAutoPlay();
-    }
+    if (isAutoPlaying) handleAutoPlay();
   };
 
   const handlePrevious = () => {
-    if (selectedStep !== null && selectedStep > 0) {
-      setSelectedStep(selectedStep - 1);
-      // Trigger animation for the previous step
-      if (isAutoPlaying) {
-        // If auto playing, the animation will be handled by the auto play logic
-        return;
-      }
-      // If manually clicking previous, trigger a brief animation
-      setTimeout(() => {
-        // This will trigger the visualization animation
-      }, 100);
-    }
+    if (selectedStep !== null && selectedStep > 0) setSelectedStep(selectedStep - 1);
   };
 
   const handleNext = () => {
     if (selectedStep !== null && selectedStep < state.operations.length - 1) {
       setSelectedStep(selectedStep + 1);
-      // Trigger animation for the next step
-      if (isAutoPlaying) {
-        // If auto playing, the animation will be handled by the auto play logic
-        return;
-      }
-      // If manually clicking next, trigger a brief animation
-      setTimeout(() => {
-        // This will trigger the visualization animation
-      }, 100);
     }
   };
 
   const handleAutoPlay = () => {
     if (isAutoPlaying) {
-      // Stop auto play
       setIsAutoPlaying(false);
-      if (autoPlayIntervalRef.current) {
-        clearInterval(autoPlayIntervalRef.current);
-        autoPlayIntervalRef.current = null;
-      }
-    } else {
-      // Start auto play
-      setIsAutoPlaying(true);
-      if (state.operations.length > 0) {
-        setSelectedStep(0);
-        autoPlayIntervalRef.current = setInterval(() => {
-          setSelectedStep((prev) => {
-            if (prev === null || prev >= state.operations.length - 1) {
-              // Auto play finished
-              setIsAutoPlaying(false);
-              if (autoPlayIntervalRef.current) {
-                clearInterval(autoPlayIntervalRef.current);
-                autoPlayIntervalRef.current = null;
-              }
-              return prev;
-            }
-            return prev + 1;
-          });
-        }, 1500); // Change step every 1.5 seconds for smoother experience
-      }
+      if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
+      autoPlayIntervalRef.current = null;
+      return;
+    }
+
+    setIsAutoPlaying(true);
+    if (state.operations.length > 0) {
+      setSelectedStep(0);
+      autoPlayIntervalRef.current = setInterval(() => {
+        setSelectedStep((prev) => {
+          if (prev === null || prev >= state.operations.length - 1) {
+            setIsAutoPlaying(false);
+            if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
+            autoPlayIntervalRef.current = null;
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 1500);
     }
   };
 
-  // Cleanup auto play interval on unmount
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
-      if (autoPlayIntervalRef.current) {
-        clearInterval(autoPlayIntervalRef.current);
-      }
+      if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
     };
   }, []);
 
-  // Calculate shortest path using Dijkstra's algorithm
   const calculateShortestPath = (
     nodes: UndirectedGraphNode[],
     edges: UndirectedGraphEdge[],
@@ -299,18 +257,15 @@ const DragDropUndirectedGraph = () => {
   ): string[] => {
     if (start === end) return [start];
 
-    // Find start and end nodes by value
     const startNode = nodes.find((n) => n.value === start);
     const endNode = nodes.find((n) => n.value === end);
-
     if (!startNode || !endNode) return [];
 
-    const distances: { [key: string]: number } = {};
-    const previous: { [key: string]: string | null } = {};
+    const distances: Record<string, number> = {};
+    const previous: Record<string, string | null> = {};
     const visited = new Set<string>();
     const unvisited = new Set<string>();
 
-    // Initialize distances using node IDs as keys
     nodes.forEach((node) => {
       distances[node.id] = node.id === startNode.id ? 0 : Infinity;
       previous[node.id] = null;
@@ -318,12 +273,10 @@ const DragDropUndirectedGraph = () => {
     });
 
     let iterations = 0;
-    const maxIterations = nodes.length * 2; // Safety check
+    const maxIterations = nodes.length * 2;
 
     while (unvisited.size > 0 && iterations < maxIterations) {
       iterations++;
-
-      // Find node with minimum distance
       let currentNodeId = '';
       let minDistance = Infinity;
 
@@ -334,12 +287,11 @@ const DragDropUndirectedGraph = () => {
         }
       }
 
-      if (currentNodeId === '' || minDistance === Infinity) break;
+      if (!currentNodeId || minDistance === Infinity) break;
 
       unvisited.delete(currentNodeId);
       visited.add(currentNodeId);
 
-      // Check neighbors
       const currentNode = nodes.find((n) => n.id === currentNodeId);
       if (!currentNode) break;
 
@@ -351,7 +303,6 @@ const DragDropUndirectedGraph = () => {
             (e.from === currentNodeId && e.to === neighborId) ||
             (e.from === neighborId && e.to === currentNodeId),
         );
-
         if (!edge) continue;
 
         const edgeWeight = edge.weight || 1;
@@ -364,18 +315,15 @@ const DragDropUndirectedGraph = () => {
       }
     }
 
-    // Reconstruct path using node values
     const path: string[] = [];
     let currentId = endNode.id;
     let pathIterations = 0;
-    const maxPathIterations = nodes.length; // Safety check
+    const maxPathIterations = nodes.length;
 
-    while (currentId !== null && pathIterations < maxPathIterations) {
+    while (currentId && pathIterations < maxPathIterations) {
       pathIterations++;
       const node = nodes.find((n) => n.id === currentId);
-      if (node) {
-        path.unshift(node.value);
-      }
+      if (node) path.unshift(node.value);
       currentId = previous[currentId] || '';
     }
 
@@ -391,7 +339,7 @@ const DragDropUndirectedGraph = () => {
     endVertex?: string | null;
     name: string;
   }) => {
-    const descriptions: { [key: string]: string } = {
+    const descriptions: Record<string, string> = {
       add_vertex: `เพิ่ม vertex ${operation.value} เข้าไปในกราฟ`,
       add_edge: `เพิ่ม edge เชื่อมระหว่าง ${operation.fromVertex} และ ${operation.toVertex}`,
       remove_vertex: `ลบ vertex ${operation.value} และ edge ที่เชื่อมกับมัน`,
@@ -404,7 +352,6 @@ const DragDropUndirectedGraph = () => {
     return descriptions[operation.type] || `ดำเนินการ ${operation.name}`;
   };
 
-  // Calculate state for selected step
   const getStepState = useCallback(
     (stepIndex: number) => {
       if (stepIndex < 0 || stepIndex >= state.operations.length) {
@@ -425,7 +372,6 @@ const DragDropUndirectedGraph = () => {
       let currentNodes: UndirectedGraphNode[] = [];
       let currentEdges: UndirectedGraphEdge[] = [];
 
-      // Execute operations up to the selected step
       for (let i = 0; i <= stepIndex; i++) {
         const operation = state.operations[i];
         if (!operation) continue;
@@ -443,6 +389,7 @@ const DragDropUndirectedGraph = () => {
               currentNodes.push(newNode);
             }
             break;
+
           case 'add_edge':
             if (operation.fromVertex && operation.toVertex) {
               const fromNode = currentNodes.find((n) => n.value === operation.fromVertex);
@@ -460,6 +407,7 @@ const DragDropUndirectedGraph = () => {
               }
             }
             break;
+
           case 'remove_vertex':
             if (operation.value) {
               const nodeToRemove = currentNodes.find((n) => n.value === operation.value);
@@ -471,6 +419,7 @@ const DragDropUndirectedGraph = () => {
               }
             }
             break;
+
           case 'remove_edge':
             if (operation.fromVertex && operation.toVertex) {
               const fromNode = currentNodes.find((n) => n.value === operation.fromVertex);
@@ -486,13 +435,12 @@ const DragDropUndirectedGraph = () => {
               }
             }
             break;
+
           case 'shortest_path':
-            // Shortest path calculation will be handled in useEffect
             break;
         }
       }
 
-      // Calculate stats
       const currentStats = {
         size: currentNodes.length,
         isEmpty: currentNodes.length === 0,
@@ -507,41 +455,27 @@ const DragDropUndirectedGraph = () => {
     [state.operations],
   );
 
-  // Get current visualization state based on selected step
   const currentVisualizationState = useMemo(() => {
-    if (selectedStep !== null) {
-      return getStepState(selectedStep);
-    }
+    if (selectedStep !== null) return getStepState(selectedStep);
     return { nodes: state.nodes, edges: state.edges, stats: state.stats };
   }, [selectedStep, getStepState, state.nodes, state.edges, state.stats]);
 
-  // Calculate shortest path using useMemo with stable dependencies
   const shortestPath = useMemo(() => {
     if (selectedStep !== null) {
       const operation = state.operations[selectedStep];
       if (operation?.type === 'shortest_path' && operation.startVertex && operation.endVertex) {
-        // Get current state directly instead of using currentVisualizationState
-        const currentState =
-          selectedStep !== null
-            ? getStepState(selectedStep)
-            : { nodes: state.nodes, edges: state.edges, stats: state.stats };
-        const { nodes, edges } = currentState;
+        const currentState = getStepState(selectedStep);
         const path = calculateShortestPath(
-          nodes,
-          edges,
+          currentState.nodes,
+          currentState.edges,
           operation.startVertex,
           operation.endVertex,
         );
-
-        if (path.length > 0) {
-          return path;
-        }
+        return path.length > 0 ? path : [];
       }
     }
     return [];
-  }, [selectedStep, state.operations, state.nodes, state.edges, state.stats, getStepState]);
-
-  /* ================= Python Code Generator ================= */
+  }, [selectedStep, state.operations, getStepState]);
 
   const pythonCode = useMemo(() => {
     const lines: string[] = [
@@ -568,188 +502,198 @@ const DragDropUndirectedGraph = () => {
     ];
 
     state.operations.forEach((op) => {
-      if (op.type === 'add_vertex' && op.value) {
-        lines.push(`g.add_vertex("${op.value}")`);
-      }
-
+      if (op.type === 'add_vertex' && op.value) lines.push(`g.add_vertex("${op.value}")`);
       if (op.type === 'add_edge' && op.fromVertex && op.toVertex) {
         lines.push(`g.add_edge("${op.fromVertex}", "${op.toVertex}")`);
       }
     });
 
     lines.push('', 'g.show()');
-
-    return lines.join('\\n');
+    return lines.join('\n');
   }, [state.operations]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-gray-50">
+      <div className="mx-auto max-w-[1400px] px-4 py-6 md:px-6">
+        {/* ===== Header (เหมือนรูป) ===== */}
+        <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h1 className="mb-2 text-xl font-bold text-gray-800 md:text-2xl lg:text-2xl">
+            <h1 className="text-2xl font-bold text-gray-900">
               Drag & Drop Undirected Graph
             </h1>
-            <p className="text-sm text-gray-600 md:text-base">
-              เลือกประเภท operation จาก dropdown แล้วลาก operations ไปยัง Drop Zone
+            <p className="mt-1 text-sm text-gray-600">
+              คลิก operation เพื่อสร้างกราฟ + Python code
             </p>
           </div>
-          <TutorialButton onClick={() => setIsTutorialOpen(true)} />
-        </div>
-        <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
-      </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-        {/* Left Side - Drag Components */}
-        <div className="sticky top-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
+          <div className="flex items-center gap-2">
+            <TutorialButton onClick={() => setIsTutorialOpen(true)} />
+            <ExportPNGButton visualizationRef={visualizationRef} disabled={isLoading} />
+          </div>
+        </div>
+
+        {/* ===== Graph Operations bar (เหมือนรูป: pill buttons ในการ์ด) ===== */}
+        <div className="mb-6 rounded-xl border bg-white p-4 shadow-sm">
+         
+
           <Suspense
             fallback={
-              <div className="h-64 w-full rounded-lg border bg-gray-50">
-                <div className="flex h-full items-center justify-center">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-                </div>
+              <div className="flex h-10 items-center">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-transparent" />
               </div>
             }
           >
             <UndirectedGraphDragDropOperations
-              dragComponents={undirectedGraphDragComponents}
-              onDragStart={handleDragStart}
-              onTouchStart={handleTouchStart}
-            />
+  dragComponents={undirectedGraphDragComponents}
+  onOperationClick={(component) => {
+    addOperation({
+      type: component.type,
+      name: component.name,
+      value: '',
+      position: null,
+      newValue: null,
+      fromVertex: null,
+      toVertex: null,
+      startVertex: null,
+      endVertex: null,
+      color: component.color,
+      category: component.category,
+    });
+  }}
+/>
           </Suspense>
-        </div>
+      </div>
 
-        {/* Right Side - Drop Zone */}
-        <div className="rounded-lg bg-white p-4 shadow md:p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-800">Drop Zone</h2>
-            <div className="space-x-2">
+        {/* ===== 2 Columns: Drop Zone (ซ้าย) + Visualization (ขวา) ===== */}
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          {/* Drop Zone */}
+          <div className="rounded-xl border bg-white p-4 shadow-sm md:p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-gray-800">Drop Zone</h2>
+
+              {/* Clear เป็นตัวหนังสือแดงเหมือนรูป */}
               <button
+                type="button"
                 onClick={handleClearAll}
-                className="bg-neutral hover:bg-neutral/50 rounded px-4 py-2 text-white transition-colors"
+                className="text-sm font-semibold text-red-500 hover:text-red-600 hover:underline"
               >
                 Clear
               </button>
             </div>
+
+            <DragDropZone
+  operations={state.operations as Operation[]}
+  onRemoveOperation={handleRemoveOperation}
+  onUpdateOperationValue={updateOperationValue}
+  onUpdateOperationPosition={updateOperationPosition}
+  onUpdateOperationNewValue={updateOperationNewValue}
+  onReorderOperation={reorderOperation}
+/>
           </div>
 
-          <DragDropZone
-            operations={state.operations as Operation[]}
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onRemoveOperation={handleRemoveOperation}
-            onUpdateOperationValue={updateOperationValue}
-            onUpdateOperationPosition={updateOperationPosition}
-            onUpdateOperationNewValue={updateOperationNewValue}
-            onReorderOperation={reorderOperation}
-          />
-        </div>
-      </div>
-
-      {/* Visualization */}
-      <div className="relative">
-        {/* Step Indicator */}
-        {isAutoPlaying && state.operations.length > 0 && selectedStep !== null && (
-          <Suspense
-            fallback={
-              <div className="mb-4 rounded-lg bg-blue-50 p-4">
-                <div className="flex h-6 items-center justify-center">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
-                </div>
-              </div>
-            }
-          >
-            <StepIndicator
-              stepNumber={selectedStep + 1}
-              totalSteps={state.operations.length}
-              message={getStepDescription(state.operations[selectedStep])}
-              isAutoPlaying={isAutoPlaying}
-            />
-          </Suspense>
-        )}
-
-        <Suspense
-          fallback={
-            <div className="h-64 w-full rounded-lg border bg-gray-50">
-              <div className="flex h-full items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-              </div>
+          {/* Visualization */}
+          <div className="rounded-xl border bg-white p-4 shadow-sm md:p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-gray-800">Graph Visualization</h2>
             </div>
-          }
-        >
-          <UndirectedGraphDragDropVisualization
-            ref={visualizationRef}
-            nodes={currentVisualizationState.nodes}
-            edges={currentVisualizationState.edges}
-            stats={currentVisualizationState.stats}
-            isRunning={isAutoPlaying}
-            currentOperation={
-              selectedStep !== null ? state.operations[selectedStep]?.type : undefined
-            }
-            selectedStep={
-              selectedStep !== null &&
-              (state.operations[selectedStep]?.type === 'traversal_dfs' ||
-                state.operations[selectedStep]?.type === 'traversal_bfs' ||
-                state.operations[selectedStep]?.type === 'shortest_path')
-                ? selectedStep
-                : null
-            }
-            currentOperationData={
-              selectedStep !== null ? state.operations[selectedStep] : undefined
-            }
-            shortestPath={shortestPath}
+
+            {/* Step Indicator (ถ้าจะให้แสดงบน visualization ตามเดิม) */}
+            {isAutoPlaying && state.operations.length > 0 && selectedStep !== null && (
+              <div className="mb-3">
+                <Suspense
+                  fallback={
+                    <div className="rounded-lg bg-blue-50 p-3">
+                      <div className="flex h-6 items-center justify-center">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                      </div>
+                    </div>
+                  }
+                >
+                  <StepIndicator
+                    stepNumber={selectedStep + 1}
+                    totalSteps={state.operations.length}
+                    message={getStepDescription(state.operations[selectedStep])}
+                    isAutoPlaying={isAutoPlaying}
+                  />
+                </Suspense>
+              </div>
+            )}
+
+            <div className="relative">
+              <Suspense
+                fallback={
+                  <div className="h-[420px] w-full rounded-lg border bg-gray-50">
+                    <div className="flex h-full items-center justify-center">
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-transparent" />
+                    </div>
+                  </div>
+                }
+              >
+                <UndirectedGraphDragDropVisualization
+                  ref={visualizationRef}
+                  nodes={currentVisualizationState.nodes}
+                  edges={currentVisualizationState.edges}
+                  stats={currentVisualizationState.stats}
+                  isRunning={isAutoPlaying}
+                  currentOperation={
+                    selectedStep !== null ? state.operations[selectedStep]?.type : undefined
+                  }
+                  selectedStep={
+                    selectedStep !== null &&
+                    (state.operations[selectedStep]?.type === 'traversal_dfs' ||
+                      state.operations[selectedStep]?.type === 'traversal_bfs' ||
+                      state.operations[selectedStep]?.type === 'shortest_path')
+                      ? selectedStep
+                      : null
+                  }
+                  currentOperationData={selectedStep !== null ? state.operations[selectedStep] : undefined}
+                  shortestPath={shortestPath}
+                />
+              </Suspense>
+            </div>
+          </div>
+        </div>
+
+        {/* Step Selector (ด้านล่างเหมือนเดิม) */}
+        <div className="mt-6">
+          <StepSelector
+            operations={state.operations as Operation[]}
+            selectedStep={selectedStep}
+            onStepSelect={handleStepSelect}
+            getStepDescription={getStepDescription}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onAutoPlay={handleAutoPlay}
+            isAutoPlaying={isAutoPlaying}
           />
-        </Suspense>
-      </div>
+        </div>
 
-      <div className="mt-6">
-        {/* Step Selection */}
-        <StepSelector
-          operations={state.operations as Operation[]}
-          selectedStep={selectedStep}
-          onStepSelect={handleStepSelect}
-          getStepDescription={getStepDescription}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onAutoPlay={handleAutoPlay}
-          isAutoPlaying={isAutoPlaying}
+        {/* Tutorial Overlay */}
+        <TutorialOverlay
+          isOpen={isTutorialOpen}
+          onClose={() => setIsTutorialOpen(false)}
+          steps={getTutorialSteps('dragdrop')}
+          storageKey={getTutorialStorageKey(pathname, 'dragdrop')}
         />
-      </div>
 
-      {/* Tutorial Overlay */}
-      <TutorialOverlay
-        isOpen={isTutorialOpen}
-        onClose={() => setIsTutorialOpen(false)}
-        steps={getTutorialSteps('dragdrop')}
-        storageKey={getTutorialStorageKey(pathname, 'dragdrop')}
-      />
+        {/* Python Code */}
+        <div className="mt-6 rounded-xl border bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Generated Python Code</h2>
+            <Suspense fallback={null}>
+              <CopyCodeButton code={pythonCode} />
+            </Suspense>
+          </div>
 
-      {/* Python Code */}
-      <div className="mt-6 rounded-xl border bg-white p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Generated Python Code</h2>
-          <Suspense fallback={null}>
-            <CopyCodeButton code={pythonCode} />
-          </Suspense>
-        </div>
-
-        <div className="mt-4 rounded-lg">
-          <Suspense fallback={<div>Loading editor...</div>}>
-            <CodeEditor
-              code={pythonCode}
-              disabled
-              height="400px"
-              onCodeChange={() => {}}
-            />
-          </Suspense>
+          <div className="mt-4 rounded-lg">
+            <Suspense fallback={<div>Loading editor...</div>}>
+              <CodeEditor code={pythonCode} disabled height="400px" onCodeChange={() => {}} />
+            </Suspense>
+          </div>
         </div>
       </div>
-  </div>
-);
+    </div>
+  );
 };
-
 
 export default DragDropUndirectedGraph;
