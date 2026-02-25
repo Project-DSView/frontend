@@ -218,8 +218,7 @@ const QueuePage = () => {
     };
   };
 
-  const visualizationState =
-    selectedStep !== null ? getStepState(selectedStep) : state;
+  const visualizationState = selectedStep !== null ? getStepState(selectedStep) : state;
 
   /* ================= Render ================= */
 

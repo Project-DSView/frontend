@@ -74,3 +74,6 @@ export { advisor, developers } from './components/about.data';
 
 // Pitfalls
 export { COMMON_ERRORS, getPitfallInfo } from './components/pitfalls.data';
+
+// Big O Complexity
+export { BIG_O_COMPLEXITY_DATA } from './components/bigo-complexity.data';

@@ -139,10 +139,6 @@ const useAuth = (): UseAuthReturn => {
 
       const profileData = await ProfileService.fetchProfile(token);
 
-      // Debug: Log fetched profile
-      console.log('[useAuth] Fetched profile data:', profileData);
-      console.log('[useAuth] is_teacher from fetched data:', profileData.is_teacher);
-
       // Validate profile data
       if (!profileData || !profileData.user_id) {
         throw new Error('Invalid profile data received');
@@ -150,7 +146,7 @@ const useAuth = (): UseAuthReturn => {
 
       await secureSessionUtils.saveSession(token, profileData);
       setProfile(profileData);
-      console.log('[useAuth] Profile saved to session and state');
+
       return profileData;
     } catch (error) {
       const errorMessage = getErrorMessage(error) || 'Failed to fetch profile';

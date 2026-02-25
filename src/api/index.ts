@@ -11,32 +11,22 @@ export const api = axios.create({
   },
 });
 
-// Add smart service routing and safe headers to all requests
 api.interceptors.request.use(
   (config) => {
-    // Smart Service Routing:
-    // Some endpoints belong to FastAPI, others to Go backend.
-    // Traefik expects /fastapi/api/... or /go/api/...
+    const isDevelopment = process.env.NODE_ENV === 'development';
+
     if (config.url && !config.url.startsWith('http')) {
-      const isFastAPI =
-        config.url.startsWith('/api/playground') ||
-        config.url.startsWith('/api/complexity') ||
-        config.url.startsWith('/api/exec');
-
-      const prefix = isFastAPI ? '/fastapi' : '/go';
-
-      // Only prefix if not already prefixed (to avoid double prefixing on retries)
-      if (!config.url.startsWith('/go') && !config.url.startsWith('/fastapi')) {
-        config.url = `${prefix}${config.url}`;
+      if (process.env.NODE_ENV === 'development') {
+        config.url = `https://go.lvh.me${config.url}`;
+      } else {
+        const domain = process.env.NEXT_PUBLIC_DOMAIN_NAME || 'myapp.com';
+        const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
+        config.url = `${protocol}//go.${domain}${config.url}`;
       }
     }
-
-    // Use minimal headers in development to avoid CORS issues
-    const isDevelopment = process.env.NODE_ENV === 'development';
     const headers = isDevelopment ? getMinimalHeaders() : getSafeHeaders();
     Object.assign(config.headers, headers);
 
-    // Add Authorization header if token exists in sessionStorage
     if (typeof window !== 'undefined') {
       const token = sessionStorage.getItem('accessToken');
       if (token) {

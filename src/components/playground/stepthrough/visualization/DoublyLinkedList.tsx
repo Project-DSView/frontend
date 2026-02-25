@@ -56,7 +56,6 @@ const DoublyLinkedListStepthroughVisualization = forwardRef<
   const isInitializedRef = useRef<boolean>(false);
   const pendingNodesRef = useRef<Array<{ variable: string; value: string }>>([]);
   const nodeRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const _arrowRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
   // Extract warnings from current step
   const currentWarnings =

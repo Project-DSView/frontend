@@ -4,13 +4,16 @@ import { CookieOptions } from '@/types';
  * Set a cookie with security options
  */
 export const setCookie = (name: string, value: string, options: CookieOptions = {}): void => {
+  // Auto-detect secure flag based on protocol
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
   const {
     expires,
     maxAge,
     path = '/',
     domain,
-    secure = true, // Default to secure in production
-    sameSite = 'strict', // Default to strict for security
+    secure = isHttps, // Only set Secure flag on HTTPS connections
+    sameSite = isHttps ? 'strict' : 'lax', // Use 'lax' on HTTP for cross-origin OAuth redirects
     httpOnly = false, // Cannot be set to true from client-side
   } = options;
 
@@ -67,8 +70,6 @@ export const deleteCookie = (name: string, path: string = '/'): void => {
   setCookie(name, '', {
     expires: new Date(0),
     path,
-    secure: true,
-    sameSite: 'strict',
   });
 };
 

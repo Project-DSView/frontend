@@ -91,7 +91,7 @@ const BigOExplanation: React.FC<BigOExplanationProps> = ({
         ) : (
           <>
             <div>
-              <p className="text-secondary font-medium">Time:</p>
+              <p className="text-secondary font-medium">Operation:</p>
               <p className="text-muted-foreground">{complexity.timeExplanation}</p>
             </div>
             <div>

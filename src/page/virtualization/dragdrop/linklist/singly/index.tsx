@@ -4,10 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { SinglyLinkedListDragComponent, Operation } from '@/types';
 import { useDragDropSinglyLinkedList } from '@/hooks';
-import {
-  singlyLinkedListDragComponents,
-  singlyLinkedListDragDropBaseTemplate,
-} from '@/data';
+import { singlyLinkedListDragComponents, singlyLinkedListDragDropBaseTemplate } from '@/data';
 import { generateDragDropSinglyLinkedListCode } from '@/lib';
 
 import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
@@ -20,19 +17,12 @@ import CopyCodeButton from '@/components/playground/shared/action/CopyCodeButton
 const CodeEditor = React.lazy(() => import('@/components/editor/CodeEditor'));
 
 const DragDropSinglyLinkedListPage = () => {
-  const {
-    state,
-    addOperation,
-    updateOperation,
-    removeOperation,
-    clearAll,
-    reorderOperation,
-  } = useDragDropSinglyLinkedList();
+  const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
+    useDragDropSinglyLinkedList();
 
   /* ================= State ================= */
 
-  const [draggedItem, setDraggedItem] =
-    useState<SinglyLinkedListDragComponent | null>(null);
+  const [draggedItem, setDraggedItem] = useState<SinglyLinkedListDragComponent | null>(null);
 
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [autoFollow, setAutoFollow] = useState(true); // 🔥 key
@@ -52,10 +42,7 @@ const DragDropSinglyLinkedListPage = () => {
 
   /* ================= Drag ================= */
 
-  const handleDragStart = (
-    e: React.DragEvent,
-    component: SinglyLinkedListDragComponent,
-  ) => {
+  const handleDragStart = (e: React.DragEvent, component: SinglyLinkedListDragComponent) => {
     setDraggedItem(component);
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData('text/plain', 'external');
@@ -202,9 +189,7 @@ const DragDropSinglyLinkedListPage = () => {
   };
 
   const visualizationState =
-    selectedStep !== null
-      ? getStepState(selectedStep)
-      : { nodes: state.nodes, stats: state.stats };
+    selectedStep !== null ? getStepState(selectedStep) : { nodes: state.nodes, stats: state.stats };
 
   /* ================= Render ================= */
 
@@ -271,9 +256,7 @@ const DragDropSinglyLinkedListPage = () => {
         </div>
 
         <div className="rounded-lg border bg-white p-3 dark:bg-gray-800">
-          <h2 className="mb-2 text-sm font-semibold">
-            Singly Linked List Visualization
-          </h2>
+          <h2 className="mb-2 text-sm font-semibold">Singly Linked List Visualization</h2>
 
           <SinglyLinkedListVisualization
             ref={visualizationRef}
