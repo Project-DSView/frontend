@@ -416,7 +416,7 @@ const DragDropDirectedGraph = () => {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Drag & Drop Directed Graph</h1>
-          <p className="text-sm text-gray-500">Directed graph visualization + Python code</p>
+          <p className="text-sm text-gray-500">คลิก operation เพื่อสร้าง BST + Python code</p>
         </div>
         <div className="flex gap-2">
           <TutorialButton onClick={() => setIsTutorialOpen(true)} />

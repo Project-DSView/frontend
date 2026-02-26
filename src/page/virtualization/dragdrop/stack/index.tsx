@@ -1,16 +1,22 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, Suspense } from 'react';
 
-import { StackDragComponent, Operation } from '@/types';
+import { Operation } from '@/types';
 import { useDragDropStack } from '@/hooks';
-import { stackDragComponents, stackDragDropBaseTemplate } from '@/data';
+import {
+  stackDragComponents,
+  stackDragDropBaseTemplate,
+  getTutorialSteps,
+  getTutorialStorageKey,
+} from '@/data';
 import { generateDragDropStackCode } from '@/lib';
 
 import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
 import StepSelector from '@/components/playground/shared/action/StepSelector';
 import ExportPNGButton from '@/components/playground/shared/action/ExportPNGButton';
 import TutorialButton from '@/components/playground/shared/tutorial/TutorialButton';
+import TutorialOverlay from '@/components/playground/shared/tutorial/TutorialOverlay';
 import StackVisualization from '@/components/playground/dragdrop/visualization/Stack';
 import CopyCodeButton from '@/components/playground/shared/action/CopyCodeButton';
 
@@ -20,78 +26,19 @@ const StackPage = () => {
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
     useDragDropStack();
 
-  const [draggedItem, setDraggedItem] = useState<StackDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
-
-  // ✅ NEW: auto-follow step ล่าสุดตามการเล่นใน DropZone
   const [autoFollow, setAutoFollow] = useState(true);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
 
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleDragStart = (e: React.DragEvent, component: StackDragComponent) => {
-    setDraggedItem(component);
-    e.dataTransfer.setData('text/plain', 'external');
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (!draggedItem) return;
-
-    // ✅ ถือว่าเป็น “การเล่น” → เปิด autoFollow
-    setAutoFollow(true);
-
-    addOperation({
-      type: draggedItem.type,
-      name: draggedItem.name,
-      value: draggedItem.type === 'pop' ? null : '',
-      color: draggedItem.color,
-      category: draggedItem.category,
-      sourceStack: null,
-      targetStack: null,
-      position: null,
-      newValue: null,
-    });
-
-    // ✅ ไปที่ step ล่าสุดทันที (index ล่าสุดหลังเพิ่ม = length เดิม)
-    setSelectedStep(state.operations.length);
-
-    setDraggedItem(null);
-  };
+  /* ================= Update ================= */
 
   const updateOperationValue = (id: number, value: string) => {
+    setAutoFollow(true);
     updateOperation(id, { value });
-  };
-
-  const updateOperationTargetStack = (id: number, targetStack: string) => {
-    updateOperation(id, { targetStack });
-  };
-
-  const updateOperationSourceStack = (id: number, sourceStack: string) => {
-    updateOperation(id, { sourceStack });
-  };
-
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const updateOperationPosition = (id: number, position: string) => {
-    updateOperation(id, { position });
-  };
-
-  const updateOperationNewValue = (id: number, newValue: string) => {
-    updateOperation(id, { newValue });
   };
 
   const stopAutoPlay = () => {
@@ -142,7 +89,6 @@ const StackPage = () => {
     };
   };
 
-  // ✅ NEW: เมื่อ ops เปลี่ยน แล้ว autoFollow เปิดอยู่ ให้ตาม step ล่าสุด
   const jumpToLatestStep = useCallback(() => {
     if (state.operations.length === 0) {
       setSelectedStep(null);
@@ -157,7 +103,10 @@ const StackPage = () => {
     jumpToLatestStep();
   }, [state.operations, autoFollow, isAutoPlaying, jumpToLatestStep]);
 
-  const visualizationState = selectedStep !== null ? getStepState(selectedStep) : state;
+  const visualizationState =
+    selectedStep !== null ? getStepState(selectedStep) : state;
+
+  /* ================= AutoPlay ================= */
 
   const handleAutoPlay = () => {
     if (isAutoPlaying) {
@@ -167,7 +116,7 @@ const StackPage = () => {
 
     if (state.operations.length === 0) return;
 
-    setAutoFollow(false); // autoplay ถือเป็น manual timeline
+    setAutoFollow(false);
     setIsAutoPlaying(true);
     setSelectedStep(0);
 
@@ -176,11 +125,7 @@ const StackPage = () => {
         const cur = prev ?? 0;
 
         if (cur >= state.operations.length - 1) {
-          setIsAutoPlaying(false);
-          if (autoPlayRef.current) {
-            clearInterval(autoPlayRef.current);
-            autoPlayRef.current = null;
-          }
+          stopAutoPlay();
           return cur;
         }
 
@@ -199,40 +144,54 @@ const StackPage = () => {
     ['push', 'pop', 'copyStack'].includes(op.type),
   );
 
+  /* ================= Render ================= */
+
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-5 md:px-8 dark:bg-gray-900">
+
       {/* Header */}
-      <div className="mb-5 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Drag & Drop Stack
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Stack visualization + Python code
-          </p>
+      <div className="mb-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Drag & Drop Stack
+            </h1>
+
+            <TutorialButton onClick={() => setIsTutorialOpen(true)} />
+          </div>
+
+          <ExportPNGButton visualizationRef={visualizationRef} />
         </div>
-        <div className="flex gap-3">
-          <TutorialButton onClick={() => {}} />
-          <ExportPNGButton visualizationRef={visualizationRef} disabled={false} />
-        </div>
+
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          คลิก operation เพื่อสร้าง Stack + Python code
+        </p>
       </div>
 
       {/* Operations */}
       <div className="mb-4 rounded-md border bg-white p-3 dark:bg-gray-800">
-        <div className="mb-2">
-          <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-            Stack Operations
-          </h2>
-        </div>
+        <h2 className="text-sm font-semibold">Stack Operations</h2>
 
         <div className="flex flex-wrap gap-2">
           {stackOps.map((op) => (
             <button
               key={op.type}
-              draggable
-              onDragStart={(e) => handleDragStart(e, op)}
-              className="rounded-full border px-3 py-1 text-xs font-medium text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
-              title={op.description}
+              onClick={() => {
+                setAutoFollow(true);
+
+                addOperation({
+                  type: op.type,
+                  name: op.name,
+                  value: op.type === 'pop' ? null : '',
+                  color: op.color,
+                  category: op.category,
+                  sourceStack: null,
+                  targetStack: null,
+                  position: null,
+                  newValue: null,
+                });
+              }}
+              className="rounded-full border px-3 py-1 text-xs font-medium transition hover:bg-gray-100 active:scale-95 dark:hover:bg-gray-700"
             >
               {op.name}
             </button>
@@ -240,9 +199,8 @@ const StackPage = () => {
         </div>
       </div>
 
-      {/* Drop Zone + Visualization */}
+      {/* DropZone + Visualization */}
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Drop Zone */}
         <div className="flex flex-col rounded-xl border bg-white p-3 lg:h-[520px] dark:bg-gray-800">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold">Drop Zone</h2>
@@ -255,34 +213,22 @@ const StackPage = () => {
             <DragDropZone
               operations={state.operations}
               selectedStep={selectedStep}
-              onSelectStep={(i) => {
-                // ผู้ใช้คลิกเลือก step เอง -> manual
-                stopAutoPlay();
-                setAutoFollow(false);
-                setSelectedStep(i);
+              onRemoveOperation={(id) => {
+                setAutoFollow(true);
+                removeOperation(id);
               }}
-              onUserInteract={() => {
-                // ผู้ใช้เล่นใน DropZone -> กลับมา auto-follow
-                if (!isAutoPlaying) setAutoFollow(true);
-              }}
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragEnter={handleDragEnter}
-              onDragLeave={handleDragLeave}
-              onRemoveOperation={removeOperation}
               onUpdateOperationValue={updateOperationValue}
-              onUpdateOperationPosition={updateOperationPosition}
-              onUpdateOperationNewValue={updateOperationNewValue}
-              onUpdateOperationTargetStack={updateOperationTargetStack}
-              onUpdateOperationSourceStack={updateOperationSourceStack}
-              onReorderOperation={reorderOperation}
+              onReorderOperation={(from, to) => {
+                setAutoFollow(true);
+                reorderOperation(from, to);
+              }}
             />
           </div>
         </div>
 
-        {/* Visualization */}
         <div className="flex flex-col rounded-xl border bg-white p-3 lg:h-[520px] dark:bg-gray-800">
           <h2 className="mb-2 text-sm font-semibold">Stack Visualization</h2>
+
           <div className="flex-1 overflow-hidden">
             <StackVisualization
               ref={visualizationRef}
@@ -294,13 +240,12 @@ const StackPage = () => {
         </div>
       </div>
 
-      {/* Step Control (คงไว้เหมือนเดิม) */}
+      {/* Step Selector */}
       <div className="mt-6">
         <StepSelector
           operations={state.operations}
           selectedStep={selectedStep}
           onStepSelect={(i) => {
-            // กด step control -> manual
             stopAutoPlay();
             setAutoFollow(false);
             setSelectedStep(i);
@@ -311,28 +256,45 @@ const StackPage = () => {
         />
       </div>
 
-      {/* Generated Code Logic */}
-      {(() => {
-        const generatedCode =
-          state.operations.length === 0
-            ? stackDragDropBaseTemplate +
-              '\n\n# === User Operations ===\nmyStack = ArrayStack()\n\n# Drop operations above to generate code here...'
-            : generateDragDropStackCode(state.operations);
+      {/* Generated Code */}
+      <div className="mt-6 rounded-xl border bg-white p-3 dark:bg-gray-800">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-sm font-semibold">Generated Python Code</h2>
+          <CopyCodeButton
+            code={
+              state.operations.length === 0
+                ? stackDragDropBaseTemplate
+                : generateDragDropStackCode(state.operations)
+            }
+          />
+        </div>
 
-        return (
-          <div className="mt-6 rounded-xl border bg-white p-3 dark:bg-gray-800">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-semibold">Generated Python Code</h2>
-              <CopyCodeButton code={generatedCode} />
-            </div>
-            <div className="mt-2 rounded">
-              <React.Suspense fallback={<div>Loading editor...</div>}>
-                <CodeEditor code={generatedCode} disabled height="400px" onCodeChange={() => {}} />
-              </React.Suspense>
-            </div>
-          </div>
-        );
-      })()}
+        <Suspense fallback={<div>Loading editor...</div>}>
+          <CodeEditor
+            code={
+              state.operations.length === 0
+                ? stackDragDropBaseTemplate
+                : generateDragDropStackCode(state.operations)
+            }
+            disabled
+            height="400px"
+            onCodeChange={() => {}}
+          />
+        </Suspense>
+      </div>
+
+      {/* Tutorial Overlay */}
+      <TutorialOverlay
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+        steps={getTutorialSteps('dragdrop')}
+        storageKey={getTutorialStorageKey(
+          typeof window !== 'undefined'
+            ? window.location.pathname
+            : '/virtualization/dragdrop/stack',
+          'dragdrop'
+        )}
+      />
     </div>
   );
 };
