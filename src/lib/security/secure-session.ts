@@ -25,35 +25,28 @@ const secureSessionUtils = {
         };
         setCookie('userProfile', JSON.stringify(profileData), {
           maxAge: 10800, // 3 hours
-          secure: true,
-          sameSite: 'strict',
           path: '/',
         });
-        return;
+      } else {
+        // Store profile in encrypted secure cookie
+        const profileData = {
+          ...userProfile,
+          savedAt: Date.now(),
+        };
+
+        // Encrypt profile data before storing
+        const encryptedProfile = await encryptObject(profileData);
+        setCookie('userProfile', encryptedProfile, {
+          maxAge: 10800, // 3 hours
+          path: '/',
+        });
       }
-
-      // Store profile in encrypted secure cookie
-      const profileData = {
-        ...userProfile,
-        savedAt: Date.now(),
-      };
-
-      // Encrypt profile data before storing
-      const encryptedProfile = await encryptObject(profileData);
-      setCookie('userProfile', encryptedProfile, {
-        maxAge: 10800, // 3 hours
-        secure: true,
-        sameSite: 'strict',
-        path: '/',
-      });
 
       // Store token expiration time for client-side checks
       const expirationTime = getTimeUntilExpiration(token);
       if (expirationTime !== null) {
         setCookie('tokenExpiresAt', (Date.now() + expirationTime * 60 * 1000).toString(), {
           maxAge: 10800, // 3 hours
-          secure: true,
-          sameSite: 'strict',
           path: '/',
         });
       }
@@ -61,16 +54,12 @@ const secureSessionUtils = {
       // Store authentication status in secure cookie
       setCookie('isAuthenticated', 'true', {
         maxAge: 10800, // 3 hours
-        secure: true,
-        sameSite: 'strict',
         path: '/',
       });
 
       // Store user ID in secure cookie
       setCookie('userId', userProfile.user_id || '', {
         maxAge: 10800, // 3 hours
-        secure: true,
-        sameSite: 'strict',
         path: '/',
       });
 

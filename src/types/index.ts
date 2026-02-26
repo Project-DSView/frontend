@@ -215,6 +215,8 @@ export type {
   BigOOverviewProps,
   BigOAnalysisDetailsProps,
   PerFunctionComplexityProps,
+  BigOComplexityInfo,
+  BigOComplexityTableProps,
   BigOChartProps,
   DirectedGraphStepthroughVisualizationProps,
   VariableInfo,

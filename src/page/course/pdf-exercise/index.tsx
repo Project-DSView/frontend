@@ -51,14 +51,6 @@ const PDFExercisePage: React.FC = () => {
     }
   }, [isInitialized, profile, router]);
 
-  // Debug: Log submission data
-  React.useEffect(() => {
-    if (submission) {
-      console.log('Submission data:', submission);
-      console.log('Is PDF submission:', isPDFSubmission(submission));
-    }
-  }, [submission]);
-
   // Show loading state
   if (!isInitialized) {
     return (

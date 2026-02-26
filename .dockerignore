@@ -3,6 +3,7 @@ node_modules
 .vercel
 .git
 .gitignore
+
 .env.development
 .env.production
 .env.local

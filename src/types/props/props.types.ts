@@ -589,20 +589,19 @@ interface UndirectedGraphDragDropVisualizationProps {
 interface DragDropZoneProps {
   operations: DragDropOperation[];
 
-  // step control
   selectedStep?: number | null;
-  onSelectStep?: (index: number) => void;  
-  onUserInteract?: () => void;              
+  onSelectStep?: (index: number) => void;
+  onUserInteract?: () => void;
 
-  onDragOver: (e: React.DragEvent) => void;
+  onDragOver?: (e: React.DragEvent) => void;   // ✅ ทำให้ optional
   onDragEnter?: (e: React.DragEvent) => void;
   onDragLeave?: (e: React.DragEvent) => void;
-  onDrop: (e: React.DragEvent) => void;
+  onDrop?: (e: React.DragEvent) => void;       // ✅ ทำให้ optional
 
   onRemoveOperation: (id: number) => void;
   onUpdateOperationValue: (id: number, value: string) => void;
-  onUpdateOperationPosition: (id: number, position: string) => void;
-  onUpdateOperationNewValue: (id: number, newValue: string) => void;
+  onUpdateOperationPosition?: (id: number, position: string) => void;
+  onUpdateOperationNewValue?: (id: number, newValue: string) => void;
 
   onUpdateOperationSourceStack?: (id: number, sourceStack: string) => void;
   onUpdateOperationTargetStack?: (id: number, targetStack: string) => void;
@@ -611,8 +610,6 @@ interface DragDropZoneProps {
 
   children?: React.ReactNode;
 }
-
-
 
 // ============================================================================
 // Playground Shared Component Props
@@ -812,6 +809,19 @@ interface PerFunctionComplexityProps {
   functionComplexities: NonNullable<ComplexityAnalysis['functionComplexities']>;
 }
 
+interface BigOComplexityInfo {
+  notation: string;
+  type: string;
+  examples: string;
+  description: string;
+  color: string;
+}
+
+interface BigOComplexityTableProps {
+  currentComplexity?: string;
+  onClose: () => void;
+}
+
 interface BigOChartProps {
   timeComplexity: string;
 }
@@ -966,6 +976,8 @@ export type {
   BigOOverviewProps,
   BigOAnalysisDetailsProps,
   PerFunctionComplexityProps,
+  BigOComplexityInfo,
+  BigOComplexityTableProps,
   BigOChartProps,
   // Stepthrough
   // Memory Address & Pointer Animation

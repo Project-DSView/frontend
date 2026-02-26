@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { ExportUtils } from '@/lib';
@@ -10,7 +10,15 @@ const ExportPNGButton: React.FC<ExportPNGButtonProps> = ({
   visualizationRef,
   disabled = false,
 }) => {
+  const [mounted, setMounted] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // กัน hydration mismatch จาก extension ที่ inject attribute ใส่ <button>
+  if (!mounted) return null;
 
   const handleExportPNG = async () => {
     if (!visualizationRef.current) {
@@ -48,6 +56,7 @@ const ExportPNGButton: React.FC<ExportPNGButtonProps> = ({
         stroke="currentColor"
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
       >
         <path
           strokeLinecap="round"

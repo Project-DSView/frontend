@@ -974,7 +974,7 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
                                   {/* Arrow head pointing RIGHT */}
                                   <div className="mb-4= h-0 w-0 border-t-[8px] border-b-[8px] border-l-[12px] border-t-transparent border-b-transparent border-l-green-600 dark:border-l-green-400"></div>
                                   {/* Label below arrow */}
-                                  <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-sm font-bold whitespace-nowrap text-green-700 dark:text-green-300">
+                                  <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold whitespace-nowrap text-green-700 dark:text-green-300">
                                     .next → head
                                   </div>
                                 </div>
@@ -1077,7 +1077,7 @@ const SinglyLinkedListStepthroughVisualization = forwardRef<
                                     </div>
                                     <div className="inline-flex animate-pulse rounded-lg border-4 border-green-600 bg-green-50 shadow-xl shadow-green-200 dark:border-green-400 dark:bg-green-900/40 dark:shadow-none">
                                       <div className="flex min-w-[60px] items-center justify-center border-r-4 border-green-600 px-4 py-2 dark:border-green-400">
-                                        <span className="font-bold text-green-700 dark:text-green-300">
+                                        <span className="text-sm font-bold text-green-700 dark:text-green-300">
                                           {pendingConnectionToStartNext.fromValue}
                                         </span>
                                       </div>
