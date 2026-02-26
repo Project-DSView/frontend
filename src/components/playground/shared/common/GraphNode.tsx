@@ -1,0 +1,57 @@
+import React, { memo } from 'react';
+import { GraphNodeProps } from '@/types';
+
+const GraphNode = memo<GraphNodeProps>(
+  ({
+    node,
+    isHighlighted,
+    isInSearchPath,
+    isTraverseSelected,
+    isCurrentlyTraversing,
+    isRunning,
+    isAnimating = false,
+    onMouseDown,
+    position,
+    isDragging,
+  }) => {
+    const nodePosition = position || { x: node.x, y: node.y };
+
+    return (
+      <div
+        className="absolute -translate-x-1/2 -translate-y-1/2 transform cursor-move"
+        style={{
+          left: `${nodePosition.x}px`,
+          top: `${nodePosition.y}px`,
+        }}
+        onMouseDown={onMouseDown ? (e) => onMouseDown(e, node.id) : undefined}
+      >
+        <div
+          className={`relative flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-500 ${
+            isHighlighted
+              ? 'scale-110 border-yellow-400 bg-yellow-200 text-yellow-900 shadow-lg dark:border-yellow-500 dark:bg-yellow-700 dark:text-yellow-100'
+              : isInSearchPath
+                ? 'scale-105 border-blue-400 bg-blue-200 text-blue-900 shadow-md dark:border-blue-500 dark:bg-blue-700 dark:text-blue-100'
+                : isTraverseSelected || isCurrentlyTraversing
+                  ? 'scale-110 border-green-400 bg-green-200 text-green-900 shadow-lg dark:border-green-500 dark:bg-green-700 dark:text-green-100'
+                  : 'border-gray-600 bg-white text-gray-800 hover:shadow-md dark:border-gray-400 dark:bg-gray-700 dark:text-gray-100'
+          } ${isRunning ? 'animate-pulse' : ''} ${isAnimating ? 'animate-bounce ring-4 ring-blue-400 dark:ring-blue-500' : ''} ${isDragging ? 'z-10' : ''}`}
+        >
+          {node.value}
+          {isHighlighted && (
+            <div className="absolute -top-2 -right-2 h-4 w-4 animate-ping rounded-full bg-yellow-400" />
+          )}
+          {isInSearchPath && (
+            <div className="absolute -top-2 -right-2 h-4 w-4 animate-ping rounded-full bg-blue-400" />
+          )}
+          {(isTraverseSelected || isCurrentlyTraversing) && (
+            <div className="absolute -top-2 -right-2 h-4 w-4 animate-ping rounded-full bg-green-400" />
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+
+GraphNode.displayName = 'GraphNode';
+
+export default GraphNode;

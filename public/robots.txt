@@ -1,0 +1,13 @@
+# *
+User-agent: *
+Disallow: /api/
+
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://dsview.it.kmitl.ac.th/
+
+# Sitemaps
+Sitemap: https://dsview.it.kmitl.ac.th/sitemap.xml

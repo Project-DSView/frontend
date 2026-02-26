@@ -1,0 +1,524 @@
+import React, { useState, useEffect, useRef } from 'react';
+
+import { StepthroughVisualizationProps, ViewMode, QueueData } from '@/types';
+
+import ZoomableContainer from '@/components/playground/shared/action/ZoomableContainer';
+import ConsoleOutput from '@/components/playground/stepthrough/ConsoleOutput';
+import PerformanceAnalysisPanel from '@/components/playground/shared/PerformancePanel/PerformanceAnalysisPanel';
+import MemoryAddress from '@/components/playground/shared/common/MemoryAddress';
+import { generateMemoryAddress } from '@/lib/utils/memory';
+import VisualizationViewControls from '@/components/playground/shared/common/VisualizationViewControls';
+import ConceptualAnalogyPanel from '@/components/playground/shared/analogy/ConceptualAnalogyPanel';
+import VariableStatePanel from '@/components/playground/stepthrough/VariableStatePanel';
+import CommonPitfallsWarning from '@/components/playground/stepthrough/CommonPitfallsWarning';
+import StepInfoPanel from '@/components/playground/stepthrough/StepInfoPanel';
+import PitfallPopup from '@/components/playground/stepthrough/PitfallPopup';
+
+const QueueStepthrough: React.FC<StepthroughVisualizationProps<QueueData>> = ({
+  steps,
+  currentStepIndex,
+  data,
+  complexity,
+  code,
+}) => {
+  const currentStep = steps[currentStepIndex];
+  const queueData = data as QueueData;
+  const [viewMode, setViewMode] = useState<ViewMode>('technical');
+  const [, setEnteringElements] = useState<Set<number>>(new Set());
+  const [exitingElements, setExitingElements] = useState<Set<string>>(new Set());
+  const [elementsToRender, setElementsToRender] = useState<string[]>([]);
+  const [showMemoryAddress, setShowMemoryAddress] = useState(false);
+  const [showVariablePanel, setShowVariablePanel] = useState(true);
+  const [isPitfallPopupOpen, setIsPitfallPopupOpen] = useState(false);
+
+  const previousElementsRef = useRef<string[]>([]);
+
+  // Extract warnings from current step
+  const currentWarnings =
+    steps.length > 0 && currentStepIndex < steps.length
+      ? (
+          steps[currentStepIndex].state?.step_detail as {
+            warnings?: Array<{
+              type: string;
+              severity: 'info' | 'warning' | 'error';
+              message: string;
+              tip: string;
+            }>;
+          }
+        )?.warnings || []
+      : [];
+
+  const getMemoryAddress = (index: number) => {
+    return generateMemoryAddress(index, 0x200);
+  };
+
+  // Get queue elements from step state
+  const getQueueElements = (): string[] => {
+    if (currentStep?.state?.instances) {
+      const instanceEntries = Object.entries(currentStep.state.instances);
+      if (instanceEntries.length > 0) {
+        const firstInstance = instanceEntries[0][1];
+        // Type guard: check if it's an object with data property
+        if (
+          firstInstance &&
+          typeof firstInstance === 'object' &&
+          'data' in firstInstance &&
+          Array.isArray((firstInstance as { data: unknown }).data)
+        ) {
+          return (firstInstance as { data: string[] }).data;
+        }
+        // Type guard: check if it's directly an array
+        if (Array.isArray(firstInstance)) {
+          return firstInstance as string[];
+        }
+      }
+    }
+    return queueData?.elements || [];
+  };
+
+  const elements = getQueueElements();
+
+  // Track insert/delete animations
+  useEffect(() => {
+    const previousElements = previousElementsRef.current;
+    const currentElements = elements;
+
+    // Detect changes: compare previous and current arrays
+    const newEnteringElements = new Set<number>();
+    const newExitingElements = new Set<string>();
+
+    // Find elements that were deleted (dequeue operation)
+    previousElements.forEach((prevElement) => {
+      if (!currentElements.includes(prevElement)) {
+        newExitingElements.add(prevElement);
+      }
+    });
+
+    // Find elements that were inserted (enqueue operation)
+    currentElements.forEach((currentElement, index) => {
+      if (!previousElements.includes(currentElement)) {
+        newEnteringElements.add(index);
+      } else {
+        // Check if this is a new occurrence (duplicate values)
+        const prevCount = previousElements.filter((e) => e === currentElement).length;
+        const currentCount = currentElements.filter((e) => e === currentElement).length;
+        if (currentCount > prevCount) {
+          // This is a new occurrence
+          const occurrencesBefore = currentElements
+            .slice(0, index)
+            .filter((e) => e === currentElement).length;
+          if (occurrencesBefore >= prevCount) {
+            newEnteringElements.add(index);
+          }
+        }
+      }
+    });
+
+    // For exit animation: keep exiting elements temporarily in render
+    if (newExitingElements.size > 0) {
+      // Keep exiting elements in render temporarily
+      const elementsWithExiting = [...currentElements];
+      previousElements.forEach((element) => {
+        if (newExitingElements.has(element) && !elementsWithExiting.includes(element)) {
+          // Find where this element was in previous array (should be at front)
+          const prevIndex = previousElements.indexOf(element);
+          // Try to insert it at a similar position for animation
+          elementsWithExiting.splice(prevIndex, 0, element);
+        }
+      });
+      setElementsToRender(elementsWithExiting);
+      setExitingElements(newExitingElements);
+
+      // Remove exiting elements after animation
+      setTimeout(() => {
+        setElementsToRender(currentElements);
+        setExitingElements(new Set());
+      }, 1200);
+    } else {
+      setElementsToRender(currentElements);
+    }
+
+    // Set entering elements
+    if (newEnteringElements.size > 0) {
+      setEnteringElements(newEnteringElements);
+      // Clear entering animation after duration
+      setTimeout(() => {
+        setEnteringElements((prev) => {
+          const updated = new Set(prev);
+          newEnteringElements.forEach((idx) => updated.delete(idx));
+          return updated;
+        });
+      }, 2000);
+    }
+
+    previousElementsRef.current = [...currentElements];
+  }, [elements]);
+
+  // Get dequeued element from step state (look for variables.dequeued from response)
+  const getDequeuedElement = (): string | null => {
+    // First priority: Check variables.dequeued from step state (from backend response)
+    if (
+      currentStep?.state?.variables?.dequeued !== undefined &&
+      currentStep.state.variables.dequeued !== null
+    ) {
+      return String(currentStep.state.variables.dequeued);
+    }
+
+    // Second priority: Try to find return value from current step
+    if (currentStep?.state?.returnValue !== undefined && currentStep.state.returnValue !== null) {
+      return String(currentStep.state.returnValue);
+    }
+
+    // Third priority: Try to find from previous step comparison
+    if (currentStepIndex > 0) {
+      const previousStep = steps[currentStepIndex - 1];
+      const previousElements = (() => {
+        if (previousStep?.state?.instances) {
+          const instanceEntries = Object.entries(previousStep.state.instances);
+          if (instanceEntries.length > 0) {
+            const firstInstance = instanceEntries[0][1];
+            // Type guard: check if it's an object with data property
+            if (
+              firstInstance &&
+              typeof firstInstance === 'object' &&
+              'data' in firstInstance &&
+              Array.isArray((firstInstance as { data: unknown }).data)
+            ) {
+              return (firstInstance as { data: string[] }).data;
+            }
+            // Type guard: check if it's directly an array
+            if (Array.isArray(firstInstance)) {
+              return firstInstance as string[];
+            }
+          }
+        }
+        return [];
+      })();
+
+      // If previous step had more elements, the difference is the dequeued element
+      if (previousElements.length > elements.length && previousElements.length > 0) {
+        return String(previousElements[0]);
+      }
+    }
+
+    return null;
+  };
+
+  const dequeuedElement = getDequeuedElement();
+
+  // Get stats from step state
+  const getStats = () => {
+    const length = elements.length;
+    return {
+      headValue: length > 0 ? elements[0] : null,
+      tailValue: length > 0 ? elements[length - 1] : null,
+      isEmpty: length === 0,
+      length,
+    };
+  };
+
+  const stats = getStats();
+
+  // Detect underflow/overflow errors
+  const detectUnderflowOverflow = () => {
+    if (!currentStep?.state?.error) return null;
+    const error = currentStep.state.error.toLowerCase();
+    if (error.includes('underflow')) {
+      return {
+        type: 'underflow',
+        message: 'Underflow: Cannot dequeue from empty queue',
+      };
+    }
+    if (error.includes('overflow')) {
+      return {
+        type: 'overflow',
+        message: 'Overflow: Queue is full',
+      };
+    }
+    return null;
+  };
+
+  const errorInfo = detectUnderflowOverflow();
+
+  const renderQueueElement = (value: string, index: number, queueLength: number) => {
+    const isFront = index === 0;
+    const isBack = index === queueLength - 1;
+    const elementKey = `${value}-${index}`;
+
+    return (
+      <div key={elementKey} className="relative flex flex-col items-center">
+        {/* Queue Element - connected horizontally, no gaps, same height */}
+        <div
+          className={`flex h-16 w-16 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg transition-all duration-500 hover:shadow-xl dark:from-gray-700 dark:to-gray-800 dark:hover:bg-gray-600 ${isFront ? 'rounded-l-lg border-t-2 border-b-2 border-l-2 border-green-500 dark:border-green-400' : ''} ${isBack ? 'rounded-r-lg border-t-2 border-r-2 border-b-2 border-blue-500 dark:border-blue-400' : ''} ${!isFront && !isBack ? 'border-t-2 border-b-2 border-gray-300 dark:border-gray-300' : ''} ${isFront || isBack ? 'ring-2' : ''} ${isFront ? 'ring-green-300 dark:ring-green-600' : isBack ? 'ring-blue-300 dark:ring-blue-600' : ''}`}
+        >
+          <span
+            className={`font-bold text-gray-900 dark:text-gray-100 ${value.length > 6 ? 'text-sm' : 'text-lg'}`}
+          >
+            {value}
+          </span>
+        </div>
+        {/* Memory Address */}
+        <MemoryAddress
+          address={getMemoryAddress(index)}
+          isVisible={showMemoryAddress}
+          className="mt-1"
+        />
+      </div>
+    );
+  };
+
+  return (
+    <div className="rounded-lg bg-white p-3 shadow sm:p-6 dark:bg-gray-800">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-base font-semibold text-gray-800 sm:text-lg dark:text-gray-100">
+          Queue Visualization
+        </h2>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          {/* Variable Panel Toggle */}
+          <button
+            id="tutorial-variables-toggle"
+            onClick={() => setShowVariablePanel(!showVariablePanel)}
+            className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+              showVariablePanel
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+            }`}
+            title="Toggle Variable State Panel"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
+            </svg>
+            <span className="hidden sm:inline">Variables</span>
+          </button>
+
+          <div className="mx-0 sm:mx-2">
+            <VisualizationViewControls
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              showMemoryAddress={showMemoryAddress}
+              onToggleMemoryAddress={setShowMemoryAddress}
+            />
+          </div>
+
+          {/* Common Errors Button */}
+          <button
+            id="tutorial-common-errors"
+            onClick={() => setIsPitfallPopupOpen(true)}
+            className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:hover:bg-amber-900/60"
+            title="ดูข้อผิดพลาดที่พบบ่อย"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            <span className="hidden sm:inline">Common Errors</span>
+            <span className="sm:hidden">Errors</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Pitfall Warnings - Show if any */}
+      {currentWarnings.length > 0 && (
+        <div className="mb-4">
+          <CommonPitfallsWarning warnings={currentWarnings} />
+        </div>
+      )}
+
+      {/* Underflow/Overflow Warning Banner */}
+      {errorInfo && (
+        <div className="mb-4 animate-pulse rounded-lg border-2 border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/20">
+          <div className="flex items-center space-x-2">
+            <span className="font-semibold text-red-800 dark:text-red-200">
+              {errorInfo.message}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Current Step Info */}
+      {steps.length > 0 && currentStepIndex < steps.length && (
+        <StepInfoPanel
+          stepNumber={steps[currentStepIndex].stepNumber}
+          message={steps[currentStepIndex].state.message}
+          userCommand={steps[currentStepIndex].state?.step_detail?.user_command}
+        />
+      )}
+
+      {/* Main Content - Flex layout with Variable Panel */}
+      <div className="flex flex-col gap-4 lg:flex-row">
+        {/* Left Side - Variable State Panel */}
+        {showVariablePanel && (
+          <div className="w-full flex-shrink-0 lg:w-auto">
+            <VariableStatePanel
+              steps={steps}
+              currentStepIndex={currentStepIndex}
+              nodes={elements}
+            />
+          </div>
+        )}
+
+        {/* Right Side - Queue Container */}
+        <div className="min-w-0 flex-1">
+          {viewMode === 'analogy' ? (
+            <ConceptualAnalogyPanel
+              type="queue"
+              data={{ elements: elementsToRender.length > 0 ? elementsToRender : elements }}
+              className="min-h-[300px]"
+            />
+          ) : (
+            <ZoomableContainer
+              className="min-h-[300px] rounded-lg bg-gray-50 dark:bg-gray-800"
+              minZoom={0.5}
+              maxZoom={2}
+              initialZoom={1}
+              enablePan={true}
+              enableWheelZoom={true}
+              enableKeyboardZoom={true}
+              showControls={true}
+            >
+              <div className="p-6">
+                {/* แบ่งเป็น 2 ส่วน: ซ้าย (Queue), ขวา (Dequeued) - Stacks vertically on mobile */}
+                <div className="flex min-h-[250px] flex-col gap-6 md:flex-row">
+                  {/* ส่วนซ้าย: Queue */}
+                  <div className="flex flex-1 flex-col items-center justify-center">
+                    <div className="mb-2 text-center text-sm font-semibold text-gray-600 dark:text-gray-400">
+                      Queue
+                    </div>
+                    <div className="relative min-h-[120px] w-full overflow-x-auto rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+                      {elementsToRender.length === 0 ? (
+                        <div className="flex h-24 w-full items-center justify-center border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+                          <div className="text-center text-gray-500 dark:text-gray-400">
+                            <div className="text-xs font-semibold">Empty Queue</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative flex items-center justify-center">
+                          {/* Queue Elements - horizontal layout, no gaps, aligned on same baseline */}
+                          <div className="z-10 flex items-center">
+                            {elementsToRender.map((element, index) => {
+                              const isExiting = exitingElements.has(element);
+                              // Don't render exiting elements after animation
+                              if (isExiting && elementsToRender.length > elements.length) {
+                                return null;
+                              }
+                              return (
+                                <div
+                                  key={`${element}-${index}`}
+                                  className="relative flex items-center"
+                                >
+                                  {renderQueueElement(element, index, elementsToRender.length)}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* ส่วนขวา: Dequeued Element */}
+                  <div className="flex flex-1 flex-col items-center justify-center">
+                    <div className="mb-2 text-center text-sm font-semibold text-gray-600 dark:text-gray-400">
+                      Dequeued Element
+                    </div>
+                    {dequeuedElement ? (
+                      <div className="flex items-center justify-center">
+                        <div className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-red-400 bg-gradient-to-br from-red-100 to-red-200 shadow-lg dark:border-red-500 dark:from-red-900/30 dark:to-red-800/30">
+                          <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                            {dequeuedElement}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex h-20 w-32 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+                        <div className="text-center text-xs text-gray-500 dark:text-gray-400">
+                          No element dequeued
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </ZoomableContainer>
+          )}
+        </div>
+      </div>
+
+      {/* Queue Info */}
+      <div className="mt-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
+        <h4 className="mb-2 font-semibold text-gray-700 dark:text-gray-200">Queue Information</h4>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div>
+            <span className="font-medium text-gray-600 dark:text-gray-400">Elements:</span>
+            <span className="ml-2 text-gray-800 dark:text-gray-200">
+              {elements.length === 0 ? 'None' : elements.join(', ')}
+            </span>
+          </div>
+          <div>
+            <span className="font-medium text-gray-600 dark:text-gray-400">Front Element:</span>
+            <span className="ml-2 text-gray-800 dark:text-gray-200">
+              {stats.headValue || 'None'}
+            </span>
+          </div>
+          <div>
+            <span className="font-medium text-gray-600 dark:text-gray-400">Back Element:</span>
+            <span className="ml-2 text-gray-800 dark:text-gray-200">
+              {stats.tailValue || 'None'}
+            </span>
+          </div>
+          <div>
+            <span className="font-medium text-gray-600 dark:text-gray-400">Size:</span>
+            <span className="ml-2 text-gray-800 dark:text-gray-200">{elements.length}</span>
+          </div>
+          <div>
+            <span className="font-medium text-gray-600 dark:text-gray-400">Is Empty:</span>
+            <span className="ml-2 text-gray-800 dark:text-gray-200">
+              {stats.isEmpty ? 'Yes' : 'No'}
+            </span>
+          </div>
+        </div>
+
+        {/* Color Legend */}
+        <section className="mt-4 flex flex-wrap items-center gap-3 border-t border-gray-200 pt-3 text-xs dark:border-gray-600">
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-green-500 bg-gray-100 dark:border-green-400 dark:bg-green-900/30"></div>
+            <span className="text-gray-600 dark:text-gray-400">Head (Front)</span>
+          </div>
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-blue-500 bg-gray-100 dark:border-blue-400 dark:bg-blue-900/30"></div>
+            <span className="text-gray-600 dark:text-gray-400">Tail (Back)</span>
+          </div>
+          <div className="flex items-center">
+            <div className="mr-1.5 h-3 w-3 rounded border border-gray-300 bg-gradient-to-br from-gray-100 to-gray-200 dark:border-gray-600 dark:from-gray-700 dark:to-gray-800"></div>
+            <span className="text-gray-600 dark:text-gray-400">ปกติ</span>
+          </div>
+        </section>
+      </div>
+
+      {/* Console Output */}
+      <ConsoleOutput steps={steps} currentStepIndex={currentStepIndex} />
+
+      {/* Performance Analysis Panel */}
+      <PerformanceAnalysisPanel
+        steps={steps}
+        currentStepIndex={currentStepIndex}
+        complexity={complexity}
+        code={code}
+      />
+
+      {/* Pitfall Popup */}
+      <PitfallPopup isOpen={isPitfallPopupOpen} onClose={() => setIsPitfallPopupOpen(false)} />
+    </div>
+  );
+};
+
+export default QueueStepthrough;

@@ -1,0 +1,28 @@
+name: dsview
+services:
+  frontend:
+    build:
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        NEXT_PUBLIC_API_KEY_NAME: ${NEXT_PUBLIC_API_KEY_NAME}
+        NEXT_PUBLIC_API_KEY: ${NEXT_PUBLIC_API_KEY}
+        NEXT_PUBLIC_NODE_ENV: ${NEXT_PUBLIC_NODE_ENV}
+        NEXT_PUBLIC_DOMAIN_NAME: ${NEXT_PUBLIC_DOMAIN_NAME}
+    container_name: dsview-frontend
+    restart: always
+    env_file:
+      - .env.production
+    expose:
+      - '3000'
+    networks:
+      - dsview-network
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.frontend.rule=Host(`${DOMAIN_NAME:-dsview.lvh.me}`)'
+      - 'traefik.http.services.frontend.loadbalancer.server.port=3000'
+      - 'traefik.http.routers.frontend.entrypoints=web'
+
+networks:
+  dsview-network:
+    external: true

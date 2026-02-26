@@ -1,0 +1,90 @@
+'use client';
+
+import React, { useRef, useCallback } from 'react';
+import { toast } from 'sonner';
+
+import { FileUploadButtonProps } from '@/types';
+
+const FileUploadButton: React.FC<FileUploadButtonProps> = ({ onFileLoad, disabled = false }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = useCallback(
+    (file: File) => {
+      // ตรวจสอบขนาดไฟล์ (100 KB = 100,000 bytes)
+      if (file.size > 100000) {
+        toast.error('ไฟล์ใหญ่เกินไป! ขนาดสูงสุด 100 KB');
+        return;
+      }
+
+      // ตรวจสอบประเภทไฟล์
+      if (!file.name.endsWith('.py')) {
+        toast.error('กรุณาเลือกไฟล์ .py เท่านั้น');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        if (content) {
+          onFileLoad(content, file.name);
+          toast.success('โหลดไฟล์สำเร็จ!');
+        }
+      };
+      reader.onerror = () => {
+        toast.error('เกิดข้อผิดพลาดในการอ่านไฟล์');
+      };
+      reader.readAsText(file);
+    },
+    [onFileLoad],
+  );
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFile(file);
+    }
+  };
+
+  const handleClick = () => {
+    if (!disabled) {
+      fileInputRef.current?.click();
+    }
+  };
+
+  return (
+    <>
+      <button
+        onClick={handleClick}
+        disabled={disabled}
+        className="bg-neutral/20 dark:bg-neutral/80 hover:bg-neutral/80 dark:hover:bg-neutral/40 inline-flex items-center justify-center gap-1 rounded px-2 py-1 text-xs text-gray-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-2.5 sm:py-1.5 sm:text-xs dark:text-gray-200"
+      >
+        <svg
+          className="h-3 w-3 sm:h-4 sm:w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+          />
+        </svg>
+        Upload .py
+      </button>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".py"
+        onChange={handleFileSelect}
+        className="hidden"
+        disabled={disabled}
+      />
+    </>
+  );
+};
+
+export default FileUploadButton;

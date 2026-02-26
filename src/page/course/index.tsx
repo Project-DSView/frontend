@@ -1,0 +1,428 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Search, Loader2, AlertCircle, BookOpen, Plus } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { useAuth } from '@/hooks';
+import { useCourses, useEnrollInCourse, useUpdateCourse } from '@/query';
+import { Course } from '@/types';
+
+import CourseCardWithEnrollment from '@/components/course/CourseCardWithEnrollment';
+import EnrollmentChecker from '@/components/course/EnrollmentChecker';
+import CreateCourseDialog from '@/components/course/CreateCourseDialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+const CoursePage: React.FC = () => {
+  const router = useRouter();
+  const { accessToken, profile, isInitialized } = useAuth();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isEnrolling, setIsEnrolling] = useState<string | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isArchiving, setIsArchiving] = useState<string | null>(null);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<string>>(new Set());
+
+  // Query parameters
+  const queryParams = {
+    page: currentPage,
+    limit: 12,
+    search: searchTerm || undefined,
+  };
+
+  // Fetch courses
+  const { data: coursesData, isLoading, error, refetch } = useCourses(accessToken, queryParams);
+
+  // Enrollment mutation
+  const enrollMutation = useEnrollInCourse();
+
+  // Update course mutation
+  const updateCourseMutation = useUpdateCourse();
+
+  // Handler to update enrolled course IDs
+  const handleEnrollmentStatusChange = React.useCallback(
+    (courseId: string, isEnrolled: boolean) => {
+      setEnrolledCourseIds((prev) => {
+        const newSet = new Set(prev);
+        if (isEnrolled) {
+          newSet.add(courseId);
+        } else {
+          newSet.delete(courseId);
+        }
+        return newSet;
+      });
+    },
+    [],
+  );
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (isInitialized && !profile) {
+      router.push('/');
+    }
+  }, [isInitialized, profile, router]);
+
+  // Handle enrollment
+  const handleEnroll = async (courseId: string, enrollKey: string) => {
+    if (!accessToken) {
+      toast.error('กรุณาเข้าสู่ระบบก่อน');
+      return;
+    }
+
+    setIsEnrolling(courseId);
+
+    try {
+      await enrollMutation.mutateAsync({
+        token: accessToken,
+        courseId,
+        enrollmentData: { enroll_key: enrollKey },
+      });
+
+      // แสดงข้อความสำเร็จเฉพาะเมื่อ API ส่งคืนผลลัพธ์สำเร็จ
+      toast.success('ลงทะเบียนสำเร็จ!');
+      // Refresh courses data
+      refetch();
+      // Refresh หน้าเพื่ออัปเดตสถานะการลงทะเบียน
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error: unknown) {
+      console.error('Enrollment error:', error);
+
+      // ตรวจสอบ error จาก API response
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as {
+          response?: {
+            status?: number;
+            data?: { message?: string };
+          };
+        };
+
+        if (axiosError.response?.status === 409) {
+          toast.error('คุณได้ลงทะเบียนในคอร์สนี้แล้ว');
+        } else if (axiosError.response?.status === 400) {
+          // ตรวจสอบ error message จาก API
+          const errorMessage = axiosError.response.data?.message || '';
+          if (
+            errorMessage.includes('enroll key') ||
+            errorMessage.includes('invalid') ||
+            errorMessage.includes('ไม่ถูกต้อง')
+          ) {
+            toast.error('รหัสลงทะเบียนไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง');
+          } else {
+            toast.error('รหัสลงทะเบียนไม่ถูกต้อง');
+          }
+        } else if (axiosError.response?.status === 401) {
+          toast.error('กรุณาเข้าสู่ระบบใหม่');
+        } else if (axiosError.response?.status === 404) {
+          toast.error('ไม่พบคอร์สที่ระบุ');
+        } else {
+          toast.error('เกิดข้อผิดพลาดในการลงทะเบียน');
+        }
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('เกิดข้อผิดพลาดในการลงทะเบียน');
+      }
+    } finally {
+      setIsEnrolling(null);
+    }
+  };
+
+  // Handle search
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1);
+    refetch();
+  };
+
+  // Handle pagination
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Handle enter course
+  const handleEnterCourse = (courseId: string) => {
+    // Navigate to course detail page or course content
+    window.location.href = `/course/${courseId}`;
+  };
+
+  // Handle archive course
+  const handleArchive = async (courseId: string) => {
+    if (!accessToken) {
+      toast.error('กรุณาเข้าสู่ระบบก่อน');
+      return;
+    }
+
+    // Find course to check current status
+    const course = courses.find((c) => c.course_id === courseId);
+    if (!course) {
+      toast.error('ไม่พบคอร์ส');
+      return;
+    }
+
+    const newStatus = course.status === 'archived' ? 'active' : 'archived';
+    setIsArchiving(courseId);
+
+    try {
+      await updateCourseMutation.mutateAsync({
+        token: accessToken,
+        courseId,
+        updates: { status: newStatus },
+      });
+      // Refresh courses data
+      refetch();
+    } catch (error: unknown) {
+      console.error('Archive course error:', error);
+      toast.error('เกิดข้อผิดพลาดในการเก็บคอร์ส');
+    } finally {
+      setIsArchiving(null);
+    }
+  };
+
+  // Handle edit course
+  const handleEdit = (course: Course) => {
+    setEditingCourse(course);
+  };
+
+  // Show loading state
+  if (!isInitialized) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>กำลังโหลด...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state if no profile (but initialized)
+  if (isInitialized && !profile) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>กำลังเปลี่ยนเส้นทาง...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="text-destructive mx-auto h-12 w-12" />
+          <h2 className="text-foreground mt-4 text-lg font-semibold">เกิดข้อผิดพลาด</h2>
+          <p className="text-muted-foreground mt-2">ไม่สามารถโหลดข้อมูลคอร์สได้</p>
+          <Button onClick={() => refetch()} className="mt-4">
+            ลองใหม่
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const courses = coursesData?.data.courses || [];
+  const pagination = coursesData?.data.pagination;
+
+  // Separate courses into enrolled and all courses
+  const enrolledCourses = courses.filter((course) => enrolledCourseIds.has(course.course_id));
+  const allCourses = courses;
+
+  return (
+    <div className="bg-background min-h-screen py-8">
+      <div className="container mx-auto px-4">
+        {/* Header */}
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-foreground text-3xl font-bold">คอร์สเรียนทั้งหมด</h1>
+            <p className="text-muted-foreground mt-2">
+              เลือกคอร์สที่คุณสนใจและลงทะเบียนเรียนได้เลย
+            </p>
+          </div>
+          {profile?.is_teacher === true && (
+            <Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              เพิ่มคอร์สเรียน
+            </Button>
+          )}
+        </div>
+
+        {/* Search */}
+        <div className="mb-8">
+          <form onSubmit={handleSearch} className="flex gap-4">
+            <div className="relative flex-1">
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <Input
+                type="text"
+                placeholder="ค้นหาคอร์ส..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'ค้นหา'}
+            </Button>
+          </form>
+        </div>
+
+        {/* Enrollment Checkers - Hidden components to check enrollment status */}
+        {courses.map((course) => (
+          <EnrollmentChecker
+            key={`checker-${course.course_id}`}
+            courseId={course.course_id}
+            accessToken={accessToken}
+            onEnrollmentStatusChange={handleEnrollmentStatusChange}
+          />
+        ))}
+
+        {/* My Courses Section */}
+        {enrolledCourses.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-foreground mb-6 text-2xl font-semibold">คอร์สของฉัน</h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {enrolledCourses.map((course) => (
+                <CourseCardWithEnrollment
+                  key={course.course_id}
+                  course={course}
+                  onEnroll={handleEnroll}
+                  isEnrolling={isEnrolling === course.course_id}
+                  onEnterCourse={handleEnterCourse}
+                  onArchive={handleArchive}
+                  isArchiving={isArchiving === course.course_id}
+                  onEdit={handleEdit}
+                  accessToken={accessToken}
+                  userProfile={profile}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Divider */}
+        {enrolledCourses.length > 0 && <div className="my-8 border-t border-gray-300"></div>}
+
+        {/* All Courses Section */}
+        <div>
+          <h2 className="text-foreground mb-6 text-2xl font-semibold">คอร์สทั้งหมด</h2>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-6 w-6 animate-spin" />
+                <span>กำลังโหลดคอร์ส...</span>
+              </div>
+            </div>
+          ) : allCourses.length === 0 ? (
+            <div className="py-12 text-center">
+              <div className="bg-muted mx-auto flex h-24 w-24 items-center justify-center rounded-full">
+                <BookOpen className="text-muted-foreground h-12 w-12" />
+              </div>
+              <h3 className="text-foreground mt-4 text-lg font-semibold">ไม่พบคอร์ส</h3>
+              <p className="text-muted-foreground mt-2">
+                {searchTerm ? 'ไม่พบคอร์สที่ตรงกับเงื่อนไขการค้นหา' : 'ยังไม่มีคอร์สในระบบ'}
+              </p>
+              {searchTerm && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setCurrentPage(1);
+                  }}
+                  className="mt-4"
+                >
+                  ล้างการค้นหา
+                </Button>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {allCourses.map((course) => (
+                  <CourseCardWithEnrollment
+                    key={course.course_id}
+                    course={course}
+                    onEnroll={handleEnroll}
+                    isEnrolling={isEnrolling === course.course_id}
+                    onEnterCourse={handleEnterCourse}
+                    onArchive={handleArchive}
+                    isArchiving={isArchiving === course.course_id}
+                    onEdit={handleEdit}
+                    accessToken={accessToken}
+                    userProfile={profile}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {pagination && pagination.total_pages > 1 && (
+                <div className="mt-8 flex items-center justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1 || isLoading}
+                  >
+                    ก่อนหน้า
+                  </Button>
+
+                  <div className="flex gap-1">
+                    {Array.from({ length: pagination.total_pages }, (_, i) => i + 1).map((page) => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                        disabled={isLoading}
+                      >
+                        {page}
+                      </Button>
+                    ))}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === pagination.total_pages || isLoading}
+                  >
+                    ถัดไป
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Create Course Dialog */}
+      <CreateCourseDialog
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        accessToken={accessToken}
+        onSuccess={() => {
+          refetch();
+        }}
+      />
+
+      {/* Edit Course Dialog */}
+      <CreateCourseDialog
+        isOpen={!!editingCourse}
+        onClose={() => setEditingCourse(null)}
+        accessToken={accessToken}
+        course={editingCourse}
+        onSuccess={() => {
+          refetch();
+          setEditingCourse(null);
+        }}
+      />
+    </div>
+  );
+};
+
+export default CoursePage;
