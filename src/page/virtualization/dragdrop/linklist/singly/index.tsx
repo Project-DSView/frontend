@@ -4,7 +4,12 @@ import React, { useEffect, useRef, useState, Suspense } from 'react';
 
 import { Operation } from '@/types';
 import { useDragDropSinglyLinkedList } from '@/hooks';
-import { singlyLinkedListDragComponents, singlyLinkedListDragDropBaseTemplate } from '@/data';
+import {
+  singlyLinkedListDragComponents,
+  singlyLinkedListDragDropBaseTemplate,
+  getTutorialSteps,
+  getTutorialStorageKey,
+} from '@/data';
 import { generateDragDropSinglyLinkedListCode } from '@/lib';
 
 import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
@@ -22,9 +27,6 @@ const DragDropSinglyLinkedListPage = () => {
     useDragDropSinglyLinkedList();
 
   /* ================= State ================= */
-
-  const [draggedItem, setDraggedItem] = useState<SinglyLinkedListDragComponent | null>(null);
-
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [autoFollow, setAutoFollow] = useState(true);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
@@ -41,38 +43,6 @@ const DragDropSinglyLinkedListPage = () => {
     }
     setSelectedStep(state.operations.length - 1);
   }, [state.operations, autoFollow]);
-
-  /* ================= Drag ================= */
-
-  const handleDragStart = (e: React.DragEvent, component: SinglyLinkedListDragComponent) => {
-    setDraggedItem(component);
-    e.dataTransfer.effectAllowed = 'copy';
-    e.dataTransfer.setData('text/plain', 'external');
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (!draggedItem) return;
-
-    setAutoFollow(true);
-
-    addOperation({
-      type: draggedItem.type,
-      name: draggedItem.name,
-      value: '',
-      position: null,
-      newValue: null,
-      color: draggedItem.color,
-      category: draggedItem.category,
-    });
-
-    setDraggedItem(null);
-  };
 
   /* ================= Update Operation ================= */
 
