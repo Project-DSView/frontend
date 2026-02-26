@@ -154,19 +154,6 @@ const CourseDetailPage: React.FC = () => {
     return positionMap;
   }, [allQueueJobsData]);
 
-  // Debug logging
-  React.useEffect(() => {
-    if (activeTab === 'queue') {
-      console.log('Queue Tab Debug:', {
-        courseId,
-        accessToken: !!accessToken,
-        queueJobsData,
-        queueJobsError,
-        isLoading: isQueueJobsLoading,
-      });
-    }
-  }, [activeTab, courseId, accessToken, queueJobsData, queueJobsError, isQueueJobsLoading]);
-
   // Unenroll mutation
   const unenrollMutation = useUnenrollFromCourse();
 

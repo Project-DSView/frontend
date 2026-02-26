@@ -12,7 +12,6 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
   onPrevious,
   onAutoPlay,
   isAutoPlaying,
-  debugState,
 }) => {
   if (steps.length === 0) {
     return (
@@ -57,12 +56,6 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {debugState?.isDebugMode && (
-                <div className="flex items-center gap-1 rounded-lg bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
-                  <div className="h-1.5 w-1.5 rounded-full bg-purple-500"></div>
-                  Debug Mode
-                </div>
-              )}
               {isAutoPlaying && (
                 <div className="animate-pulse text-sm font-medium text-green-600 dark:text-green-500">
                   กำลังเล่น...
@@ -139,7 +132,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
             onClick={onAutoPlay}
             className={`flex transform items-center space-x-1 rounded-xl px-3 py-1.5 text-xs font-semibold shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl sm:px-4 sm:py-2 sm:text-sm ${
               isAutoPlaying
-                ? 'bg-error hover:bg-error/80 animate-pulse text-white'
+                ? 'bg-error hover:bg-error/80 text-white'
                 : 'bg-success hover:bg-success/80 text-white'
             }`}
           >

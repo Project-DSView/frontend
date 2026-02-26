@@ -4,20 +4,35 @@ import { getSafeHeaders, getMinimalHeaders } from '@/lib';
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   withCredentials: true,
-  timeout: 10000, // 10 second timeout
+  timeout: 90000, // 90 second timeout
   headers: {
     [process.env.NEXT_PUBLIC_API_KEY_NAME || 'dsview-api-key']:
       process.env.NEXT_PUBLIC_API_KEY || '',
   },
 });
 
-// Add safe headers to all requests
 api.interceptors.request.use(
   (config) => {
-    // Use minimal headers in development to avoid CORS issues
     const isDevelopment = process.env.NODE_ENV === 'development';
+
+    if (config.url && !config.url.startsWith('http')) {
+      if (process.env.NODE_ENV === 'development') {
+        config.url = `https://go.lvh.me${config.url}`;
+      } else {
+        const domain = process.env.NEXT_PUBLIC_DOMAIN_NAME || 'myapp.com';
+        const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
+        config.url = `${protocol}//go.${domain}${config.url}`;
+      }
+    }
     const headers = isDevelopment ? getMinimalHeaders() : getSafeHeaders();
     Object.assign(config.headers, headers);
+
+    if (typeof window !== 'undefined') {
+      const token = sessionStorage.getItem('accessToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
 
     return config;
   },
@@ -84,7 +99,7 @@ export {
   getCourseInvitations,
   enrollViaInvitation,
 } from './course';
-export { executeStepthrough } from './playground';
+export { executeStepthrough, analyzePerformance, analyzeWithLLM } from './playground';
 export { getGoogleAuthUrl, logout, refreshToken, fetchProfile } from './auth';
 
 // Submissions

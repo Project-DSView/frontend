@@ -1,0 +1,59 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout Code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      # 3. Build & Push Docker Image
+      # IMPORTANT: Frontend builds often need NEXT_PUBLIC_ env vars at BUILD TIME.
+      # We pass these as build-args. Add more as needed.
+      - name: Build and Push Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/dsview-frontend:latest
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+            # Add other build-time variables here
+
+      # 4. Deploy to Server via SSH
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || '22' }}
+          script: |
+            # Go to project directory (Adjust path as needed)
+            cd /home/${{ secrets.SSH_USER }}/Project_KMITL/Website/frontend || exit 1
+
+            # Pull latest code (for docker-compose.yml updates)
+            git pull origin main
+
+            # Pull new image
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/dsview-frontend:latest
+
+            # Restart services
+            # Assuming you have a docker-compose.yml in the frontend repo
+            docker-compose up -d --force-recreate

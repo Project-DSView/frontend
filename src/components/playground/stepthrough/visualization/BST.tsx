@@ -10,12 +10,14 @@ import { ViewMode } from '@/types';
 import VariableStatePanel from '@/components/playground/stepthrough/VariableStatePanel';
 import CommonPitfallsWarning from '@/components/playground/stepthrough/CommonPitfallsWarning';
 import PitfallPopup from '@/components/playground/stepthrough/PitfallPopup';
+import StepInfoPanel from '@/components/playground/stepthrough/StepInfoPanel';
+import ConceptualAnalogyPanel from '@/components/playground/shared/analogy/ConceptualAnalogyPanel';
 import { generateHashAddress, convertToBSTNode } from '@/lib';
 
 const BSTStepthroughVisualization = forwardRef<
   HTMLDivElement,
   StepthroughVisualizationProps<BSTData>
->(({ steps, currentStepIndex, data, isRunning, error, complexity }, ref) => {
+>(({ steps, currentStepIndex, data, isRunning, error, complexity, code }, ref) => {
   const [searchPath] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('technical');
   const [traverseIndex, setTraverseIndex] = useState(0);
@@ -1131,15 +1133,15 @@ const BSTStepthroughVisualization = forwardRef<
   return (
     <section
       ref={ref}
-      className="rounded-lg bg-white p-6 shadow dark:bg-gray-800"
+      className="rounded-lg bg-white p-3 shadow sm:p-6 dark:bg-gray-800"
       suppressHydrationWarning
       aria-label="BST Stepthrough Visualization"
     >
-      <header className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+      <header className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-base font-semibold text-gray-800 sm:text-lg dark:text-gray-100">
           BST Visualization
         </h2>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {/* Variable Panel Toggle */}
           <button
             id="tutorial-variables-toggle"
@@ -1159,20 +1161,24 @@ const BSTStepthroughVisualization = forwardRef<
                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
               />
             </svg>
-            Variables
+            <span className="hidden sm:inline">Variables</span>
           </button>
           {isRunning && (
-            <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+            <div className="hidden items-center space-x-2 text-sm text-blue-600 sm:flex dark:text-blue-400">
               <div className="h-2 w-2 animate-pulse rounded-full bg-blue-600 dark:bg-blue-400" />
               <span>Running...</span>
             </div>
           )}
-          <VisualizationViewControls
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            showMemoryAddress={showMemoryAddress}
-            onToggleMemoryAddress={setShowMemoryAddress}
-          />
+
+          <div className="mx-0 sm:mx-2">
+            <VisualizationViewControls
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              showMemoryAddress={showMemoryAddress}
+              onToggleMemoryAddress={setShowMemoryAddress}
+            />
+          </div>
+
           {/* Common Errors Button */}
           <button
             id="tutorial-common-errors"
@@ -1188,7 +1194,8 @@ const BSTStepthroughVisualization = forwardRef<
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
               />
             </svg>
-            Common Errors
+            <span className="hidden sm:inline">Common Errors</span>
+            <span className="sm:hidden">Errors</span>
           </button>
         </div>
       </header>
@@ -1202,18 +1209,18 @@ const BSTStepthroughVisualization = forwardRef<
 
       {/* Current Step Info */}
       {steps.length > 0 && currentStepIndex < steps.length && !error && (
-        <div className="bg-info/10 mb-4 rounded-lg p-3">
-          <div className="text-info/90 text-sm font-medium">
-            Step {steps[currentStepIndex].stepNumber}: {steps[currentStepIndex].state.message}
-          </div>
-        </div>
+        <StepInfoPanel
+          stepNumber={steps[currentStepIndex].stepNumber}
+          message={steps[currentStepIndex].state.message}
+          userCommand={steps[currentStepIndex].state.step_detail?.user_command}
+        />
       )}
 
       {/* Main Content - Flex layout with Variable Panel */}
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row">
         {/* Left Side - Variable State Panel */}
         {showVariablePanel && (
-          <aside className="flex-shrink-0" aria-label="Variable State Panel">
+          <aside className="w-full flex-shrink-0 lg:w-auto" aria-label="Variable State Panel">
             <VariableStatePanel
               steps={steps}
               currentStepIndex={currentStepIndex}
@@ -1226,17 +1233,7 @@ const BSTStepthroughVisualization = forwardRef<
         <div className="min-w-0 flex-1">
           <ZoomableContainer>
             {viewMode === 'analogy' ? (
-              <div className="flex min-h-[500px] items-center justify-center rounded-lg bg-gray-50 p-6 text-center dark:bg-gray-800">
-                <div className="max-w-md">
-                  <h3 className="mb-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    Analogy View Coming Soon
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    We are working on adding conceptual analogies for Binary Search Trees. Please
-                    switch back to Technical View for now.
-                  </p>
-                </div>
-              </div>
+              <ConceptualAnalogyPanel type="bst" data={{ root: root }} className="min-h-[500px]" />
             ) : showMultipleTrees ? (
               <div className="space-y-6">
                 <div className="grid gap-6">
@@ -1312,6 +1309,7 @@ const BSTStepthroughVisualization = forwardRef<
         steps={steps}
         currentStepIndex={currentStepIndex}
         complexity={complexity}
+        code={code}
       />
 
       {/* Legend */}

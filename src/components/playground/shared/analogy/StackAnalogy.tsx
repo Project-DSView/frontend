@@ -12,7 +12,7 @@ const StackAnalogy = ({ elements }: { elements: string[] }) => {
 
       <div className="flex min-h-[300px] flex-col items-center justify-end pb-10">
         {/* The Stack */}
-        <div className="relative flex flex-col-reverse items-center justify-end">
+        <div className="ทะ relative flex flex-col items-center">
           <AnimatePresence>
             {elements.map((element, index) => (
               <motion.div
@@ -25,7 +25,7 @@ const StackAnalogy = ({ elements }: { elements: string[] }) => {
                 style={{ zIndex: index }}
               >
                 {/* Plate Visual */}
-                <div className="relative flex h-10 w-48 items-center justify-center">
+                <div className="relative mb-3 flex h-10 w-48 items-center justify-center">
                   {/* Plate Side View */}
                   <div
                     className={`absolute bottom-0 h-4 w-full rounded-b-xl border-r-2 border-b-2 border-l-2 ${index % 3 === 0 ? 'border-blue-300 bg-blue-100' : index % 3 === 1 ? 'border-purple-300 bg-purple-100' : 'border-pink-300 bg-pink-100'} `}
@@ -42,7 +42,7 @@ const StackAnalogy = ({ elements }: { elements: string[] }) => {
           </AnimatePresence>
 
           {/* Table/Base */}
-          <div className="relative z-0 mt-2 flex flex-col items-center">
+          <div className="relative z-0 flex flex-col items-center">
             <div className="h-4 w-60 rounded-lg bg-amber-800 shadow-lg"></div>
             <div className="-mt-1 h-20 w-52 rounded-b-lg bg-amber-900/40 backdrop-blur-sm"></div>
             <div className="absolute top-2 text-xs font-bold text-amber-100 opacity-60">
