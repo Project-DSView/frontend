@@ -6,8 +6,9 @@ const nextConfig: NextConfig = {
   // Allow GitHub Codespaces origins in dev mode (fixes RSC CORS errors)
   allowedDevOrigins: ['*.app.github.dev'],
 
+  turbopack: {},
+
   images: {
-    domains: ['lh3.googleusercontent.com', 'example.com', 'localhost'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -18,6 +19,18 @@ const nextConfig: NextConfig = {
         hostname: 'localhost',
         port: '9000',
         pathname: '/dsview/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'example.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
       },
     ],
   },

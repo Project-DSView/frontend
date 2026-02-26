@@ -13,7 +13,6 @@ import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 
 import {
-  UndirectedGraphDragComponent,
   UndirectedGraphNode,
   UndirectedGraphEdge,
   Operation,
@@ -51,7 +50,6 @@ const DragDropUndirectedGraph = () => {
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
     useDragDropUndirectedGraph();
 
-  const [draggedItem, setDraggedItem] = useState<UndirectedGraphDragComponent | null>(null);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [isLoading] = useState(false);
@@ -69,71 +67,8 @@ const DragDropUndirectedGraph = () => {
     }
   }, [pathname]);
 
-  const dragCounter = useRef(0);
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleDragStart = (e: React.DragEvent, component: UndirectedGraphDragComponent) => {
-    setDraggedItem(component);
-    e.dataTransfer.effectAllowed = 'copy';
-    e.dataTransfer.setData('text/plain', 'external');
-  };
-
-  const handleTouchStart = (e: React.TouchEvent, component: UndirectedGraphDragComponent) => {
-    setDraggedItem(component);
-    handleDrop({ preventDefault: () => {} } as React.DragEvent);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-  };
-
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    dragCounter.current++;
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    dragCounter.current--;
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    dragCounter.current = 0;
-
-    if (!draggedItem) return;
-
-    const newOperation = {
-      type: draggedItem.type,
-      name: draggedItem.name,
-      value: ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type)
-        ? null
-        : '',
-      fromVertex: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-      toVertex: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-      startVertex: ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(draggedItem.type)
-        ? ''
-        : null,
-      endVertex: ['shortest_path'].includes(draggedItem.type) ? '' : null,
-      color: draggedItem.color,
-      category: draggedItem.category,
-      position: ['add_edge', 'remove_edge'].includes(draggedItem.type) ? '' : null,
-      newValue: [
-        'add_edge',
-        'remove_edge',
-        'traversal_dfs',
-        'traversal_bfs',
-        'shortest_path',
-      ].includes(draggedItem.type)
-        ? ''
-        : null,
-    };
-
-    addOperation(newOperation);
-    setDraggedItem(null);
-  };
 
   const updateOperationValue = (id: number, value: string) => {
     const operation = state.operations.find((op) => op.id === id);
@@ -468,8 +403,8 @@ const DragDropUndirectedGraph = () => {
         return calculateShortestPath(
           currentState.nodes,
           currentState.edges,
-          op.startVertex,
-          op.endVertex,
+          operation.startVertex,
+          operation.endVertex,
         );
       }
     }
@@ -533,7 +468,6 @@ const DragDropUndirectedGraph = () => {
 
         {/* ===== Graph Operations bar (เหมือนรูป: pill buttons ในการ์ด) ===== */}
         <div className="mb-6 rounded-xl border bg-white p-4 shadow-sm">
-         
 
           <Suspense
             fallback={
@@ -543,25 +477,25 @@ const DragDropUndirectedGraph = () => {
             }
           >
             <UndirectedGraphDragDropOperations
-  dragComponents={undirectedGraphDragComponents}
-  onOperationClick={(component) => {
-    addOperation({
-      type: component.type,
-      name: component.name,
-      value: '',
-      position: null,
-      newValue: null,
-      fromVertex: null,
-      toVertex: null,
-      startVertex: null,
-      endVertex: null,
-      color: component.color,
-      category: component.category,
-    });
-  }}
-/>
+              dragComponents={undirectedGraphDragComponents}
+              onOperationClick={(component) => {
+                addOperation({
+                  type: component.type,
+                  name: component.name,
+                  value: '',
+                  position: null,
+                  newValue: null,
+                  fromVertex: null,
+                  toVertex: null,
+                  startVertex: null,
+                  endVertex: null,
+                  color: component.color,
+                  category: component.category,
+                });
+              }}
+            />
           </Suspense>
-      </div>
+        </div>
 
         {/* ===== 2 Columns: Drop Zone (ซ้าย) + Visualization (ขวา) ===== */}
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -581,13 +515,13 @@ const DragDropUndirectedGraph = () => {
             </div>
 
             <DragDropZone
-  operations={state.operations as Operation[]}
-  onRemoveOperation={handleRemoveOperation}
-  onUpdateOperationValue={updateOperationValue}
-  onUpdateOperationPosition={updateOperationPosition}
-  onUpdateOperationNewValue={updateOperationNewValue}
-  onReorderOperation={reorderOperation}
-/>
+              operations={state.operations as Operation[]}
+              onRemoveOperation={handleRemoveOperation}
+              onUpdateOperationValue={updateOperationValue}
+              onUpdateOperationPosition={updateOperationPosition}
+              onUpdateOperationNewValue={updateOperationNewValue}
+              onReorderOperation={reorderOperation}
+            />
           </div>
 
           {/* Visualization */}
@@ -682,65 +616,7 @@ const DragDropUndirectedGraph = () => {
             <Suspense fallback={null}>
               <CopyCodeButton code={pythonCode} />
             </Suspense>
-          )}
-
-          <Suspense fallback={null}>
-            <UndirectedGraphDragDropVisualization
-              ref={visualizationRef}
-              nodes={currentVisualizationState.nodes}
-              edges={currentVisualizationState.edges}
-              stats={currentVisualizationState.stats}
-              isRunning={isAutoPlaying}
-              currentOperation={
-                selectedStep !== null ? state.operations[selectedStep]?.type : undefined
-              }
-              selectedStep={
-                selectedStep !== null &&
-                ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(
-                  state.operations[selectedStep]?.type,
-                )
-                  ? selectedStep
-                  : null
-              }
-              currentOperationData={
-                selectedStep !== null ? state.operations[selectedStep] : undefined
-              }
-              shortestPath={shortestPath}
-            />
-          </Suspense>
-        </div>
-      </div>
-
-      {/* Step Control */}
-      <div className="mt-6">
-        <StepSelector
-          operations={state.operations as Operation[]}
-          selectedStep={selectedStep}
-          onStepSelect={handleStepSelect}
-          getStepDescription={getStepDescription}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onAutoPlay={handleAutoPlay}
-          isAutoPlaying={isAutoPlaying}
-        />
-      </div>
-
-      {/* Tutorial Overlay */}
-      <TutorialOverlay
-        isOpen={isTutorialOpen}
-        onClose={() => setIsTutorialOpen(false)}
-        steps={getTutorialSteps('dragdrop')}
-        storageKey={getTutorialStorageKey(pathname, 'dragdrop')}
-      />
-
-      {/* Python Code */}
-      <div className="mt-6 rounded-xl border bg-white p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Generated Python Code</h2>
-          <Suspense fallback={null}>
-            <CopyCodeButton code={pythonCode} />
-          </Suspense>
-        </div>
+          </div>
 
           <div className="mt-4 rounded-lg">
             <Suspense fallback={<div>Loading editor...</div>}>

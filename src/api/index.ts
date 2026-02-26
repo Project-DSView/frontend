@@ -17,7 +17,7 @@ api.interceptors.request.use(
 
     if (config.url && !config.url.startsWith('http')) {
       if (process.env.NODE_ENV === 'development') {
-        config.url = `https://go.lvh.me${config.url}`;
+        config.url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${config.url}`;
       } else {
         const domain = process.env.NEXT_PUBLIC_DOMAIN_NAME || 'myapp.com';
         const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';

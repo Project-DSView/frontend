@@ -272,7 +272,7 @@ const DragDropDoublyLinkedListPage = () => {
             ref={visualizationRef}
             nodes={visualizationState.nodes}
             stats={visualizationState.stats}
-            isRunning={isAutoPlaying}
+            isRunning={false}
             currentOperation={
               selectedStep !== null ? state.operations[selectedStep]?.type : undefined
             }
