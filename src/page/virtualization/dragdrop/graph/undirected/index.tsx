@@ -1,28 +1,12 @@
 'use client';
 
-import React, {
-  useState,
-  useRef,
-  lazy,
-  Suspense,
-  useMemo,
-  useCallback,
-  useEffect,
-} from 'react';
+import React, { useState, useRef, lazy, Suspense, useMemo, useCallback, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 
-import {
-  UndirectedGraphNode,
-  UndirectedGraphEdge,
-  Operation,
-} from '@/types';
+import { UndirectedGraphNode, UndirectedGraphEdge, Operation } from '@/types';
 import { useDragDropUndirectedGraph } from '@/hooks';
-import {
-  undirectedGraphDragComponents,
-  getTutorialSteps,
-  getTutorialStorageKey,
-} from '@/data';
+import { undirectedGraphDragComponents, getTutorialSteps, getTutorialStorageKey } from '@/data';
 
 import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
 import StepSelector from '@/components/playground/shared/action/StepSelector';
@@ -37,12 +21,8 @@ const UndirectedGraphDragDropOperations = lazy(
 const UndirectedGraphDragDropVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/UndirectedGraph'),
 );
-const StepIndicator = lazy(
-  () => import('@/components/playground/shared/action/StepIndicator'),
-);
-const CopyCodeButton = lazy(
-  () => import('@/components/playground/shared/action/CopyCodeButton'),
-);
+const StepIndicator = lazy(() => import('@/components/playground/shared/action/StepIndicator'));
+const CopyCodeButton = lazy(() => import('@/components/playground/shared/action/CopyCodeButton'));
 const CodeEditor = lazy(() => import('@/components/editor/CodeEditor'));
 
 const DragDropUndirectedGraph = () => {
@@ -452,9 +432,7 @@ const DragDropUndirectedGraph = () => {
         {/* ===== Header (เหมือนรูป) ===== */}
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Drag & Drop Undirected Graph
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900">Drag & Drop Undirected Graph</h1>
             <p className="mt-1 text-sm text-gray-600">
               คลิก operation เพื่อสร้างกราฟ + Python code
             </p>
@@ -468,7 +446,6 @@ const DragDropUndirectedGraph = () => {
 
         {/* ===== Graph Operations bar (เหมือนรูป: pill buttons ในการ์ด) ===== */}
         <div className="mb-6 rounded-xl border bg-white p-4 shadow-sm">
-
           <Suspense
             fallback={
               <div className="flex h-10 items-center">
@@ -579,7 +556,9 @@ const DragDropUndirectedGraph = () => {
                       ? selectedStep
                       : null
                   }
-                  currentOperationData={selectedStep !== null ? state.operations[selectedStep] : undefined}
+                  currentOperationData={
+                    selectedStep !== null ? state.operations[selectedStep] : undefined
+                  }
                   shortestPath={shortestPath}
                 />
               </Suspense>

@@ -23,14 +23,8 @@ import CopyCodeButton from '@/components/playground/shared/action/CopyCodeButton
 const CodeEditor = React.lazy(() => import('@/components/editor/CodeEditor'));
 
 const DragDropDoublyLinkedListPage = () => {
-  const {
-    state,
-    addOperation,
-    updateOperation,
-    removeOperation,
-    clearAll,
-    reorderOperation,
-  } = useDragDropDoublyLinkedList();
+  const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
+    useDragDropDoublyLinkedList();
 
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [autoFollow, setAutoFollow] = useState(true);
@@ -179,9 +173,7 @@ const DragDropDoublyLinkedListPage = () => {
   };
 
   const visualizationState =
-    selectedStep !== null
-      ? getStepState(selectedStep)
-      : { nodes: state.nodes, stats: state.stats };
+    selectedStep !== null ? getStepState(selectedStep) : { nodes: state.nodes, stats: state.stats };
 
   const generatedCode = useMemo(() => {
     if (state.operations.length === 0) {
@@ -192,7 +184,6 @@ const DragDropDoublyLinkedListPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-5 md:px-8 dark:bg-gray-900">
-
       {/* Header */}
       <div className="mb-5">
         <div className="flex items-center justify-between">
@@ -306,12 +297,7 @@ const DragDropDoublyLinkedListPage = () => {
 
         <div className="mt-3">
           <Suspense fallback={<div>Loading editor...</div>}>
-            <CodeEditor
-              code={generatedCode}
-              disabled
-              height="400px"
-              onCodeChange={() => {}}
-            />
+            <CodeEditor code={generatedCode} disabled height="400px" onCodeChange={() => {}} />
           </Suspense>
         </div>
       </div>
@@ -325,7 +311,7 @@ const DragDropDoublyLinkedListPage = () => {
           typeof window !== 'undefined'
             ? window.location.pathname
             : '/virtualization/dragdrop/linkedlist/doubly',
-          'dragdrop'
+          'dragdrop',
         )}
       />
     </div>

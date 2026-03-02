@@ -101,7 +101,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
         'insert_position',
         'insert_before_position',
         'delete_position',
-        'delete_before_position',  
+        'delete_before_position',
         'search_position',
         'update_position',
         'add_edge',
@@ -405,7 +405,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                     'insert_beginning',
                     'insert_end',
                     'insert_position',
-                    'insert_before_position',   
+                    'insert_before_position',
                     'search_value',
                     'push',
                     'enqueue',
@@ -559,7 +559,12 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                   )}
 
                   {/* Position input for other operations that need it */}
-                  {['delete_position', 'delete_before_position','search_position', 'update_position'].includes(op.type) && (
+                  {[
+                    'delete_position',
+                    'delete_before_position',
+                    'search_position',
+                    'update_position',
+                  ].includes(op.type) && (
                     <input
                       type="number"
                       placeholder="Position"

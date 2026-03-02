@@ -593,10 +593,10 @@ interface DragDropZoneProps {
   onSelectStep?: (index: number) => void;
   onUserInteract?: () => void;
 
-  onDragOver?: (e: React.DragEvent) => void;   // ✅ ทำให้ optional
+  onDragOver?: (e: React.DragEvent) => void; // ✅ ทำให้ optional
   onDragEnter?: (e: React.DragEvent) => void;
   onDragLeave?: (e: React.DragEvent) => void;
-  onDrop?: (e: React.DragEvent) => void;       // ✅ ทำให้ optional
+  onDrop?: (e: React.DragEvent) => void; // ✅ ทำให้ optional
 
   onRemoveOperation: (id: number) => void;
   onUpdateOperationValue: (id: number, value: string) => void;
