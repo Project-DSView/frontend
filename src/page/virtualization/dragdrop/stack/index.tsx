@@ -103,8 +103,7 @@ const StackPage = () => {
     jumpToLatestStep();
   }, [state.operations, autoFollow, isAutoPlaying, jumpToLatestStep]);
 
-  const visualizationState =
-    selectedStep !== null ? getStepState(selectedStep) : state;
+  const visualizationState = selectedStep !== null ? getStepState(selectedStep) : state;
 
   /* ================= AutoPlay ================= */
 
@@ -148,7 +147,6 @@ const StackPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-5 md:px-8 dark:bg-gray-900">
-
       {/* Header */}
       <div className="mb-5">
         <div className="flex items-center justify-between">
@@ -292,7 +290,7 @@ const StackPage = () => {
           typeof window !== 'undefined'
             ? window.location.pathname
             : '/virtualization/dragdrop/stack',
-          'dragdrop'
+          'dragdrop',
         )}
       />
     </div>

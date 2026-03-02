@@ -19,9 +19,13 @@ api.interceptors.request.use(
       if (process.env.NODE_ENV === 'development') {
         config.url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${config.url}`;
       } else {
-        const domain = process.env.NEXT_PUBLIC_DOMAIN_NAME || 'myapp.com';
-        const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
-        config.url = `${protocol}//go.${domain}${config.url}`;
+        if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+          config.url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${config.url}`;
+        } else {
+          const domain = process.env.NEXT_PUBLIC_DOMAIN_NAME || 'myapp.com';
+          const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
+          config.url = `${protocol}//go.${domain}${config.url}`;
+        }
       }
     }
     const headers = isDevelopment ? getMinimalHeaders() : getSafeHeaders();

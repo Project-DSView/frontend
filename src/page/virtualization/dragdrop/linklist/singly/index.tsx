@@ -214,7 +214,7 @@ const DragDropSinglyLinkedListPage = () => {
       </div>
 
       {/* Drop + Visualization */}
-      <div className="grid gap-3 lg:grid-cols-2 lg:h-[420px]">
+      <div className="grid gap-3 lg:h-[420px] lg:grid-cols-2">
         <div className="flex h-full flex-col rounded-lg border bg-white p-3 dark:bg-gray-800">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold">Drop Zone</h2>
@@ -304,7 +304,7 @@ const DragDropSinglyLinkedListPage = () => {
           typeof window !== 'undefined'
             ? window.location.pathname
             : '/virtualization/dragdrop/linkedlist/singly',
-          'dragdrop'
+          'dragdrop',
         )}
       />
     </div>

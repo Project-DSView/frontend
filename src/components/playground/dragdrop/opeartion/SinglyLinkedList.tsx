@@ -3,9 +3,11 @@
 import React from 'react';
 import { SinglyLinkedListOperationsProps } from '@/types';
 
-const SinglyLinkedListDragDropOperations: React.FC<
-  SinglyLinkedListOperationsProps
-> = ({ dragComponents, onDragStart, onTouchStart }) => {
+const SinglyLinkedListDragDropOperations: React.FC<SinglyLinkedListOperationsProps> = ({
+  dragComponents,
+  onDragStart,
+  onTouchStart,
+}) => {
   return (
     <div className="rounded-md bg-white p-2 shadow-sm dark:bg-gray-800">
       {/* Header */}
@@ -26,22 +28,8 @@ const SinglyLinkedListDragDropOperations: React.FC<
             type="button"
             draggable
             onDragStart={(e) => onDragStart(e, component)}
-            onTouchStart={(e) =>
-              onTouchStart && onTouchStart(e, component)
-            }
-           className={`
-  rounded-full
-  border
-  px-3 py-1
-  text-xs font-medium
-  cursor-pointer
-  select-none
-  transition
-  active:scale-[0.98]
-  ${component.color}
-  bg-gray-50
-  hover:bg-gray-100
-`}
+            onTouchStart={(e) => onTouchStart && onTouchStart(e, component)}
+            className={`cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition select-none active:scale-[0.98] ${component.color} bg-gray-50 hover:bg-gray-100`}
             title={component.description}
           >
             {component.name}

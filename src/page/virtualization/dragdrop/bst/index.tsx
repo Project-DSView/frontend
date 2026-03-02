@@ -19,9 +19,7 @@ import DragDropZone from '@/components/playground/dragdrop/DragDropZone';
 const BSTDragDropVisualization = lazy(
   () => import('@/components/playground/dragdrop/visualization/BST'),
 );
-const CopyCodeButton = lazy(
-  () => import('@/components/playground/shared/action/CopyCodeButton'),
-);
+const CopyCodeButton = lazy(() => import('@/components/playground/shared/action/CopyCodeButton'));
 const CodeEditor = lazy(() => import('@/components/editor/CodeEditor'));
 
 const safeUUID = () =>
@@ -66,8 +64,7 @@ const deleteNode = (root: BSTNode | null, value: string): BSTNode | null => {
 };
 
 const calculateStats = (root: BSTNode | null) => {
-  const size = (n: BSTNode | null): number =>
-    n ? 1 + size(n.left) + size(n.right) : 0;
+  const size = (n: BSTNode | null): number => (n ? 1 + size(n.left) + size(n.right) : 0);
 
   const height = (n: BSTNode | null): number =>
     n ? 1 + Math.max(height(n.left), height(n.right)) : 0;
@@ -136,7 +133,6 @@ const DragDropBST = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-5 md:px-8 dark:bg-gray-900">
-
       <div className="mb-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -261,10 +257,8 @@ const DragDropBST = () => {
         onClose={() => setIsTutorialOpen(false)}
         steps={getTutorialSteps('dragdrop')}
         storageKey={getTutorialStorageKey(
-          typeof window !== 'undefined'
-            ? window.location.pathname
-            : '/virtualization/dragdrop/bst',
-          'dragdrop'
+          typeof window !== 'undefined' ? window.location.pathname : '/virtualization/dragdrop/bst',
+          'dragdrop',
         )}
       />
     </div>
