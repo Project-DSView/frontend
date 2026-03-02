@@ -94,9 +94,7 @@ const QueuePage = () => {
     if (state.operations.length === 0) return;
     stopAutoPlay();
     setAutoFollow(false);
-    setSelectedStep((prev) =>
-      Math.min(state.operations.length - 1, (prev ?? 0) + 1),
-    );
+    setSelectedStep((prev) => Math.min(state.operations.length - 1, (prev ?? 0) + 1));
   };
 
   const handleAutoPlay = () => {
@@ -124,8 +122,7 @@ const QueuePage = () => {
 
   useEffect(() => {
     return () => {
-      if (autoPlayIntervalRef.current)
-        clearInterval(autoPlayIntervalRef.current);
+      if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
     };
   }, []);
 
@@ -171,7 +168,6 @@ const QueuePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-5 md:px-8 dark:bg-gray-900">
-
       {/* Header */}
       <div className="mb-5">
         <div className="flex items-center justify-between">
@@ -275,9 +271,7 @@ const QueuePage = () => {
       {/* Generated Code */}
       <div className="mt-6 rounded-xl border bg-white p-4 shadow-sm dark:bg-gray-800">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold">
-            Generated Python Code
-          </h2>
+          <h2 className="text-sm font-semibold">Generated Python Code</h2>
           <CopyCodeButton
             code={
               state.operations.length === 0
@@ -310,7 +304,7 @@ const QueuePage = () => {
           typeof window !== 'undefined'
             ? window.location.pathname
             : '/virtualization/dragdrop/queue',
-          'dragdrop'
+          'dragdrop',
         )}
       />
     </div>
