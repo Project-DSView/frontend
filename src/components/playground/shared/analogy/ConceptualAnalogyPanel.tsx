@@ -5,6 +5,8 @@ import { ConceptualAnalogyPanelProps } from '@/types';
 import LinkedListAnalogy from './SinglyLinkedListAnalogy';
 import DoublyLinkedListAnalogy from './DoublyLinkedListAnalogy';
 import StackAnalogy from './StackAnalogy';
+import QueueAnalogy from './QueueAnalogy';
+import BSTAnalogy from './BSTAnalogy';
 import ZoomableContainer from '@/components/playground/shared/action/ZoomableContainer';
 
 const ConceptualAnalogyPanel: React.FC<ConceptualAnalogyPanelProps> = ({
@@ -39,13 +41,9 @@ const ConceptualAnalogyPanel: React.FC<ConceptualAnalogyPanelProps> = ({
           )}
           {type === 'stack' && <StackAnalogy elements={data.elements || data.nodes || []} />}
 
-          {type === 'bst' && (
-            <div className="text-center text-gray-500">BST Analogy (Coming Soon)</div>
-          )}
+          {type === 'bst' && <BSTAnalogy root={data.root as any} />}
 
-          {type === 'queue' && (
-            <div className="text-center text-gray-500">Queue Analogy (Coming Soon)</div>
-          )}
+          {type === 'queue' && <QueueAnalogy elements={data.elements || []} />}
         </div>
       </ZoomableContainer>
     </div>
