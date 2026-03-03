@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getSafeHeaders, getMinimalHeaders } from '@/lib';
+import { getSafeHeaders } from '@/lib';
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -13,23 +13,8 @@ export const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const isDevelopment = process.env.NODE_ENV === 'development';
-
-    if (config.url && !config.url.startsWith('http')) {
-      if (process.env.NODE_ENV === 'development') {
-        config.url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${config.url}`;
-      } else {
-        if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-          config.url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${config.url}`;
-        } else {
-          const domain = process.env.NEXT_PUBLIC_DOMAIN_NAME || 'myapp.com';
-          const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
-          config.url = `${protocol}//go.${domain}${config.url}`;
-        }
-      }
-    }
-    const headers = isDevelopment ? getMinimalHeaders() : getSafeHeaders();
-    Object.assign(config.headers, headers);
+    // getSafeHeaders() จัดการเรื่อง environment อยู่แล้วในตัวมันเอง
+    Object.assign(config.headers, getSafeHeaders());
 
     if (typeof window !== 'undefined') {
       const token = sessionStorage.getItem('accessToken');

@@ -27,22 +27,10 @@ export const DEFAULT_CORS_CONFIG: CORSConfig = {
  * Get safe headers for API requests based on environment
  */
 export const getSafeHeaders = (): Record<string, string> => {
-  const isDevelopment = process.env.NODE_ENV === 'development';
-
-  const baseHeaders = {
+  return {
     'Content-Type': 'application/json',
     Accept: 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
-  };
-
-  // In development, only include basic headers to avoid CORS issues
-  if (isDevelopment) {
-    return baseHeaders;
-  }
-
-  // In production, include additional security headers
-  return {
-    ...baseHeaders,
     'Cache-Control': 'no-cache',
     Pragma: 'no-cache',
   };
