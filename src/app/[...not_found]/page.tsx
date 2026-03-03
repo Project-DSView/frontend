@@ -11,7 +11,7 @@ const page = () => {
         className={`border-primary relative z-10 rounded-3xl border p-[1px] font-bold text-white`}
       >
         <div className={'text-primary w-full rounded-3xl px-5 py-3'}>
-          <Link href="/">Back to Home</Link>
+          <Link href="/">กลับหน้าหลัก</Link>
         </div>
       </div>
     </div>
