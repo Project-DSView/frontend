@@ -17,6 +17,7 @@ import VariableStatePanel from '@/components/playground/stepthrough/VariableStat
 import CommonPitfallsWarning from '@/components/playground/stepthrough/CommonPitfallsWarning';
 import PitfallPopup from '@/components/playground/stepthrough/PitfallPopup';
 import StepInfoPanel from '@/components/playground/stepthrough/StepInfoPanel';
+import GraphAnalogy from '@/components/playground/shared/analogy/GraphAnalogy';
 
 const UndirectedGraphStepthroughVisualization = forwardRef<
   HTMLDivElement,
@@ -534,16 +535,12 @@ const UndirectedGraphStepthroughVisualization = forwardRef<
           {/* Right Side - Graph Visualization */}
           <div className="min-w-0 flex-1">
             {viewMode === 'analogy' ? (
-              <div className="flex min-h-[400px] items-center justify-center rounded-lg bg-gray-50 p-6 text-center dark:bg-gray-800">
-                <div className="max-w-md">
-                  <h3 className="mb-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    Analogy View Coming Soon
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    We are working on adding conceptual analogies for Undirected Graphs. Please
-                    switch back to Technical View for now.
-                  </p>
-                </div>
+              <div className="min-h-[400px] rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
+                <GraphAnalogy
+                  nodes={data.nodes.map(n => ({ id: n.id, value: n.value, x: n.x, y: n.y }))}
+                  edges={data.edges.map(e => ({ id: e.id, from: e.from, to: e.to }))}
+                  isDirected={false}
+                />
               </div>
             ) : (
               <div className="relative mb-6 min-h-[400px] overflow-auto rounded-lg bg-gray-50 dark:bg-gray-800">

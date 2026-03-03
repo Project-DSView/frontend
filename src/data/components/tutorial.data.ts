@@ -108,6 +108,15 @@ const stepthroughTutorialSteps: TutorialStep[] = [
     disableNextUntilVisible: true,
   },
   {
+    title: 'Performance Summary',
+    description:
+      'แถบนี้แสดงข้อมูลประสิทธิภาพเชิงเปรียบเทียบ:\n• Memory: หน่วยความจำที่ใช้\n• Time: เวลาในการประมวลผล\n• Time O() และ Space O(): ความซับซ้อนเชิงทฤษฎี\n• Details: คลิกเพื่อดูรายละเอียดและกราฟวิเคราะห์เชิงลึก',
+    highlightSelector: '#tutorial-performance-metrics',
+    placement: 'top',
+    spotlightPadding: 8,
+    disableNextUntilVisible: true,
+  },
+  {
     title: 'Navigation',
     description: 'เข้าถึงเครื่องมือการเรียนรู้อื่นๆ ได้ที่เมนู Playground ด้านบน',
     placement: 'bottom',
