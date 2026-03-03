@@ -9,11 +9,11 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Pull latest code
-        working-directory: /dsview/frontend
+        working-directory: /home/dsview/dsview/frontend
         run: git pull origin main
 
       - name: Rebuild & restart frontend
-        working-directory: /dsview/frontend
+        working-directory: /home/dsview/dsview/frontend
         run: |
           docker compose build
           docker compose up -d --force-recreate
