@@ -100,7 +100,10 @@ const PerformanceAnalysisPanel: React.FC<PerformanceAnalysisPanelProps> = ({
   return (
     <Card className="from-primary/5 via-background to-secondary/5 dark:from-primary/10 dark:via-background dark:to-secondary/10 mt-4 border-0 bg-gradient-to-r shadow-md">
       <CardContent className="p-3 sm:p-4">
-        <div id="tutorial-performance-metrics" className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div
+          id="tutorial-performance-metrics"
+          className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+        >
           <PerformanceSummaryMetrics
             memoryUsage={memoryUsage}
             totalExecutionTime={totalExecutionTime}

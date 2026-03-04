@@ -536,8 +536,8 @@ const DirectedGraphStepthroughVisualization = forwardRef<
             {viewMode === 'analogy' ? (
               <div className="min-h-[400px] rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
                 <GraphAnalogy
-                  nodes={data.nodes.map(n => ({ id: n.id, value: n.value, x: n.x, y: n.y }))}
-                  edges={data.edges.map(e => ({ id: e.id, from: e.from, to: e.to }))}
+                  nodes={data.nodes.map((n) => ({ id: n.id, value: n.value, x: n.x, y: n.y }))}
+                  edges={data.edges.map((e) => ({ id: e.id, from: e.from, to: e.to }))}
                   isDirected={true}
                 />
               </div>
