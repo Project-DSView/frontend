@@ -23,20 +23,28 @@ interface GraphAnalogyProps {
 
 // ----- Avatar color palette -----
 const AVATAR_COLORS = [
-  { bg: '#3B82F6', hair: '#1E3A5F', shirt: '#2563EB' },   // Blue
-  { bg: '#10B981', hair: '#1A3C2A', shirt: '#059669' },   // Green
-  { bg: '#F59E0B', hair: '#5C3D0A', shirt: '#D97706' },   // Amber
-  { bg: '#EF4444', hair: '#4A1010', shirt: '#DC2626' },   // Red
-  { bg: '#8B5CF6', hair: '#2E1A4A', shirt: '#7C3AED' },   // Purple-ish (violet-free)
-  { bg: '#EC4899', hair: '#4A1030', shirt: '#DB2777' },   // Pink
-  { bg: '#14B8A6', hair: '#1A3A36', shirt: '#0D9488' },   // Teal
-  { bg: '#F97316', hair: '#4A2A0A', shirt: '#EA580C' },   // Orange
+  { bg: '#3B82F6', hair: '#1E3A5F', shirt: '#2563EB' }, // Blue
+  { bg: '#10B981', hair: '#1A3C2A', shirt: '#059669' }, // Green
+  { bg: '#F59E0B', hair: '#5C3D0A', shirt: '#D97706' }, // Amber
+  { bg: '#EF4444', hair: '#4A1010', shirt: '#DC2626' }, // Red
+  { bg: '#8B5CF6', hair: '#2E1A4A', shirt: '#7C3AED' }, // Purple-ish (violet-free)
+  { bg: '#EC4899', hair: '#4A1030', shirt: '#DB2777' }, // Pink
+  { bg: '#14B8A6', hair: '#1A3A36', shirt: '#0D9488' }, // Teal
+  { bg: '#F97316', hair: '#4A2A0A', shirt: '#EA580C' }, // Orange
 ];
 
 const getAvatarColor = (index: number) => AVATAR_COLORS[index % AVATAR_COLORS.length];
 
 // ----- SVG Person Avatar -----
-const PersonAvatar = ({ name, colorIndex, size = 60 }: { name: string; colorIndex: number; size?: number }) => {
+const PersonAvatar = ({
+  name,
+  colorIndex,
+  size = 60,
+}: {
+  name: string;
+  colorIndex: number;
+  size?: number;
+}) => {
   const color = getAvatarColor(colorIndex);
   const r = size / 2;
 
@@ -60,8 +68,24 @@ const PersonAvatar = ({ name, colorIndex, size = 60 }: { name: string; colorInde
         strokeLinecap="round"
       />
       {/* Name tag */}
-      <rect x={-22} y={r * 0.85} width={44} height={16} rx={4} fill="white" stroke={color.bg} strokeWidth="1.5" />
-      <text x={0} y={r * 0.85 + 12} textAnchor="middle" fontSize="9" fontWeight="bold" fill={color.shirt}>
+      <rect
+        x={-22}
+        y={r * 0.85}
+        width={44}
+        height={16}
+        rx={4}
+        fill="white"
+        stroke={color.bg}
+        strokeWidth="1.5"
+      />
+      <text
+        x={0}
+        y={r * 0.85 + 12}
+        textAnchor="middle"
+        fontSize="9"
+        fontWeight="bold"
+        fill={color.shirt}
+      >
         {name.length > 5 ? name.slice(0, 4) + '..' : name}
       </text>
     </g>
@@ -248,13 +272,13 @@ const GraphAnalogy: React.FC<GraphAnalogyProps> = ({ nodes, edges, isDirected = 
       <div className="mt-2 max-w-lg text-center text-sm text-gray-600 dark:text-gray-400">
         {isDirected ? (
           <p>
-            ใน Social Network: &quot;<strong>Follow</strong>&quot; เป็นความสัมพันธ์ทางเดียว
-            — A follow B ไม่ได้หมายความว่า B follow A (เหมือน Directed Edge)
+            ใน Social Network: &quot;<strong>Follow</strong>&quot; เป็นความสัมพันธ์ทางเดียว — A
+            follow B ไม่ได้หมายความว่า B follow A (เหมือน Directed Edge)
           </p>
         ) : (
           <p>
-            ใน Social Network: &quot;<strong>Friend</strong>&quot; เป็นความสัมพันธ์สองทาง
-            — ถ้า A เป็นเพื่อนกับ B แล้ว B ก็เป็นเพื่อนกับ A เช่นกัน (เหมือน Undirected Edge)
+            ใน Social Network: &quot;<strong>Friend</strong>&quot; เป็นความสัมพันธ์สองทาง — ถ้า A
+            เป็นเพื่อนกับ B แล้ว B ก็เป็นเพื่อนกับ A เช่นกัน (เหมือน Undirected Edge)
           </p>
         )}
       </div>
