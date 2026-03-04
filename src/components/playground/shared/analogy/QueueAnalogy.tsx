@@ -10,7 +10,7 @@ const PERSON_COLORS = [
   { shirt: '#06B6D4', shirtDark: '#0891B2', pants: '#164E63' },
 ];
 
-const PersonSVG = ({ color, value }: { color: typeof PERSON_COLORS[number]; value: string }) => (
+const PersonSVG = ({ color, value }: { color: (typeof PERSON_COLORS)[number]; value: string }) => (
   <div className="flex flex-col items-center">
     {/* Name tag above head */}
     <div className="mb-1 rounded-md border border-gray-300 bg-white px-2 py-0.5 text-xs font-bold text-gray-800 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
@@ -24,7 +24,13 @@ const PersonSVG = ({ color, value }: { color: typeof PERSON_COLORS[number]; valu
       <circle cx="22" cy="12" r="1.5" fill="#1F2937" />
       <circle cx="30" cy="12" r="1.5" fill="#1F2937" />
       {/* Smile */}
-      <path d="M22,17 Q26,21 30,17" fill="none" stroke="#1F2937" strokeWidth="1.2" strokeLinecap="round" />
+      <path
+        d="M22,17 Q26,21 30,17"
+        fill="none"
+        stroke="#1F2937"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
 
       {/* Body / Shirt */}
       <path
@@ -37,16 +43,52 @@ const PersonSVG = ({ color, value }: { color: typeof PERSON_COLORS[number]; valu
       <path d="M22,24 L26,30 L30,24" fill="white" opacity="0.6" />
 
       {/* Arms */}
-      <rect x="6" y="28" width="8" height="22" rx="4" fill={color.shirt} stroke={color.shirtDark} strokeWidth="1" />
-      <rect x="38" y="28" width="8" height="22" rx="4" fill={color.shirt} stroke={color.shirtDark} strokeWidth="1" />
+      <rect
+        x="6"
+        y="28"
+        width="8"
+        height="22"
+        rx="4"
+        fill={color.shirt}
+        stroke={color.shirtDark}
+        strokeWidth="1"
+      />
+      <rect
+        x="38"
+        y="28"
+        width="8"
+        height="22"
+        rx="4"
+        fill={color.shirt}
+        stroke={color.shirtDark}
+        strokeWidth="1"
+      />
 
       {/* Hands */}
       <circle cx="10" cy="52" r="3.5" fill="#FBBF24" stroke="#D97706" strokeWidth="1" />
       <circle cx="42" cy="52" r="3.5" fill="#FBBF24" stroke="#D97706" strokeWidth="1" />
 
       {/* Legs */}
-      <rect x="16" y="50" width="8" height="22" rx="3" fill={color.pants} stroke="#111827" strokeWidth="1" />
-      <rect x="28" y="50" width="8" height="22" rx="3" fill={color.pants} stroke="#111827" strokeWidth="1" />
+      <rect
+        x="16"
+        y="50"
+        width="8"
+        height="22"
+        rx="3"
+        fill={color.pants}
+        stroke="#111827"
+        strokeWidth="1"
+      />
+      <rect
+        x="28"
+        y="50"
+        width="8"
+        height="22"
+        rx="3"
+        fill={color.pants}
+        stroke="#111827"
+        strokeWidth="1"
+      />
 
       {/* Shoes */}
       <ellipse cx="20" cy="74" rx="6" ry="3.5" fill="#374151" />
@@ -70,7 +112,13 @@ const ServiceCounter = () => (
       <circle cx="41" cy="20" r="1.5" fill="#1F2937" />
       <circle cx="49" cy="20" r="1.5" fill="#1F2937" />
       {/* Smile */}
-      <path d="M41,26 Q45,30 49,26" fill="none" stroke="#1F2937" strokeWidth="1.2" strokeLinecap="round" />
+      <path
+        d="M41,26 Q45,30 49,26"
+        fill="none"
+        stroke="#1F2937"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
 
       {/* Body / Uniform */}
       <path
@@ -86,19 +134,64 @@ const ServiceCounter = () => (
       </text>
 
       {/* Arms */}
-      <rect x="22" y="38" width="8" height="20" rx="4" fill="#059669" stroke="#047857" strokeWidth="1" />
-      <rect x="60" y="38" width="8" height="20" rx="4" fill="#059669" stroke="#047857" strokeWidth="1" />
+      <rect
+        x="22"
+        y="38"
+        width="8"
+        height="20"
+        rx="4"
+        fill="#059669"
+        stroke="#047857"
+        strokeWidth="1"
+      />
+      <rect
+        x="60"
+        y="38"
+        width="8"
+        height="20"
+        rx="4"
+        fill="#059669"
+        stroke="#047857"
+        strokeWidth="1"
+      />
       {/* Waving hand (right) */}
       <circle cx="66" cy="36" r="4" fill="#FBBF24" stroke="#D97706" strokeWidth="1" />
       {/* Left hand */}
       <circle cx="26" cy="60" r="3.5" fill="#FBBF24" stroke="#D97706" strokeWidth="1" />
 
       {/* Counter body */}
-      <rect x="5" y="68" width="80" height="36" rx="4" fill="#059669" stroke="#047857" strokeWidth="2" />
+      <rect
+        x="5"
+        y="68"
+        width="80"
+        height="36"
+        rx="4"
+        fill="#059669"
+        stroke="#047857"
+        strokeWidth="2"
+      />
       {/* Counter top */}
-      <rect x="2" y="64" width="86" height="8" rx="3" fill="#10B981" stroke="#059669" strokeWidth="1.5" />
+      <rect
+        x="2"
+        y="64"
+        width="86"
+        height="8"
+        rx="3"
+        fill="#10B981"
+        stroke="#059669"
+        strokeWidth="1.5"
+      />
       {/* Window / Sign */}
-      <rect x="20" y="78" width="50" height="18" rx="3" fill="#D1FAE5" stroke="#6EE7B7" strokeWidth="1" />
+      <rect
+        x="20"
+        y="78"
+        width="50"
+        height="18"
+        rx="3"
+        fill="#D1FAE5"
+        stroke="#6EE7B7"
+        strokeWidth="1"
+      />
       <text x="45" y="91" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#065F46">
         OPEN
       </text>
@@ -136,7 +229,9 @@ const QueueAnalogy = ({ elements }: { elements: string[] }) => {
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">Dequeue</span>
+            <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+              Dequeue
+            </span>
           </div>
         )}
 
@@ -178,7 +273,7 @@ const QueueAnalogy = ({ elements }: { elements: string[] }) => {
 
         {/* Enqueue arrow (right side) */}
         {elements.length > 0 && (
-          <div className="ml-2 mb-8 flex flex-col items-center self-center">
+          <div className="mb-8 ml-2 flex flex-col items-center self-center">
             <svg width="40" height="20" viewBox="0 0 40 20">
               <path
                 d="M2,10 L32,10 M26,4 L32,10 L26,16"
@@ -189,7 +284,9 @@ const QueueAnalogy = ({ elements }: { elements: string[] }) => {
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">Enqueue</span>
+            <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              Enqueue
+            </span>
           </div>
         )}
       </div>
@@ -207,8 +304,7 @@ const QueueAnalogy = ({ elements }: { elements: string[] }) => {
       <div className="mt-6 max-w-lg text-center text-sm text-gray-600 dark:text-gray-400">
         <p>
           Queue (FIFO) ก็เหมือนกับ <strong>การต่อคิว</strong> <br />
-          คนที่มาต่อแถวก่อน (Enqueue) ก็จะได้รับบริการก่อน (Dequeue)
-          — เข้าก่อนออกก่อน เสมอ
+          คนที่มาต่อแถวก่อน (Enqueue) ก็จะได้รับบริการก่อน (Dequeue) — เข้าก่อนออกก่อน เสมอ
         </p>
       </div>
     </div>
