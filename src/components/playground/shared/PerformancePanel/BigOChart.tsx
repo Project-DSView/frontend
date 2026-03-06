@@ -109,13 +109,21 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
             <text x="285" y="18" className="fill-amber-500 font-medium" fontSize="10">
               O(n log n)
             </text>
-            <path d="M 30 145 Q 70 110, 110 20" fill="none" stroke="#f97316" strokeWidth="2" />
-            <text x="115" y="18" className="fill-orange-500 font-medium" fontSize="10">
+            <path d="M 30 145 Q 85 110, 175 20" fill="none" stroke="#f97316" strokeWidth="2" />
+            <text x="180" y="18" className="fill-orange-500 font-medium" fontSize="10">
               O(n²)
             </text>
-            <path d="M 30 145 Q 50 100, 70 20" fill="none" stroke="#ef4444" strokeWidth="2" />
+            <path d="M 30 145 Q 70 105, 140 20" fill="none" stroke="#ea580c" strokeWidth="2" />
+            <text x="145" y="18" className="fill-orange-600 font-medium" fontSize="10">
+              O(n³)
+            </text>
+            <path d="M 30 145 Q 60 102, 110 20" fill="none" stroke="#dc2626" strokeWidth="2" />
+            <text x="115" y="18" className="fill-red-600 font-medium" fontSize="10">
+              O(n⁴⁺)
+            </text>
+            <path d="M 30 145 Q 50 100, 80 20" fill="none" stroke="#ef4444" strokeWidth="2" />
             <text
-              x="75"
+              x="80"
               y="18"
               className="fill-red-500 font-medium"
               textAnchor="middle"
@@ -153,21 +161,30 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
                 cx = 165;
                 cy = 85;
                 indicatorColor = '#f59e0b';
-              } else if (timeComplexity.includes('n²')) {
-                cx = 90;
+              } else if (timeComplexity.includes('n²') || timeComplexity === 'O(n^2)') {
+                cx = 125;
                 cy = 60;
                 indicatorColor = '#f97316';
-              } else if (timeComplexity.includes('n³')) {
-                cx = 70;
+              } else if (timeComplexity.includes('n³') || timeComplexity === 'O(n^3)') {
+                cx = 105;
+                cy = 55;
+                indicatorColor = '#ea580c';
+              } else if (
+                timeComplexity.includes('n⁴') || 
+                timeComplexity.includes('n⁵') || 
+                timeComplexity.includes('n⁶') ||
+                timeComplexity.match(/O\(n\^?[4-9]\d*\)/)
+              ) {
+                cx = 85;
                 cy = 50;
-                indicatorColor = '#f97316';
-              } else if (timeComplexity.includes('2^n')) {
-                cx = 60;
-                cy = 60;
+                indicatorColor = '#dc2626';
+              } else if (timeComplexity.includes('2^n') || timeComplexity.includes('2ⁿ')) {
+                cx = 65;
+                cy = 50;
                 indicatorColor = '#ef4444';
               } else if (timeComplexity.includes('n!')) {
-                cx = 40;
-                cy = 60;
+                cx = 45;
+                cy = 55;
                 indicatorColor = '#ef4444';
               }
               return (
