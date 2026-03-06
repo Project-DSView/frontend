@@ -25,22 +25,18 @@ const truncateCode = (code: string, maxLen: number = 35): string => {
 };
 
 const getTimeLevel = (c: string): { label: string; color: string } => {
-  if (c.includes('O(1)') || c.includes('O(log n)'))
+  if (c === 'O(1)' || c === 'O(log n)')
     return { label: 'ดีมาก', color: 'text-emerald-600 dark:text-emerald-400' };
-  if (c.includes('O(n)') && !c.includes('²') && !c.includes('log'))
-    return { label: 'ดี', color: 'text-blue-600 dark:text-blue-400' };
-  if (c.includes('O(n log n)'))
-    return { label: 'ปานกลาง', color: 'text-amber-600 dark:text-amber-400' };
-  if (c.includes('O(n²)')) return { label: 'ช้า', color: 'text-orange-600 dark:text-orange-400' };
+  if (c === 'O(n)') return { label: 'ดี', color: 'text-blue-600 dark:text-blue-400' };
+  if (c === 'O(n log n)') return { label: 'ปานกลาง', color: 'text-amber-600 dark:text-amber-400' };
+  if (c === 'O(n²)') return { label: 'ช้า', color: 'text-orange-600 dark:text-orange-400' };
   return { label: 'ช้ามาก', color: 'text-red-600 dark:text-red-400' };
 };
 
 const getSpaceLevel = (c: string): { label: string; color: string } => {
-  if (c.includes('O(1)'))
-    return { label: 'ดีมาก', color: 'text-emerald-600 dark:text-emerald-400' };
-  if (c.includes('O(log n)')) return { label: 'ดี', color: 'text-blue-600 dark:text-blue-400' };
-  if (c.includes('O(n)') && !c.includes('²'))
-    return { label: 'ปานกลาง', color: 'text-amber-600 dark:text-amber-400' };
+  if (c === 'O(1)') return { label: 'ดีมาก', color: 'text-emerald-600 dark:text-emerald-400' };
+  if (c === 'O(log n)') return { label: 'ดี', color: 'text-blue-600 dark:text-blue-400' };
+  if (c === 'O(n)') return { label: 'ปานกลาง', color: 'text-amber-600 dark:text-amber-400' };
   return { label: 'มาก', color: 'text-orange-600 dark:text-orange-400' };
 };
 
