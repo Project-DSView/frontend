@@ -54,6 +54,9 @@ const BigOComplexityTable: React.FC<BigOComplexityTableProps> = ({
     if (!currentComplexity) return false;
     const clean = notation.replace(/[²ⁿ!]/g, (c) => {
       if (c === '²') return '2';
+      if (c === '³') return '3';
+      if (c === '⁴') return '4';
+      if (c === '⁺') return '+';
       if (c === 'ⁿ') return '^n';
       if (c === '!') return '!';
       return c;

@@ -38,6 +38,20 @@ const BIG_O_COMPLEXITY_DATA: BigOComplexityInfo[] = [
     color: '#f97316',
   },
   {
+    notation: 'O(n³)',
+    type: 'Cubic',
+    examples: 'Matrix Multiplication (naive), Floyd-Warshall',
+    description: 'เวลาเพิ่มขึ้นเป็น n ยกกำลัง 3 (n*n*n) ใช้เวลาทำงานมากเมื่อข้อมูลมีขนาดใหญ่',
+    color: '#ea580c',
+  },
+  {
+    notation: 'O(n⁴⁺)',
+    type: 'Polynomial',
+    examples: 'Complex nested loops, Dynamic Programming (some cases)',
+    description: 'เวลาเพิ่มขึ้นเป็น n ยกกำลัง 4 ขึ้นไป ประสิทธิภาพแย่มากสำหรับข้อมูลขนาดใหญ่',
+    color: '#dc2626',
+  },
+  {
     notation: 'O(2ⁿ)',
     type: 'Exponential',
     examples: 'Recursive Fibonacci, Travelling salesman (DP)',
