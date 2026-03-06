@@ -93,37 +93,37 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
             >
               Operations
             </text>
-            <path d="M 30 140 L 330 140" fill="none" stroke="#10b981" strokeWidth="2" />
-            <text x="335" y="143" className="fill-emerald-500 font-medium" fontSize="10">
+            <path d="M 30 145 L 330 140" fill="none" stroke="#10b981" strokeWidth="2" />
+            <text x="335" y="142" className="fill-emerald-500 font-medium" fontSize="10">
               O(1)
             </text>
-            <path d="M 30 145 Q 120 135, 330 120" fill="none" stroke="#14b8a6" strokeWidth="2" />
-            <text x="335" y="123" className="fill-teal-500 font-medium" fontSize="10">
+            <path d="M 30 145 C 145 115, 285 110, 330 110" fill="none" stroke="#14b8a6" strokeWidth="2" />
+            <text x="335" y="113" className="fill-teal-500 font-medium" fontSize="10">
               O(log n)
             </text>
             <path d="M 30 145 L 330 70" fill="none" stroke="#3b82f6" strokeWidth="2" />
             <text x="335" y="73" className="fill-blue-500 font-medium" fontSize="10">
               O(n)
             </text>
-            <path d="M 30 145 Q 120 120, 280 20" fill="none" stroke="#f59e0b" strokeWidth="2" />
-            <text x="285" y="18" className="fill-amber-500 font-medium" fontSize="10">
+            <path d="M 45 145 L 300 55" fill="none" stroke="#f59e0b" strokeWidth="2" />
+            <text x="285" y="45" className="fill-amber-500 font-medium" fontSize="10">
               O(n log n)
             </text>
-            <path d="M 30 145 Q 85 110, 190 20" fill="none" stroke="#f97316" strokeWidth="2" />
-            <text x="195" y="18" className="fill-orange-500 font-medium" fontSize="10">
+            <path d="M 30 145 C 120 135, 170 80, 200 20" fill="none" stroke="#f97316" strokeWidth="2" />
+            <text x="205" y="18" className="fill-orange-500 font-medium" fontSize="10">
               O(n²)
             </text>
-            <path d="M 30 145 Q 70 105, 155 20" fill="none" stroke="#ea580c" strokeWidth="2" />
-            <text x="160" y="18" className="fill-orange-600 font-medium" fontSize="10">
+            <path d="M 30 145 C 90 135, 120 80, 140 20" fill="none" stroke="#ea580c" strokeWidth="2" />
+            <text x="145" y="18" className="fill-orange-600 font-medium" fontSize="10">
               O(n³)
             </text>
-            <path d="M 30 145 Q 60 102, 125 20" fill="none" stroke="#dc2626" strokeWidth="2" />
-            <text x="130" y="18" className="fill-red-600 font-medium" fontSize="10">
+            <path d="M 30 145 C 70 135, 90 80, 100 20" fill="none" stroke="#dc2626" strokeWidth="2" />
+            <text x="105" y="18" className="fill-red-600 font-medium" fontSize="10">
               O(n⁴⁺)
             </text>
-            <path d="M 30 145 Q 50 100, 95 20" fill="none" stroke="#ef4444" strokeWidth="2" />
+            <path d="M 30 145 C 55 135, 70 80, 80 20" fill="none" stroke="#ef4444" strokeWidth="2" />
             <text
-              x="95"
+              x="80"
               y="18"
               className="fill-red-500 font-medium"
               textAnchor="middle"
@@ -131,9 +131,9 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
             >
               O(2ⁿ)
             </text>
-            <path d="M 30 145 Q 40 100, 65 20" fill="none" stroke="#ef4444" strokeWidth="2" />
+            <path d="M 30 145 C 40 135, 50 80, 60 20" fill="none" stroke="#ef4444" strokeWidth="2" />
             <text
-              x="65"
+              x="60"
               y="18"
               className="fill-red-500 font-medium"
               textAnchor="middle"
@@ -147,27 +147,27 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
               let indicatorColor = '#3b82f6';
               if (timeComplexity.includes('O(1)')) {
                 cx = 180;
-                cy = 130;
+                cy = 143.5;
                 indicatorColor = '#10b981';
               } else if (timeComplexity.includes('log n') && !timeComplexity.includes('n log')) {
-                cx = 180;
-                cy = 127.5;
+                cx = 250;
+                cy = 111.5;
                 indicatorColor = '#14b8a6';
               } else if (timeComplexity === 'O(n)') {
-                cx = 180;
-                cy = 107.5;
+                cx = 240;
+                cy = 92.5;
                 indicatorColor = '#3b82f6';
               } else if (timeComplexity.includes('n log n')) {
-                cx = 165;
-                cy = 85;
+                cx = 191;
+                cy = 93.5;
                 indicatorColor = '#f59e0b';
               } else if (timeComplexity.includes('n²') || timeComplexity === 'O(n^2)') {
-                cx = 110;
-                cy = 85;
+                cx = 153;
+                cy = 87;
                 indicatorColor = '#f97316';
               } else if (timeComplexity.includes('n³') || timeComplexity === 'O(n^3)') {
-                cx = 90;
-                cy = 85;
+                cx = 110;
+                cy = 87;
                 indicatorColor = '#ea580c';
               } else if (
                 timeComplexity.includes('n⁴') || 
@@ -175,16 +175,16 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
                 timeComplexity.includes('n⁶') ||
                 timeComplexity.match(/O\(n\^?[4-9]\d*\)/)
               ) {
-                cx = 75;
-                cy = 80;
+                cx = 83;
+                cy = 87;
                 indicatorColor = '#dc2626';
               } else if (timeComplexity.includes('2^n') || timeComplexity.includes('2ⁿ')) {
-                cx = 60;
-                cy = 80;
+                cx = 65;
+                cy = 87;
                 indicatorColor = '#ef4444';
               } else if (timeComplexity.includes('n!')) {
-                cx = 40;
-                cy = 90;
+                cx = 48;
+                cy = 87;
                 indicatorColor = '#ef4444';
               }
               return (
