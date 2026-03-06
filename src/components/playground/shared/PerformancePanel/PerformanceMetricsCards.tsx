@@ -29,17 +29,6 @@ const PerformanceMetricsCards: React.FC<PerformanceMetricsCardsProps> = ({
           <p className="text-secondary text-sm font-bold sm:text-lg">
             {formatPerformanceTime(totalExecutionTime)}
           </p>
-          <p className="text-secondary/70 hidden text-xs sm:block">
-            {totalExecutionTime < 0.01
-              ? 'เร็วมาก!'
-              : totalExecutionTime < 0.1
-                ? 'เร็วดี'
-                : totalExecutionTime < 1
-                  ? 'ปานกลาง'
-                  : totalExecutionTime < 5
-                    ? 'ค่อนข้างช้า'
-                    : 'ช้ามาก'}
-          </p>
         </CardContent>
       </Card>
       <Card className="border-secondary/20 bg-secondary/5">
