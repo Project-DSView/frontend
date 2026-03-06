@@ -133,7 +133,7 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
             </text>
             <path d="M 30 145 C 40 135, 50 80, 60 20" fill="none" stroke="#ef4444" strokeWidth="2" />
             <text
-              x="60"
+              x="55"
               y="18"
               className="fill-red-500 font-medium"
               textAnchor="middle"
