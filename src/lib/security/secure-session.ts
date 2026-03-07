@@ -63,10 +63,7 @@ const secureSessionUtils = {
         path: '/',
       });
 
-      // Store token in localStorage for client-side access
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('accessToken', token);
-      }
+      // token is managed via HttpOnly cookie by backend
     } catch (error) {
       console.error('Failed to save session securely:', error);
       // Clear any partial data
@@ -127,21 +124,10 @@ const secureSessionUtils = {
         return null;
       }
 
-      // For client-side session management, we need to get the actual token
-      // Check if we have a stored token in localStorage as fallback
-      let token = null;
-      if (typeof window !== 'undefined') {
-        token = localStorage.getItem('accessToken');
-      }
-
-      // If no token found, return null to indicate no valid session
-      if (!token) {
-        console.warn('No valid token found in session');
-        return null;
-      }
-
+      // In the new architecture, the token itself is HttpOnly and invisible to client JS
+      // We will just return a placeholder so the application knows we are authenticated
       return {
-        token,
+        token: 'http-only-cookie-managed',
         profile: profileData,
         expiresAt,
       };

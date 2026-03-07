@@ -16,9 +16,6 @@ import {
   logError,
   RATE_LIMIT_CONFIGS,
   isRateLimited,
-  isTokenExpired,
-  isValidJWTFormat,
-  getTokenExpirationTime,
 } from '@/lib';
 
 import { Button } from '@/components/ui/button';
@@ -80,29 +77,13 @@ const AuthButtons: React.FC = () => {
 
       // Check if we're in OAuth callback mode (has token in URL)
       const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('token');
       const success = urlParams.get('success');
 
-      if (token && success === 'true') {
+      if (success === 'true') {
         try {
-          // Clean token (remove whitespace and special characters)
-          const cleanToken = token.trim().replace(/[^\w.-]/g, '');
-
-          // Validate token format first
-          if (!isValidJWTFormat(cleanToken)) {
-            console.error('Invalid token format:', cleanToken);
-            throw new Error('Invalid token format');
-          }
-
-          // Check if token is expired
-          if (isTokenExpired(cleanToken)) {
-            console.error('Token is expired');
-            throw new Error('Token is expired');
-          }
-
-          // Get user profile from token
-          const profileData = await fetchUserProfile(cleanToken);
-          setAuthData(cleanToken, profileData);
+          // In HttpOnly architecture, token is fetched explicitly by cookie
+          const profileData = await fetchUserProfile();
+          setAuthData(profileData);
           toast.success(`Welcome ${profileData.firstname} ${profileData.lastname}`);
 
           // Redirect to home page after successful login
@@ -128,23 +109,11 @@ const AuthButtons: React.FC = () => {
 
     const validateSession = async () => {
       try {
-        // First, validate token format
-        if (!isValidJWTFormat(accessToken)) {
-          clearAuthData();
-          return;
-        }
-
-        // Only validate if token is close to expiry (within 5 minutes)
-        const tokenExpiry = getTokenExpirationTime(accessToken);
-        const now = Date.now();
-        const fiveMinutes = 5 * 60 * 1000;
-
-        if (tokenExpiry && tokenExpiry - now > fiveMinutes) {
-          // Token is still valid for more than 5 minutes, skip validation
-          return;
-        }
-        // Fallback to validating existing token
-        await fetchUserProfile(accessToken);
+        // Fast path: profile valid
+        if (profile) return;
+        
+        // Fallback to validating existing cookie session
+        await fetchUserProfile();
       } catch (error) {
         logError('Session validation failed:', error);
         clearAuthData();
@@ -176,18 +145,9 @@ const AuthButtons: React.FC = () => {
         });
       });
 
-      if (data?.data.token) {
-        // Validate token before using
-        if (!isValidJWTFormat(data.data.token)) {
-          throw new Error('Invalid token format received from server');
-        }
-
-        if (isTokenExpired(data.data.token)) {
-          throw new Error('Token is already expired');
-        }
-
-        const profileData = await fetchUserProfile(data.data.token);
-        setAuthData(data.data.token, profileData);
+      if (data?.success) {
+        const profileData = await fetchUserProfile();
+        setAuthData(profileData);
         toast.success(`Welcome ${profileData.firstname} ${profileData.lastname}`);
       } else if (data?.data.auth_url) {
         toast.success('Redirecting to Google login...');

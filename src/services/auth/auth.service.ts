@@ -11,21 +11,19 @@ class AuthService {
     return logout();
   }
 
-  static async refreshToken(): Promise<string> {
+  static async refreshToken(): Promise<void> {
     return refreshToken();
   }
 }
 
 class ProfileService {
-  static async fetchProfile(token: string): Promise<UserProfile> {
+  static async fetchProfile(): Promise<UserProfile> {
     try {
-      return await fetchProfile(token);
+      return await fetchProfile();
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        const newToken = await AuthService.refreshToken();
-        if (newToken) {
-          return await fetchProfile(newToken);
-        }
+        await AuthService.refreshToken();
+        return await fetchProfile();
       }
       throw error;
     }

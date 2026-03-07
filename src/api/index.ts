@@ -16,13 +16,6 @@ api.interceptors.request.use(
     // getSafeHeaders() จัดการเรื่อง environment อยู่แล้วในตัวมันเอง
     Object.assign(config.headers, getSafeHeaders());
 
-    if (typeof window !== 'undefined') {
-      const token = sessionStorage.getItem('accessToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-
     return config;
   },
   (error) => {
@@ -50,6 +43,7 @@ api.interceptors.response.use(
         // Clear session on unauthorized
         if (typeof window !== 'undefined') {
           sessionStorage.clear();
+          localStorage.removeItem('accessToken');
           // Redirect to home page instead of login
           window.location.href = '/';
         }
