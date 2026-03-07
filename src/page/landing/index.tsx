@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Play, RotateCcw, Loader2, ChevronDown, Rocket, Code2, ArrowRight, HelpCircle } from 'lucide-react';
+import { Play, RotateCcw, Loader2, ChevronDown, Rocket, Code2, ArrowRight, HelpCircle, Copy, Upload, Download, Check } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -40,6 +40,7 @@ const LandingPage = () => {
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   // Landing Page Tutorial Steps
   const landingTutorialSteps: TutorialStep[] = [
@@ -64,6 +65,7 @@ const LandingPage = () => {
 
   // Refs for scrolling
   const editorRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handlers
   const handleCodeChange = (value: string) => {
@@ -112,6 +114,45 @@ const LandingPage = () => {
 
   const scrollToEditor = () => {
     editorRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy code:', err);
+    }
+  };
+
+  const handleExportPython = () => {
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'solution.py';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result;
+      if (typeof content === 'string') {
+        setCode(content);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const handleAIExplain = async () => {
@@ -165,7 +206,7 @@ const LandingPage = () => {
             </h1>
             <p className="text-muted-foreground mx-auto max-w-2xl text-lg sm:text-xl md:text-2xl mt-4">
               แพลตฟอร์มการเรียนรู้และวิเคราะห์โค้ด
-              พร้อมระบบประเมินประสิทธิภาพ (Time Complexity) และ AI Assistant
+              พร้อมระบบประเมินประสิทธิภาพ โค้ดที่เขียนจะถูกนำไปวิเคราะห์และแสดงผลการภาพทำงาน
             </p>
           </div>
 
@@ -265,34 +306,73 @@ const LandingPage = () => {
             </div>
 
             {/* Bottom Action Bar */}
-            <div className="border-border bg-background flex flex-wrap items-center justify-center gap-4 border-t p-4 sm:justify-start">
-              <Button
-                onClick={handleRun}
-                disabled={isAnalyzing || !code.trim()}
-                className="min-w-[140px] gap-2 shadow-md"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    วิเคราะห์โค้ด...
-                  </>
-                ) : (
-                  <>
-                    <Play className="h-4 w-4" />
-                    วิเคราะห์โค้ด (Run)
-                  </>
-                )}
-              </Button>
+            <div className="border-border bg-background flex flex-col justify-between gap-4 border-t p-4 sm:flex-row sm:items-center">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  onClick={handleRun}
+                  disabled={isAnalyzing || !code.trim()}
+                  className="min-w-[140px] gap-2 shadow-md"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      วิเคราะห์โค้ด...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4" />
+                      วิเคราะห์โค้ด (Run)
+                    </>
+                  )}
+                </Button>
 
-              <Button
-                variant="outline"
-                onClick={handleReset}
-                disabled={isAnalyzing}
-                className="gap-2"
-              >
-                <RotateCcw className="h-4 w-4" />
-                เริ่มใหม่ (Reset)
-              </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleReset}
+                  disabled={isAnalyzing}
+                  className="gap-2"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  เริ่มใหม่ (Reset)
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="file"
+                  accept=".py"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  onClick={handleUploadClick}
+                  disabled={isAnalyzing}
+                  className="gap-1.5"
+                >
+                  <Upload className="h-4 w-4" />
+                  อัปโหลด
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleExportPython}
+                  disabled={isAnalyzing || !code.trim()}
+                  className="gap-1.5"
+                >
+                  <Download className="h-4 w-4" />
+                  ดาวน์โหลด
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleCopyCode}
+                  disabled={!code.trim()}
+                  className="gap-1.5 w-[110px]"
+                >
+                  {isCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                  {isCopied ? 'คัดลอกแล้ว' : 'คัดลอก'}
+                </Button>
+              </div>
             </div>
           </div>
 
