@@ -8,16 +8,22 @@ import { playgroundItems } from '@/data';
 import { SubItem } from '@/types';
 import { useAuth } from '@/hooks';
 
-import { Menu, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Menu, X, ChevronDown, ChevronUp, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { toast } from 'sonner';
+import { useLogout } from '@/query';
+import { clearAllCookies, getErrorMessage, logError } from '@/lib';
+import Image from 'next/image';
 
 const MobileMenu = React.memo(() => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<number[]>([]);
   const [expandedSubItems, setExpandedSubItems] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
-  const { profile, isInitialized } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { profile, isInitialized, clearAuthData } = useAuth();
+  const logoutMutation = useLogout();
 
   useEffect(() => {
     setMounted(true);
@@ -40,6 +46,34 @@ const MobileMenu = React.memo(() => {
     window.open('https://forms.gle/y8GzM5HxdVd8stjo6', '_blank');
     setIsMobileMenuOpen(false); // ปิด mobile menu หลังจากคลิก
   }, []);
+
+  // Handle logout
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+
+    try {
+      await logoutMutation.mutateAsync();
+      clearAuthData();
+      clearAllCookies();
+
+      toast.success('Logged out successfully');
+
+      // Refresh the page after successful logout
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1000);
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+      logError('Logout failed:', error);
+      toast.error(errorMessage);
+    } finally {
+      setTimeout(() => {
+        setIsLoggingOut(false);
+      }, 1000);
+    }
+  };
 
   return (
     <>
@@ -65,8 +99,34 @@ const MobileMenu = React.memo(() => {
         typeof document !== 'undefined' &&
         createPortal(
           <div className="border-border bg-background fixed inset-x-0 top-[72px] z-[10000] border-t shadow-2xl md:hidden">
-            <div className="max-h-[70vh] overflow-y-auto px-4 py-6">
+            <div className="max-h-[80vh] overflow-y-auto px-4 py-6">
               <div className="space-y-4">
+                {/* Profile Section (If Authenticated) */}
+                {isInitialized && profile && (
+                  <div className="border-border bg-muted/30 mb-6 flex items-center space-x-3 rounded-xl border p-4">
+                    <div className="relative h-12 w-12 flex-shrink-0">
+                      {profile.profile_img ? (
+                        <Image
+                          src={profile.profile_img}
+                          alt={profile.firstname}
+                          fill
+                          className="rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="bg-primary flex h-full w-full items-center justify-center rounded-full text-white">
+                          {profile.firstname.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-foreground truncate font-semibold">
+                        {profile.firstname} {profile.lastname}
+                      </div>
+                      <div className="text-muted-foreground truncate text-xs">{profile.email}</div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Mobile Playground Items */}
                 {playgroundItems.map((item, index) => (
                   <div key={index} className="border-border border-b pb-4 last:border-b-0">
@@ -211,6 +271,27 @@ const MobileMenu = React.memo(() => {
                   >
                     <span>Report Issue</span>
                   </Button>
+
+                  {isInitialized && profile && (
+                    <Button
+                      variant="ghost"
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
+                      className="text-error hover:bg-error/5 border-error/20 mt-2 w-full justify-center rounded-lg border px-4 py-3 font-medium transition-all duration-200"
+                    >
+                      {isLoggingOut ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                          <span>Logging out...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2 text-red-500">
+                          <LogOut size={18} />
+                          <span>Logout</span>
+                        </div>
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

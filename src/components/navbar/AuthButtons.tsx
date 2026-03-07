@@ -231,7 +231,7 @@ const AuthButtons: React.FC = () => {
                 </span>
               </div>
             )}
-            <span className="text-foreground text-sm font-medium">
+            <span className="text-foreground hidden text-sm font-medium sm:inline">
               {profile.firstname} {profile.lastname}
             </span>
           </div>
