@@ -44,8 +44,10 @@ api.interceptors.response.use(
         if (typeof window !== 'undefined') {
           sessionStorage.clear();
           localStorage.removeItem('accessToken');
-          // Redirect to home page instead of login
-          window.location.href = '/';
+          // Only redirect to home if not already there to prevent infinite loops
+          if (window.location.pathname !== '/') {
+            window.location.href = '/';
+          }
         }
       }
     }
