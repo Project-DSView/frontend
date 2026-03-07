@@ -20,6 +20,7 @@ export {
   getTutorialSteps,
   getTutorialStorageKey,
   namingGuides,
+  landingTutorialSteps
 } from './components/tutorial.data';
 
 // Drag Drop

@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 import { useAuth, useGoogleAuth } from '@/hooks';
 import { analyzePerformance, analyzeWithLLM } from '@/api';
 import { ComplexityAnalysis, AuthResponse } from '@/types';
-import { defaultCodeTemplate } from '@/data';
+import { defaultCodeTemplate, landingTutorialSteps } from '@/data';
 
 // Lazy load CodeEditor to avoid SSR issues
 const CodeEditor = dynamic(() => import('@/components/editor/CodeEditor'), {
@@ -25,12 +25,12 @@ import PerFunctionComplexity from '@/components/playground/shared/PerformancePan
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import TutorialOverlay from '@/components/playground/shared/tutorial/TutorialOverlay';
-import { TutorialStep } from '@/types';
+
 
 const LandingPage = () => {
   const { accessToken, isInitialized } = useAuth();
   const isAuthenticated = isInitialized && !!accessToken;
-  const { mutate: getGoogleAuth, isPending: isGoogleAuthLoading } = useGoogleAuth();
+  const { mutate: getGoogleAuth } = useGoogleAuth();
 
   // State
   const [code, setCode] = useState<string>(defaultCodeTemplate);
@@ -42,33 +42,7 @@ const LandingPage = () => {
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
-  // Landing Page Tutorial Steps
-  const landingTutorialSteps: TutorialStep[] = [
-    {
-      title: 'ยินดีต้อนรับสู่ DSView!',
-      description: 'แพลตฟอร์มนี้จะช่วยให้คุณเรียนรู้โครงสร้างข้อมูลและอัลกอริทึมได้อย่างง่ายดายผ่านการจำลองภาพเคลื่อนไหวที่เข้าใจง่าย',
-      placement: 'bottom',
-    },
-    {
-      title: 'โหมดการเรียนรู้ (Playgrounds)',
-      description: 'ที่แถบเมนูด้านบน (Playground) จะประกอบด้วย 3 โหมดหลัก:\n1. Drag & Drop: ต่อบล็อกจำลองการทำงาน\n2. Step-Through: เขียนโค้ดและดูการเปลี่ยนแปลงทีละบรรทัด\n3. Visualizer: ดูภาพเคลื่อนไหวของโครงสร้างข้อมูล',
-      placement: 'bottom',
-      highlightSelector: '#tour-playground-menu',
-    },
-    {
-      title: 'วิเคราะห์ Time Complexity',
-      description: 'หรือจะกดที่ปุ่มนี้เพื่อเลื่อนหน้าจอลงไปยังส่วน Editor สำหรับวิเคราะห์เวลาการทำงาน (Big O) ของโค้ดที่คุณเขียนได้ทันที!',
-      placement: 'top',
-      highlightSelector: '#tour-landing-editor',
-    }
-  ];
 
-  // Redirect authenticated
-  React.useEffect(() => {
-    if (isAuthenticated) {
-      window.location.href = '/';
-    }
-  }, [isAuthenticated]);
 
   // Refs for scrolling
   const editorRef = useRef<HTMLDivElement>(null);
@@ -95,7 +69,6 @@ const LandingPage = () => {
     setAiExplanation(null);
 
     try {
-      // Analyze performance (Big O) - Use the fast AST endpoint
       const result = await analyzePerformance(code);
       setComplexity(result);
     } catch (err) {
@@ -206,7 +179,6 @@ const LandingPage = () => {
           </div>
 
           <div className="space-y-4">
-            {/* Removed the duplicate DSView h1 text since the logo is already large */}
             <h1 className="text-foreground text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">
               <span className="text-primary block mb-2">โครงสร้างข้อมูลและอัลกอริทึม</span>
               ให้เป็นเรื่องง่ายสำหรับคุณ
@@ -218,40 +190,6 @@ const LandingPage = () => {
           </div>
 
           <div className="flex flex-col md:flex-row flex-wrap items-center justify-center gap-4 pt-6 w-full">
-            {isInitialized && !isAuthenticated && (
-              <Button
-                size="lg"
-                onClick={handleLogin}
-                className="group w-full md:w-auto min-w-[280px] md:min-w-0 gap-3 rounded-full px-6 py-6 text-base shadow-lg sm:text-lg shrink-0"
-                disabled={isGoogleAuthLoading}
-              >
-                {isGoogleAuthLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <>
-                    <svg className="mr-2 h-5 w-5 rounded-full bg-white p-0.5" viewBox="0 0 24 24">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                    </svg>
-                    เข้าสู่ระบบด้วย Google
-                  </>
-                )}
-              </Button>
-            )}
-
-            {isAuthenticated && (
-              <Button
-                size="lg"
-                onClick={() => window.location.href = '/course'}
-                className="group w-full md:w-auto min-w-[280px] md:min-w-0 gap-3 rounded-full px-8 py-6 text-base shadow-lg sm:text-lg shrink-0 bg-green-600 hover:bg-green-700 text-white"
-              >
-                <Rocket className="h-5 w-5 animate-bounce" />
-                <span>เข้าสู่บทเรียน (Dashboard)</span>
-              </Button>
-            )}
-            
             <Button
               size="lg"
               variant="outline"
@@ -437,7 +375,6 @@ const LandingPage = () => {
 
                 {complexity && (
                   <div className="animate-in fade-in slide-in-from-bottom-4 space-y-4 pb-8 duration-500">
-                    {/* Row 1: Summary & Chart - Always stack */}
                     <div className="flex flex-col gap-4">
                       <BigOSummaryCards complexity={complexity} />
                       <div className="rounded-xl overflow-hidden border border-border shadow-sm">
@@ -445,7 +382,6 @@ const LandingPage = () => {
                       </div>
                     </div>
 
-                    {/* Row 2: Explanation */}
                     <div className="rounded-xl overflow-hidden border border-border shadow-sm bg-card">
                       <BigOExplanation
                         complexity={complexity}
@@ -457,7 +393,6 @@ const LandingPage = () => {
                       />
                     </div>
 
-                    {/* Row 3: Function Details */}
                     {complexity.functionComplexities &&
                       complexity.functionComplexities.length > 0 && (
                         <div className="pt-2">

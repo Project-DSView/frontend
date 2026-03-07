@@ -1,4 +1,27 @@
-import { TutorialStep } from '@/types';
+import { TutorialStep, DataStructureNamingGuide } from '@/types';
+
+const landingTutorialSteps: TutorialStep[] = [
+  {
+    title: 'ยินดีต้อนรับสู่ DSView!',
+    description:
+      'แพลตฟอร์มนี้จะช่วยให้คุณเรียนรู้โครงสร้างข้อมูลและอัลกอริทึมได้อย่างง่ายดายผ่านการจำลองภาพเคลื่อนไหวที่เข้าใจง่าย',
+    placement: 'bottom',
+  },
+  {
+    title: 'โหมดการเรียนรู้ (Playgrounds)',
+    description:
+      'ที่แถบเมนูด้านบน (Playground) จะประกอบด้วย 3 โหมดหลัก:\n1. Drag & Drop: ต่อบล็อกจำลองการทำงาน\n2. Step-Through: เขียนโค้ดและดูการเปลี่ยนแปลงทีละบรรทัด\n3. Visualizer: ดูภาพเคลื่อนไหวของโครงสร้างข้อมูล',
+    placement: 'bottom',
+    highlightSelector: '#tour-playground-menu',
+  },
+  {
+    title: 'วิเคราะห์ Time Complexity',
+    description:
+      'หรือจะกดที่ปุ่มนี้เพื่อเลื่อนหน้าจอลงไปยังส่วน Editor สำหรับวิเคราะห์เวลาการทำงาน (Big O) ของโค้ดที่คุณเขียนได้ทันที!',
+    placement: 'top',
+    highlightSelector: '#tour-landing-editor',
+  },
+];
 
 // Drag & Drop Mode Steps
 const dragdropTutorialSteps: TutorialStep[] = [
@@ -130,16 +153,6 @@ const stepthroughTutorialSteps: TutorialStep[] = [
     customContent: 'naming-guide',
   },
 ];
-
-interface DataStructureNamingGuide {
-  id: string;
-  name: string;
-  description: string;
-  supportedClassNames: string[];
-  supportedMethods: string[];
-  exampleCode: string;
-  iconColor: string;
-}
 
 const namingGuides: DataStructureNamingGuide[] = [
   {
@@ -306,4 +319,5 @@ export {
   getTutorialSteps,
   getTutorialStorageKey,
   namingGuides,
+  landingTutorialSteps,
 };
