@@ -16,6 +16,7 @@ import {
   logError,
   RATE_LIMIT_CONFIGS,
   isRateLimited,
+  getCookie,
 } from '@/lib';
 
 import { Button } from '@/components/ui/button';
@@ -73,8 +74,9 @@ const AuthButtons: React.FC = () => {
   // Proactive profile fetch if authenticated but no profile
   useEffect(() => {
     const syncProfile = async () => {
-      // Only proceed if initialized, no profile, and not currently logging out
-      if (!isInitialized || profile || isLoggingOut) return;
+      // Only proceed if initialized, no profile, not logging out, AND has auth cookie
+      const hasAuthCookie = getCookie('is_authenticated') === 'true';
+      if (!isInitialized || profile || isLoggingOut || !hasAuthCookie) return;
 
       try {
         // Try to fetch profile - if it fails with 401, useAuth should handle cleanup
