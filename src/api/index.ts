@@ -16,6 +16,12 @@ api.interceptors.request.use(
     // getSafeHeaders() จัดการเรื่อง environment อยู่แล้วในตัวมันเอง
     Object.assign(config.headers, getSafeHeaders());
 
+    // Prevent sending the cookie-managed placeholder token as a Bearer string
+    // This fixes "Invalid JWT token: failed to parse token... invalid number of segments" 401 errors
+    if (config.headers && config.headers.Authorization === 'Bearer cookie-managed') {
+      delete config.headers.Authorization;
+    }
+
     return config;
   },
   (error) => {
