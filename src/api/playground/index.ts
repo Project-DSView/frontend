@@ -46,11 +46,14 @@ const analyzeWithLLM = async (
   const isDev = process.env.NEXT_PUBLIC_NODE_ENV === 'development';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    [process.env.NEXT_PUBLIC_API_KEY_NAME || 'dsview-api-key']:
+      process.env.NEXT_PUBLIC_API_KEY || '',
   };
 
-  if (token) {
+  // Only add Bearer token if it's a real JWT, not the 'cookie-managed' placeholder
+  if (token && token !== 'cookie-managed') {
     headers.Authorization = `Bearer ${token}`;
-  } else if (!isDev) {
+  } else if (!isDev && !token) {
     throw new Error('Authentication required in production');
   }
 
@@ -61,6 +64,7 @@ const analyzeWithLLM = async (
     const response = await fetch(`${baseUrl}/api/complexity/llm`, {
       method: 'POST',
       headers,
+      credentials: 'include', // Ensure HttpOnly cookies are sent
       body: JSON.stringify({ code, model }),
     });
 
