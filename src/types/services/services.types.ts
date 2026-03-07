@@ -26,10 +26,10 @@ interface UseAuthReturn {
   isLoading: boolean;
   error: string | null;
   setIsInitialized: (value: boolean) => void;
-  loadSession: () => Promise<{ token: string; profile: UserProfile } | null>;
-  handleRefreshToken: () => Promise<string | null>;
-  fetchUserProfile: (token: string) => Promise<UserProfile>;
-  setAuthData: (token: string, userProfile: UserProfile) => Promise<void>;
+  loadSession: () => Promise<{ profile: UserProfile } | null>;
+  handleRefreshToken: () => Promise<void>;
+  fetchUserProfile: () => Promise<UserProfile>;
+  setAuthData: (userProfile: UserProfile) => Promise<void>;
   clearAuthData: () => void;
 }
 

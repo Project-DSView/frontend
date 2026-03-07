@@ -10,15 +10,12 @@ const logout = async (): Promise<void> => {
   await api.post('/api/auth/logout');
 };
 
-const refreshToken = async (): Promise<string> => {
-  const res = await api.post('/api/auth/refresh');
-  return res.data.data.token;
+const refreshToken = async (): Promise<void> => {
+  await api.post('/api/auth/refresh');
 };
 
-const fetchProfile = async (token: string): Promise<UserProfile> => {
-  const res = await api.get<UserProfile>('/api/profile', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+const fetchProfile = async (): Promise<UserProfile> => {
+  const res = await api.get<UserProfile>('/api/profile');
 
   return res.data;
 };

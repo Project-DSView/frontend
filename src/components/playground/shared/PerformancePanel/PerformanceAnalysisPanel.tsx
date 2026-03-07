@@ -70,8 +70,18 @@ const PerformanceAnalysisPanel: React.FC<PerformanceAnalysisPanelProps> = ({
     setAiExplanation(null);
 
     try {
-      // Analyze with LLM (Qwen2.5-Coder via Ollama)
-      const result = await analyzeWithLLM(accessToken || '', code);
+      // Analyze with LLM (Qwen2.5-Coder via Ollama) with Streaming
+      const result = await analyzeWithLLM(
+        accessToken || '', 
+        code, 
+        'qwen2.5-coder:1.5b',
+        (chunk) => {
+          setAiExplanation((prev) => (prev || '') + chunk);
+        }
+      );
+      
+      // We can also use result.explanation if needed, but streaming updates state already
+      // Optional: Replace with full explanation to ensure no chunks were missed
       setAiExplanation(result.explanation);
     } catch (error) {
       console.error('Failed to get AI explanation:', error);

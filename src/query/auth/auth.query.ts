@@ -15,11 +15,11 @@ const useLogout = () => {
   });
 };
 
-const useProfile = (token: string | null) => {
+const useProfile = () => {
   return useQuery({
-    queryKey: ['profile', token],
-    queryFn: () => ProfileService.fetchProfile(token!),
-    enabled: !!token,
+    queryKey: ['profile'],
+    queryFn: () => ProfileService.fetchProfile(),
+    // Enabled check is handled by component logically
     staleTime: 30 * 60 * 1000, // 30 minutes - increased from 10 minutes
     gcTime: 60 * 60 * 1000, // 1 hour - cache time
     refetchOnWindowFocus: false, // Don't refetch when window gains focus
@@ -40,7 +40,7 @@ const useProfile = (token: string | null) => {
 
 const useFetchProfile = () => {
   return useMutation({
-    mutationFn: (token: string) => ProfileService.fetchProfile(token),
+    mutationFn: () => ProfileService.fetchProfile(),
   });
 };
 

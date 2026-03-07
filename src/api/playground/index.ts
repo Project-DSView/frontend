@@ -34,16 +34,19 @@ const analyzePerformance = async (code: string): Promise<ComplexityAnalysis> => 
 };
 
 /**
- * Analyze code complexity using LLM (Detailed Explanation) endpoint
+ * Analyze code complexity using LLM (Detailed Explanation) endpoint with Streaming
  */
 const analyzeWithLLM = async (
   token: string | null,
   code: string,
   model: string = 'qwen2.5-coder:1.5b',
+  onChunk?: (chunk: string) => void,
 ): Promise<{ complexity: string; explanation: string }> => {
   // Set a longer timeout for LLM requests (e.g., 5 minutes)
   const isDev = process.env.NEXT_PUBLIC_NODE_ENV === 'development';
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
 
   if (token) {
     headers.Authorization = `Bearer ${token}`;
@@ -51,15 +54,64 @@ const analyzeWithLLM = async (
     throw new Error('Authentication required in production');
   }
 
-  const response = await api.post<{ complexity: string; explanation: string }>(
-    '/api/complexity/llm',
-    { code, model },
-    {
+  // Include safe headers if needed (for environment variables)
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+
+  try {
+    const response = await fetch(`${baseUrl}/api/complexity/llm`, {
+      method: 'POST',
       headers,
-      timeout: 300000,
-    },
-  );
-  return response.data;
+      body: JSON.stringify({ code, model }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    if (!response.body) {
+      throw new Error('ReadableStream not yet supported in this browser.');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let fullExplanation = '';
+    let complexityLabel = 'See explanation';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const dataStr = line.slice(6).trim();
+          if (!dataStr) continue;
+
+          try {
+            const data = JSON.parse(dataStr);
+            if (data.complexity_label) {
+              complexityLabel = data.complexity_label;
+            } else if (data.chunk) {
+              fullExplanation += data.chunk;
+              if (onChunk) onChunk(data.chunk);
+            } else if (data.error) {
+              fullExplanation += `\n**Error**: ${data.error}`;
+              if (onChunk) onChunk(`\n**Error**: ${data.error}`);
+            }
+          } catch {
+            // ignore JSON parse errors for incomplete chunks
+          }
+        }
+      }
+    }
+
+    return { complexity: complexityLabel, explanation: fullExplanation };
+  } catch (error) {
+    console.error('Streaming LLM request failed:', error);
+    throw error;
+  }
 };
 
 export { executeStepthrough, analyzePerformance, analyzeWithLLM };
