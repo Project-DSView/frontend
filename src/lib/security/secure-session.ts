@@ -7,12 +7,14 @@ const secureSessionUtils = {
   saveSession: async (token: string, userProfile: UserProfile): Promise<void> => {
     try {
       // Validate token before saving
-      if (!isValidJWTFormat(token)) {
-        throw new Error('Invalid token format');
-      }
+      if (token !== 'cookie-managed') {
+        if (!isValidJWTFormat(token)) {
+          throw new Error('Invalid token format');
+        }
 
-      if (isTokenExpired(token)) {
-        throw new Error('Token is already expired');
+        if (isTokenExpired(token)) {
+          throw new Error('Token is already expired');
+        }
       }
 
       // Check if encryption is supported
@@ -43,9 +45,17 @@ const secureSessionUtils = {
       }
 
       // Store token expiration time for client-side checks
-      const expirationTime = getTimeUntilExpiration(token);
-      if (expirationTime !== null) {
-        setCookie('tokenExpiresAt', (Date.now() + expirationTime * 60 * 1000).toString(), {
+      if (token !== 'cookie-managed') {
+        const expirationTime = getTimeUntilExpiration(token);
+        if (expirationTime !== null) {
+          setCookie('tokenExpiresAt', (Date.now() + expirationTime * 60 * 1000).toString(), {
+            maxAge: 10800, // 3 hours
+            path: '/',
+          });
+        }
+      } else {
+        // If cookie managed, use default max age 3 hours
+        setCookie('tokenExpiresAt', (Date.now() + 3 * 60 * 60 * 1000).toString(), {
           maxAge: 10800, // 3 hours
           path: '/',
         });

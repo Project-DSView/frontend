@@ -106,6 +106,36 @@ class CourseService {
     }
   }
 
+  // Get course score
+  static async getCourseScore(token: string, courseId: string): Promise<CourseScoreResponse> {
+    try {
+      return await apiGetCourseScore(token, courseId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await apiGetCourseScore(newToken, courseId);
+        }
+      }
+      throw error;
+    }
+  }
+
+  // Get self progress
+  static async getSelfProgress(token: string, courseId?: string): Promise<SelfProgressResponse> {
+    try {
+      return await apiGetSelfProgress(token, courseId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await apiGetSelfProgress(newToken, courseId);
+        }
+      }
+      throw error;
+    }
+  }
+
   // Create a new course
   static async createCourse(
     token: string,
@@ -367,36 +397,6 @@ class CourseService {
       }
       // Return null if not enrolled (404 or other errors)
       return null;
-    }
-  }
-
-  // Get course score
-  static async getCourseScore(token: string, courseId: string): Promise<CourseScoreResponse> {
-    try {
-      return await apiGetCourseScore(token, courseId);
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        const newToken = await AuthService.refreshToken();
-        if (newToken) {
-          return await apiGetCourseScore(newToken, courseId);
-        }
-      }
-      throw error;
-    }
-  }
-
-  // Get self progress
-  static async getSelfProgress(token: string, courseId?: string): Promise<SelfProgressResponse> {
-    try {
-      return await apiGetSelfProgress(token, courseId);
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        const newToken = await AuthService.refreshToken();
-        if (newToken) {
-          return await apiGetSelfProgress(newToken, courseId);
-        }
-      }
-      throw error;
     }
   }
 
