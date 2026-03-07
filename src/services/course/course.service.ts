@@ -34,6 +34,8 @@ import {
   createMaterial as apiCreateMaterial,
   updateMaterial as apiUpdateMaterial,
   deleteMaterial as apiDeleteMaterial,
+  getCourseScore as apiGetCourseScore,
+  getSelfProgress as apiGetSelfProgress,
 } from '@/api';
 
 import {
@@ -65,6 +67,8 @@ import {
   ApprovePDFSubmissionResponse,
   CreateInvitationResponse,
   GetInvitationsResponse,
+  CourseScoreResponse,
+  SelfProgressResponse,
 } from '@/types';
 import { AuthService } from '../auth/auth.service';
 
@@ -198,12 +202,32 @@ class CourseService {
     courseId: string,
     params?: MaterialsParams,
   ): Promise<MaterialsResponse> {
-    return getCourseMaterials(token, courseId, params);
+    try {
+      return await getCourseMaterials(token, courseId, params);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await getCourseMaterials(newToken, courseId, params);
+        }
+      }
+      throw error;
+    }
   }
 
   // Get single course material by ID
   static async getCourseMaterial(token: string, materialId: string): Promise<MaterialResponse> {
-    return getCourseMaterial(token, materialId);
+    try {
+      return await getCourseMaterial(token, materialId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await getCourseMaterial(newToken, materialId);
+        }
+      }
+      throw error;
+    }
   }
 
   /**
@@ -346,6 +370,36 @@ class CourseService {
     }
   }
 
+  // Get course score
+  static async getCourseScore(token: string, courseId: string): Promise<CourseScoreResponse> {
+    try {
+      return await apiGetCourseScore(token, courseId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await apiGetCourseScore(newToken, courseId);
+        }
+      }
+      throw error;
+    }
+  }
+
+  // Get self progress
+  static async getSelfProgress(token: string, courseId?: string): Promise<SelfProgressResponse> {
+    try {
+      return await apiGetSelfProgress(token, courseId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await apiGetSelfProgress(newToken, courseId);
+        }
+      }
+      throw error;
+    }
+  }
+
   // Enroll in course
   static async enrollInCourse(
     token: string,
@@ -428,7 +482,17 @@ class CourseService {
     materialId: string,
     data: RequestApprovalRequest,
   ): Promise<RequestApprovalResponse> {
-    return requestApproval(token, materialId, data);
+    try {
+      return await requestApproval(token, materialId, data);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await requestApproval(newToken, materialId, data);
+        }
+      }
+      throw error;
+    }
   }
 
   // Get queue jobs with filters
@@ -436,12 +500,32 @@ class CourseService {
     token: string,
     filters: QueueJobFilters = {},
   ): Promise<QueueJobsResponse> {
-    return getQueueJobs(token, filters);
+    try {
+      return await getQueueJobs(token, filters);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await getQueueJobs(newToken, filters);
+        }
+      }
+      throw error;
+    }
   }
 
   // Claim a queue job
   static async claimQueueJob(token: string, jobId: string): Promise<ClaimJobResponse> {
-    return claimQueueJob(token, jobId);
+    try {
+      return await claimQueueJob(token, jobId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await claimQueueJob(newToken, jobId);
+        }
+      }
+      throw error;
+    }
   }
 
   // Complete review for a queue job
@@ -450,7 +534,17 @@ class CourseService {
     jobId: string,
     data: CompleteReviewRequest,
   ): Promise<CompleteReviewResponse> {
-    return completeReview(token, jobId, data);
+    try {
+      return await completeReview(token, jobId, data);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await completeReview(newToken, jobId, data);
+        }
+      }
+      throw error;
+    }
   }
 
   // ============================================================================
@@ -462,7 +556,17 @@ class CourseService {
     materialId: string,
     file: File,
   ): Promise<SubmitPDFResponse> {
-    return submitPDFExercise(token, materialId, file);
+    try {
+      return await submitPDFExercise(token, materialId, file);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await submitPDFExercise(newToken, materialId, file);
+        }
+      }
+      throw error;
+    }
   }
 
   // Submit code exercise
@@ -471,17 +575,47 @@ class CourseService {
     materialId: string,
     code: string,
   ): Promise<SubmitCodeResponse> {
-    return submitCodeExercise(token, materialId, code);
+    try {
+      return await submitCodeExercise(token, materialId, code);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await submitCodeExercise(newToken, materialId, code);
+        }
+      }
+      throw error;
+    }
   }
 
   // Get user's submission for a material
   static async getMySubmission(token: string, materialId: string): Promise<SubmissionResponse> {
-    return getMySubmission(token, materialId);
+    try {
+      return await getMySubmission(token, materialId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await getMySubmission(newToken, materialId);
+        }
+      }
+      throw error;
+    }
   }
 
   // Get specific submission by ID
   static async getSubmission(token: string, submissionId: string): Promise<SubmissionResponse> {
-    return getSubmission(token, submissionId);
+    try {
+      return await getSubmission(token, submissionId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await getSubmission(newToken, submissionId);
+        }
+      }
+      throw error;
+    }
   }
 
   // Get download URL for submission
@@ -489,7 +623,17 @@ class CourseService {
     token: string,
     submissionId: string,
   ): Promise<DownloadUrlResponse> {
-    return getSubmissionDownloadUrl(token, submissionId);
+    try {
+      return await getSubmissionDownloadUrl(token, submissionId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await getSubmissionDownloadUrl(newToken, submissionId);
+        }
+      }
+      throw error;
+    }
   }
 
   // Cancel submission
@@ -497,7 +641,17 @@ class CourseService {
     token: string,
     submissionId: string,
   ): Promise<CancelSubmissionResponse> {
-    return cancelSubmission(token, submissionId);
+    try {
+      return await cancelSubmission(token, submissionId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await cancelSubmission(newToken, submissionId);
+        }
+      }
+      throw error;
+    }
   }
 
   // Get all PDF submissions for a course
@@ -505,17 +659,47 @@ class CourseService {
     token: string,
     courseId: string,
   ): Promise<CoursePDFSubmissionsResponse> {
-    return getCoursePDFSubmissions(token, courseId);
+    try {
+      return await getCoursePDFSubmissions(token, courseId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await getCoursePDFSubmissions(newToken, courseId);
+        }
+      }
+      throw error;
+    }
   }
 
   // Download PDF submission file
   static async downloadPDFSubmission(token: string, submissionId: string): Promise<Blob> {
-    return downloadPDFSubmission(token, submissionId);
+    try {
+      return await downloadPDFSubmission(token, submissionId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await downloadPDFSubmission(newToken, submissionId);
+        }
+      }
+      throw error;
+    }
   }
 
   // Download feedback file
   static async downloadFeedbackFile(token: string, submissionId: string): Promise<Blob> {
-    return downloadFeedbackFile(token, submissionId);
+    try {
+      return await downloadFeedbackFile(token, submissionId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await downloadFeedbackFile(newToken, submissionId);
+        }
+      }
+      throw error;
+    }
   }
 
   // Approve PDF submission
@@ -527,7 +711,31 @@ class CourseService {
     feedbackFile?: File,
     maxScore?: number,
   ): Promise<ApprovePDFSubmissionResponse> {
-    return approvePDFSubmission(token, submissionId, score, comment, feedbackFile, maxScore);
+    try {
+      return await approvePDFSubmission(
+        token,
+        submissionId,
+        score,
+        comment,
+        feedbackFile,
+        maxScore,
+      );
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await approvePDFSubmission(
+            newToken,
+            submissionId,
+            score,
+            comment,
+            feedbackFile,
+            maxScore,
+          );
+        }
+      }
+      throw error;
+    }
   }
 
   // ============================================================================
