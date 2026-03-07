@@ -34,6 +34,8 @@ import {
   createMaterial as apiCreateMaterial,
   updateMaterial as apiUpdateMaterial,
   deleteMaterial as apiDeleteMaterial,
+  getCourseScore as apiGetCourseScore,
+  getSelfProgress as apiGetSelfProgress,
 } from '@/api';
 
 import {
@@ -65,6 +67,8 @@ import {
   ApprovePDFSubmissionResponse,
   CreateInvitationResponse,
   GetInvitationsResponse,
+  CourseScoreResponse,
+  SelfProgressResponse,
 } from '@/types';
 import { AuthService } from '../auth/auth.service';
 
@@ -96,6 +100,36 @@ class CourseService {
         const newToken = await AuthService.refreshToken();
         if (newToken) {
           return await getCourse(newToken, courseId);
+        }
+      }
+      throw error;
+    }
+  }
+
+  // Get course score
+  static async getCourseScore(token: string, courseId: string): Promise<CourseScoreResponse> {
+    try {
+      return await apiGetCourseScore(token, courseId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await apiGetCourseScore(newToken, courseId);
+        }
+      }
+      throw error;
+    }
+  }
+
+  // Get self progress
+  static async getSelfProgress(token: string, courseId?: string): Promise<SelfProgressResponse> {
+    try {
+      return await apiGetSelfProgress(token, courseId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await apiGetSelfProgress(newToken, courseId);
         }
       }
       throw error;
@@ -678,12 +712,26 @@ class CourseService {
     maxScore?: number,
   ): Promise<ApprovePDFSubmissionResponse> {
     try {
-      return await approvePDFSubmission(token, submissionId, score, comment, feedbackFile, maxScore);
+      return await approvePDFSubmission(
+        token,
+        submissionId,
+        score,
+        comment,
+        feedbackFile,
+        maxScore,
+      );
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         const newToken = await AuthService.refreshToken();
         if (newToken) {
-          return await approvePDFSubmission(newToken, submissionId, score, comment, feedbackFile, maxScore);
+          return await approvePDFSubmission(
+            newToken,
+            submissionId,
+            score,
+            comment,
+            feedbackFile,
+            maxScore,
+          );
         }
       }
       throw error;
