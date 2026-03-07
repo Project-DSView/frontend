@@ -10,8 +10,9 @@ const logout = async (): Promise<void> => {
   await api.post('/api/auth/logout');
 };
 
-const refreshToken = async (): Promise<void> => {
+const refreshToken = async (): Promise<string> => {
   await api.post('/api/auth/refresh');
+  return 'cookie-managed';
 };
 
 const fetchProfile = async (): Promise<UserProfile> => {
