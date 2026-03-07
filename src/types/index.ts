@@ -169,6 +169,7 @@ export type {
   VisualizationMode,
   // Tutorial
   DataStructure,
+  DataStructureNamingGuide,
   LearningTip,
   TutorialStep,
   TutorialOverlayProps,
