@@ -28,8 +28,8 @@ import TutorialOverlay from '@/components/playground/shared/tutorial/TutorialOve
 import { TutorialStep } from '@/types';
 
 const LandingPage = () => {
-  const { accessToken } = useAuth();
-  const isAuthenticated = !!accessToken;
+  const { accessToken, isInitialized } = useAuth();
+  const isAuthenticated = isInitialized && !!accessToken;
   const { mutate: getGoogleAuth, isPending: isGoogleAuthLoading } = useGoogleAuth();
 
   // State
@@ -218,7 +218,7 @@ const LandingPage = () => {
           </div>
 
           <div className="flex flex-col md:flex-row flex-wrap items-center justify-center gap-4 pt-6 w-full">
-            {!isAuthenticated && (
+            {isInitialized && !isAuthenticated && (
               <Button
                 size="lg"
                 onClick={handleLogin}
@@ -238,6 +238,17 @@ const LandingPage = () => {
                     เข้าสู่ระบบด้วย Google
                   </>
                 )}
+              </Button>
+            )}
+
+            {isAuthenticated && (
+              <Button
+                size="lg"
+                onClick={() => window.location.href = '/course'}
+                className="group w-full md:w-auto min-w-[280px] md:min-w-0 gap-3 rounded-full px-8 py-6 text-base shadow-lg sm:text-lg shrink-0 bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Rocket className="h-5 w-5 animate-bounce" />
+                <span>เข้าสู่บทเรียน (Dashboard)</span>
               </Button>
             )}
             
