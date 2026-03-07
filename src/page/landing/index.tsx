@@ -180,7 +180,7 @@ const LandingPage = () => {
   return (
     <div className="bg-background flex w-full flex-col overflow-y-auto">
       {/* 1. Hero Section (100vh) */}
-      <section className="relative flex min-h-[calc(100vh-64px)] w-full flex-col items-center justify-center px-4 py-16 text-center lg:px-8">
+      <section className="relative flex min-h-[calc(100vh-64px)] w-full flex-col items-center justify-center px-4 pt-16 pb-32 text-center lg:px-8">
         {/* Background Decorative Blur */}
         <div className="absolute inset-0 -z-10 overflow-hidden">
           <div className="bg-primary/5 absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[100px] lg:h-[800px] lg:w-[800px]"></div>
@@ -210,12 +210,12 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="flex flex-col items-center space-y-4 pt-6 sm:flex-row sm:space-y-0 sm:space-x-4">
+          <div className="flex flex-col md:flex-row flex-wrap items-center justify-center gap-4 pt-6 w-full">
             {!isAuthenticated && (
               <Button
                 size="lg"
                 onClick={handleLogin}
-                className="group w-full min-w-[280px] gap-3 rounded-full px-8 py-6 text-base shadow-lg sm:w-auto sm:min-w-0 sm:text-lg"
+                className="group w-full md:w-auto min-w-[280px] md:min-w-0 gap-3 rounded-full px-6 py-6 text-base shadow-lg sm:text-lg shrink-0"
                 disabled={isGoogleAuthLoading}
               >
                 {isGoogleAuthLoading ? (
@@ -238,10 +238,10 @@ const LandingPage = () => {
               size="lg"
               variant="outline"
               onClick={() => setIsTutorialOpen(true)}
-              className="group w-full min-w-[280px] gap-2 rounded-full px-8 py-6 text-base sm:w-auto sm:min-w-0 sm:text-lg bg-background hover:bg-muted"
+              className="group w-full md:w-auto min-w-[280px] md:min-w-0 gap-2 rounded-full px-6 py-6 text-base sm:text-lg bg-background hover:bg-muted shrink-0"
             >
-              <HelpCircle className="h-5 w-5" />
-              แนะนำการใช้งาน
+              <HelpCircle className="h-5 w-5 shrink-0" />
+              <span>แนะนำการใช้งาน</span>
             </Button>
 
             <Button
@@ -249,11 +249,11 @@ const LandingPage = () => {
               size="lg"
               variant={isAuthenticated ? "default" : "outline"}
               onClick={scrollToEditor}
-              className={`group w-full min-w-[280px] gap-2 rounded-full px-8 py-6 text-base sm:w-auto sm:min-w-0 sm:text-lg ${isAuthenticated ? 'shadow-lg' : 'bg-background hover:bg-muted'}`}
+              className={`group w-full md:w-auto min-w-[280px] md:min-w-0 gap-2 rounded-full px-6 py-6 text-base sm:text-lg shrink-0 ${isAuthenticated ? 'shadow-lg' : 'bg-background hover:bg-muted'}`}
             >
-              <Code2 className="h-5 w-5" />
-              ลองเขียนโค้ดเลย
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <Code2 className="h-5 w-5 shrink-0" />
+              <span>ลองเขียนโค้ดเลย</span>
+              <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
         </motion.div>
@@ -263,7 +263,7 @@ const LandingPage = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1, duration: 1 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer p-4"
+          className="absolute bottom-4 lg:bottom-8 left-1/2 -translate-x-1/2 cursor-pointer p-4 hidden sm:block pointer-events-auto z-10"
           onClick={scrollToEditor}
         >
           <motion.div
@@ -280,12 +280,12 @@ const LandingPage = () => {
       {/* 2. Editor Section */}
       <section 
         ref={editorRef} 
-        className="flex h-[calc(100vh-64px)] w-full flex-col px-0 pb-0 lg:flex-row"
+        className="flex min-h-[calc(100vh-64px)] lg:h-[calc(100vh-64px)] w-full flex-col px-0 pb-0 lg:flex-row"
       >
-        <div className="flex h-full w-full flex-col lg:flex-row overflow-hidden">
+        <div className="flex h-full w-full flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
           
           {/* Left Side: Code Editor */}
-          <div className="border-border flex h-1/2 w-full flex-col border-b lg:h-full lg:w-1/2 lg:border-r lg:border-b-0">
+          <div className="border-border flex min-h-[60vh] lg:min-h-0 lg:h-full w-full flex-col border-b lg:w-1/2 lg:border-r lg:border-b-0 shrink-0 lg:shrink">
             <div className="border-border bg-muted/30 flex items-center justify-between border-b px-4 py-3">
               <div className="flex items-center gap-2">
                 <Code2 className="text-primary h-5 w-5" />
@@ -377,7 +377,7 @@ const LandingPage = () => {
           </div>
 
           {/* Right Side: Analysis Result */}
-          <div className="bg-muted/10 flex h-1/2 w-full flex-col lg:h-full lg:w-1/2">
+          <div className="bg-muted/10 flex min-h-[60vh] lg:min-h-0 lg:h-full w-full flex-col lg:w-1/2 shrink-0 lg:shrink">
             <div className="border-border bg-muted/30 flex items-center justify-between border-b px-4 py-3">
               <div className="flex items-center gap-2">
                 <Rocket className="text-primary h-5 w-5" />

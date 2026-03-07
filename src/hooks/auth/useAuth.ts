@@ -5,8 +5,6 @@ import { useGoogleAuthUrl } from '@/query';
 import {
   secureSessionUtils,
   getErrorMessage,
-  isTokenExpired,
-  isValidJWTFormat,
   RATE_LIMIT_CONFIGS,
   isRateLimited,
   initializeCSRFProtection,
@@ -35,10 +33,9 @@ const useAuth = (): UseAuthReturn => {
         const isValid = await secureSessionUtils.isSessionValid();
 
         if (sessionData && isValid) {
-          setAccessToken(sessionData.token);
+          setAccessToken('cookie-managed');
           setProfile(sessionData.profile);
         } else {
-          // Clear invalid session
           secureSessionUtils.clearSession();
         }
       } catch (error) {
@@ -63,7 +60,7 @@ const useAuth = (): UseAuthReturn => {
       const isValid = await secureSessionUtils.isSessionValid();
 
       if (sessionData && isValid) {
-        setAccessToken(sessionData.token);
+        setAccessToken('cookie-managed');
         setProfile(sessionData.profile);
         return sessionData;
       }
@@ -90,61 +87,40 @@ const useAuth = (): UseAuthReturn => {
     setError(null);
 
     try {
-      // Validate current token before refresh
-      if (accessToken && !isTokenExpired(accessToken)) {
-        return accessToken;
-      }
+      // We don't need to manually pass a token parameter anymore
+      await AuthService.refreshToken();
 
-      const newToken = await AuthService.refreshToken();
-
-      // Validate new token
-      if (!newToken || isTokenExpired(newToken)) {
-        throw new Error('Invalid token received from server');
-      }
-
-      setAccessToken(newToken);
+      const newProfileData = await ProfileService.fetchProfile();
+      setAccessToken('cookie-managed');
 
       if (profile) {
-        await secureSessionUtils.saveSession(newToken, profile);
+        await secureSessionUtils.saveSession('cookie-managed', newProfileData || profile);
       }
-
-      return newToken;
     } catch (error) {
       const errorMessage = getErrorMessage(error) || 'Token refresh failed';
       setError(errorMessage);
       setProfile(null);
       setAccessToken(null);
       secureSessionUtils.clearSession();
-      return null;
     } finally {
       setIsLoading(false);
     }
-  }, [profile, accessToken]);
+  }, [profile]);
 
   // ฟังก์ชัน fetch profile with auto refresh and validation
-  const fetchUserProfile = useCallback(async (token: string) => {
+  const fetchUserProfile = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // Validate token format first
-      if (!token || !isValidJWTFormat(token)) {
-        throw new Error('Invalid token format');
-      }
-
-      // Validate token before making request
-      if (isTokenExpired(token)) {
-        throw new Error('Token is expired');
-      }
-
-      const profileData = await ProfileService.fetchProfile(token);
+      const profileData = await ProfileService.fetchProfile();
 
       // Validate profile data
       if (!profileData || !profileData.user_id) {
         throw new Error('Invalid profile data received');
       }
 
-      await secureSessionUtils.saveSession(token, profileData);
+      await secureSessionUtils.saveSession('cookie-managed', profileData);
       setProfile(profileData);
 
       return profileData;
@@ -157,28 +133,19 @@ const useAuth = (): UseAuthReturn => {
     }
   }, []);
 
-  const setAuthData = useCallback(async (token: string, userProfile: UserProfile) => {
+  const setAuthData = useCallback(async (userProfile: UserProfile) => {
     setIsLoading(true);
     setError(null);
 
     try {
       // Validate inputs
-      if (!token || !userProfile || !userProfile.user_id) {
-        throw new Error('Invalid token or user profile data');
+      if (!userProfile || !userProfile.user_id) {
+        throw new Error('Invalid user profile data');
       }
 
-      // Validate token format
-      if (!isValidJWTFormat(token)) {
-        throw new Error('Invalid token format');
-      }
-
-      if (isTokenExpired(token)) {
-        throw new Error('Token is expired');
-      }
-
-      setAccessToken(token);
+      setAccessToken('cookie-managed');
       setProfile(userProfile);
-      await secureSessionUtils.saveSession(token, userProfile);
+      await secureSessionUtils.saveSession('cookie-managed', userProfile);
     } catch (error) {
       const errorMessage = getErrorMessage(error) || 'Failed to set auth data';
       setError(errorMessage);
