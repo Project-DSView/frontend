@@ -11,7 +11,7 @@ class AuthService {
     return logout();
   }
 
-  static async refreshToken(): Promise<void> {
+  static async refreshToken(): Promise<string> {
     return refreshToken();
   }
 }
