@@ -28,7 +28,7 @@ import TutorialOverlay from '@/components/playground/shared/tutorial/TutorialOve
 import { TutorialStep } from '@/types';
 
 const LandingPage = () => {
-  const { accessToken, isInitialized } = useAuth();
+  const { accessToken, isInitialized, fetchUserProfile, setAuthData } = useAuth();
   const isAuthenticated = isInitialized && !!accessToken;
   const { mutate: getGoogleAuth, isPending: isGoogleAuthLoading } = useGoogleAuth();
 
@@ -66,9 +66,34 @@ const LandingPage = () => {
   // Redirect authenticated
   React.useEffect(() => {
     if (isAuthenticated) {
-      window.location.href = '/';
+      window.location.href = '/course';
     }
   }, [isAuthenticated]);
+
+  // Proactive profile fetch if authenticated but no profile (sync with Navbar)
+  React.useEffect(() => {
+    const syncProfile = async () => {
+      // Only proceed if initialized and no accessToken but success is in URL
+      // This helps when LandingPage loads before AuthButtons finishes its sync
+      if (!isInitialized || isAuthenticated) return;
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSuccess = urlParams.get('success') === 'true';
+      
+      if (isSuccess) {
+        try {
+          const data = await fetchUserProfile();
+          if (data) {
+            setAuthData(data);
+          }
+        } catch (error) {
+          console.error('Landing proactive sync failed:', error);
+        }
+      }
+    };
+
+    syncProfile();
+  }, [isInitialized, isAuthenticated, fetchUserProfile, setAuthData]);
 
   // Refs for scrolling
   const editorRef = useRef<HTMLDivElement>(null);
