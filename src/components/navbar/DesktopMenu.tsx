@@ -44,6 +44,7 @@ const DesktopMenu = React.memo(() => {
       <DropdownMenu onOpenChange={setIsPlaygroundOpen} modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
+            id="tour-playground-menu"
             variant="ghost"
             className="text-foreground hover:bg-muted data-[state=open]:bg-muted flex items-center space-x-1 rounded-lg border-0 px-3 py-1.5 text-base font-semibold transition-all duration-200"
           >
