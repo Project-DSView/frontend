@@ -57,7 +57,7 @@ const AuthButtons: React.FC = () => {
 
       // Refresh the page after successful logout
       setTimeout(() => {
-        window.location.reload();
+        window.location.href = '/';
       }, 1000);
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error);
@@ -86,8 +86,8 @@ const AuthButtons: React.FC = () => {
           setAuthData(profileData);
           toast.success(`Welcome ${profileData.firstname} ${profileData.lastname}`);
 
-          // Redirect to home page after successful login
-          window.location.href = '/';
+          // Redirect to course page after successful login
+          window.location.href = '/course';
         } catch (error) {
           logError('OAuth callback failed:', error);
           toast.error('Authentication failed. Please try again.');
@@ -145,13 +145,14 @@ const AuthButtons: React.FC = () => {
         });
       });
 
-      if (data?.success) {
+      if (data?.data.auth_url) {
+        toast.success('Redirecting to Google login...');
+        window.location.href = data.data.auth_url;
+      } else if (data?.success) {
         const profileData = await fetchUserProfile();
         setAuthData(profileData);
         toast.success(`Welcome ${profileData.firstname} ${profileData.lastname}`);
-      } else if (data?.data.auth_url) {
-        toast.success('Redirecting to Google login...');
-        window.location.href = data.data.auth_url;
+        window.location.href = '/course';
       } else {
         toast.error('No auth URL or token received from server');
       }

@@ -63,6 +63,13 @@ const LandingPage = () => {
     }
   ];
 
+  // Redirect authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      window.location.href = '/';
+    }
+  }, [isAuthenticated]);
+
   // Refs for scrolling
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -247,12 +254,12 @@ const LandingPage = () => {
             <Button
               id="tour-landing-editor"
               size="lg"
-              variant={isAuthenticated ? "default" : "outline"}
+              variant="outline"
               onClick={scrollToEditor}
-              className={`group w-full md:w-auto min-w-[280px] md:min-w-0 gap-2 rounded-full px-6 py-6 text-base sm:text-lg shrink-0 ${isAuthenticated ? 'shadow-lg' : 'bg-background hover:bg-muted'}`}
+              className="group w-full md:w-auto min-w-[280px] md:min-w-0 gap-2 rounded-full px-6 py-6 text-base sm:text-lg bg-background hover:bg-muted shrink-0"
             >
               <Code2 className="h-5 w-5 shrink-0" />
-              <span>ลองเขียนโค้ดเลย</span>
+              <span>ลองเขียนโค้ดเลย (Playground)</span>
               <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
