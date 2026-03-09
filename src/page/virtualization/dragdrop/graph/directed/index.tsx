@@ -429,16 +429,31 @@ const DragDropDirectedGraph = () => {
 
         <div className="mt-2 flex flex-wrap gap-2">
           {directedGraphDragComponents.map((op) => (
-            <button
-              key={op.type}
-              draggable
-              onDragStart={(e) => handleDragStart(e, op)}
-              className="rounded-full border px-3 py-1 text-xs font-medium text-gray-800 hover:bg-gray-100"
-              title={op.description}
-            >
-              {op.name}
-            </button>
-          ))}
+  <button
+    key={op.type}
+    draggable
+    onDragStart={(e) => handleDragStart(e, op)}
+    onClick={() =>
+      addOperation({
+        type: op.type,
+        name: op.name,
+        value: '',
+        position: null,
+        newValue: null,
+        fromVertex: null,
+        toVertex: null,
+        startVertex: null,
+        endVertex: null,
+        color: op.color,
+        category: op.category,
+      })
+    }
+    className="rounded-full border px-3 py-1 text-xs font-medium text-gray-800 hover:bg-gray-100"
+    title={op.description}
+  >
+    {op.name}
+  </button>
+))}
         </div>
       </div>
 

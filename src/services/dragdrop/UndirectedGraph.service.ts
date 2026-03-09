@@ -653,8 +653,16 @@ class UndirectedGraphDragDropService {
 
   // Get current state
   getState(): UndirectedGraphState {
-    return { ...this.state };
-  }
+  return {
+    ...this.state,
+    nodes: this.state.nodes.map(node => ({
+      ...node,
+      neighbors: [...node.neighbors],
+    })),
+    edges: this.state.edges.map(edge => ({ ...edge })),
+    stats: { ...this.state.stats },
+  };
+}
 
   // Update state
   updateState(newState: Partial<UndirectedGraphState>): void {
