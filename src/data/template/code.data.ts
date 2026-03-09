@@ -1368,8 +1368,18 @@ class UndirectedGraph:
             print(f"{vertex}: {neighbors}")
 `;
 
+const defaultCodeTemplate = `# Write your code here to analyze its Big O complexity
+def example_function(n):
+    result = 0
+    for i in range(n):
+        for j in range(n):
+            result += i + j
+    return result
+`;
+
 export {
   // Original stepthrough templates
+  defaultCodeTemplate,
   singlyLinkedListCodeTemplate,
   doublyLinkedListCodeTemplate,
   stackCodeTemplate,

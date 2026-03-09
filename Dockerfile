@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -19,6 +19,20 @@ COPY . .
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV production
+
+# NEXT_PUBLIC_* must be available at build time (Next.js inlines them)
+ARG NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_API_KEY_NAME
+ARG NEXT_PUBLIC_API_KEY
+ARG NEXT_PUBLIC_NODE_ENV
+ARG NEXT_PUBLIC_DOMAIN_NAME
+
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_KEY_NAME=$NEXT_PUBLIC_API_KEY_NAME
+ENV NEXT_PUBLIC_API_KEY=$NEXT_PUBLIC_API_KEY
+ENV NEXT_PUBLIC_NODE_ENV=$NEXT_PUBLIC_NODE_ENV
+ENV NEXT_PUBLIC_DOMAIN_NAME=$NEXT_PUBLIC_DOMAIN_NAME
 
 RUN bun run build
 

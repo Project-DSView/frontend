@@ -673,7 +673,7 @@ const useQueueJobs = (token: string | null, filters: QueueJobFilters = {}) => {
         throw new Error('No access token provided');
       }
       const result = await CourseService.getQueueJobs(token, filters);
-      console.log('Queue Jobs API Response:', result);
+
       return result;
     },
     enabled: !!token,

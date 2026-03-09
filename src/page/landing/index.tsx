@@ -1,191 +1,227 @@
 'use client';
 
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { LogIn } from 'lucide-react';
-import { memo, lazy, Suspense, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { Play, RotateCcw, Loader2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
-import { useAuth } from '@/hooks';
-import { AuthService } from '@/services';
-import { heroVariants, heroChildVariants, buttonVariants } from '@/lib';
+// Import hooks and API
+import { useAuth, useGoogleAuth } from '@/hooks';
+import { analyzePerformance, analyzeWithLLM } from '@/api';
+import { ComplexityAnalysis, AuthResponse } from '@/types';
+import { defaultCodeTemplate } from '@/data';
 
+// Lazy load CodeEditor to avoid SSR issues
+const CodeEditor = dynamic(() => import('@/components/editor/CodeEditor'), {
+  ssr: false,
+  loading: () => <div className="bg-muted/20 h-full w-full animate-pulse" />,
+});
+
+// Import Big O Components
+import BigOSummaryCards from '@/components/playground/shared/PerformancePanel/BigOSummaryCards';
+import BigOExplanation from '@/components/playground/shared/PerformancePanel/BigOExplanation';
+import BigOChart from '@/components/playground/shared/PerformancePanel/BigOChart';
+import PerFunctionComplexity from '@/components/playground/shared/PerformancePanel/PerFunctionComplexity';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-// Lazy load components
-const InteractiveShowcase = lazy(() => import('@/components/landing/InteractiveShowcase'));
-const CTASection = lazy(() => import('@/components/landing/CTASection'));
-const VisualizationCarousel = lazy(() => import('@/components/landing/VisualizationCarousel'));
+const LandingPage = () => {
+  const { accessToken } = useAuth();
+  const isAuthenticated = !!accessToken;
+  const { mutate: getGoogleAuth } = useGoogleAuth();
 
-const Landing = () => {
-  const { profile, isInitialized } = useAuth();
-  const router = useRouter();
-  const [scrollY, setScrollY] = useState(0);
+  // State
+  const [code, setCode] = useState<string>(defaultCodeTemplate);
+  const [complexity, setComplexity] = useState<ComplexityAnalysis | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isExplaining, setIsExplaining] = useState(false);
+  const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
+  // Handlers
+  const handleCodeChange = (value: string) => {
+    setCode(value);
+  };
 
-    handleScroll(); // Initial check
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const handleReset = () => {
+    setCode(defaultCodeTemplate);
+    setComplexity(null);
+    setAiExplanation(null);
+    setError(null);
+  };
 
-  // Animation values based on scroll (clamp between 0 and 150)
-  const scrollProgress = Math.min(scrollY / 150, 1);
-  const logoScale = 1 - scrollProgress * 0.6; // Scale down to 40%
-  const logoOpacity = Math.max(0, 1 - scrollProgress * 1.2); // Fade out faster
-  const logoY = -scrollProgress * 30; // Move up slightly
+  const handleRun = async () => {
+    if (!code.trim()) return;
 
-  const handleLogin = async () => {
+    setIsAnalyzing(true);
+    setError(null);
+    setComplexity(null);
+    setAiExplanation(null);
+
     try {
-      const response = await AuthService.getGoogleAuthUrl();
-      if (response.success && response.data.auth_url) {
-        window.location.href = response.data.auth_url;
-      }
-    } catch (error) {
-      console.error('Login failed:', error);
+      // Analyze performance (Big O) - Use the fast AST endpoint
+      const result = await analyzePerformance(code);
+      setComplexity(result);
+    } catch (err) {
+      console.error('Analysis failed:', err);
+      setError('เกิดข้อผิดพลาดในการวิเคราะห์โค้ด โปรดตรวจสอบ Syntax หรือลองใหม่อีกครั้ง');
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
-  const handleGoToCourse = () => {
-    router.push('/course');
+  const handleLogin = () => {
+    getGoogleAuth(undefined, {
+      onSuccess: (response: AuthResponse) => {
+        if (response?.data?.auth_url) {
+          window.location.href = response.data.auth_url;
+        }
+      },
+      onError: (error) => {
+        console.error('Login failed:', error);
+      },
+    });
+  };
+
+  const handleAIExplain = async () => {
+    if (!isAuthenticated) {
+      handleLogin();
+      return;
+    }
+
+    if (!code.trim()) return;
+
+    setIsExplaining(true);
+    setAiExplanation(null);
+
+    try {
+      const result = await analyzeWithLLM(accessToken, code);
+      setAiExplanation(result.explanation);
+    } catch (err) {
+      console.error('AI Explanation failed:', err);
+      setAiExplanation('เกิดข้อผิดพลาดในการขอคำอธิบายจาก AI โปรดลองใหม่อีกครั้ง');
+    } finally {
+      setIsExplaining(false);
+    }
   };
 
   return (
-    <main className="bg-base-100 flex min-h-screen flex-col font-sans">
-      {/* Hero Section */}
-      <section className="relative flex flex-grow flex-col items-center justify-center overflow-hidden px-6 py-20 text-center">
-        {/* Animated Gradient Background */}
-        <motion.div
-          className="from-gradient-start to-gradient-end absolute inset-0 bg-gradient-to-br via-[#EEF2FF] dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
-          variants={heroVariants}
-          initial="initial"
-          animate="animate"
-        />
+    <div className="bg-background flex h-[calc(90vh-64px)] w-full flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
+        {/* Left Side: Code Editor */}
+        <div className="border-border flex h-1/2 w-full flex-col border-b lg:h-full lg:w-1/2 lg:border-r lg:border-b-0">
+          <div className="border-border bg-muted/30 flex items-center justify-between border-b px-4 py-2">
+            <h2 className="text-sm font-semibold">Code Editor (Python)</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground text-xs">Type your code to analyze</span>
+            </div>
+          </div>
 
-        {/* Floating Elements */}
-        <motion.div
-          className="from-primary/20 to-accent/20 absolute top-20 left-10 h-20 w-20 rounded-full bg-gradient-to-r blur-xl"
-          animate={{ y: [-20, 20, -20], x: [-10, 10, -10] }}
-          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="from-secondary/20 to-success/20 absolute right-10 bottom-20 h-32 w-32 rounded-full bg-gradient-to-r blur-xl"
-          animate={{ y: [20, -20, 20], x: [10, -10, 10] }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        />
-
-        <motion.div
-          className="relative z-10 mx-auto w-full max-w-screen-lg"
-          variants={heroVariants}
-          initial="initial"
-          animate="animate"
-        >
-          <motion.div
-            variants={heroChildVariants}
-            animate={{
-              scale: logoScale,
-              opacity: logoOpacity,
-              y: logoY,
-            }}
-            transition={{
-              duration: 0.1,
-              ease: 'easeOut',
-            }}
-          >
-            <Image
-              src="/logo.svg"
-              alt="DSView Logo"
-              width={600}
-              height={150}
-              className="animate-float mx-auto mb-8 h-auto max-w-[280px] object-contain md:max-w-[380px] lg:max-w-[480px]"
-              priority
-              sizes="(max-width: 768px) 280px, (max-width: 1024px) 380px, 480px"
+          <div className="relative flex-1 overflow-hidden">
+            <CodeEditor
+              code={code}
+              onCodeChange={handleCodeChange}
+              height="100%"
+              disabled={isAnalyzing}
             />
-          </motion.div>
+          </div>
 
-          <motion.h1
-            className="text-primary mb-4 text-4xl font-bold md:text-5xl lg:text-6xl"
-            variants={heroChildVariants}
-          >
-            DSView
-          </motion.h1>
+          {/* Bottom Action Bar */}
+          <div className="border-border bg-background flex items-center justify-center gap-4 border-t p-4">
+            <Button
+              onClick={handleRun}
+              disabled={isAnalyzing || !code.trim()}
+              className="min-w-[120px] gap-2"
+            >
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4" />
+                  Run Analysis
+                </>
+              )}
+            </Button>
 
-          <motion.p
-            className="text-neutral mb-2 text-xl font-medium md:text-2xl dark:text-gray-300"
-            variants={heroChildVariants}
-          >
-            Interactive Data Structure Visualization
-          </motion.p>
+            <Button
+              variant="outline"
+              onClick={handleReset}
+              disabled={isAnalyzing}
+              className="gap-2"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Reset Code
+            </Button>
+          </div>
+        </div>
 
-          <motion.p
-            className="text-neutral/80 mx-auto mb-12 max-w-2xl text-lg md:text-xl dark:text-gray-400"
-            variants={heroChildVariants}
-          >
-            เรียนรู้โครงสร้างข้อมูลด้วยภาพเคลื่อนไหวแบบ Interactive ที่เข้าใจง่ายและสนุกสนาน
-          </motion.p>
+        {/* Right Side: Analysis Result */}
+        <div className="bg-muted/10 flex h-1/2 w-full flex-col overflow-hidden lg:h-full lg:w-1/2">
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="mx-auto w-full max-w-none space-y-3">
+              {error && (
+                <Card className="border-destructive/50 bg-destructive/10">
+                  <CardContent className="p-4">
+                    <p className="text-destructive text-sm font-medium">{error}</p>
+                  </CardContent>
+                </Card>
+              )}
 
-          <motion.div
-            className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6"
-            variants={heroChildVariants}
-          >
-            {!isInitialized && (
-              <div className="flex items-center justify-center">
-                <span className="text-neutral dark:text-gray-300">กำลังตรวจสอบ...</span>
-              </div>
-            )}
+              {!complexity && !isAnalyzing && !error && (
+                <div className="border-muted-foreground/25 bg-muted/20 flex h-64 flex-col items-center justify-center rounded-lg border border-dashed text-center">
+                  <div className="bg-background rounded-full p-4 shadow-sm">
+                    <Play className="text-muted-foreground/50 ml-1 h-8 w-8" />
+                  </div>
+                  <p className="text-muted-foreground mt-2 max-w-sm text-sm">
+                    {
+                      'Click the "Run Analysis" button to calculate the Big O complexity of your code.'
+                    }
+                  </p>
+                </div>
+              )}
 
-            {isInitialized && !profile && (
-              <>
-                <motion.div variants={buttonVariants}>
-                  <Button
-                    onClick={handleLogin}
-                    className="from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary rounded-xl bg-gradient-to-r px-10 py-5 text-xl text-white shadow-xl transition-all duration-300 hover:shadow-2xl"
-                  >
-                    <LogIn size={24} className="mr-2" />
-                    เข้าสู่ระบบ
-                  </Button>
-                </motion.div>
-              </>
-            )}
+              {isAnalyzing && (
+                <div className="flex h-64 flex-col items-center justify-center space-y-4">
+                  <Loader2 className="text-primary h-12 w-12 animate-spin" />
+                  <p className="text-muted-foreground">Analyzing code complexity...</p>
+                </div>
+              )}
 
-            {isInitialized && profile && (
-              <>
-                <motion.div variants={buttonVariants}>
-                  <Button
-                    onClick={handleGoToCourse}
-                    className="from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary rounded-xl bg-gradient-to-r px-10 py-5 text-xl text-white shadow-xl transition-all duration-300 hover:shadow-2xl"
-                  >
-                    <LogIn size={24} className="mr-2" />
-                    เข้าคอร์สเรียน
-                  </Button>
-                </motion.div>
-              </>
-            )}
-          </motion.div>
-        </motion.div>
-      </section>
+              {complexity && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 space-y-3 pb-8 duration-500">
+                  {/* Row 1: Summary & Chart - Always stack */}
+                  <div className="flex flex-col gap-3">
+                    <BigOSummaryCards complexity={complexity} />
+                    <BigOChart timeComplexity={complexity.timeComplexity} />
+                  </div>
 
-      {/* Visualization Carousel Section */}
-      <Suspense fallback={<div className="h-96 bg-gradient-to-b from-white to-[#F8F9FC]" />}>
-        <VisualizationCarousel />
-      </Suspense>
+                  {/* Row 2: Explanation */}
+                  <BigOExplanation
+                    complexity={complexity}
+                    onAIExplain={handleAIExplain}
+                    isExplaining={isExplaining}
+                    aiExplanation={aiExplanation}
+                    isAuthenticated={isAuthenticated}
+                    onLogin={handleLogin}
+                  />
 
-      {/* Interactive Showcase Section */}
-      <Suspense fallback={<div className="h-96 bg-gradient-to-b from-white to-[#F8F9FC]" />}>
-        <InteractiveShowcase />
-      </Suspense>
-
-      {/* CTA Section */}
-      <Suspense
-        fallback={<div className="from-primary via-accent to-secondary h-64 bg-gradient-to-br" />}
-      >
-        <CTASection onGetStarted={profile ? handleGoToCourse : handleLogin} />
-      </Suspense>
-    </main>
+                  {/* Row 3: Function Details */}
+                  {complexity.functionComplexities &&
+                    complexity.functionComplexities.length > 0 && (
+                      <PerFunctionComplexity
+                        functionComplexities={complexity.functionComplexities}
+                      />
+                    )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default memo(Landing);
+export default LandingPage;

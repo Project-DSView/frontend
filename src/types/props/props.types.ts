@@ -611,8 +611,6 @@ interface DragDropZoneProps {
   children?: React.ReactNode;
 }
 
-
-
 // ============================================================================
 // Playground Shared Component Props
 // ============================================================================
@@ -731,10 +729,16 @@ interface CommonPitfallsWarningProps {
 // Analogy Props
 // ============================================================================
 interface ConceptualAnalogyPanelProps {
-  type: 'linked-list' | 'doubly-linked-list' | 'stack' | 'queue';
+  type: 'linked-list' | 'doubly-linked-list' | 'stack' | 'queue' | 'bst';
   data: {
     nodes?: string[];
     elements?: string[]; // For Stack/Queue
+    root?: {
+      value: string;
+      left: ConceptualAnalogyPanelProps['data']['root'];
+      right: ConceptualAnalogyPanelProps['data']['root'];
+      id: string;
+    } | null; // For BST
   };
   className?: string;
   isVisible?: boolean;
@@ -747,6 +751,10 @@ interface PerformanceAnalysisPanelProps {
   steps: StepthroughStep[];
   currentStepIndex: number;
   complexity?: ComplexityAnalysis | null;
+  code?: string;
+  onAIExplain?: (code: string) => Promise<void>;
+  isExplaining?: boolean;
+  aiExplanation?: string | null;
 }
 
 interface PerformanceSummaryMetricsProps {
@@ -786,6 +794,11 @@ interface TimeUsageBarProps {
 
 interface BigOOverviewProps {
   complexity: ComplexityAnalysis;
+  onAIExplain?: () => void;
+  isExplaining?: boolean;
+  aiExplanation?: string | null;
+  isAuthenticated?: boolean;
+  onLogin?: () => void;
 }
 
 interface BigOAnalysisDetailsProps {
@@ -794,6 +807,19 @@ interface BigOAnalysisDetailsProps {
 
 interface PerFunctionComplexityProps {
   functionComplexities: NonNullable<ComplexityAnalysis['functionComplexities']>;
+}
+
+interface BigOComplexityInfo {
+  notation: string;
+  type: string;
+  examples: string;
+  description: string;
+  color: string;
+}
+
+interface BigOComplexityTableProps {
+  currentComplexity?: string;
+  onClose: () => void;
 }
 
 interface BigOChartProps {
@@ -950,6 +976,8 @@ export type {
   BigOOverviewProps,
   BigOAnalysisDetailsProps,
   PerFunctionComplexityProps,
+  BigOComplexityInfo,
+  BigOComplexityTableProps,
   BigOChartProps,
   // Stepthrough
   // Memory Address & Pointer Animation

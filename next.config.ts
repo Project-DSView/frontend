@@ -2,6 +2,10 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
+
+  // Allow GitHub Codespaces origins in dev mode (fixes RSC CORS errors)
+  allowedDevOrigins: ['*.app.github.dev'],
+
   images: {
     domains: ['lh3.googleusercontent.com', 'example.com', 'localhost'],
     remotePatterns: [

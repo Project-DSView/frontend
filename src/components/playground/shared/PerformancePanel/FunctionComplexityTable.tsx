@@ -31,7 +31,7 @@ const columns = [
     cell: (info) => <span className="font-mono">{info.getValue()}</span>,
   }),
   columnHelper.accessor('timeComplexity', {
-    header: 'Time',
+    header: 'Operations',
     cell: (info) => (
       <span className="font-bold text-emerald-700 dark:text-emerald-300">{info.getValue()}</span>
     ),

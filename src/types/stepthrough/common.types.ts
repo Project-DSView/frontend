@@ -62,6 +62,7 @@ interface StepthroughStep {
     };
     execution_result?: Record<string, unknown>;
     step_detail?: {
+      user_command?: string;
       operation: string;
       method_name?: string;
       detected_behavior?: string;
@@ -282,6 +283,7 @@ interface StepthroughVisualizationProps<TData extends StepthroughData = Stepthro
   }>;
   currentASTNodeIndex?: number;
   complexity?: ComplexityAnalysis | null; // Big O analysis
+  code?: string;
 }
 
 interface InputState {
@@ -373,4 +375,11 @@ export type {
   InputState,
   ComplexityAnalysis,
   FunctionComplexity,
+  StepInfoPanelProps,
 };
+
+interface StepInfoPanelProps {
+  stepNumber: number;
+  message: string;
+  userCommand?: string;
+}

@@ -277,3 +277,24 @@ body {
     padding: 0.75rem 1rem;
   }
 }
+
+/* Stepthrough Visualization Scrolling */
+.stepthrough-scroll-area {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.stepthrough-scroll-area::-webkit-scrollbar {
+  height: 6px;
+}
+
+.stepthrough-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.stepthrough-scroll-area::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}

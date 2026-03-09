@@ -9,7 +9,10 @@ import {
 import GraphNode from '../../shared/common/GraphNode';
 import GraphEdge from '../../shared/common/GraphEdge';
 
-const UndirectedGraphVisualization = forwardRef<HTMLDivElement, UndirectedGraphDragDropVisualizationProps>(
+const UndirectedGraphVisualization = forwardRef<
+  HTMLDivElement,
+  UndirectedGraphDragDropVisualizationProps
+>(
   (
     {
       nodes,

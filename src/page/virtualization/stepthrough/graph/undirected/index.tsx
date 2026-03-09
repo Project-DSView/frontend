@@ -42,6 +42,7 @@ const StepthroughUndirectedGraph: React.FC = () => {
         isRunning?: boolean;
         error?: string | null;
         complexity?: unknown;
+        code?: string;
       }
     >((props, ref) => (
       <UndirectedGraphStepthroughVisualization
@@ -55,6 +56,7 @@ const StepthroughUndirectedGraph: React.FC = () => {
         insertedEdge={insertedEdge}
         currentVertex={currentVertex}
         complexity={props.complexity as never}
+        code={props.code}
       />
     ));
     Component.displayName = 'UndirectedGraphVisualizationWithAnimation';

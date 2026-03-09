@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { PerformanceAnalysisPanelProps } from '@/types';
+import { PerformanceAnalysisPanelProps, AuthResponse } from '@/types';
 import {
   Dialog,
   DialogContent,
@@ -25,13 +25,61 @@ import BigOAnalysisDetails from './BigOAnalysisDetails';
 import PerFunctionComplexity from './PerFunctionComplexity';
 import BigOChart from './BigOChart';
 
+import { analyzeWithLLM } from '@/api';
+import { useState } from 'react';
+import { useAuth, useGoogleAuth } from '@/hooks/auth/useAuth';
+
 const PerformanceAnalysisPanel: React.FC<PerformanceAnalysisPanelProps> = ({
   steps,
   currentStepIndex,
   complexity,
+  code,
 }) => {
   const currentStep =
     steps.length > 0 && currentStepIndex < steps.length ? steps[currentStepIndex] : null;
+
+  const [isExplaining, setIsExplaining] = useState(false);
+  const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+
+  const { accessToken } = useAuth();
+  const { mutate: getGoogleAuth } = useGoogleAuth();
+
+  const handleLogin = () => {
+    getGoogleAuth(undefined, {
+      onSuccess: (response: AuthResponse) => {
+        if (response?.data?.auth_url) {
+          window.location.href = response.data.auth_url;
+        }
+      },
+      onError: (error) => {
+        console.error('Login failed:', error);
+      },
+    });
+  };
+
+  const handleAIExplain = async () => {
+    // Check authentication if not in development
+    if (process.env.NODE_ENV !== 'development' && !accessToken) {
+      handleLogin();
+      return;
+    }
+
+    if (!code) return;
+
+    setIsExplaining(true);
+    setAiExplanation(null);
+
+    try {
+      // Analyze with LLM (Qwen2.5-Coder via Ollama)
+      const result = await analyzeWithLLM(accessToken || '', code);
+      setAiExplanation(result.explanation);
+    } catch (error) {
+      console.error('Failed to get AI explanation:', error);
+      setAiExplanation('เกิดข้อผิดพลาดในการวิเคราะห์ โปรดลองใหม่อีกครั้ง');
+    } finally {
+      setIsExplaining(false);
+    }
+  };
 
   const memoryUsage: number = (currentStep?.state?.memory as number) || 0;
 
@@ -103,7 +151,14 @@ const PerformanceAnalysisPanel: React.FC<PerformanceAnalysisPanelProps> = ({
                 <TabsContent value="bigo" className="space-y-4">
                   {complexity ? (
                     <>
-                      <BigOOverview complexity={complexity} />
+                      <BigOOverview
+                        complexity={complexity}
+                        onAIExplain={code ? handleAIExplain : undefined}
+                        isExplaining={isExplaining}
+                        aiExplanation={aiExplanation}
+                        isAuthenticated={!!accessToken || process.env.NODE_ENV === 'development'}
+                        onLogin={handleLogin}
+                      />
 
                       {complexity.analysisDetails && (
                         <BigOAnalysisDetails details={complexity.analysisDetails} />

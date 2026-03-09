@@ -56,14 +56,6 @@ const openFilePreview = async (url: string, token?: string): Promise<void> => {
         headers[apiKeyName] = apiKey;
       }
 
-      console.log('Opening file preview:', {
-        originalUrl: url,
-        fullUrl,
-        hasToken: !!token,
-        hasApiKey: !!apiKey,
-        tokenLength: token?.length,
-      });
-
       let response: Response;
       try {
         response = await fetch(fullUrl, {
@@ -149,14 +141,6 @@ const downloadFileDirect = async (
       if (apiKey) {
         headers[apiKeyName] = apiKey;
       }
-
-      console.log('Downloading file:', {
-        originalUrl: url,
-        fullUrl,
-        hasToken: !!token,
-        hasApiKey: !!apiKey,
-        tokenLength: token?.length,
-      });
 
       let response: Response;
       try {

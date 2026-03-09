@@ -65,25 +65,6 @@ const CoursePage: React.FC = () => {
     }
   }, [isInitialized, profile, router]);
 
-  // Debug: Check profile and is_teacher
-  useEffect(() => {
-    if (profile) {
-      console.log('[Course Page] Profile:', profile);
-      console.log('[Course Page] is_teacher:', profile.is_teacher);
-      console.log('[Course Page] Should show button:', profile.is_teacher === true);
-    } else {
-      console.log('[Course Page] Profile is null or undefined');
-    }
-  }, [profile]);
-
-  // Debug: Check profile and is_teacher
-  useEffect(() => {
-    if (profile) {
-      console.log('Profile:', profile);
-      console.log('is_teacher:', profile.is_teacher);
-    }
-  }, [profile]);
-
   // Handle enrollment
   const handleEnroll = async (courseId: string, enrollKey: string) => {
     if (!accessToken) {

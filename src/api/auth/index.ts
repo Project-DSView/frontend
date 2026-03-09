@@ -19,9 +19,7 @@ const fetchProfile = async (token: string): Promise<UserProfile> => {
   const res = await api.get<UserProfile>('/api/profile', {
     headers: { Authorization: `Bearer ${token}` },
   });
-  // Debug: Log API response
-  console.log('[API] Profile response:', res.data);
-  console.log('[API] is_teacher from API:', res.data.is_teacher);
+
   return res.data;
 };
 

@@ -1,12 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Info } from 'lucide-react';
 import { BigOChartProps } from '@/types';
+import BigOComplexityTable from './BigOComplexityTable';
 
 const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
+  const [showTable, setShowTable] = useState(false);
+
   return (
     <Card className="border-border">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm">โค้ดของคุณอยู่ตรงไหน?</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm">โค้ดของคุณอยู่ตรงไหน?</CardTitle>
+          <button
+            onClick={() => setShowTable((prev) => !prev)}
+            className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+              showTable
+                ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            }`}
+            aria-label="ดูรายละเอียด Big O"
+          >
+            <Info className="h-3.5 w-3.5" />
+            ดูรายละเอียด
+          </button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="relative overflow-hidden">
@@ -28,6 +46,34 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
               fill="url(#gridPerf)"
               className="text-gray-400 dark:text-gray-500"
             />
+            {/* Axes */}
+            <path
+              d="M 30 145 L 390 145"
+              stroke="currentColor"
+              strokeWidth="1"
+              className="text-gray-500 dark:text-gray-400"
+            />
+            <path
+              d="M 30 145 L 30 10"
+              stroke="currentColor"
+              strokeWidth="1"
+              className="text-gray-500 dark:text-gray-400"
+            />
+            {/* Axis Arrows */}
+            <path
+              d="M 390 145 L 385 142 M 390 145 L 385 148"
+              stroke="currentColor"
+              strokeWidth="1"
+              fill="none"
+              className="text-gray-500 dark:text-gray-400"
+            />
+            <path
+              d="M 30 10 L 27 15 M 30 10 L 33 15"
+              stroke="currentColor"
+              strokeWidth="1"
+              fill="none"
+              className="text-gray-500 dark:text-gray-400"
+            />
             <text
               x="200"
               y="175"
@@ -45,10 +91,10 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
               className="fill-gray-500 dark:fill-gray-400"
               fontSize="10"
             >
-              Time
+              Operations
             </text>
-            <path d="M 30 145 L 330 145" fill="none" stroke="#10b981" strokeWidth="2" />
-            <text x="335" y="148" className="fill-emerald-500 font-medium" fontSize="10">
+            <path d="M 30 140 L 330 140" fill="none" stroke="#10b981" strokeWidth="2" />
+            <text x="335" y="143" className="fill-emerald-500 font-medium" fontSize="10">
               O(1)
             </text>
             <path d="M 30 145 Q 120 135, 330 120" fill="none" stroke="#14b8a6" strokeWidth="2" />
@@ -63,19 +109,29 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
             <text x="285" y="18" className="fill-amber-500 font-medium" fontSize="10">
               O(n log n)
             </text>
-            <path d="M 30 145 Q 80 140, 200 20" fill="none" stroke="#f97316" strokeWidth="2" />
-            <text x="205" y="18" className="fill-orange-500 font-medium" fontSize="10">
+            <path d="M 30 145 Q 70 110, 110 20" fill="none" stroke="#f97316" strokeWidth="2" />
+            <text x="115" y="18" className="fill-orange-500 font-medium" fontSize="10">
               O(n²)
             </text>
-            <path d="M 30 145 Q 60 145, 120 20" fill="none" stroke="#ef4444" strokeWidth="2" />
+            <path d="M 30 145 Q 50 100, 70 20" fill="none" stroke="#ef4444" strokeWidth="2" />
             <text
-              x="110"
+              x="75"
               y="18"
               className="fill-red-500 font-medium"
               textAnchor="middle"
               fontSize="10"
             >
-              O(2^n)
+              O(2ⁿ)
+            </text>
+            <path d="M 30 145 Q 40 100, 50 20" fill="none" stroke="#ef4444" strokeWidth="2" />
+            <text
+              x="50"
+              y="18"
+              className="fill-red-500 font-medium"
+              textAnchor="middle"
+              fontSize="10"
+            >
+              O(n!)
             </text>
             {(() => {
               let cx = 180,
@@ -83,7 +139,7 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
               let indicatorColor = '#3b82f6';
               if (timeComplexity.includes('O(1)')) {
                 cx = 180;
-                cy = 145;
+                cy = 130;
                 indicatorColor = '#10b981';
               } else if (timeComplexity.includes('log n') && !timeComplexity.includes('n log')) {
                 cx = 180;
@@ -98,16 +154,20 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
                 cy = 85;
                 indicatorColor = '#f59e0b';
               } else if (timeComplexity.includes('n²')) {
-                cx = 145;
-                cy = 75;
-                indicatorColor = '#f97316';
-              } else if (timeComplexity.includes('n³')) {
-                cx = 120;
+                cx = 90;
                 cy = 60;
                 indicatorColor = '#f97316';
-              } else if (timeComplexity.includes('2^n') || timeComplexity.includes('n!')) {
-                cx = 95;
-                cy = 80;
+              } else if (timeComplexity.includes('n³')) {
+                cx = 70;
+                cy = 50;
+                indicatorColor = '#f97316';
+              } else if (timeComplexity.includes('2^n')) {
+                cx = 60;
+                cy = 60;
+                indicatorColor = '#ef4444';
+              } else if (timeComplexity.includes('n!')) {
+                cx = 40;
+                cy = 60;
                 indicatorColor = '#ef4444';
               }
               return (
@@ -156,6 +216,12 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
             <span className="text-orange-500">● ช้า</span>
             <span className="text-red-500">● ช้ามาก</span>
           </div>
+          {showTable && (
+            <BigOComplexityTable
+              currentComplexity={timeComplexity}
+              onClose={() => setShowTable(false)}
+            />
+          )}
         </div>
       </CardContent>
     </Card>

@@ -105,9 +105,12 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   }, [isAutoPlaying]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-2 sm:p-4 dark:bg-gray-900" suppressHydrationWarning>
+    <div
+      className="min-h-screen bg-gray-50 p-2 sm:p-4 lg:flex lg:h-screen lg:flex-col lg:overflow-hidden dark:bg-gray-900"
+      suppressHydrationWarning
+    >
       {/* Header */}
-      <header className="mb-2 sm:mb-3">
+      <header className="mb-2 flex-shrink-0 sm:mb-3">
         <div className="mb-2 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
             <div>
@@ -130,10 +133,10 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
         </div>
       </header>
 
-      <main className="mb-2 grid grid-cols-1 gap-2 sm:mb-3 sm:gap-3 lg:grid-cols-[2fr_3fr]">
+      <main className="mb-2 grid grid-cols-1 gap-2 sm:mb-3 sm:gap-3 lg:mb-0 lg:flex-1 lg:grid-cols-[2fr_3fr] lg:overflow-hidden">
         {/* Left Side - Code Editor with Step Control */}
         <section
-          className="min-w-0 overflow-hidden rounded-lg bg-white p-2 shadow sm:p-3 dark:bg-gray-800"
+          className="flex min-w-0 flex-col overflow-hidden rounded-lg bg-white p-2 shadow sm:p-3 lg:h-full lg:overflow-y-auto dark:bg-gray-800"
           aria-label="Code Editor"
         >
           <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -229,7 +232,12 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
             </div>
           }
         >
-          <section id="tutorial-visualization" ref={visualizationRef} aria-label="Visualization">
+          <section
+            id="tutorial-visualization"
+            ref={visualizationRef}
+            aria-label="Visualization"
+            className="lg:h-full lg:overflow-y-auto"
+          >
             <VisualizationComponent
               steps={steps}
               currentStepIndex={currentStepIndex}
@@ -238,6 +246,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
               error={error}
               terminalOutput={terminalOutput}
               complexity={complexity}
+              code={code}
             />
           </section>
         </Suspense>

@@ -143,8 +143,10 @@ const VariableStatePanel: React.FC<VariableStatePanelProps> = ({
   return (
     <aside
       ref={panelRef}
-      className="relative rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-      style={{ width: panelWidth }}
+      className="relative w-full rounded-lg border border-gray-200 bg-white shadow-sm transition-all lg:w-auto dark:border-gray-700 dark:bg-gray-800"
+      style={{
+        width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? panelWidth : '100%',
+      }}
       aria-label="Variable State Panel"
     >
       {/* Header */}
@@ -168,8 +170,8 @@ const VariableStatePanel: React.FC<VariableStatePanelProps> = ({
         </span>
       </header>
 
-      {/* Variable Table */}
-      <div className="overflow-hidden">
+      {/* Variable Table - Scrollable on mobile */}
+      <div className="max-h-[200px] overflow-x-hidden overflow-y-auto lg:max-h-none lg:overflow-visible">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50">
@@ -257,9 +259,9 @@ const VariableStatePanel: React.FC<VariableStatePanelProps> = ({
         </footer>
       )}
 
-      {/* Resize Handle */}
+      {/* Resize Handle - Hidden on mobile */}
       <div
-        className={`absolute top-0 right-0 h-full w-1 cursor-ew-resize transition-colors ${
+        className={`absolute top-0 right-0 hidden h-full w-1 cursor-ew-resize transition-colors lg:block ${
           isResizing ? 'bg-blue-500' : 'bg-transparent hover:bg-blue-400'
         }`}
         onMouseDown={handleMouseDown}
