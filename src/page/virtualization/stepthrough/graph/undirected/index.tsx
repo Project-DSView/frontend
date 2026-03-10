@@ -29,7 +29,13 @@ const StepthroughUndirectedGraph: React.FC = () => {
     insertedVertex,
     insertedEdge,
     currentVertex,
+    setPlaybackSpeed,
+    toggleLooping,
+    rewind,
+    forward,
   } = useStepthroughUndirectedGraph();
+
+  const { playbackSpeed, isLooping } = state;
 
   // Create wrapped visualization component with animation props
   const VisualizationWithAnimation = React.useMemo(() => {
@@ -89,6 +95,12 @@ const StepthroughUndirectedGraph: React.FC = () => {
       onInputSubmit={handleInputSubmit}
       onInputCancel={handleInputCancel}
       complexity={state.complexity}
+      playbackSpeed={playbackSpeed}
+      isLooping={isLooping}
+      setPlaybackSpeed={setPlaybackSpeed}
+      toggleLooping={toggleLooping}
+      rewind={rewind}
+      forward={forward}
     />
   );
 };

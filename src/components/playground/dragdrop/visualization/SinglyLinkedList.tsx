@@ -28,19 +28,40 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
 
     // Memoize operation data to prevent unnecessary re-renders
     const operationData = useMemo(
-      () => ({
-        type: currentOperationData?.type,
-        value: currentOperationData?.value,
-        position: currentOperationData?.position,
-        newValue: currentOperationData?.newValue,
-      }),
-      [
-        currentOperationData?.type,
-        currentOperationData?.value,
-        currentOperationData?.position,
-        currentOperationData?.newValue,
-      ],
-    );
+  () => ({
+    type: currentOperationData?.type,
+    value: currentOperationData?.value,
+    position: currentOperationData?.position,
+    newValue: currentOperationData?.newValue,
+  }),
+  [
+    currentOperationData?.type,
+    currentOperationData?.value,
+    currentOperationData?.position,
+    currentOperationData?.newValue,
+  ],
+);
+
+const previewNodes = useMemo(() => {
+
+  // ถ้ามี node จริงอยู่แล้ว ใช้ nodes เดิม
+  if (nodes.length > 0) return nodes;
+
+  // ถ้ามี operation insert ให้ preview node
+  if (
+    currentOperationData &&
+    (
+      currentOperationData.type === "insert_beginning" ||
+      currentOperationData.type === "insert_end" ||
+      currentOperationData.type === "insert_position"
+    )
+  ) {
+    return [currentOperationData.value || "?"];
+  }
+
+  return nodes;
+
+}, [nodes, currentOperationData]);
 
     // Handle insert/delete/search operations animation
     useEffect(() => {
@@ -181,7 +202,7 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
       // If traverse step is selected, show animation
       if (selectedStep !== null && selectedStep !== undefined && currentOperation === 'traverse') {
         // For traverse, we want to show the head moving through each node
-        if (nodes.length === 0) return 0;
+        if (previewNodes.length === 0) return 0;
 
         // Use traverseIndex for animation only when traversing
         if (isTraversing) {
@@ -315,7 +336,7 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
           ) : (
             <div className="flex items-center justify-start space-x-2 p-6 pt-20">
               {/* Nodes with Head Pointer */}
-              {nodes.map((value, index) => (
+              {previewNodes.map((value, index) => (
                 <React.Fragment key={index}>
                   <div className="relative">
                     {/* Head Label - Always show on first node */}
@@ -354,7 +375,7 @@ const SinglyLinkedListDragDropVisualization = forwardRef<
                     {renderSinglyLinkedListNode(value, index)}
                   </div>
 
-                  {index < nodes.length - 1 && (
+                  {index < previewNodes.length - 1 && (
                     <div className="mx-2 flex items-center">
                       <div className="h-0.5 w-6 bg-black dark:bg-gray-300"></div>
                       <div className="h-0 w-0 border-t-[4px] border-b-[4px] border-l-[8px] border-t-transparent border-b-transparent border-l-black dark:border-l-gray-300"></div>

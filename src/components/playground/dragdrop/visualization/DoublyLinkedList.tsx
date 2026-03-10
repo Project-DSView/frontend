@@ -42,6 +42,25 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
       ],
     );
 
+const previewNodes = useMemo(() => {
+
+  if (nodes.length > 0) return nodes;
+
+  if (
+    currentOperationData &&
+    (
+      currentOperationData.type === "insert_beginning" ||
+      currentOperationData.type === "insert_end" ||
+      currentOperationData.type === "insert_position"
+    )
+  ) {
+    return [currentOperationData.value || "?"];
+  }
+
+  return nodes;
+
+}, [nodes, currentOperationData]);
+
     // Handle insert/delete/search operations animation
     useEffect(() => {
       if (
@@ -236,7 +255,7 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
         (currentOperation === 'traverse_forward' || currentOperation === 'traverse_backward')
       ) {
         // For traverse, we want to show the pointer moving through each node
-        if (nodes.length === 0) return 0;
+        if (previewNodes.length === 0) return 0;
 
         // Use traverseIndex for animation only when traversing
         if (isTraversing) {
@@ -410,7 +429,7 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
           ) : (
             <div className="flex items-center justify-start space-x-2 p-6 pt-20">
               {/* Nodes with Head/Tail Pointers */}
-              {nodes.map((value: string, index: number) => (
+              {previewNodes.map((value, index) => (
                 <React.Fragment key={index}>
                   <div className="relative">
                     {/* Head Label - Always show on first node */}
@@ -475,7 +494,7 @@ const DoublyLinkedDragDropListVisualization = forwardRef<
                   </div>
 
                   {/* Connections to next node */}
-                  {index < nodes.length - 1 && (
+                  {index < previewNodes.length - 1 && (
                     <div className="mx-2 flex items-center">
                       <svg width="80" height="40" viewBox="0 0 80 40">
                         <rect width="80" height="40" fill="#ffffff" />

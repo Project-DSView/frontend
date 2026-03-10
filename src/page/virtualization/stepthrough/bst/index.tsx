@@ -25,7 +25,13 @@ const StepthroughBST: React.FC = () => {
     linkedListData,
     handleInputSubmit,
     handleInputCancel,
+    setPlaybackSpeed,
+    toggleLooping,
+    rewind,
+    forward,
   } = useStepthroughBST();
+
+  const { playbackSpeed, isLooping } = state;
 
   return (
     <StepthroughLayout<BSTData>
@@ -53,6 +59,12 @@ const StepthroughBST: React.FC = () => {
       onInputSubmit={handleInputSubmit}
       onInputCancel={handleInputCancel}
       complexity={state.complexity}
+      playbackSpeed={playbackSpeed}
+      isLooping={isLooping}
+      setPlaybackSpeed={setPlaybackSpeed}
+      toggleLooping={toggleLooping}
+      rewind={rewind}
+      forward={forward}
     />
   );
 };

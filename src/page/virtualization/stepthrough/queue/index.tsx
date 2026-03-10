@@ -31,7 +31,13 @@ const QueueStepthroughPage: React.FC = () => {
     continueDebug,
     handleInputSubmit,
     handleInputCancel,
+    setPlaybackSpeed,
+    toggleLooping,
+    rewind,
+    forward,
   } = useStepthroughQueue(code);
+
+  const { playbackSpeed, isLooping } = state;
 
   return (
     <StepthroughLayout
@@ -70,6 +76,12 @@ const QueueStepthroughPage: React.FC = () => {
       onInputSubmit={handleInputSubmit}
       onInputCancel={handleInputCancel}
       complexity={state.complexity}
+      playbackSpeed={playbackSpeed}
+      isLooping={isLooping}
+      setPlaybackSpeed={setPlaybackSpeed}
+      toggleLooping={toggleLooping}
+      rewind={rewind}
+      forward={forward}
     />
   );
 };

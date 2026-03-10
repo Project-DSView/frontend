@@ -7,6 +7,7 @@ import {
   QueueStateExtended,
   BaseState,
 } from '@/types';
+
 import { QueueDragDropService } from '@/services';
 import { useBaseDataStructure } from './useBaseDragDrop';
 
@@ -14,6 +15,7 @@ class QueueServiceAdapter {
   private service: QueueDragDropService;
 
   constructor(state: BaseState<QueueData, QueueStatsExtended>) {
+
     const queueState: QueueState = {
       elements: state.data.elements,
       operations: state.operations as QueueOperation[],
@@ -24,11 +26,14 @@ class QueueServiceAdapter {
         isEmpty: state.stats.isEmpty,
       },
     };
+
     this.service = new QueueDragDropService(queueState);
   }
 
   getState(): BaseState<QueueData, QueueStatsExtended> {
+
     const queueState = this.service.getState();
+
     return {
       data: {
         elements: queueState.elements,
@@ -45,6 +50,13 @@ class QueueServiceAdapter {
   }
 
   async executeOperation(operation: QueueOperation) {
+
+    // ⭐ preview node ก่อนใส่ค่า
+    if (operation.type === 'enqueue' && (!operation.value || operation.value.trim() === '')) {
+      operation.value = '?';
+    }
+
+    // validation
     if (operation.type === 'enqueue' && (!operation.value || operation.value.trim() === '')) {
       throw new Error('Enqueue operation requires a value');
     }
@@ -54,23 +66,27 @@ class QueueServiceAdapter {
     }
 
     switch (operation.type) {
+
       case 'enqueue':
         if (operation.value && operation.value.trim() !== '') {
           return await this.service.enqueue(operation.value);
         }
         break;
+
       case 'dequeue':
         return await this.service.dequeue();
+
       case 'front':
       case 'back':
       case 'is_empty':
       case 'size':
-        // Read-only operations - return empty steps array
         return [];
+
       default:
         console.warn('Unknown operation type:', operation.type);
         return [];
     }
+
     return [];
   }
 }
@@ -90,7 +106,12 @@ const defaultState: QueueStateExtended = {
 };
 
 const useDragDropQueue = () => {
-  const baseHook = useBaseDataStructure<QueueData, QueueStatsExtended, QueueOperation>(
+
+  const baseHook = useBaseDataStructure<
+    QueueData,
+    QueueStatsExtended,
+    QueueOperation
+  >(
     defaultState,
     QueueServiceAdapter,
   );
@@ -104,8 +125,11 @@ const useDragDropQueue = () => {
 
   return {
     ...baseHook,
+
     addOperation: addOperationWithValidation,
+
     reorderOperation: baseHook.reorderOperation,
+
     state: {
       elements: baseHook.state.data.elements,
       operations: baseHook.state.operations as QueueOperation[],

@@ -37,28 +37,50 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
     };
   }, []);
 
-  const addOperation = useCallback((operation: Omit<TOperation, 'id'>) => {
+const addOperation = useCallback(
+  async (operation: Omit<TOperation, 'id'>) => {
     try {
       setError(null);
+
       const newOperation: TOperation = {
         ...operation,
         id: Date.now(),
       } as TOperation;
 
-      setState((prev) => {
-        const newOperations = [...prev.operations, newOperation];
-        operationsRef.current = newOperations as TOperation[];
-        return {
-          ...prev,
-          operations: newOperations,
-        };
-      });
+      // 1️⃣ update operations list
+      const newOperations = [...operationsRef.current, newOperation];
+      operationsRef.current = newOperations;
+
+      setState((prev) => ({
+        ...prev,
+        operations: newOperations,
+      }));
+
+      // 2️⃣ 🔥 execute เฉพาะ operation ใหม่แบบ realtime
+      const currentState: BaseState<TData, TStats> = {
+        ...state,
+        operations: newOperations,
+      };
+
+      const service = new ServiceClass(currentState);
+      await service.executeOperation(newOperation);
+      const updatedState = service.getState();
+
+      setState((prev) => ({
+        ...prev,
+        data: updatedState.data,
+        stats: updatedState.stats,
+      }));
+
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to add operation';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to add operation';
       setError(errorMessage);
       console.error('Error adding operation:', error);
     }
-  }, []);
+  },
+  [state, ServiceClass],
+);
 
   const updateOperation = useCallback((id: number, updates: Partial<TOperation>) => {
     try {

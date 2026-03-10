@@ -314,7 +314,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
       onDragEnter={onDragEnter}
       onDragLeave={handleMainDragLeave}
       onDrop={handleMainDrop}
-      className={`flex h-[360px] w-full flex-col overflow-hidden rounded-lg border bg-white p-3 dark:bg-gray-800 ${
+      className={`flex h-[360px] w-full flex-col overflow-y-auto rounded-lg border bg-white p-3 dark:bg-gray-800 ${
         isExternalDrag
           ? 'border-blue-400 bg-blue-50 shadow-lg dark:border-blue-600 dark:bg-blue-900/30'
           : 'border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800'
@@ -335,9 +335,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
           </div>
           {/* Show existing blocks behind overlay */}
           <div className="opacity-50">
-            <div
-              className={`space-y-3 ${operations.length >= 5 ? 'scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 flex-1 overflow-y-auto' : ''}`}
-            >
+            <div className="flex-1 space-y-3 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800">
               {operations.map((op, index) => (
                 <div key={op.id} className={`${op.color} rounded-md border p-2`}>
                   <div className="mb-2 flex items-center space-x-3">

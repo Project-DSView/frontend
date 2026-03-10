@@ -29,8 +29,21 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
     error: null as string | null,
   });
   const [complexity, setComplexity] = useState<ComplexityAnalysis | null>(null);
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
+  const [isLooping, setIsLooping] = useState<boolean>(false);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentStepIndexRef = useRef<number>(0);
+  const playbackSpeedRef = useRef<number>(playbackSpeed);
+  const isLoopingRef = useRef<boolean>(isLooping);
+
+  // Sync refs with state
+  useEffect(() => {
+    playbackSpeedRef.current = playbackSpeed;
+  }, [playbackSpeed]);
+
+  useEffect(() => {
+    isLoopingRef.current = isLooping;
+  }, [isLooping]);
 
   // Debug mode state
   const [debugState, setDebugState] = useState<DebugState>({
@@ -362,11 +375,28 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
       delay = estimatedNodes * 1000 + 50; // 1 second per node + 0.5 second buffer
     }
 
+    // Apply playback speed multiplier
+    // Higher speed = lower delay (e.g., 2x speed = delay / 2)
+    const currentSpeed = playbackSpeedRef.current;
+    const currentIsLooping = isLoopingRef.current;
+    const adjustedDelay = Math.max(100, delay / currentSpeed);
+
     // Schedule step change with calculated delay
     autoPlayIntervalRef.current = setTimeout(() => {
       setState((prev) => {
         if (currentIndex < prev.steps.length - 1) {
           const nextIndex = currentIndex + 1;
+          currentStepIndexRef.current = nextIndex;
+          setHookState((prevHook) => ({ ...prevHook, currentStepIndex: nextIndex }));
+
+          return {
+            ...prev,
+            currentStepIndex: nextIndex,
+            data: extractDataFromSteps(prev.steps, nextIndex),
+          };
+        } else if (currentIsLooping && prev.steps.length > 0) {
+          // Loop back to start
+          const nextIndex = 0;
           currentStepIndexRef.current = nextIndex;
           setHookState((prevHook) => ({ ...prevHook, currentStepIndex: nextIndex }));
 
@@ -383,11 +413,11 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
         }
       });
 
-      // Schedule next step if not finished
-      if (currentIndex < state.steps.length - 1) {
+      // Schedule next step if not finished or if looping
+      if (currentIndex < state.steps.length - 1 || currentIsLooping) {
         autoPlayNextStep();
       }
-    }, delay);
+    }, adjustedDelay);
   }, [extractDataFromSteps, state.steps]);
 
   // Toggle auto play
@@ -405,6 +435,23 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
       autoPlayNextStep();
     }
   }, [hookState.isAutoPlaying, autoPlayNextStep]);
+
+  // Rewind: move back by 5 steps
+  const rewind = useCallback(() => {
+    const targetIndex = Math.max(0, hookState.currentStepIndex - 5);
+    setCurrentStep(targetIndex);
+  }, [hookState.currentStepIndex, setCurrentStep]);
+
+  // Forward: move forward by 5 steps
+  const forward = useCallback(() => {
+    const targetIndex = Math.min(state.steps.length - 1, hookState.currentStepIndex + 5);
+    setCurrentStep(targetIndex);
+  }, [hookState.currentStepIndex, state.steps.length, setCurrentStep]);
+
+  // Toggle looping
+  const toggleLooping = useCallback(() => {
+    setIsLooping((prev) => !prev);
+  }, []);
 
   // Debug mode functions
   const toggleDebugMode = useCallback(() => {
@@ -630,6 +677,8 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
       astPreviewLoading: false,
       terminalOutput: state.terminalOutput,
       complexity: complexity,
+      playbackSpeed,
+      isLooping,
     };
 
     return stateObj;
@@ -648,6 +697,8 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
     inputState, // This will trigger recompute when inputState changes
     state.terminalOutput,
     complexity,
+    playbackSpeed,
+    isLooping,
   ]);
 
   return {
@@ -673,6 +724,11 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
     // Input handling functions
     handleInputSubmit,
     handleInputCancel,
+    // Playback control functions
+    setPlaybackSpeed,
+    toggleLooping,
+    rewind,
+    forward,
   };
 };
 

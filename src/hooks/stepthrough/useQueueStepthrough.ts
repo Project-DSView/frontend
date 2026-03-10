@@ -17,6 +17,8 @@ const useStepthroughQueue = (initialCode: string = ''): StepthroughHookReturn<Qu
       elements: [],
       count: 0,
     },
+    playbackSpeed: 1,
+    isLooping: false,
   });
 
   // Input state for Python input() function
@@ -268,6 +270,24 @@ const useStepthroughQueue = (initialCode: string = ''): StepthroughHookReturn<Qu
     setState((prev) => ({ ...prev, isAutoPlaying: !prev.isAutoPlaying }));
   }, []);
 
+  const setPlaybackSpeed = useCallback((speed: number) => {
+    setState((prev) => ({ ...prev, playbackSpeed: speed }));
+  }, []);
+
+  const toggleLooping = useCallback(() => {
+    setState((prev) => ({ ...prev, isLooping: !prev.isLooping }));
+  }, []);
+
+  const rewind = useCallback(() => {
+    const targetIndex = Math.max(0, state.currentStepIndex - 5);
+    setCurrentStep(targetIndex);
+  }, [state.currentStepIndex, setCurrentStep]);
+
+  const forward = useCallback(() => {
+    const targetIndex = Math.min(state.steps.length - 1, state.currentStepIndex + 5);
+    setCurrentStep(targetIndex);
+  }, [state.currentStepIndex, state.steps.length, setCurrentStep]);
+
   const reset = useCallback(() => {
     setState((prev) => ({
       ...prev,
@@ -281,6 +301,8 @@ const useStepthroughQueue = (initialCode: string = ''): StepthroughHookReturn<Qu
         elements: [],
         count: 0,
       },
+      playbackSpeed: 1,
+      isLooping: false,
     }));
     setInputState({
       waitingForInput: false,
@@ -372,6 +394,10 @@ const useStepthroughQueue = (initialCode: string = ''): StepthroughHookReturn<Qu
     isLoading: state.isRunning,
     handleInputSubmit,
     handleInputCancel,
+    setPlaybackSpeed,
+    toggleLooping,
+    rewind,
+    forward,
   };
 };
 
