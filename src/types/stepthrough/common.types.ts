@@ -186,6 +186,8 @@ interface StepthroughState<TData extends StepthroughData = StepthroughData> {
   inputState?: InputState;
   terminalOutput?: string; // Full terminal output
   complexity?: ComplexityAnalysis | null; // Big O analysis
+  playbackSpeed: number; // Playback speed multiplier (0.25x to 4x)
+  isLooping: boolean; // Continuous loop mode
 }
 
 interface StepthroughHookReturn<TData extends StepthroughData = StepthroughData> {
@@ -200,6 +202,11 @@ interface StepthroughHookReturn<TData extends StepthroughData = StepthroughData>
   toggleAutoPlay: () => void;
   reset: () => void;
   isLoading: boolean;
+  // Playback control functions
+  setPlaybackSpeed: (speed: number) => void;
+  toggleLooping: () => void;
+  rewind: () => void;
+  forward: () => void;
   // Debug mode functions
   toggleDebugMode?: () => void;
   setBreakpoint?: (line: number) => void;
@@ -258,6 +265,13 @@ interface StepthroughStepControlProps {
   onStepInto?: () => void;
   onStepOut?: () => void;
   onContinue?: () => void;
+  // Playback control props
+  playbackSpeed: number;
+  isLooping: boolean;
+  onSpeedChange: (speed: number) => void;
+  onToggleLoop: () => void;
+  onRewind: () => void;
+  onForward: () => void;
 }
 
 interface StepthroughVisualizationProps<TData extends StepthroughData = StepthroughData> {
@@ -357,6 +371,13 @@ interface StepthroughLayoutProps<TData extends StepthroughData = StepthroughData
   } | null;
   astPreviewLoading?: boolean;
   complexity?: ComplexityAnalysis | null; // Big O analysis
+  // Playback control props
+  playbackSpeed: number;
+  isLooping: boolean;
+  setPlaybackSpeed: (speed: number) => void;
+  toggleLooping: () => void;
+  rewind: () => void;
+  forward: () => void;
 }
 
 export type {

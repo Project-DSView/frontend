@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+
 import {
   BSTState,
   BSTOperation,
@@ -9,14 +10,17 @@ import {
   BSTStateExtended,
   BaseState,
 } from '@/types';
+
 import { BSTDragDropService } from '@/services';
 import { useBaseDataStructure } from './useBaseDragDrop';
 
 // BST Service Adapter
 class BSTServiceAdapter {
+
   private service: BSTDragDropService;
 
   constructor(state: BaseState<BSTData, BSTStatsExtended>) {
+
     const bstState: BSTState = {
       root: state.data.root,
       operations: state.operations as BSTOperation[],
@@ -26,11 +30,14 @@ class BSTServiceAdapter {
         isEmpty: state.stats.isEmpty,
       },
     };
+
     this.service = new BSTDragDropService(bstState);
   }
 
   getState(): BaseState<BSTData, BSTStatsExtended> {
+
     const bstState = this.service.getState();
+
     return {
       data: { root: bstState.root },
       operations: bstState.operations,
@@ -43,27 +50,40 @@ class BSTServiceAdapter {
   }
 
   async executeOperation(operation: BSTOperation) {
+
+    // ⭐ preview node ก่อนใส่ค่า
+    if (operation.type === 'insert' && (!operation.value || operation.value.trim() === '')) {
+      operation.value = '?';
+    }
+
     switch (operation.type) {
+
       case 'insert':
         if (operation.value) {
           return await this.service.insert(operation.value);
         }
         break;
+
       case 'delete':
         if (operation.value) {
           return await this.service.delete(operation.value);
         }
         break;
+
       case 'traverse_inorder':
         return await this.service.traverseInorder();
+
       case 'traverse_preorder':
         return await this.service.traversePreorder();
+
       case 'traverse_postorder':
         return await this.service.traversePostorder();
+
       default:
         console.warn('Unknown operation type:', operation.type);
         return [];
     }
+
     return [];
   }
 }
@@ -79,7 +99,12 @@ const defaultState: BSTStateExtended = {
 };
 
 const useDragDropBST = () => {
-  const baseHook = useBaseDataStructure<BSTData, BSTStatsExtended, BSTOperation>(
+
+  const baseHook = useBaseDataStructure<
+    BSTData,
+    BSTStatsExtended,
+    BSTOperation
+  >(
     defaultState,
     BSTServiceAdapter,
   );
@@ -87,7 +112,9 @@ const useDragDropBST = () => {
   // BST-specific methods
   const updateBSTState = useCallback(
     (newRoot: BSTNode | null, newStats: BSTStats) => {
+
       try {
+
         baseHook.updateDataState(
           { root: newRoot },
           {
@@ -96,16 +123,21 @@ const useDragDropBST = () => {
             isEmpty: newStats.isEmpty,
           },
         );
+
       } catch (error) {
         console.error('Error updating BST state:', error);
       }
+
     },
     [baseHook],
   );
 
   return {
+
     ...baseHook,
+
     reorderOperation: baseHook.reorderOperation,
+
     state: {
       root: baseHook.state.data.root,
       operations: baseHook.state.operations as BSTOperation[],
@@ -115,6 +147,7 @@ const useDragDropBST = () => {
         isEmpty: baseHook.state.stats.isEmpty,
       },
     },
+
     updateBSTState,
   };
 };

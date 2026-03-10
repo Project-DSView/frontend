@@ -57,6 +57,13 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
   onInputCancel,
   terminalOutput,
   complexity,
+  // Playback props
+  playbackSpeed,
+  isLooping,
+  setPlaybackSpeed,
+  toggleLooping,
+  rewind,
+  forward,
 }: StepthroughLayoutProps<TData>) => {
   const pathname = usePathname();
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
@@ -110,7 +117,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
       suppressHydrationWarning
     >
       {/* Header */}
-      <header className="mb-2 flex-shrink-0 sm:mb-3">
+      <header className="mb-2 shrink-0 sm:mb-3">
         <div className="mb-2 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
             <div>
@@ -216,6 +223,13 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
               onStepInto={onStepInto}
               onStepOut={onStepOut}
               onContinue={onContinue}
+              // Playback control props
+              playbackSpeed={playbackSpeed}
+              isLooping={isLooping}
+              onSpeedChange={setPlaybackSpeed}
+              onToggleLoop={toggleLooping}
+              onRewind={rewind}
+              onForward={forward}
             />
           </div>
         </section>

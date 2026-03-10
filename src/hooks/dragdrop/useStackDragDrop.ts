@@ -7,12 +7,15 @@ import {
   StackStateExtended,
   BaseState,
 } from '@/types';
+
 import { StackDragDropService } from '@/services';
 import { useBaseDataStructure } from './useBaseDragDrop';
+
 class StackServiceAdapter {
   private service: StackDragDropService;
 
   constructor(state: BaseState<StackData, StackStatsExtended>) {
+
     const stackState: StackState = {
       elements: state.data.elements,
       operations: state.operations as StackOperation[],
@@ -23,11 +26,14 @@ class StackServiceAdapter {
         isEmpty: state.stats.isEmpty,
       },
     };
+
     this.service = new StackDragDropService(stackState);
   }
 
   getState(): BaseState<StackData, StackStatsExtended> {
+
     const stackState = this.service.getState();
+
     return {
       data: {
         elements: stackState.elements,
@@ -41,9 +47,16 @@ class StackServiceAdapter {
         isEmpty: stackState.stats.isEmpty,
       },
     };
+
   }
 
   async executeOperation(operation: StackOperation) {
+
+    // ⭐ preview node ถ้ายังไม่ได้ใส่ค่า
+    if (operation.type === 'push' && (!operation.value || operation.value.trim() === '')) {
+      operation.value = '?';
+    }
+
     // Validate operation before executing
     if (operation.type === 'push' && (!operation.value || operation.value.trim() === '')) {
       throw new Error('Push operation requires a value');
@@ -54,21 +67,25 @@ class StackServiceAdapter {
     }
 
     switch (operation.type) {
+
       case 'push':
         if (operation.value && operation.value.trim() !== '') {
           return await this.service.push(operation.value);
         }
         break;
+
       case 'pop':
         return await this.service.pop();
+
       case 'copyStack':
-        // For copyStack, we need to handle multiple stacks
-        // This will be handled in the visualization layer
+        // handled in visualization layer
         return [];
+
       default:
         console.warn('Unknown operation type:', operation.type);
         return [];
     }
+
     return [];
   }
 }
@@ -88,23 +105,34 @@ const defaultState: StackStateExtended = {
 };
 
 const useDragDropStack = () => {
-  const baseHook = useBaseDataStructure<StackData, StackStatsExtended, StackOperation>(
+
+  const baseHook = useBaseDataStructure<
+    StackData,
+    StackStatsExtended,
+    StackOperation
+  >(
     defaultState,
-    StackServiceAdapter,
+    StackServiceAdapter
   );
 
   const addOperationWithValidation = useCallback(
     (operation: Omit<StackOperation, 'id'>) => {
-      // Don't validate immediately when adding - validation happens during execution
+
+      // validation happens during execution
       baseHook.addOperation(operation);
+
     },
-    [baseHook],
+    [baseHook]
   );
 
   return {
+
     ...baseHook,
+
     addOperation: addOperationWithValidation,
+
     reorderOperation: baseHook.reorderOperation,
+
     state: {
       elements: baseHook.state.data.elements,
       operations: baseHook.state.operations as StackOperation[],
@@ -115,7 +143,9 @@ const useDragDropStack = () => {
         isEmpty: baseHook.state.stats.isEmpty,
       },
     },
+
   };
+
 };
 
 export { useDragDropStack };
