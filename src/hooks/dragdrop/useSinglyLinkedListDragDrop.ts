@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import {
   SinglyLinkedListState,
@@ -25,11 +26,13 @@ class SinglyLinkedListServiceAdapter {
         isEmpty: state.stats.isEmpty,
       },
     };
+
     this.service = new SinglyLinkedListDragDropService(singlyLinkedListState);
   }
 
   getState(): BaseState<SinglyLinkedListData, SinglyLinkedListStatsExtended> {
     const singlyLinkedListState = this.service.getState();
+
     return {
       data: { nodes: singlyLinkedListState.nodes },
       operations: singlyLinkedListState.operations,
@@ -43,94 +46,121 @@ class SinglyLinkedListServiceAdapter {
   }
 
   async executeOperation(operation: SinglyLinkedListOperation) {
-    // Validate operation before executing
-    if (
-      (operation.type === 'insert_beginning' ||
-        operation.type === 'insert_end' ||
-        operation.type === 'insert_position') &&
-      (!operation.value || operation.value.trim() === '')
-    ) {
-      throw new Error(`${operation.type} operation requires a value`);
-    }
+
+    // ===== Validation =====
+
+if (
+  (operation.type === 'insert_beginning' ||
+    operation.type === 'insert_end' ||
+    operation.type === 'insert_position') &&
+  (!operation.value || operation.value.trim() === '')
+) {
+  operation.value = "?"; // ⭐ ให้ preview node
+}
 
     if (
       operation.type === 'insert_position' &&
       (!operation.position || parseInt(operation.position) < 0)
     ) {
-      throw new Error('Insert position must be a valid non-negative number');
+      console.warn('Insert position must be a valid non-negative number');
+      return [];
     }
 
     if (
       operation.type === 'delete_position' &&
       (!operation.position || parseInt(operation.position) < 0)
     ) {
-      throw new Error('Delete position must be a valid non-negative number');
+      console.warn('Delete position must be a valid non-negative number');
+      return [];
     }
 
-    // Check if trying to delete from empty list
     if (
       (operation.type === 'delete_beginning' ||
         operation.type === 'delete_end' ||
         operation.type === 'delete_value') &&
       this.service.getState().stats.isEmpty
     ) {
-      throw new Error('Cannot delete from empty linked list');
+      console.warn('Cannot delete from empty linked list');
+      return [];
     }
 
+    // ===== Execute Operation =====
+
     switch (operation.type) {
+
       case 'insert_beginning':
-        if (operation.value && operation.value.trim() !== '') {
+        if (operation.value?.trim()) {
           return await this.service.insertAtBeginning(operation.value);
         }
         break;
+
       case 'insert_end':
-        if (operation.value && operation.value.trim() !== '') {
+        if (operation.value?.trim()) {
           return await this.service.insertAtEnd(operation.value);
         }
         break;
+
       case 'insert_position':
-        if (operation.value && operation.value.trim() !== '' && operation.position) {
-          return await this.service.insertAtPosition(operation.value, parseInt(operation.position));
-        }
-        break;
-      case 'delete_beginning':
-        return await this.service.deleteFromBeginning();
-      case 'delete_end':
-        return await this.service.deleteFromEnd();
-      case 'delete_value':
-        if (operation.value && operation.value.trim() !== '') {
-          return await this.service.deleteByValue(operation.value);
-        }
-        break;
-      case 'delete_position':
-        if (operation.position) {
-          return await this.service.deleteAtPosition(parseInt(operation.position));
-        }
-        break;
-      case 'traverse':
-        return await this.service.traverse();
-      case 'update_value':
-        if (
-          operation.value &&
-          operation.value.trim() !== '' &&
-          operation.newValue &&
-          operation.newValue.trim() !== ''
-        ) {
-          return await this.service.updateByValue(operation.value, operation.newValue);
-        }
-        break;
-      case 'update_position':
-        if (operation.position && operation.newValue && operation.newValue.trim() !== '') {
-          return await this.service.updateByPosition(
-            parseInt(operation.position),
-            operation.newValue,
+        if (operation.value?.trim() && operation.position) {
+          return await this.service.insertAtPosition(
+            operation.value,
+            parseInt(operation.position)
           );
         }
         break;
+
+      case 'delete_beginning':
+        return await this.service.deleteFromBeginning();
+
+      case 'delete_end':
+        return await this.service.deleteFromEnd();
+
+      case 'delete_value':
+        if (operation.value?.trim()) {
+          return await this.service.deleteByValue(operation.value);
+        }
+        break;
+
+      case 'delete_position':
+        if (operation.position) {
+          return await this.service.deleteAtPosition(
+            parseInt(operation.position)
+          );
+        }
+        break;
+
+      case 'traverse':
+        return await this.service.traverse();
+
+      case 'update_value':
+        if (
+          operation.value?.trim() &&
+          operation.newValue?.trim()
+        ) {
+          return await this.service.updateByValue(
+            operation.value,
+            operation.newValue
+          );
+        }
+        break;
+
+      case 'update_position':
+        if (
+          operation.position &&
+          operation.newValue?.trim()
+        ) {
+          return await this.service.updateByPosition(
+            parseInt(operation.position),
+            operation.newValue
+          );
+        }
+        break;
+
       default:
         console.warn('Unknown operation type:', operation.type);
         return [];
     }
+
     return [];
   }
 }
@@ -147,6 +177,7 @@ const defaultState: SinglyLinkedListStateExtended = {
 };
 
 const useDragDropSinglyLinkedList = () => {
+
   const baseHook = useBaseDataStructure<
     SinglyLinkedListData,
     SinglyLinkedListStatsExtended,
@@ -155,19 +186,23 @@ const useDragDropSinglyLinkedList = () => {
 
   const addOperationWithValidation = useCallback(
     (operation: Omit<SinglyLinkedListOperation, 'id'>) => {
-      // Don't validate immediately when adding - validation happens during execution
       baseHook.addOperation(operation);
     },
-    [baseHook],
+    [baseHook]
   );
 
   return {
     ...baseHook,
+
     addOperation: addOperationWithValidation,
+
     reorderOperation: baseHook.reorderOperation,
+
     state: {
       nodes: baseHook.state.data.nodes,
+
       operations: baseHook.state.operations as SinglyLinkedListOperation[],
+
       stats: {
         length: baseHook.state.stats.size,
         headValue: baseHook.state.stats.headValue,

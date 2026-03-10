@@ -60,6 +60,8 @@ interface BaseStepthroughHookReturn<TData, TStats> {
     } | null;
     astPreviewLoading?: boolean;
     complexity?: ComplexityAnalysis | null;
+    playbackSpeed: number;
+    isLooping: boolean;
   };
   setCode: (code: string) => void;
   setFilename: (filename: string) => void;
@@ -82,6 +84,11 @@ interface BaseStepthroughHookReturn<TData, TStats> {
   // Input handling functions
   handleInputSubmit?: (values: string[]) => void;
   handleInputCancel?: () => void;
+  // Playback control functions
+  setPlaybackSpeed: (speed: number) => void;
+  toggleLooping: () => void;
+  rewind: () => void;
+  forward: () => void;
 }
 
 interface BaseStepthroughService<TData, TStats> {

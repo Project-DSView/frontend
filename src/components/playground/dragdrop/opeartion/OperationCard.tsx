@@ -20,7 +20,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ component, onDragStart, o
       draggable
       onDragStart={onDragStart}
       onTouchStart={onTouchStart}
-      className={`cursor-grab rounded-md border px-2 py-1.5 shadow-sm transition select-none hover:shadow ${component.color}`}
+      className="cursor-grab rounded-md border border-gray-300 bg-white px-2 py-1.5 shadow-sm transition select-none hover:bg-gray-100 hover:shadow dark:border-gray-600 dark:bg-gray-800"
     >
       <div className="text-xs leading-tight font-semibold text-gray-800 dark:text-gray-100">
         {component.name}

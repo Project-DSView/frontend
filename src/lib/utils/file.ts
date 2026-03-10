@@ -48,9 +48,11 @@ const openFilePreview = async (url: string, token?: string): Promise<void> => {
       const apiKeyName = process.env.NEXT_PUBLIC_API_KEY_NAME || 'dsview-api-key';
       const apiKey = process.env.NEXT_PUBLIC_API_KEY;
 
-      const headers: HeadersInit = {
-        Authorization: `Bearer ${token}`,
-      };
+      const headers: Record<string, string> = {};
+
+      if (token && token !== 'cookie-managed' && token !== 'http-only-cookie-managed') {
+        headers.Authorization = `Bearer ${token}`;
+      }
 
       if (apiKey) {
         headers[apiKeyName] = apiKey;
@@ -134,9 +136,11 @@ const downloadFileDirect = async (
       const apiKeyName = process.env.NEXT_PUBLIC_API_KEY_NAME || 'dsview-api-key';
       const apiKey = process.env.NEXT_PUBLIC_API_KEY;
 
-      const headers: HeadersInit = {
-        Authorization: `Bearer ${token}`,
-      };
+      const headers: Record<string, string> = {};
+
+      if (token && token !== 'cookie-managed' && token !== 'http-only-cookie-managed') {
+        headers.Authorization = `Bearer ${token}`;
+      }
 
       if (apiKey) {
         headers[apiKeyName] = apiKey;

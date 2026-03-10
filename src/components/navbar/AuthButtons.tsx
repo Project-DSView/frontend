@@ -70,6 +70,27 @@ const AuthButtons: React.FC = () => {
     }
   };
 
+  // Proactive profile fetch if authenticated but no profile
+  useEffect(() => {
+    const syncProfile = async () => {
+      // Only proceed if initialized, no profile, and not currently logging out
+      if (!isInitialized || profile || isLoggingOut) return;
+
+      try {
+        // Try to fetch profile - if it fails with 401, useAuth should handle cleanup
+        const data = await fetchUserProfile();
+        if (data) {
+          setAuthData(data);
+          toast.success(`Welcome back, ${data.firstname}`);
+        }
+      } catch (error) {
+        logError('Proactive profile sync failed:', error);
+      }
+    };
+
+    syncProfile();
+  }, [isInitialized, profile, fetchUserProfile, setAuthData, isLoggingOut]);
+
   // Handle OAuth callback - Check if we're in callback mode
   useEffect(() => {
     const handleOAuthCallback = async () => {
@@ -210,7 +231,7 @@ const AuthButtons: React.FC = () => {
                 </span>
               </div>
             )}
-            <span className="text-foreground text-sm font-medium">
+            <span className="text-foreground hidden text-sm font-medium sm:inline">
               {profile.firstname} {profile.lastname}
             </span>
           </div>

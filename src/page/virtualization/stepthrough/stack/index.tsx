@@ -28,7 +28,13 @@ const StepthroughStack: React.FC = () => {
     stackData,
     handleInputSubmit,
     handleInputCancel,
+    setPlaybackSpeed,
+    toggleLooping,
+    rewind,
+    forward,
   } = hookResult;
+
+  const { playbackSpeed, isLooping } = state;
 
   return (
     <StepthroughLayout<StackData>
@@ -59,6 +65,12 @@ const StepthroughStack: React.FC = () => {
       onInputCancel={handleInputCancel}
       terminalOutput={state.terminalOutput}
       complexity={state.complexity}
+      playbackSpeed={playbackSpeed}
+      isLooping={isLooping}
+      setPlaybackSpeed={setPlaybackSpeed}
+      toggleLooping={toggleLooping}
+      rewind={rewind}
+      forward={forward}
     />
   );
 };

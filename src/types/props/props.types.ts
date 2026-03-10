@@ -410,6 +410,16 @@ interface DataStructure {
   iconColor: string;
 }
 
+interface DataStructureNamingGuide {
+  id: string;
+  name: string;
+  description: string;
+  supportedClassNames: string[];
+  supportedMethods: string[];
+  exampleCode: string;
+  iconColor: string;
+}
+
 interface LearningTip {
   title: string;
   description: string;
@@ -928,6 +938,7 @@ export type {
   VisualizationMode,
   // Tutorial
   DataStructure,
+  DataStructureNamingGuide,
   LearningTip,
   TutorialStep,
   TutorialOverlayProps,

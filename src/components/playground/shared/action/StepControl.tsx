@@ -1,8 +1,22 @@
+'use client';
+
 import React from 'react';
 
 import { StepthroughStepControlProps } from '@/types';
 
 import { Slider } from '@/components/ui/slider';
+import { 
+  Rewind, 
+  FastForward, 
+  Play, 
+  Pause, 
+  ChevronLeft, 
+  ChevronRight, 
+  ChevronsLeft, 
+  ChevronsRight,
+  Gauge,
+  Repeat
+} from 'lucide-react';
 
 const StepControl: React.FC<StepthroughStepControlProps> = ({
   steps,
@@ -12,6 +26,12 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
   onPrevious,
   onAutoPlay,
   isAutoPlaying,
+  playbackSpeed,
+  isLooping,
+  onSpeedChange,
+  onToggleLoop,
+  onRewind,
+  onForward,
 }) => {
   if (steps.length === 0) {
     return (
@@ -66,7 +86,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
         </div>
 
         {/* Step Slider */}
-        <div className="mb-2 flex flex-col items-center justify-center px-2 sm:mb-3">
+        <div className="mb-3 flex flex-col items-center justify-center px-2 sm:mb-4">
           <Slider
             value={[currentStepIndex]}
             onValueChange={(value) => onStepSelect(value[0])}
@@ -76,120 +96,145 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
             className="w-full"
             isAnimating={isAutoPlaying}
           />
-          <div className="mt-1 mb-1 flex items-center justify-center">
-            <span className="text-xs text-gray-500 sm:text-sm dark:text-gray-400">
+          <div className="mt-1 flex items-center justify-center">
+            <span className="text-xs text-gray-500 sm:text-sm dark:text-gray-400 font-mono">
               {currentStepIndex + 1} / {steps.length}
             </span>
           </div>
         </div>
 
+        {/* Playback Settings - Speed & Loop */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-1 sm:mb-6 sm:px-2">
+          {/* Loop Toggle */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onToggleLoop}
+              title={isLooping ? 'ปิดการเล่นวนซ้ำ' : 'เปิดการเล่นวนซ้ำ'}
+              className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-all sm:h-9 sm:w-9 ${
+                isLooping
+                  ? 'border-primary bg-primary text-white shadow-sm'
+                  : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400'
+              }`}
+            >
+              <Repeat className={`h-4 w-4 sm:h-5 sm:w-5 ${isLooping ? 'animate-pulse' : ''}`} />
+            </button>
+            <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider sm:text-xs dark:text-gray-400">
+              Loop
+            </span>
+          </div>
+
+          {/* Speed Control */}
+          <div className="flex flex-1 items-center gap-3 min-w-[140px] max-w-[200px]">
+            <Gauge className="h-4 w-4 text-gray-400 sm:h-5 sm:w-5 shrink-0" />
+            <div className="flex-1">
+              <Slider
+                defaultValue={[1]}
+                value={[
+                  playbackSpeed === 0.25 ? 0 : 
+                  playbackSpeed === 0.5 ? 1 : 
+                  playbackSpeed === 1 ? 2 : 
+                  playbackSpeed === 2 ? 3 : 4
+                ]}
+                onValueChange={(val) => {
+                  const speeds = [0.25, 0.5, 1, 2, 4];
+                  onSpeedChange(speeds[val[0]]);
+                }}
+                max={4}
+                min={0}
+                step={1}
+                className="w-full"
+              />
+              <div className="mt-1 flex justify-between px-0.5">
+                <span className="text-[9px] text-gray-400 sm:text-[10px]">0.25x</span>
+                <span className="text-[9px] font-bold text-primary sm:text-[10px]">{playbackSpeed}x</span>
+                <span className="text-[9px] text-gray-400 sm:text-[10px]">4x</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Navigation Controls */}
-        <div className="mb-2 flex flex-wrap items-center justify-center gap-1 sm:mb-3 sm:gap-2">
+        <div className="mb-4 flex flex-wrap items-center justify-center gap-1.5 sm:mb-6 sm:gap-2">
+          {/* First Button */}
           <button
             onClick={() => onStepSelect(0)}
             disabled={isFirstStep}
-            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-1 sm:px-3 sm:py-2 sm:text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            title="First Step"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:w-11 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-750 font-bold"
           >
-            <svg
-              className="h-3 w-3 sm:h-4 sm:w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
-              />
-            </svg>
-            <span className="hidden sm:inline">First</span>
+            <ChevronsLeft className="h-5 w-5" />
           </button>
 
+          {/* Rewind Button */}
+          <button
+            onClick={onRewind}
+            disabled={isFirstStep}
+            title="Rewind 5 steps"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:w-11 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-750"
+          >
+            <Rewind className="h-5 w-5" />
+          </button>
+
+          {/* Previous Button */}
           <button
             onClick={onPrevious}
             disabled={isFirstStep}
-            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-1 sm:px-3 sm:py-2 sm:text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            title="Previous Step"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:w-11 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-750"
           >
-            <svg
-              className="h-3 w-3 sm:h-4 sm:w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            <span className="hidden sm:inline">Previous</span>
+            <ChevronLeft className="h-5 w-5" />
           </button>
 
           {/* Auto Play Button - Center */}
           <button
             onClick={onAutoPlay}
-            className={`flex transform items-center space-x-1 rounded-xl px-3 py-1.5 text-xs font-semibold shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl sm:px-4 sm:py-2 sm:text-sm ${
+            className={`flex h-11 items-center justify-center gap-2 rounded-2xl px-4 font-bold shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 sm:h-14 sm:px-8 ${
               isAutoPlaying
-                ? 'bg-error hover:bg-error/80 text-white'
-                : 'bg-success hover:bg-success/80 text-white'
+                ? 'bg-red-500 hover:bg-red-600 text-white'
+                : 'bg-green-500 hover:bg-green-600 text-white'
             }`}
           >
             {isAutoPlaying ? (
               <>
-                <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                </svg>
-                <span className="hidden sm:inline">Stop</span>
+                <Pause className="h-6 w-6 fill-current" />
+                <span className="hidden sm:inline">STOP</span>
               </>
             ) : (
               <>
-                <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                <span className="hidden sm:inline">Play</span>
+                <Play className="h-6 w-6 fill-current" />
+                <span className="hidden sm:inline">PLAY</span>
               </>
             )}
           </button>
 
+          {/* Next Button */}
           <button
             onClick={onNext}
             disabled={isLastStep}
-            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-1 sm:px-3 sm:py-2 sm:text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            title="Next Step"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:w-11 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-750"
           >
-            <span className="hidden sm:inline">Next</span>
-
-            <svg
-              className="h-3 w-3 sm:h-4 sm:w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            <ChevronRight className="h-5 w-5" />
           </button>
 
+          {/* Forward Button */}
+          <button
+            onClick={onForward}
+            disabled={isLastStep}
+            title="Forward 5 steps"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:w-11 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-750"
+          >
+            <FastForward className="h-5 w-5" />
+          </button>
+
+          {/* Last Button */}
           <button
             onClick={() => onStepSelect(steps.length - 1)}
             disabled={isLastStep}
-            className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:space-x-1 sm:px-3 sm:py-2 sm:text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            title="Last Step"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:w-11 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-750"
           >
-            <span className="hidden sm:inline">Last</span>
-
-            <svg
-              className="h-3 w-3 sm:h-4 sm:w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 5l7 7-7 7M5 5l7 7-7 7"
-              />
-            </svg>
+            <ChevronsRight className="h-5 w-5" />
           </button>
         </div>
 
@@ -243,7 +288,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
                       Code:
                     </div>
                     <div className="rounded-md bg-gray-50 p-2 dark:bg-gray-900">
-                      <pre className="text-xs break-words whitespace-pre-wrap text-gray-800 dark:text-gray-200">
+                      <pre className="text-xs wrap-break-word whitespace-pre-wrap text-gray-800 dark:text-gray-200">
                         {currentStep.code}
                       </pre>
                     </div>
@@ -271,7 +316,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
                         Error:
                       </div>
                     </div>
-                    <div className="font-mono text-xs break-words whitespace-pre-wrap text-red-800 sm:text-sm dark:text-red-200">
+                    <div className="font-mono text-xs wrap-break-word whitespace-pre-wrap text-red-800 sm:text-sm dark:text-red-200">
                       {errorMessage}
                     </div>
                   </div>
