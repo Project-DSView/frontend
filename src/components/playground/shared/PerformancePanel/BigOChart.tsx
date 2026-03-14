@@ -149,7 +149,8 @@ const BigOChart: React.FC<BigOChartProps> = ({ timeComplexity }) => {
                 cx = 180;
                 cy = 143.5;
                 indicatorColor = '#10b981';
-              } else if (timeComplexity.includes('log n') && !timeComplexity.includes('n log')) {
+              } else if (timeComplexity.toLowerCase().includes('log') && !timeComplexity.toLowerCase().includes('n log')) {
+                // Handle O(log n), O(log² n), O(log³ n), etc.
                 cx = 250;
                 cy = 111.5;
                 indicatorColor = '#14b8a6';
