@@ -29,119 +29,156 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
 
   const operationsRef = useRef<TOperation[]>([]);
 
-  // Cleanup effect for memory management
   useEffect(() => {
     return () => {
       operationsRef.current = [];
-      // Don't call setState in cleanup to avoid infinite re-renders
     };
   }, []);
 
-const addOperation = useCallback(
-  async (operation: Omit<TOperation, 'id'>) => {
-    try {
-      setError(null);
+  const isOperationReadyForRealtimeExecution = useCallback((operation: TOperation) => {
+    const op = operation as TOperation & {
+      value?: string | null;
+      position?: string | null;
+      newValue?: string | null;
+      sourceStack?: string | null;
+      targetStack?: string | null;
+    };
 
-      const newOperation: TOperation = {
-        ...operation,
-        id: Date.now(),
-      } as TOperation;
+    if (op.type === 'push') {
+      return !!op.value?.trim() && !!op.targetStack?.trim();
+    }
 
-      // 1️⃣ update operations list
-      const newOperations = [...operationsRef.current, newOperation];
-      operationsRef.current = newOperations;
+    if (op.type === 'pop') {
+      return !!op.targetStack?.trim();
+    }
 
-      setState((prev) => ({
-        ...prev,
-        operations: newOperations,
-      }));
+    if (op.type === 'copyStack') {
+      return !!op.sourceStack?.trim() && !!op.targetStack?.trim();
+    }
 
-      // 2️⃣ 🔥 execute เฉพาะ operation ใหม่แบบ realtime
+    return true;
+  }, []);
+
+  const rebuildStateFromOperations = useCallback(
+    async (operations: TOperation[]): Promise<BaseState<TData, TStats>> => {
       const currentState: BaseState<TData, TStats> = {
-        ...state,
-        operations: newOperations,
+        ...initialState,
+        operations,
       };
 
       const service = new ServiceClass(currentState);
-      await service.executeOperation(newOperation);
-      const updatedState = service.getState();
 
-      setState((prev) => ({
-        ...prev,
-        data: updatedState.data,
-        stats: updatedState.stats,
-      }));
+      for (const operation of operations) {
+        if (!isOperationReadyForRealtimeExecution(operation)) continue;
+        await service.executeOperation(operation);
+      }
 
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to add operation';
-      setError(errorMessage);
-      console.error('Error adding operation:', error);
-    }
-  },
-  [state, ServiceClass],
-);
+      const rebuilt = service.getState();
 
-  const updateOperation = useCallback((id: number, updates: Partial<TOperation>) => {
-    try {
-      setError(null);
-      setState((prev) => {
-        const newOperations = prev.operations.map((op) =>
-          op.id === id ? { ...op, ...updates } : op,
-        ) as TOperation[];
+      return {
+        ...rebuilt,
+        operations,
+      };
+    },
+    [ServiceClass, initialState, isOperationReadyForRealtimeExecution],
+  );
+
+  const addOperation = useCallback(
+    async (operation: Omit<TOperation, 'id'>) => {
+      try {
+        setError(null);
+
+        const newOperation: TOperation = {
+          ...operation,
+          id: Date.now(),
+        } as TOperation;
+
+        const newOperations = [...operationsRef.current, newOperation];
         operationsRef.current = newOperations;
-        return {
+
+        setState((prev) => ({
           ...prev,
           operations: newOperations,
-        };
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update operation';
-      setError(errorMessage);
-      console.error('Error updating operation:', error);
-    }
-  }, []);
+        }));
 
-  const removeOperation = useCallback((id: number) => {
-    try {
-      setError(null);
-      setState((prev) => {
-        const newOperations = prev.operations.filter((op) => op.id !== id) as TOperation[];
+        if (!isOperationReadyForRealtimeExecution(newOperation)) {
+          return;
+        }
+
+        const rebuiltState = await rebuildStateFromOperations(newOperations);
+
+        setState(rebuiltState);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to add operation';
+        setError(errorMessage);
+        console.error('Error adding operation:', error);
+      }
+    },
+    [isOperationReadyForRealtimeExecution, rebuildStateFromOperations],
+  );
+
+  const updateOperation = useCallback(
+    async (id: number, updates: Partial<TOperation>) => {
+      try {
+        setError(null);
+
+        const newOperations = operationsRef.current.map((op) =>
+          op.id === id ? ({ ...op, ...updates } as TOperation) : op,
+        );
+
         operationsRef.current = newOperations;
-        return {
-          ...prev,
-          operations: newOperations,
-        };
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to remove operation';
-      setError(errorMessage);
-      console.error('Error removing operation:', error);
-    }
-  }, []);
+
+        const rebuiltState = await rebuildStateFromOperations(newOperations);
+        setState(rebuiltState);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to update operation';
+        setError(errorMessage);
+        console.error('Error updating operation:', error);
+      }
+    },
+    [rebuildStateFromOperations],
+  );
+
+  const removeOperation = useCallback(
+    async (id: number) => {
+      try {
+        setError(null);
+
+        const newOperations = operationsRef.current.filter((op) => op.id !== id) as TOperation[];
+        operationsRef.current = newOperations;
+
+        const rebuiltState = await rebuildStateFromOperations(newOperations);
+        setState(rebuiltState);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to remove operation';
+        setError(errorMessage);
+        console.error('Error removing operation:', error);
+      }
+    },
+    [rebuildStateFromOperations],
+  );
 
   const clearOperations = useCallback(() => {
     try {
       setError(null);
-      setState((prev) => {
-        operationsRef.current = [];
-        return {
-          ...prev,
-          operations: [],
-        };
-      });
+      operationsRef.current = [];
+      setState((prev) => ({
+        ...initialState,
+        operations: [],
+      }));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to clear operations';
       setError(errorMessage);
       console.error('Error clearing operations:', error);
     }
-  }, []);
+  }, [initialState]);
 
   const clearAll = useCallback(() => {
     try {
       setError(null);
-      setState(initialState);
       operationsRef.current = [];
+      setState(initialState);
       setHookState({
         isRunning: false,
         currentLine: -1,
@@ -159,22 +196,26 @@ const addOperation = useCallback(
     }
   }, [initialState]);
 
-  const reorderOperation = useCallback((fromIndex: number, toIndex: number) => {
-    try {
-      setError(null);
-      setState((prev) => {
-        const newOperations = [...prev.operations];
+  const reorderOperation = useCallback(
+    async (fromIndex: number, toIndex: number) => {
+      try {
+        setError(null);
+
+        const newOperations = [...operationsRef.current];
         const [removed] = newOperations.splice(fromIndex, 1);
         newOperations.splice(toIndex, 0, removed);
         operationsRef.current = newOperations as TOperation[];
-        return { ...prev, operations: newOperations };
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to reorder operation';
-      setError(errorMessage);
-      console.error('Error reordering operation:', error);
-    }
-  }, []);
+
+        const rebuiltState = await rebuildStateFromOperations(newOperations as TOperation[]);
+        setState(rebuiltState);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to reorder operation';
+        setError(errorMessage);
+        console.error('Error reordering operation:', error);
+      }
+    },
+    [rebuildStateFromOperations],
+  );
 
   const updateDataState = useCallback((newData: TData, newStats: TStats) => {
     try {
@@ -211,9 +252,9 @@ const addOperation = useCallback(
       try {
         const steps = await service.executeOperation(operation);
 
-        // Execute steps with animation
         for (let i = 0; i < steps.length; i++) {
           const step = steps[i];
+
           setHookState((prev) => ({
             ...prev,
             currentStep: step.step,
@@ -221,15 +262,14 @@ const addOperation = useCallback(
             executionHistory: [...prev.executionHistory, step.description],
           }));
 
-          // Update highlighted nodes
           if (step.nodeValue) {
             setHookState((prev) => ({ ...prev, highlightedNodes: [step.nodeValue!] }));
           }
+
           if (step.path) {
             setHookState((prev) => ({ ...prev, searchPath: step.path! }));
           }
 
-          // Update state after each step
           const currentServiceState = service.getState();
           setState((prev) => ({
             ...prev,
@@ -240,7 +280,6 @@ const addOperation = useCallback(
           await new Promise((resolve) => setTimeout(resolve, step.duration));
         }
 
-        // Get final updated state from service
         const newServiceState = service.getState();
         return newServiceState;
       } catch (error) {
@@ -279,7 +318,6 @@ const addOperation = useCallback(
       currentPosition: 0,
     }));
 
-    // Reset state to initial state before executing
     setState(initialState);
 
     await new Promise((resolve) => setTimeout(resolve, 500));
