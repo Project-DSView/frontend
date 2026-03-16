@@ -22,6 +22,12 @@ import CopyCodeButton from '@/components/playground/shared/action/CopyCodeButton
 
 const CodeEditor = React.lazy(() => import('@/components/editor/CodeEditor'));
 
+type StackMap = {
+  main: string[];
+  s1: string[];
+  s2: string[];
+};
+
 const StackPage = () => {
   const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
     useDragDropStack();
@@ -34,11 +40,19 @@ const StackPage = () => {
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
 
-  /* ================= Update ================= */
-
   const updateOperationValue = (id: number, value: string) => {
     setAutoFollow(true);
     updateOperation(id, { value });
+  };
+
+  const updateOperationTargetStack = (id: number, targetStack: string) => {
+    setAutoFollow(true);
+    updateOperation(id, { targetStack });
+  };
+
+  const updateOperationSourceStack = (id: number, sourceStack: string) => {
+    setAutoFollow(true);
+    updateOperation(id, { sourceStack });
   };
 
   const stopAutoPlay = () => {
@@ -56,36 +70,88 @@ const StackPage = () => {
     setAutoFollow(true);
   };
 
-  /* ================= Step Description ================= */
-
   const getStepDescription = (op: Operation) => {
-    if (op.type === 'push') return `Push ${op.value}`;
+    if (op.type === 'push') return `Push ${op.value ?? ''}`;
     if (op.type === 'pop') return 'Pop';
     if (op.type === 'copyStack') return 'Copy Stack';
     return op.name;
   };
 
-  /* ================= Step Simulation ================= */
-
   const getStepState = (step: number) => {
-    const elements: string[] = [];
+    if (step < 0) {
+      return {
+        elements: [] as string[],
+        stats: {
+          length: 0,
+          headValue: null as string | null,
+          tailValue: null as string | null,
+          isEmpty: true,
+        },
+        stacks: {
+          main: [],
+          s1: [],
+          s2: [],
+        } as StackMap,
+        currentOperation: undefined as string | undefined,
+      };
+    }
+
+    const stacks: StackMap = {
+      main: [],
+      s1: [],
+      s2: [],
+    };
 
     for (let i = 0; i <= step; i++) {
       const op = state.operations[i];
       if (!op) continue;
 
-      if (op.type === 'push' && op.value) elements.push(op.value);
-      if (op.type === 'pop') elements.pop();
+      if (op.type === 'push') {
+        const target = op.targetStack as keyof StackMap;
+        const value = typeof op.value === 'string' ? op.value.trim() : '';
+
+        if (target && value !== '' && stacks[target]) {
+          stacks[target].push(op.value as string);
+        }
+      }
+
+      if (op.type === 'pop') {
+        const target = op.targetStack as keyof StackMap;
+
+        if (target && stacks[target] && stacks[target].length > 0) {
+          stacks[target].pop();
+        }
+      }
+
+      if (op.type === 'copyStack') {
+        const source = op.sourceStack as keyof StackMap;
+        const target = op.targetStack as keyof StackMap;
+
+        if (
+          source &&
+          target &&
+          source !== target &&
+          stacks[source] &&
+          stacks[target]
+        ) {
+          stacks[target] = [...stacks[source]];
+        }
+      }
     }
 
+    const mainElements = stacks.main;
+    const currentOp = state.operations[step];
+
     return {
-      elements,
+      elements: mainElements,
       stats: {
-        length: elements.length,
-        headValue: elements[elements.length - 1] ?? null,
-        tailValue: elements[0] ?? null,
-        isEmpty: elements.length === 0,
+        length: mainElements.length,
+        headValue: mainElements[mainElements.length - 1] ?? null,
+        tailValue: mainElements[0] ?? null,
+        isEmpty: mainElements.length === 0,
       },
+      stacks,
+      currentOperation: currentOp?.type,
     };
   };
 
@@ -103,9 +169,10 @@ const StackPage = () => {
     jumpToLatestStep();
   }, [state.operations, autoFollow, isAutoPlaying, jumpToLatestStep]);
 
-  const visualizationState = selectedStep !== null ? getStepState(selectedStep) : state;
-
-  /* ================= AutoPlay ================= */
+  const visualizationState =
+    selectedStep !== null
+      ? getStepState(selectedStep)
+      : getStepState(state.operations.length - 1);
 
   const handleAutoPlay = () => {
     if (isAutoPlaying) {
@@ -143,11 +210,8 @@ const StackPage = () => {
     ['push', 'pop', 'copyStack'].includes(op.type),
   );
 
-  /* ================= Render ================= */
-
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-5 md:px-8 dark:bg-gray-900">
-      {/* Header */}
       <div className="mb-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -166,7 +230,6 @@ const StackPage = () => {
         </p>
       </div>
 
-      {/* Operations */}
       <div className="mb-4 rounded-md border bg-white p-3 dark:bg-gray-800">
         <h2 className="text-sm font-semibold">Stack Operations</h2>
 
@@ -197,7 +260,6 @@ const StackPage = () => {
         </div>
       </div>
 
-      {/* DropZone + Visualization */}
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="flex flex-col rounded-xl border bg-white p-3 lg:h-[520px] dark:bg-gray-800">
           <div className="mb-2 flex items-center justify-between">
@@ -216,6 +278,8 @@ const StackPage = () => {
                 removeOperation(id);
               }}
               onUpdateOperationValue={updateOperationValue}
+              onUpdateOperationTargetStack={updateOperationTargetStack}
+              onUpdateOperationSourceStack={updateOperationSourceStack}
               onReorderOperation={(from, to) => {
                 setAutoFollow(true);
                 reorderOperation(from, to);
@@ -233,12 +297,16 @@ const StackPage = () => {
               elements={visualizationState.elements}
               stats={visualizationState.stats}
               isRunning={isAutoPlaying}
+              currentOperation={visualizationState.currentOperation}
+              stacks={visualizationState.stacks}
+              mainStack={visualizationState.stacks.main}
+              stackS1={visualizationState.stacks.s1}
+              stackS2={visualizationState.stacks.s2}
             />
           </div>
         </div>
       </div>
 
-      {/* Step Selector */}
       <div className="mt-6">
         <StepSelector
           operations={state.operations}
@@ -254,7 +322,6 @@ const StackPage = () => {
         />
       </div>
 
-      {/* Generated Code */}
       <div className="mt-6 rounded-xl border bg-white p-3 dark:bg-gray-800">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold">Generated Python Code</h2>
@@ -281,7 +348,6 @@ const StackPage = () => {
         </Suspense>
       </div>
 
-      {/* Tutorial Overlay */}
       <TutorialOverlay
         isOpen={isTutorialOpen}
         onClose={() => setIsTutorialOpen(false)}
