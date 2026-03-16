@@ -15,7 +15,6 @@ class StackServiceAdapter {
   private service: StackDragDropService;
 
   constructor(state: BaseState<StackData, StackStatsExtended>) {
-
     const stackState: StackState = {
       elements: state.data.elements,
       operations: state.operations as StackOperation[],
@@ -31,7 +30,6 @@ class StackServiceAdapter {
   }
 
   getState(): BaseState<StackData, StackStatsExtended> {
-
     const stackState = this.service.getState();
 
     return {
@@ -47,46 +45,63 @@ class StackServiceAdapter {
         isEmpty: stackState.stats.isEmpty,
       },
     };
-
   }
 
   async executeOperation(operation: StackOperation) {
+    if (operation.type === 'push') {
+      const hasTargetStack =
+        typeof operation.targetStack === 'string' &&
+        operation.targetStack.trim() !== '';
+      const hasValue =
+        typeof operation.value === 'string' && operation.value.trim() !== '';
 
-    // ⭐ preview node ถ้ายังไม่ได้ใส่ค่า
-    if (operation.type === 'push' && (!operation.value || operation.value.trim() === '')) {
-      operation.value = '?';
+      if (!hasTargetStack || !hasValue) {
+        return [];
+      }
     }
 
-    // Validate operation before executing
-    if (operation.type === 'push' && (!operation.value || operation.value.trim() === '')) {
-      throw new Error('Push operation requires a value');
+    if (operation.type === 'pop') {
+      const hasTargetStack =
+        typeof operation.targetStack === 'string' &&
+        operation.targetStack.trim() !== '';
+
+      if (!hasTargetStack) {
+        return [];
+      }
+
+      if (this.service.getState().stats.isEmpty) {
+        throw new Error('Cannot pop from empty stack');
+      }
     }
 
-    if (operation.type === 'pop' && this.service.getState().stats.isEmpty) {
-      throw new Error('Cannot pop from empty stack');
+    if (operation.type === 'copyStack') {
+      const hasSourceStack =
+        typeof operation.sourceStack === 'string' &&
+        operation.sourceStack.trim() !== '';
+      const hasTargetStack =
+        typeof operation.targetStack === 'string' &&
+        operation.targetStack.trim() !== '';
+
+      if (!hasSourceStack || !hasTargetStack) {
+        return [];
+      }
     }
 
     switch (operation.type) {
-
       case 'push':
-        if (operation.value && operation.value.trim() !== '') {
-          return await this.service.push(operation.value);
-        }
-        break;
+        return await this.service.push(operation.value as string);
 
       case 'pop':
         return await this.service.pop();
 
       case 'copyStack':
-        // handled in visualization layer
+        // handled in visualization / higher-level logic
         return [];
 
       default:
         console.warn('Unknown operation type:', operation.type);
         return [];
     }
-
-    return [];
   }
 }
 
@@ -105,28 +120,20 @@ const defaultState: StackStateExtended = {
 };
 
 const useDragDropStack = () => {
-
   const baseHook = useBaseDataStructure<
     StackData,
     StackStatsExtended,
     StackOperation
-  >(
-    defaultState,
-    StackServiceAdapter
-  );
+  >(defaultState, StackServiceAdapter);
 
   const addOperationWithValidation = useCallback(
     (operation: Omit<StackOperation, 'id'>) => {
-
-      // validation happens during execution
       baseHook.addOperation(operation);
-
     },
-    [baseHook]
+    [baseHook],
   );
 
   return {
-
     ...baseHook,
 
     addOperation: addOperationWithValidation,
@@ -143,9 +150,7 @@ const useDragDropStack = () => {
         isEmpty: baseHook.state.stats.isEmpty,
       },
     },
-
   };
-
 };
 
 export { useDragDropStack };

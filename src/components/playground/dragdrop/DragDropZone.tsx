@@ -151,30 +151,45 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
     },
     field: string,
     value: string,
-  ) => {
-    // Update the operation first
-    if (field === 'value') {
-      onUpdateOperationValue(op.id, value);
-    } else if (field === 'position') {
-      onUpdateOperationPosition?.(op.id, value);
-    } else if (field === 'newValue') {
-      onUpdateOperationNewValue?.(op.id, value);
-    } else if (field === 'endVertex') {
-      onUpdateOperationValue(op.id, value); // endVertex is stored in value field
-    } else if (field === 'sourceStack' && onUpdateOperationSourceStack) {
-      onUpdateOperationSourceStack(op.id, value);
-    } else if (field === 'targetStack' && onUpdateOperationTargetStack) {
-      onUpdateOperationTargetStack(op.id, value);
-    }
+ ) => {
 
-    // Validate after a short delay to allow the state to update
-    setTimeout(() => {
-      const errors = validateOperation({ ...op, [field]: value });
-      if (errors.length > 0) {
-        errors.forEach((error) => toast.warning(error));
-      }
-    }, 100);
-  };
+  let cleanValue = value;
+
+  if (field === 'value') {
+    cleanValue = value.replace(/[^\w-]/g, '');
+    onUpdateOperationValue(op.id, cleanValue);
+  }
+
+  else if (field === 'position') {
+    cleanValue = value.replace(/[^0-9]/g, '');
+    onUpdateOperationPosition?.(op.id, cleanValue);
+  }
+
+  else if (field === 'newValue') {
+    cleanValue = value.replace(/[^\w-]/g, '');
+    onUpdateOperationNewValue?.(op.id, cleanValue);
+  }
+
+  else if (field === 'endVertex') {
+    cleanValue = value.replace(/[^\w-]/g, '');
+    onUpdateOperationValue(op.id, cleanValue);
+  }
+
+  else if (field === 'sourceStack' && onUpdateOperationSourceStack) {
+    onUpdateOperationSourceStack(op.id, value);
+  }
+
+  else if (field === 'targetStack' && onUpdateOperationTargetStack) {
+    onUpdateOperationTargetStack(op.id, value);
+  }
+
+  setTimeout(() => {
+    const errors = validateOperation({ ...op, [field]: cleanValue });
+    if (errors.length > 0) {
+      errors.forEach((error) => toast.warning(error));
+    }
+  }, 100);
+};
 
   // Function to get input validation class
   const getInputValidationClass = (
@@ -369,20 +384,17 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
                 )}
 
               <div
-                draggable
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={(e) => handleDragOver(e, index)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, index)}
-                onDragEnd={handleDragEnd}
-                className={`${op.color} cursor-move rounded-lg border p-3 transition-all duration-200 ${
-                  draggedIndex === index
-                    ? 'scale-95 opacity-50 shadow-lg'
-                    : dragOverIndex === index && draggedIndex !== null
-                      ? 'ring-opacity-50 ring-2 ring-blue-300 dark:ring-blue-600'
-                      : 'hover:shadow-md'
-                }`}
-              >
+  onDragOver={(e) => handleDragOver(e, index)}
+  onDragLeave={handleDragLeave}
+  onDrop={(e) => handleDrop(e, index)}
+  className={`${op.color} rounded-lg border p-3 transition-all duration-200 ${
+    draggedIndex === index
+      ? 'scale-95 opacity-50 shadow-lg'
+      : dragOverIndex === index && draggedIndex !== null
+        ? 'ring-opacity-50 ring-2 ring-blue-300 dark:ring-blue-600'
+        : 'hover:shadow-md'
+  }`}
+>
                 <div className="mb-2 flex items-center space-x-3">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     #{index + 1}
