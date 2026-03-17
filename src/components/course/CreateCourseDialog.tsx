@@ -348,6 +348,9 @@ const CreateCourseDialog: React.FC<CreateCourseDialogProps> = ({
                     if (value.trim().length > 50) {
                       return 'รหัสลงทะเบียนต้องไม่เกิน 50 ตัวอักษร';
                     }
+                    if (!/^[a-zA-Z0-9\-_]+$/.test(value.trim())) {
+                      return 'รหัสลงทะเบียนต้องประกอบด้วยตัวอักษร, ตัวเลข, - หรือ _ เท่านั้น';
+                    }
                     return undefined;
                   }
                 },
