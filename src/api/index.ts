@@ -14,7 +14,15 @@ export const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // getSafeHeaders() จัดการเรื่อง environment อยู่แล้วในตัวมันเอง
-    Object.assign(config.headers, getSafeHeaders());
+    const safeHeaders = getSafeHeaders();
+
+    // If we're sending FormData, don't force Content-Type to application/json
+    // This allows Axios/browser to set the correct multipart/form-data boundary
+    if (config.data instanceof FormData) {
+      delete safeHeaders['Content-Type'];
+    }
+
+    Object.assign(config.headers, safeHeaders);
 
     // Prevent sending the cookie-managed placeholder token as a Bearer string
     // This fixes "Invalid JWT token: failed to parse token... invalid number of segments" 401 errors
