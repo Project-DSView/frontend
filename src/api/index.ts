@@ -18,11 +18,39 @@ api.interceptors.request.use(
 
     // If we're sending FormData, don't force Content-Type to application/json
     // This allows Axios/browser to set the correct multipart/form-data boundary
-    if (config.data instanceof FormData) {
+    // Check if data is FormData (robust check)
+    const isFormData =
+      config.data &&
+      (config.data instanceof FormData ||
+        config.data.constructor?.name === 'FormData' ||
+        (typeof config.data.append === 'function' &&
+          typeof config.data.get === 'function' &&
+          typeof config.data.delete === 'function'));
+
+    if (isFormData) {
+      // Remove all variations of Content-Type from safeHeaders
       delete safeHeaders['Content-Type'];
+      delete safeHeaders['content-type'];
+      delete safeHeaders['CONTENT-TYPE'];
+
+      // Remove all variations from config.headers as well
+      if (config.headers) {
+        if (typeof config.headers.delete === 'function') {
+          config.headers.delete('Content-Type');
+          config.headers.delete('content-type');
+          config.headers.delete('CONTENT-TYPE');
+        } else if (typeof config.headers === 'object') {
+          delete (config.headers as Record<string, unknown>)['Content-Type'];
+          delete (config.headers as Record<string, unknown>)['content-type'];
+          delete (config.headers as Record<string, unknown>)['CONTENT-TYPE'];
+        }
+      }
     }
 
-    Object.assign(config.headers, safeHeaders);
+    // Apply headers from standard config
+    if (config.headers) {
+      Object.assign(config.headers, safeHeaders);
+    }
 
     // Prevent sending the cookie-managed placeholder token as a Bearer string
     // This fixes "Invalid JWT token: failed to parse token... invalid number of segments" 401 errors
