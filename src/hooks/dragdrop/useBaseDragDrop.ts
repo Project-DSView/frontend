@@ -123,9 +123,35 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
       try {
         setError(null);
 
-        const newOperations = operationsRef.current.map((op) =>
-          op.id === id ? ({ ...op, ...updates } as TOperation) : op,
-        );
+const sanitizeNumber = (val?: string | null) => {
+  if (!val) return val;
+  const clean = val.replace(/[^0-9]/g, '');
+  return clean.replace(/^0+(?!$)/, '');
+};
+
+const newOperations = operationsRef.current.map((op) => {
+  if (op.id !== id) return op;
+
+  const sanitizedUpdates = { ...updates } as Partial<TOperation>;
+
+  // 🔥 sanitize เฉพาะ field ที่เป็น number
+  if (sanitizedUpdates.value !== undefined) {
+    sanitizedUpdates.value = sanitizeNumber(sanitizedUpdates.value);
+  }
+
+  if (sanitizedUpdates.position !== undefined) {
+    sanitizedUpdates.position = sanitizeNumber(sanitizedUpdates.position);
+  }
+
+  if (sanitizedUpdates.newValue !== undefined) {
+    sanitizedUpdates.newValue = sanitizeNumber(sanitizedUpdates.newValue);
+  }
+
+  return {
+    ...op,
+    ...sanitizedUpdates,
+  } as TOperation;
+});
 
         operationsRef.current = newOperations;
 
