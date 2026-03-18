@@ -137,6 +137,11 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
     return errors;
   };
 
+const sanitizeNumber = (val: string) => {
+  const clean = val.replace(/[^0-9]/g, '');   // เอาเฉพาะตัวเลข
+  return clean.replace(/^0+(?!$)/, '');     // ตัด leading zero
+};
+
   // Function to handle input validation
   const handleInputValidation = (
     op: {
@@ -156,22 +161,22 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
   let cleanValue = value;
 
   if (field === 'value') {
-    cleanValue = value.replace(/[^\w-]/g, '');
+    cleanValue = sanitizeNumber(value);
     onUpdateOperationValue(op.id, cleanValue);
   }
 
   else if (field === 'position') {
-    cleanValue = value.replace(/[^0-9]/g, '');
+    cleanValue = sanitizeNumber(value);
     onUpdateOperationPosition?.(op.id, cleanValue);
   }
 
   else if (field === 'newValue') {
-    cleanValue = value.replace(/[^\w-]/g, '');
+    cleanValue = sanitizeNumber(value);
     onUpdateOperationNewValue?.(op.id, cleanValue);
   }
 
   else if (field === 'endVertex') {
-    cleanValue = value.replace(/[^\w-]/g, '');
+    cleanValue = sanitizeNumber(value);
     onUpdateOperationValue(op.id, cleanValue);
   }
 
