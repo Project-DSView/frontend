@@ -663,6 +663,64 @@ const currentVisualizationState = useMemo(() => {
             </Suspense>
           </div>
 
+          <Suspense fallback={null}>
+            <UndirectedGraphDragDropVisualization
+              ref={visualizationRef}
+              nodes={currentVisualizationState.nodes}
+              edges={currentVisualizationState.edges}
+              stats={currentVisualizationState.stats}
+              isRunning={isAutoPlaying}
+              currentOperation={
+                selectedStep !== null ? state.operations[selectedStep]?.type : undefined
+              }
+              selectedStep={
+                selectedStep !== null &&
+                ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(
+                  state.operations[selectedStep]?.type,
+                )
+                  ? selectedStep
+                  : null
+              }
+              currentOperationData={
+                selectedStep !== null ? state.operations[selectedStep] : undefined
+              }
+              shortestPath={shortestPath}
+            />
+          </Suspense>
+        </div>
+      </div>
+
+      {/* Step Control */}
+      <div className="mt-6">
+        <StepSelector
+          operations={state.operations as Operation[]}
+          selectedStep={selectedStep}
+          onStepSelect={handleStepSelect}
+          getStepDescription={getStepDescription}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onAutoPlay={handleAutoPlay}
+          isAutoPlaying={isAutoPlaying}
+        />
+      </div>
+
+      {/* Tutorial Overlay */}
+      <TutorialOverlay
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+        steps={getTutorialSteps('dragdrop')}
+        storageKey={getTutorialStorageKey(pathname, 'dragdrop')}
+      />
+
+      {/* Python Code */}
+      <div className="mt-6 rounded-xl border bg-white p-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold">Generated Python Code</h2>
+          <Suspense fallback={null}>
+            <CopyCodeButton code={pythonCode} />
+          </Suspense>
+        </div>
+
           <div className="mt-4 rounded-lg">
             <Suspense fallback={<div>Loading editor...</div>}>
               <CodeEditor code={pythonCode} disabled height="400px" onCodeChange={() => {}} />
@@ -670,7 +728,7 @@ const currentVisualizationState = useMemo(() => {
           </div>
         </div>
       </div>
-    </div>
+  
   );
 };
 
