@@ -748,7 +748,7 @@ const currentVisualizationState = useMemo(() => {
             <Suspense fallback={null}>
               <CopyCodeButton code={pythonCode} />
             </Suspense>
-          )}
+          </div>
 
           <Suspense fallback={null}>
             <UndirectedGraphDragDropVisualization
@@ -815,7 +815,7 @@ const currentVisualizationState = useMemo(() => {
           </div>
         </div>
       </div>
-    </div>
+  
   );
 };
 
