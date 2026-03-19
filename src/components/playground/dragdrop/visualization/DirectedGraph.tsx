@@ -105,20 +105,20 @@ const DirectedGraphDragDropVisualization = forwardRef<
   return (
     <div
       ref={ref}
-      className="rounded-lg bg-white p-6 shadow"
+      className="rounded-lg bg-white p-6 shadow dark:bg-gray-800"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
       <h2 className="mb-4 text-lg font-semibold"></h2>
 
-      <ZoomableContainer className="min-h-[400px] rounded-lg bg-gray-50" showControls>
+      <ZoomableContainer className="min-h-100 rounded-lg bg-gray-50 dark:bg-gray-900" showControls>
         {nodes.length === 0 ? (
-          <div className="flex h-[400px] items-center justify-center text-gray-400">
+          <div className="flex h-100 items-center justify-center text-gray-400 dark:text-gray-500">
             Empty Graph
           </div>
         ) : (
-          <div className="relative h-full min-h-[400px] w-full">
+          <div className="relative h-full min-h-100 w-full">
             {/* Render edges behind nodes */}
             {edges.map(renderEdge)}
 
@@ -131,20 +131,24 @@ const DirectedGraphDragDropVisualization = forwardRef<
       {/* ================= Stats ================= */}
       <div className="mt-4 grid grid-cols-4 gap-4 text-center">
         <div>
-          <div className="text-xl font-bold">{stats.vertices}</div>
-          <div className="text-xs text-gray-500">Vertices</div>
+          <div className="text-xl font-bold text-gray-900 dark:text-gray-100">{stats.vertices}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Vertices</div>
         </div>
         <div>
-          <div className="text-xl font-bold">{stats.edges}</div>
-          <div className="text-xs text-gray-500">Edges</div>
+          <div className="text-xl font-bold text-gray-900 dark:text-gray-100">{stats.edges}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Edges</div>
         </div>
         <div>
-          <div className="text-xl font-bold">{stats.isStronglyConnected ? 'Yes' : 'No'}</div>
-          <div className="text-xs text-gray-500">Strongly Connected</div>
+          <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
+            {stats.isStronglyConnected ? 'Yes' : 'No'}
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Strongly Connected</div>
         </div>
         <div>
-          <div className="text-xl font-bold">{stats.hasCycle ? 'Yes' : 'No'}</div>
-          <div className="text-xs text-gray-500">Has Cycle</div>
+          <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
+            {stats.hasCycle ? 'Yes' : 'No'}
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Has Cycle</div>
         </div>
       </div>
     </div>

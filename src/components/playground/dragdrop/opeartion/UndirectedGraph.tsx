@@ -6,11 +6,13 @@ import type { UndirectedGraphDragComponent } from '@/types';
 type Props = {
   dragComponents: UndirectedGraphDragComponent[];
   onOperationClick: (component: UndirectedGraphDragComponent) => void;
+  onDragStart?: (e: React.DragEvent, component: UndirectedGraphDragComponent) => void;
 };
 
 const UndirectedGraphDragDropOperations: React.FC<Props> = ({
   dragComponents,
   onOperationClick,
+  onDragStart,
 }) => {
   return (
     <div className="mb-3">
@@ -21,8 +23,10 @@ const UndirectedGraphDragDropOperations: React.FC<Props> = ({
           <button
             key={c.id}
             type="button"
+            draggable={Boolean(onDragStart)}
+            onDragStart={(e) => onDragStart?.(e, c)}
             onClick={() => onOperationClick(c)}
-            className={`rounded-full border px-3 py-1 text-xs font-medium transition active:scale-[0.98] ${c.color} `}
+            className={`rounded-full border px-3 py-1 text-xs font-medium text-gray-800 transition hover:brightness-95 active:scale-[0.98] dark:text-gray-100 dark:hover:brightness-110 ${c.color}`}
             title={c.description}
           >
             {c.name}
