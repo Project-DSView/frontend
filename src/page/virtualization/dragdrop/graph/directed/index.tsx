@@ -411,12 +411,16 @@ const DragDropDirectedGraph = () => {
   /* ================= Render ================= */
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gray-50 p-4 dark:bg-gray-900 md:p-6">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold">Drag & Drop Directed Graph</h1>
-          <p className="text-sm text-gray-500">คลิก operation เพื่อสร้าง BST + Python code</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Drag & Drop Directed Graph
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            คลิก operation เพื่อสร้าง BST + Python code
+          </p>
         </div>
         <div className="flex gap-2">
           <TutorialButton onClick={() => setIsTutorialOpen(true)} />
@@ -425,8 +429,8 @@ const DragDropDirectedGraph = () => {
       </div>
 
       {/* ✅ Graph Operations (เหมือนในรูป: แถบเล็ก + ปุ่ม pill) */}
-      <div className="mb-4 rounded-lg border bg-white p-3">
-        <h2 className="text-sm font-semibold text-gray-800">Graph Operations</h2>
+      <div className="mb-4 rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
+        <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Graph Operations</h2>
 
         <div className="mt-2 flex flex-wrap gap-2">
           {directedGraphDragComponents.map((op) => (
@@ -449,7 +453,7 @@ const DragDropDirectedGraph = () => {
         category: op.category,
       })
     }
-    className="rounded-full border px-3 py-1 text-xs font-medium text-gray-800 hover:bg-gray-100"
+    className={`rounded-full border px-3 py-1 text-xs font-medium text-gray-800 transition hover:brightness-95 active:scale-[0.98] dark:text-gray-100 dark:hover:brightness-110 ${op.color}`}
     title={op.description}
   >
     {op.name}
@@ -461,15 +465,15 @@ const DragDropDirectedGraph = () => {
       {/* Main */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Drop Zone */}
-        <div className="rounded-xl border bg-white p-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-3 flex justify-between">
-            <h2 className="text-sm font-semibold">Drop Zone</h2>
+            <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Drop Zone</h2>
             <button
               onClick={() => {
                 clearAll();
                 setSelectedStep(null);
               }}
-              className="text-sm text-red-600"
+              className="text-sm text-red-600 hover:underline dark:text-red-400"
             >
               Clear
             </button>
@@ -488,8 +492,10 @@ const DragDropDirectedGraph = () => {
         </div>
 
         {/* Visualization */}
-        <div className="rounded-xl border bg-white p-4">
-          <h2 className="mb-3 text-sm font-semibold">Graph Visualization</h2>
+        <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+          <h2 className="mb-3 text-sm font-semibold text-gray-800 dark:text-gray-100">
+            Graph Visualization
+          </h2>
 
           <Suspense fallback={null}>
             <DirectedGraphVisualization
@@ -535,9 +541,11 @@ const DragDropDirectedGraph = () => {
       </div>
 
       {/* Python Code */}
-      <div className="mt-6 rounded-xl border bg-white p-6">
+      <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Generated Python Code</h2>
+          <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+            Generated Python Code
+          </h2>
           <CopyCodeButton code={pythonCode} />
         </div>
 

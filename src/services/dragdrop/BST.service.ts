@@ -1,4 +1,5 @@
 import { BSTState, BSTNode, BSTStats, BSTExecutionStep } from '@/types';
+import { compareNumericLiterals, isValidNumericLiteral } from '@/lib/utils/numericCompare';
 
 class BSTDragDropService {
   private state: BSTState;
@@ -44,32 +45,43 @@ class BSTDragDropService {
   async insert(value: string): Promise<BSTExecutionStep[]> {
     const steps: BSTExecutionStep[] = [];
 
+    const normalizedValue = value.trim();
+    if (!isValidNumericLiteral(normalizedValue)) {
+      return [
+        {
+          step: `รูปแบบตัวเลขไม่ถูกต้อง: ${value}`,
+          description: 'รองรับเฉพาะ numeric literal เช่น 123, -4.5, 2e307',
+          duration: 1200,
+        },
+      ];
+    }
+
     steps.push({
-      step: `เริ่มการเพิ่มค่า ${value} ใน BST`,
-      description: `กำลังเพิ่มค่า ${value} ใน Binary Search Tree`,
+      step: `เริ่มการเพิ่มค่า ${normalizedValue} ใน BST`,
+      description: `กำลังเพิ่มค่า ${normalizedValue} ใน Binary Search Tree`,
       duration: 1000,
     });
 
     if (!this.state.root) {
       this.state.root = {
-        value,
+        value: normalizedValue,
         left: null,
         right: null,
         id: this.generateId(),
       };
       steps.push({
-        step: `สร้าง root node ด้วยค่า ${value}`,
+        step: `สร้าง root node ด้วยค่า ${normalizedValue}`,
         description: `เนื่องจาก BST ยังว่างเปล่า จึงสร้าง root node ใหม่`,
         duration: 1500,
-        nodeValue: value,
+        nodeValue: normalizedValue,
       });
     } else {
-      const path = this.insertRecursive(this.state.root, value, []);
+      const path = this.insertRecursive(this.state.root, normalizedValue, []);
       steps.push({
-        step: `เพิ่มค่า ${value} ตาม path: ${path.join(' → ')}`,
+        step: `เพิ่มค่า ${normalizedValue} ตาม path: ${path.join(' → ')}`,
         description: `เดินทางตาม BST property เพื่อหาตำแหน่งที่เหมาะสม`,
         duration: 2000,
-        nodeValue: value,
+        nodeValue: normalizedValue,
         path: path,
       });
     }
@@ -79,7 +91,13 @@ class BSTDragDropService {
   }
 
   private insertRecursive(node: BSTNode, value: string, path: string[]): string[] {
-    if (value < node.value) {
+    const cmp = compareNumericLiterals(value, node.value);
+    if (cmp === null) {
+      path.push(`Invalid number ${value}`);
+      return path;
+    }
+
+    if (cmp < 0) {
       path.push(`Left of ${node.value}`);
       if (node.left) {
         return this.insertRecursive(node.left, value, path);
@@ -92,7 +110,7 @@ class BSTDragDropService {
         };
         return path;
       }
-    } else if (value > node.value) {
+    } else if (cmp > 0) {
       path.push(`Right of ${node.value}`);
       if (node.right) {
         return this.insertRecursive(node.right, value, path);
@@ -114,9 +132,20 @@ class BSTDragDropService {
   async delete(value: string): Promise<BSTExecutionStep[]> {
     const steps: BSTExecutionStep[] = [];
 
+    const normalizedValue = value.trim();
+    if (!isValidNumericLiteral(normalizedValue)) {
+      return [
+        {
+          step: `รูปแบบตัวเลขไม่ถูกต้อง: ${value}`,
+          description: 'รองรับเฉพาะ numeric literal เช่น 123, -4.5, 2e307',
+          duration: 1200,
+        },
+      ];
+    }
+
     steps.push({
-      step: `เริ่มการลบค่า ${value} จาก BST`,
-      description: `กำลังค้นหาและลบค่า ${value} จาก Binary Search Tree`,
+      step: `เริ่มการลบค่า ${normalizedValue} จาก BST`,
+      description: `กำลังค้นหาและลบค่า ${normalizedValue} จาก Binary Search Tree`,
       duration: 1000,
     });
 
@@ -129,29 +158,29 @@ class BSTDragDropService {
       return steps;
     }
 
-    const path = this.findNodePath(this.state.root, value, []);
+    const path = this.findNodePath(this.state.root, normalizedValue, []);
     if (path.length === 0) {
       steps.push({
-        step: `ไม่พบค่า ${value} ใน BST`,
-        description: `ค่า ${value} ไม่มีอยู่ใน BST`,
+        step: `ไม่พบค่า ${normalizedValue} ใน BST`,
+        description: `ค่า ${normalizedValue} ไม่มีอยู่ใน BST`,
         duration: 1000,
       });
       return steps;
     }
 
     steps.push({
-      step: `พบค่า ${value} ตาม path: ${path.join(' → ')}`,
-      description: `ค้นหาค่า ${value} สำเร็จ`,
+      step: `พบค่า ${normalizedValue} ตาม path: ${path.join(' → ')}`,
+      description: `ค้นหาค่า ${normalizedValue} สำเร็จ`,
       duration: 1500,
-      nodeValue: value,
+      nodeValue: normalizedValue,
       path: path,
     });
 
-    this.state.root = this.deleteRecursive(this.state.root, value);
+    this.state.root = this.deleteRecursive(this.state.root, normalizedValue);
     this.updateStats();
 
     steps.push({
-      step: `ลบค่า ${value} สำเร็จ`,
+      step: `ลบค่า ${normalizedValue} สำเร็จ`,
       description: `ลบ node และปรับโครงสร้าง BST ใหม่`,
       duration: 1500,
     });
@@ -162,9 +191,12 @@ class BSTDragDropService {
   private findNodePath(node: BSTNode | null, value: string, path: string[]): string[] {
     if (!node) return [];
 
-    if (value === node.value) {
+    const cmp = compareNumericLiterals(value, node.value);
+    if (cmp === null) return [];
+
+    if (cmp === 0) {
       return [...path, node.value];
-    } else if (value < node.value) {
+    } else if (cmp < 0) {
       return this.findNodePath(node.left, value, [...path, node.value]);
     } else {
       return this.findNodePath(node.right, value, [...path, node.value]);
@@ -174,9 +206,12 @@ class BSTDragDropService {
   private deleteRecursive(node: BSTNode | null, value: string): BSTNode | null {
     if (!node) return null;
 
-    if (value < node.value) {
+    const cmp = compareNumericLiterals(value, node.value);
+    if (cmp === null) return node;
+
+    if (cmp < 0) {
       node.left = this.deleteRecursive(node.left, value);
-    } else if (value > node.value) {
+    } else if (cmp > 0) {
       node.right = this.deleteRecursive(node.right, value);
     } else {
       // Node to be deleted found

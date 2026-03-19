@@ -142,6 +142,23 @@ const sanitizeNumber = (val: string) => {
   return clean.replace(/^0+(?!$)/, '');     // ตัด leading zero
 };
 
+const shouldSanitizeAsNumber = (opType: string) => {
+  // Graph operations should keep raw input, e.g. vertex labels "A", "B", "node_1".
+  // BST values should also keep raw input to support decimals/scientific notation.
+  return ![
+    'add_vertex',
+    'remove_vertex',
+    'add_edge',
+    'remove_edge',
+    'traversal_dfs',
+    'traversal_bfs',
+    'shortest_path',
+    'insert',
+    'delete',
+    'search',
+  ].includes(opType);
+};
+
   // Function to handle input validation
   const handleInputValidation = (
     op: {
@@ -161,22 +178,22 @@ const sanitizeNumber = (val: string) => {
   let cleanValue = value;
 
   if (field === 'value') {
-    cleanValue = sanitizeNumber(value);
+    cleanValue = shouldSanitizeAsNumber(op.type) ? sanitizeNumber(value) : value;
     onUpdateOperationValue(op.id, cleanValue);
   }
 
   else if (field === 'position') {
-    cleanValue = sanitizeNumber(value);
+    cleanValue = shouldSanitizeAsNumber(op.type) ? sanitizeNumber(value) : value;
     onUpdateOperationPosition?.(op.id, cleanValue);
   }
 
   else if (field === 'newValue') {
-    cleanValue = sanitizeNumber(value);
+    cleanValue = shouldSanitizeAsNumber(op.type) ? sanitizeNumber(value) : value;
     onUpdateOperationNewValue?.(op.id, cleanValue);
   }
 
   else if (field === 'endVertex') {
-    cleanValue = sanitizeNumber(value);
+    cleanValue = shouldSanitizeAsNumber(op.type) ? sanitizeNumber(value) : value;
     onUpdateOperationValue(op.id, cleanValue);
   }
 
@@ -334,7 +351,7 @@ const sanitizeNumber = (val: string) => {
       onDragEnter={onDragEnter}
       onDragLeave={handleMainDragLeave}
       onDrop={handleMainDrop}
-      className={`flex h-[360px] w-full flex-col overflow-y-auto rounded-lg border bg-white p-3 dark:bg-gray-800 ${
+      className={`flex h-90 w-full flex-col overflow-y-auto rounded-lg border bg-white p-3 dark:bg-gray-800 ${
         isExternalDrag
           ? 'border-blue-400 bg-blue-50 shadow-lg dark:border-blue-600 dark:bg-blue-900/30'
           : 'border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800'
@@ -389,6 +406,9 @@ const sanitizeNumber = (val: string) => {
                 )}
 
               <div
+  draggable
+  onDragStart={(e) => handleDragStart(e, index)}
+  onDragEnd={handleDragEnd}
   onDragOver={(e) => handleDragOver(e, index)}
   onDragLeave={handleDragLeave}
   onDrop={(e) => handleDrop(e, index)}
