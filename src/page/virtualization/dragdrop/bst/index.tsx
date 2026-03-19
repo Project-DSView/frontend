@@ -10,6 +10,7 @@ import {
   getTutorialStorageKey,
 } from '@/data';
 import { generateDragDropBSTCode } from '@/lib';
+import { compareNumericLiterals, isValidNumericLiteral } from '@/lib/utils/numericCompare';
 
 import TutorialButton from '@/components/playground/shared/tutorial/TutorialButton';
 import TutorialOverlay from '@/components/playground/shared/tutorial/TutorialOverlay';
@@ -32,11 +33,11 @@ const safeUUID = () =>
 const insertNode = (root: BSTNode | null, value: string): BSTNode => {
   if (!root) return { value, left: null, right: null, id: safeUUID() };
 
-  const v = parseFloat(value);
-  const r = parseFloat(root.value);
+  const cmp = compareNumericLiterals(value, root.value);
+  if (cmp === null) return root;
 
-  if (v < r) root.left = insertNode(root.left, value);
-  else if (v > r) root.right = insertNode(root.right, value);
+  if (cmp < 0) root.left = insertNode(root.left, value);
+  else if (cmp > 0) root.right = insertNode(root.right, value);
 
   return root;
 };
@@ -44,11 +45,11 @@ const insertNode = (root: BSTNode | null, value: string): BSTNode => {
 const deleteNode = (root: BSTNode | null, value: string): BSTNode | null => {
   if (!root) return null;
 
-  const v = parseFloat(value);
-  const r = parseFloat(root.value);
+  const cmp = compareNumericLiterals(value, root.value);
+  if (cmp === null) return root;
 
-  if (v < r) root.left = deleteNode(root.left, value);
-  else if (v > r) root.right = deleteNode(root.right, value);
+  if (cmp < 0) root.left = deleteNode(root.left, value);
+  else if (cmp > 0) root.right = deleteNode(root.right, value);
   else {
     if (!root.left) return root.right;
     if (!root.right) return root.left;
@@ -98,7 +99,15 @@ const DragDropBST = () => {
 
   const updateOperationValue = (id: number, value: string) => {
     const op = state.operations.find((o: BSTOperation) => o.id === id);
-    if (op?.type === 'insert' && value && isNaN(parseFloat(value))) return;
+    if (
+      op?.type === 'insert' &&
+      value.trim() &&
+      !isValidNumericLiteral(value)
+    ) {
+      // Keep the typed text to allow users to complete literals like 2e+307.
+      updateOperation(id, { value });
+      return;
+    }
     updateOperation(id, { value });
   };
 
@@ -118,10 +127,10 @@ const DragDropBST = () => {
 
     state.operations.forEach((op: BSTOperation) => {
       if (op.value) {
-        const v = parseFloat(op.value);
-        if (!isNaN(v)) {
-          if (op.type === 'insert') root = insertNode(root, v.toString());
-          if (op.type === 'delete') root = deleteNode(root, v.toString());
+        const value = op.value.trim();
+        if (isValidNumericLiteral(value)) {
+          if (op.type === 'insert') root = insertNode(root, value);
+          if (op.type === 'delete') root = deleteNode(root, value);
         }
       }
     });
@@ -206,7 +215,7 @@ const DragDropBST = () => {
           </div>
         </div>
 
-        <div className="flex flex-col rounded-xl border border-dashed border-gray-300 bg-white p-3 shadow-sm lg:h-[520px] dark:bg-gray-800">
+        <div className="flex flex-col rounded-xl border border-dashed border-gray-300 bg-white p-3 shadow-sm lg:h-130 dark:bg-gray-800">
           <h2 className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-100">
             BST Visualization
           </h2>

@@ -29,6 +29,21 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
 
   const operationsRef = useRef<TOperation[]>([]);
 
+  const shouldSanitizeNumberField = useCallback((opType: string) => {
+    return ![
+      'add_vertex',
+      'remove_vertex',
+      'add_edge',
+      'remove_edge',
+      'traversal_dfs',
+      'traversal_bfs',
+      'shortest_path',
+      'insert',
+      'delete',
+      'search',
+    ].includes(opType);
+  }, []);
+
   useEffect(() => {
     return () => {
       operationsRef.current = [];
@@ -135,15 +150,15 @@ const newOperations = operationsRef.current.map((op) => {
   const sanitizedUpdates = { ...updates } as Partial<TOperation>;
 
   // 🔥 sanitize เฉพาะ field ที่เป็น number
-  if (sanitizedUpdates.value !== undefined) {
+  if (sanitizedUpdates.value !== undefined && shouldSanitizeNumberField(op.type)) {
     sanitizedUpdates.value = sanitizeNumber(sanitizedUpdates.value);
   }
 
-  if (sanitizedUpdates.position !== undefined) {
+  if (sanitizedUpdates.position !== undefined && shouldSanitizeNumberField(op.type)) {
     sanitizedUpdates.position = sanitizeNumber(sanitizedUpdates.position);
   }
 
-  if (sanitizedUpdates.newValue !== undefined) {
+  if (sanitizedUpdates.newValue !== undefined && shouldSanitizeNumberField(op.type)) {
     sanitizedUpdates.newValue = sanitizeNumber(sanitizedUpdates.newValue);
   }
 
@@ -163,7 +178,7 @@ const newOperations = operationsRef.current.map((op) => {
         console.error('Error updating operation:', error);
       }
     },
-    [rebuildStateFromOperations],
+    [rebuildStateFromOperations, shouldSanitizeNumberField],
   );
 
   const removeOperation = useCallback(

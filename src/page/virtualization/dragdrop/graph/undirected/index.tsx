@@ -4,7 +4,7 @@ import React, { useState, useRef, lazy, Suspense, useMemo, useCallback, useEffec
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 
-import { UndirectedGraphNode, UndirectedGraphEdge, Operation } from '@/types';
+import { UndirectedGraphNode, UndirectedGraphEdge, Operation, UndirectedGraphDragComponent } from '@/types';
 import { useDragDropUndirectedGraph } from '@/hooks';
 import { undirectedGraphDragComponents, getTutorialSteps, getTutorialStorageKey } from '@/data';
 
@@ -27,20 +27,14 @@ const CodeEditor = lazy(() => import('@/components/editor/CodeEditor'));
 
 const DragDropUndirectedGraph = () => {
   const pathname = usePathname();
-const {
-  state,
-  addOperation,
-  updateOperation,
-  removeOperation,
-  clearAll,
-  reorderOperation,
-  executeOperation
-} = useDragDropUndirectedGraph();
+  const { state, addOperation, updateOperation, removeOperation, clearAll, reorderOperation } =
+    useDragDropUndirectedGraph();
 
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [isLoading] = useState(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const [draggedItem, setDraggedItem] = useState<UndirectedGraphDragComponent | null>(null);
 
   // Auto-show tutorial on first visit
   useEffect(() => {
@@ -56,6 +50,44 @@ const {
 
   const visualizationRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleExternalAddOperation = (component: UndirectedGraphDragComponent) => {
+    const isEdgeOp = component.type === 'add_edge' || component.type === 'remove_edge';
+    const isTraverseOp = component.type === 'traversal_dfs' || component.type === 'traversal_bfs';
+    const isShortest = component.type === 'shortest_path';
+
+    addOperation({
+      type: component.type,
+      name: component.name,
+      value: isTraverseOp || isShortest ? null : '',
+      position: isEdgeOp ? '' : null,
+      newValue: isEdgeOp || isTraverseOp || isShortest ? '' : null,
+      fromVertex: isEdgeOp ? '' : null,
+      toVertex: isEdgeOp ? '' : null,
+      startVertex: isTraverseOp || isShortest ? '' : null,
+      endVertex: isShortest ? '' : null,
+      color: component.color,
+      category: component.category,
+    });
+  };
+
+  const handleDragStart = (e: React.DragEvent, component: UndirectedGraphDragComponent) => {
+    setDraggedItem(component);
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData('text/plain', 'external');
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!draggedItem) return;
+
+    handleExternalAddOperation(draggedItem);
+    setDraggedItem(null);
+  };
 
   const updateOperationValue = (id: number, value: string) => {
     const operation = state.operations.find((op) => op.id === id);
@@ -482,14 +514,15 @@ const currentVisualizationState = useMemo(() => {
   }, [state.operations]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-[1400px] px-4 py-6 md:px-6">
-        {/* ===== Header (เหมือนรูป) ===== */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="mx-auto max-w-350 px-4 py-6 md:px-6">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Drag & Drop Undirected Graph</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              คลิก operation เพื่อสร้างกราฟ + Python code
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              Drag & Drop Undirected Graph
+            </h1>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              คลิกหรือลาก operation เพื่อสร้างกราฟ + Python code
             </p>
           </div>
 
@@ -499,59 +532,31 @@ const currentVisualizationState = useMemo(() => {
           </div>
         </div>
 
-        {/* ===== Graph Operations bar (เหมือนรูป: pill buttons ในการ์ด) ===== */}
-        <div className="mb-6 rounded-xl border bg-white p-4 shadow-sm">
+        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <Suspense
             fallback={
               <div className="flex h-10 items-center">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-transparent" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-transparent dark:border-gray-600" />
               </div>
             }
           >
-           <UndirectedGraphDragDropOperations
-  dragComponents={undirectedGraphDragComponents}
-  onOperationClick={(component) => {
-    const isEdgeOp =
-      component.type === 'add_edge' || component.type === 'remove_edge';
-
-    const isTraverseOp =
-      component.type === 'traversal_dfs' ||
-      component.type === 'traversal_bfs';
-
-    const isShortest = component.type === 'shortest_path';
-
-    const newOp = {
-      type: component.type,
-      name: component.name,
-      value: isTraverseOp || isShortest ? null : '',
-      position: isEdgeOp ? '' : null,
-      newValue: isEdgeOp || isTraverseOp || isShortest ? '' : null,
-      fromVertex: isEdgeOp ? '' : null,
-      toVertex: isEdgeOp ? '' : null,
-      startVertex: isTraverseOp || isShortest ? '' : null,
-      endVertex: isShortest ? '' : null,
-      color: component.color,
-      category: component.category,
-    };
-
-    addOperation(newOp);
-  }}
-/>
+            <UndirectedGraphDragDropOperations
+              dragComponents={undirectedGraphDragComponents}
+              onOperationClick={handleExternalAddOperation}
+              onDragStart={handleDragStart}
+            />
           </Suspense>
         </div>
 
-        {/* ===== 2 Columns: Drop Zone (ซ้าย) + Visualization (ขวา) ===== */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Drop Zone */}
-          <div className="rounded-xl border bg-white p-4 shadow-sm md:p-5">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-5">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-gray-800">Drop Zone</h2>
+              <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Drop Zone</h2>
 
-              {/* Clear เป็นตัวหนังสือแดงเหมือนรูป */}
               <button
                 type="button"
                 onClick={handleClearAll}
-                className="text-sm font-semibold text-red-500 hover:text-red-600 hover:underline"
+                className="text-sm font-semibold text-red-500 hover:text-red-600 hover:underline dark:text-red-400 dark:hover:text-red-300"
               >
                 Clear
               </button>
@@ -559,6 +564,8 @@ const currentVisualizationState = useMemo(() => {
 
             <DragDropZone
               operations={state.operations as Operation[]}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
               onRemoveOperation={handleRemoveOperation}
               onUpdateOperationValue={updateOperationValue}
               onUpdateOperationPosition={updateOperationPosition}
@@ -567,20 +574,20 @@ const currentVisualizationState = useMemo(() => {
             />
           </div>
 
-          {/* Visualization */}
-          <div className="rounded-xl border bg-white p-4 shadow-sm md:p-5">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-5">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-gray-800">Graph Visualization</h2>
+              <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                Graph Visualization
+              </h2>
             </div>
 
-            {/* Step Indicator (ถ้าจะให้แสดงบน visualization ตามเดิม) */}
             {isAutoPlaying && state.operations.length > 0 && selectedStep !== null && (
               <div className="mb-3">
                 <Suspense
                   fallback={
-                    <div className="rounded-lg bg-blue-50 p-3">
+                    <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/30">
                       <div className="flex h-6 items-center justify-center">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent dark:border-blue-400" />
                       </div>
                     </div>
                   }
@@ -595,12 +602,12 @@ const currentVisualizationState = useMemo(() => {
               </div>
             )}
 
-            <div className="relative min-h-[420px] w-full rounded-lg border bg-gray-50">
+            <div className="relative min-h-105 w-full rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
               <Suspense
                 fallback={
-                  <div className="h-[420px] w-full rounded-lg border bg-gray-50">
+                  <div className="h-105 w-full rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
                     <div className="flex h-full items-center justify-center">
-                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-transparent" />
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-transparent dark:border-gray-600" />
                     </div>
                   </div>
                 }
@@ -632,7 +639,6 @@ const currentVisualizationState = useMemo(() => {
           </div>
         </div>
 
-        {/* Step Selector (ด้านล่างเหมือนเดิม) */}
         <div className="mt-6">
           <StepSelector
             operations={state.operations as Operation[]}
@@ -646,89 +652,31 @@ const currentVisualizationState = useMemo(() => {
           />
         </div>
 
-        {/* Tutorial Overlay */}
-        <TutorialOverlay
-          isOpen={isTutorialOpen}
-          onClose={() => setIsTutorialOpen(false)}
-          steps={getTutorialSteps('dragdrop')}
-          storageKey={getTutorialStorageKey(pathname, 'dragdrop')}
-        />
-
-        {/* Python Code */}
-        <div className="mt-6 rounded-xl border bg-white p-6 shadow-sm">
+        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold">Generated Python Code</h2>
+            <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              Generated Python Code
+            </h2>
             <Suspense fallback={null}>
               <CopyCodeButton code={pythonCode} />
             </Suspense>
           </div>
 
-          <Suspense fallback={null}>
-            <UndirectedGraphDragDropVisualization
-              ref={visualizationRef}
-              nodes={currentVisualizationState.nodes}
-              edges={currentVisualizationState.edges}
-              stats={currentVisualizationState.stats}
-              isRunning={isAutoPlaying}
-              currentOperation={
-                selectedStep !== null ? state.operations[selectedStep]?.type : undefined
-              }
-              selectedStep={
-                selectedStep !== null &&
-                ['traversal_dfs', 'traversal_bfs', 'shortest_path'].includes(
-                  state.operations[selectedStep]?.type,
-                )
-                  ? selectedStep
-                  : null
-              }
-              currentOperationData={
-                selectedStep !== null ? state.operations[selectedStep] : undefined
-              }
-              shortestPath={shortestPath}
-            />
-          </Suspense>
+          <div className="mt-4 rounded-lg">
+            <Suspense fallback={<div className="text-sm text-gray-500 dark:text-gray-400">Loading editor...</div>}>
+              <CodeEditor code={pythonCode} disabled height="400px" onCodeChange={() => {}} />
+            </Suspense>
+          </div>
         </div>
       </div>
 
-      {/* Step Control */}
-      <div className="mt-6">
-        <StepSelector
-          operations={state.operations as Operation[]}
-          selectedStep={selectedStep}
-          onStepSelect={handleStepSelect}
-          getStepDescription={getStepDescription}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onAutoPlay={handleAutoPlay}
-          isAutoPlaying={isAutoPlaying}
-        />
-      </div>
-
-      {/* Tutorial Overlay */}
       <TutorialOverlay
         isOpen={isTutorialOpen}
         onClose={() => setIsTutorialOpen(false)}
         steps={getTutorialSteps('dragdrop')}
         storageKey={getTutorialStorageKey(pathname, 'dragdrop')}
       />
-
-      {/* Python Code */}
-      <div className="mt-6 rounded-xl border bg-white p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Generated Python Code</h2>
-          <Suspense fallback={null}>
-            <CopyCodeButton code={pythonCode} />
-          </Suspense>
-        </div>
-
-          <div className="mt-4 rounded-lg">
-            <Suspense fallback={<div>Loading editor...</div>}>
-              <CodeEditor code={pythonCode} disabled height="400px" onCodeChange={() => {}} />
-            </Suspense>
-          </div>
-        </div>
-      </div>
-  
+    </div>
   );
 };
 
