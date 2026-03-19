@@ -10,7 +10,7 @@ const landingTutorialSteps: TutorialStep[] = [
   {
     title: 'โหมดการเรียนรู้ (Playgrounds)',
     description:
-      'ที่แถบเมนูด้านบน (Playground) จะประกอบด้วย 3 โหมดหลัก:\n1. Drag & Drop: ต่อบล็อกจำลองการทำงาน\n2. Step-Through: เขียนโค้ดและดูการเปลี่ยนแปลงทีละบรรทัด',
+      'ที่แถบเมนูด้านบน (Playground) จะประกอบด้วย 2 โหมดหลัก:\n1. Drag & Drop: ต่อบล็อกจำลองการทำงาน\n2. Step-Through: เขียนโค้ดและดูการเปลี่ยนแปลงทีละบรรทัด',
     placement: 'bottom',
     highlightSelector: '#tour-playground-menu',
   },
