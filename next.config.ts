@@ -1,5 +1,10 @@
 import type { NextConfig } from 'next';
 
+const minioProxyTarget =
+  process.env.NEXT_PUBLIC_MINIO_PROXY_TARGET ||
+  process.env.MINIO_PROXY_TARGET ||
+  (process.env.NODE_ENV === 'production' ? 'http://minio:9000' : 'http://localhost:9000');
+
 const nextConfig: NextConfig = {
   /* config options here */
 
@@ -40,7 +45,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/minio/:path*',
-        destination: 'http://localhost:9000/:path*',
+        destination: `${minioProxyTarget}/:path*`,
       },
     ];
   },
