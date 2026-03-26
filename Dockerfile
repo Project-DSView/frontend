@@ -1,5 +1,8 @@
 # Base image
-FROM oven/bun:1 AS base
+FROM node:lts-alpine AS base
+
+# Install bun once and reuse across build stages.
+RUN npm install -g bun@1
 
 # Install dependencies only when needed
 FROM base AS deps
