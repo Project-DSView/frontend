@@ -42,6 +42,7 @@ import {
 import { Download, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks';
 import { useDeleteMaterial } from '@/query';
+import { toast } from 'sonner';
 import CreateMaterialDialog from './CreateMaterialDialog';
 
 const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
@@ -49,6 +50,8 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
   const { accessToken, profile } = useAuth();
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
   const [isDocumentDialogOpen, setIsDocumentDialogOpen] = useState(false);
+  const [documentViewerUrl, setDocumentViewerUrl] = useState<string | null>(null);
+  const [isDocumentLoading, setIsDocumentLoading] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -102,7 +105,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
     }
     // Open document in modal (similar to PDF exercise)
     if (material.type === 'document' && material.file_url) {
-      setIsDocumentDialogOpen(true);
+      void handleOpenDocument();
     }
     // Open video dialog for videos
     else if (material.type === 'video' && material.video_url) {
@@ -111,6 +114,38 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
   };
 
   const isClickable = isMaterialClickable(material);
+
+  const handleOpenDocument = async () => {
+    if (material.type !== 'document' || !material.file_url) return;
+
+    setIsDocumentLoading(true);
+    try {
+      const transformedUrl = transformFileUrl(material.file_url);
+      const response = await fetch(transformedUrl, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to load document: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      setDocumentViewerUrl(blobUrl);
+      setIsDocumentDialogOpen(true);
+    } catch (error) {
+      console.error('Error opening document preview:', error);
+      toast.error('ไม่สามารถเปิดเอกสารได้ กรุณาลองดาวน์โหลดแทน');
+    } finally {
+      setIsDocumentLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (!isDocumentDialogOpen && documentViewerUrl) {
+      window.URL.revokeObjectURL(documentViewerUrl);
+      setDocumentViewerUrl(null);
+    }
+  }, [isDocumentDialogOpen, documentViewerUrl]);
 
   return (
     <>
@@ -268,15 +303,19 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
             </DialogHeader>
             <div className="mt-4 flex flex-col gap-4">
               <div className="h-[70vh] w-full overflow-hidden rounded-lg border">
-                {material.file_url && (
-                  <iframe
-                    src={transformFileUrl(material.file_url)}
-                    className="h-full w-full"
-                    title={material.title}
-                  />
+                {documentViewerUrl && (
+                  <iframe src={documentViewerUrl} className="h-full w-full" title={material.title} />
                 )}
               </div>
               <div className="flex gap-2">
+                <Button
+                  onClick={() => void handleOpenDocument()}
+                  variant="outline"
+                  disabled={isDocumentLoading}
+                  className="flex items-center gap-2"
+                >
+                  {isDocumentLoading ? 'กำลังโหลด...' : 'รีโหลดเอกสาร'}
+                </Button>
                 <Button
                   onClick={() => {
                     if (material.file_url) {

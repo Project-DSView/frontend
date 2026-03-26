@@ -2,7 +2,7 @@
 
 import React, { useCallback, useMemo, Suspense, lazy } from 'react';
 import Image from 'next/image';
-import { Users, BookOpen, Calendar, User, LogIn, Archive, Edit } from 'lucide-react';
+import { Users, BookOpen, Calendar, User, LogIn, Archive, Edit, Trash2 } from 'lucide-react';
 
 import { CourseCardProps } from '@/types';
 import { isValidImageUrl, getCourseImageFallback, transformImageUrl } from '@/lib';
@@ -28,7 +28,9 @@ const CourseCard: React.FC<CourseCardProps> = React.memo(
     isEnrolled = false,
     onEnterCourse,
     onArchive,
+    onDelete,
     isArchiving = false,
+    isDeleting = false,
     userProfile,
     onEdit,
   }) => {
@@ -52,6 +54,10 @@ const CourseCard: React.FC<CourseCardProps> = React.memo(
     const handleArchive = useCallback(() => {
       onArchive?.(course.course_id);
     }, [onArchive, course.course_id]);
+
+    const handleDelete = useCallback(() => {
+      onDelete?.(course.course_id);
+    }, [onDelete, course.course_id]);
 
     const handleEnterCourse = useCallback(() => {
       onEnterCourse?.(course.course_id);
@@ -155,6 +161,18 @@ const CourseCard: React.FC<CourseCardProps> = React.memo(
                   >
                     <Archive className="mr-2 h-4 w-4" />
                     {course.status === 'archived' ? 'ยกเลิกการเก็บ' : 'เก็บ'}
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button
+                    onClick={handleDelete}
+                    disabled={isDeleting || course.status !== 'archived'}
+                    variant="destructive"
+                    className="flex-1 text-white"
+                    title={course.status === 'archived' ? 'ลบคอร์ส' : 'ลบได้เฉพาะคอร์สที่ archived'}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    ลบคอร์ส
                   </Button>
                 )}
               </div>
