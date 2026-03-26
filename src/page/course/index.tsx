@@ -6,7 +6,7 @@ import { Search, Loader2, AlertCircle, BookOpen, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useAuth } from '@/hooks';
-import { useCourses, useEnrollInCourse, useUpdateCourse } from '@/query';
+import { useCourses, useEnrollInCourse, useUpdateCourse, useDeleteCourse } from '@/query';
 import { Course } from '@/types';
 
 import CourseCardWithEnrollment from '@/components/course/CourseCardWithEnrollment';
@@ -23,6 +23,7 @@ const CoursePage: React.FC = () => {
   const [isEnrolling, setIsEnrolling] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isArchiving, setIsArchiving] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<string>>(new Set());
 
@@ -41,6 +42,7 @@ const CoursePage: React.FC = () => {
 
   // Update course mutation
   const updateCourseMutation = useUpdateCourse();
+  const deleteCourseMutation = useDeleteCourse();
 
   // Handler to update enrolled course IDs
   const handleEnrollmentStatusChange = React.useCallback(
@@ -189,6 +191,43 @@ const CoursePage: React.FC = () => {
     setEditingCourse(course);
   };
 
+  // Handle delete course (archived only)
+  const handleDeleteCourse = async (courseId: string) => {
+    if (!accessToken) {
+      toast.error('กรุณาเข้าสู่ระบบก่อน');
+      return;
+    }
+
+    const course = courses.find((c) => c.course_id === courseId);
+    if (!course) {
+      toast.error('ไม่พบคอร์ส');
+      return;
+    }
+
+    if (course.status !== 'archived') {
+      toast.error('ลบคอร์สได้เฉพาะคอร์สที่ถูกเก็บ (archived) เท่านั้น');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `ยืนยันการลบคอร์ส "${course.name}"?\nการกระทำนี้จะลบเนื้อหาภายในทั้งหมดและไม่สามารถย้อนกลับได้`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setIsDeleting(courseId);
+    try {
+      await deleteCourseMutation.mutateAsync({ token: accessToken, courseId });
+      refetch();
+    } catch (error) {
+      console.error('Delete course error:', error);
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
   // Show loading state
   if (!isInitialized) {
     return (
@@ -297,7 +336,9 @@ const CoursePage: React.FC = () => {
                   isEnrolling={isEnrolling === course.course_id}
                   onEnterCourse={handleEnterCourse}
                   onArchive={handleArchive}
+                  onDelete={handleDeleteCourse}
                   isArchiving={isArchiving === course.course_id}
+                  isDeleting={isDeleting === course.course_id}
                   onEdit={handleEdit}
                   accessToken={accessToken}
                   userProfile={profile}
@@ -353,7 +394,9 @@ const CoursePage: React.FC = () => {
                     isEnrolling={isEnrolling === course.course_id}
                     onEnterCourse={handleEnterCourse}
                     onArchive={handleArchive}
+                    onDelete={handleDeleteCourse}
                     isArchiving={isArchiving === course.course_id}
+                    isDeleting={isDeleting === course.course_id}
                     onEdit={handleEdit}
                     accessToken={accessToken}
                     userProfile={profile}
