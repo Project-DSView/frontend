@@ -21,13 +21,6 @@ import {
 } from '@/lib';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -49,8 +42,6 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
   const router = useRouter();
   const { accessToken, profile } = useAuth();
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
-  const [isDocumentDialogOpen, setIsDocumentDialogOpen] = useState(false);
-  const [documentViewerUrl, setDocumentViewerUrl] = useState<string | null>(null);
   const [isDocumentLoading, setIsDocumentLoading] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -130,8 +121,15 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
 
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
-      setDocumentViewerUrl(blobUrl);
-      setIsDocumentDialogOpen(true);
+
+      const opened = window.open(blobUrl, '_blank', 'noopener,noreferrer');
+      if (!opened) {
+        toast.error('เบราว์เซอร์บล็อกแท็บใหม่ กรุณาอนุญาต pop-up แล้วลองใหม่');
+      }
+
+      setTimeout(() => {
+        window.URL.revokeObjectURL(blobUrl);
+      }, 60_000);
     } catch (error) {
       console.error('Error opening document preview:', error);
       toast.error('ไม่สามารถเปิดเอกสารได้ กรุณาลองดาวน์โหลดแทน');
@@ -139,13 +137,6 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
       setIsDocumentLoading(false);
     }
   };
-
-  React.useEffect(() => {
-    if (!isDocumentDialogOpen && documentViewerUrl) {
-      window.URL.revokeObjectURL(documentViewerUrl);
-      setDocumentViewerUrl(null);
-    }
-  }, [isDocumentDialogOpen, documentViewerUrl]);
 
   return (
     <>
@@ -293,48 +284,6 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
         </div>
       )}
 
-      {/* Document Dialog */}
-      {material.type === 'document' && material.file_url && (
-        <Dialog open={isDocumentDialogOpen} onOpenChange={setIsDocumentDialogOpen}>
-          <DialogContent className="max-h-[90vh] max-w-4xl">
-            <DialogHeader>
-              <DialogTitle>{material.title}</DialogTitle>
-              <DialogDescription>{material.description || 'เอกสาร'}</DialogDescription>
-            </DialogHeader>
-            <div className="mt-4 flex flex-col gap-4">
-              <div className="h-[70vh] w-full overflow-hidden rounded-lg border">
-                {documentViewerUrl && (
-                  <iframe src={documentViewerUrl} className="h-full w-full" title={material.title} />
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => void handleOpenDocument()}
-                  variant="outline"
-                  disabled={isDocumentLoading}
-                  className="flex items-center gap-2"
-                >
-                  {isDocumentLoading ? 'กำลังโหลด...' : 'รีโหลดเอกสาร'}
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (material.file_url) {
-                      const transformedFileUrl = transformFileUrl(material.file_url);
-                      const filename = getSafeFilename(material.file_url, material.file_name);
-                      downloadFile(transformedFileUrl || material.file_url, filename);
-                    }
-                  }}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  ดาวน์โหลด
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
 
       {/* Edit Dialog */}
       {isEditDialogOpen && accessToken && (

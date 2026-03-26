@@ -31,10 +31,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from '@/components/ui/dialog';
 
 const SubmittedPDFCard: React.FC<SubmittedPDFCardProps> = ({
@@ -46,10 +42,6 @@ const SubmittedPDFCard: React.FC<SubmittedPDFCardProps> = ({
     SUBMISSION_STATUS_CONFIG[submission.status] || SUBMISSION_STATUS_CONFIG.pending;
   const cancelMutation = useCancelSubmission();
   const [downloadingFeedback, setDownloadingFeedback] = React.useState(false);
-  const [feedbackViewerOpen, setFeedbackViewerOpen] = React.useState(false);
-  const [feedbackViewerUrl, setFeedbackViewerUrl] = React.useState<string | null>(null);
-  const [submissionViewerOpen, setSubmissionViewerOpen] = React.useState(false);
-  const [submissionViewerUrl, setSubmissionViewerUrl] = React.useState<string | null>(null);
   const [loadingSubmission, setLoadingSubmission] = React.useState(false);
 
   // Format date safely
@@ -90,8 +82,13 @@ const SubmittedPDFCard: React.FC<SubmittedPDFCardProps> = ({
       );
       if (blob) {
         const url = window.URL.createObjectURL(blob);
-        setSubmissionViewerUrl(url);
-        setSubmissionViewerOpen(true);
+        const opened = window.open(url, '_blank', 'noopener,noreferrer');
+        if (!opened) {
+          toast.error('เบราว์เซอร์บล็อกแท็บใหม่ กรุณาอนุญาต pop-up แล้วลองใหม่');
+        }
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+        }, 60_000);
       }
     } catch (error) {
       console.error('Error loading submission file:', error);
@@ -133,28 +130,18 @@ const SubmittedPDFCard: React.FC<SubmittedPDFCardProps> = ({
     try {
       const blob = await CourseService.downloadFeedbackFile(accessToken, submission.submission_id);
       const url = window.URL.createObjectURL(blob);
-      setFeedbackViewerUrl(url);
-      setFeedbackViewerOpen(true);
+      const opened = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!opened) {
+        toast.error('เบราว์เซอร์บล็อกแท็บใหม่ กรุณาอนุญาต pop-up แล้วลองใหม่');
+      }
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 60_000);
     } catch (error) {
       const errorMessage = getErrorMessage(error) || 'Error loading feedback file';
       toast.error(errorMessage);
     }
   };
-
-  // Cleanup blob URL when modal closes
-  React.useEffect(() => {
-    if (!feedbackViewerOpen && feedbackViewerUrl) {
-      window.URL.revokeObjectURL(feedbackViewerUrl);
-      setFeedbackViewerUrl(null);
-    }
-  }, [feedbackViewerOpen, feedbackViewerUrl]);
-
-  React.useEffect(() => {
-    if (!submissionViewerOpen && submissionViewerUrl) {
-      window.URL.revokeObjectURL(submissionViewerUrl);
-      setSubmissionViewerUrl(null);
-    }
-  }, [submissionViewerOpen, submissionViewerUrl]);
 
   // Handle cancel
   const handleCancel = async () => {
@@ -275,23 +262,6 @@ const SubmittedPDFCard: React.FC<SubmittedPDFCardProps> = ({
                           <Eye className="h-4 w-4" />
                           ดูเอกสาร
                         </Button>
-                        <Dialog open={feedbackViewerOpen} onOpenChange={setFeedbackViewerOpen}>
-                          <DialogContent className="max-h-[90vh] max-w-4xl">
-                            <DialogHeader>
-                              <DialogTitle>เอกสาร Feedback</DialogTitle>
-                              <DialogDescription>เอกสาร PDF ที่อาจารย์ตรวจแล้ว</DialogDescription>
-                            </DialogHeader>
-                            <div className="mt-4 h-[70vh] w-full overflow-hidden rounded-lg border">
-                              {feedbackViewerUrl && (
-                                <iframe
-                                  src={feedbackViewerUrl}
-                                  className="h-full w-full"
-                                  title="Feedback PDF"
-                                />
-                              )}
-                            </div>
-                          </DialogContent>
-                        </Dialog>
                         <Button
                           variant="outline"
                           size="sm"
@@ -341,23 +311,6 @@ const SubmittedPDFCard: React.FC<SubmittedPDFCardProps> = ({
               )}
               ดูเอกสาร
             </Button>
-            <Dialog open={submissionViewerOpen} onOpenChange={setSubmissionViewerOpen}>
-              <DialogContent className="max-h-[90vh] max-w-4xl">
-                <DialogHeader>
-                  <DialogTitle>เอกสารที่ส่ง</DialogTitle>
-                  <DialogDescription>เอกสาร PDF ที่คุณส่งมา</DialogDescription>
-                </DialogHeader>
-                <div className="mt-4 h-[70vh] w-full overflow-hidden rounded-lg border">
-                  {submissionViewerUrl && (
-                    <iframe
-                      src={submissionViewerUrl}
-                      className="h-full w-full"
-                      title="Submission PDF"
-                    />
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
             <Button onClick={handleDownload} variant="outline" className="flex items-center gap-2">
               <Download className="h-4 w-4" />
               ดาวน์โหลด
