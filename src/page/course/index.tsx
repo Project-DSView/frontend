@@ -14,6 +14,16 @@ import EnrollmentChecker from '@/components/course/EnrollmentChecker';
 import CreateCourseDialog from '@/components/course/CreateCourseDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const CoursePage: React.FC = () => {
   const router = useRouter();
@@ -24,6 +34,7 @@ const CoursePage: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isArchiving, setIsArchiving] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<string>>(new Set());
 
@@ -191,8 +202,8 @@ const CoursePage: React.FC = () => {
     setEditingCourse(course);
   };
 
-  // Handle delete course (archived only)
-  const handleDeleteCourse = async (courseId: string) => {
+  // Open delete confirmation dialog (archived only)
+  const handleDeleteCourse = (courseId: string) => {
     if (!accessToken) {
       toast.error('กรุณาเข้าสู่ระบบก่อน');
       return;
@@ -209,18 +220,19 @@ const CoursePage: React.FC = () => {
       return;
     }
 
-    const confirmed = window.confirm(
-      `ยืนยันการลบคอร์ส "${course.name}"?\nการกระทำนี้จะลบเนื้อหาภายในทั้งหมดและไม่สามารถย้อนกลับได้`,
-    );
+    setCourseToDelete(course);
+  };
 
-    if (!confirmed) {
+  const confirmDeleteCourse = async () => {
+    if (!accessToken || !courseToDelete) {
       return;
     }
 
-    setIsDeleting(courseId);
+    setIsDeleting(courseToDelete.course_id);
     try {
-      await deleteCourseMutation.mutateAsync({ token: accessToken, courseId });
+      await deleteCourseMutation.mutateAsync({ token: accessToken, courseId: courseToDelete.course_id });
       refetch();
+      setCourseToDelete(null);
     } catch (error) {
       console.error('Delete course error:', error);
     } finally {
@@ -464,6 +476,36 @@ const CoursePage: React.FC = () => {
           setEditingCourse(null);
         }}
       />
+
+      <AlertDialog
+        open={!!courseToDelete}
+        onOpenChange={(open) => {
+          if (!open && !deleteCourseMutation.isPending) {
+            setCourseToDelete(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการลบคอร์ส</AlertDialogTitle>
+            <AlertDialogDescription>
+              {courseToDelete
+                ? `ต้องการลบคอร์ส "${courseToDelete.name}" ใช่หรือไม่? การกระทำนี้จะลบเนื้อหาภายในทั้งหมดและไม่สามารถย้อนกลับได้`
+                : 'การลบคอร์สจะไม่สามารถย้อนกลับได้'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteCourseMutation.isPending}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteCourse}
+              className="bg-destructive text-white hover:bg-destructive/90"
+              disabled={deleteCourseMutation.isPending}
+            >
+              {deleteCourseMutation.isPending ? 'กำลังลบ...' : 'ยืนยันการลบ'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

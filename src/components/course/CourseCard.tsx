@@ -67,14 +67,17 @@ const CourseCard: React.FC<CourseCardProps> = React.memo(
       <Card
         className={`relative h-full transition-all duration-200 hover:shadow-lg ${course.status === 'archived' ? 'opacity-50' : ''}`}
       >
-        {onDelete && userProfile?.is_teacher && course.created_by === userProfile.user_id && (
+        {onDelete &&
+          userProfile?.is_teacher &&
+          course.created_by === userProfile.user_id &&
+          course.status === 'archived' && (
           <Button
             onClick={handleDelete}
-            disabled={isDeleting || course.status !== 'archived'}
+            disabled={isDeleting}
             variant="destructive"
             size="sm"
             className="absolute top-3 left-3 z-10 text-white"
-            title={course.status === 'archived' ? 'ลบคอร์ส' : 'ลบได้เฉพาะคอร์สที่ archived'}
+            title="ลบคอร์ส"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
