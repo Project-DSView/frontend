@@ -280,8 +280,9 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material }) => {
                 <Button
                   onClick={() => {
                     if (material.file_url) {
+                      const transformedFileUrl = transformFileUrl(material.file_url);
                       const filename = getSafeFilename(material.file_url, material.file_name);
-                      downloadFile(material.file_url, filename);
+                      downloadFile(transformedFileUrl || material.file_url, filename);
                     }
                   }}
                   variant="outline"

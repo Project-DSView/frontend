@@ -5,7 +5,11 @@ import { Loader2 } from 'lucide-react';
 import { useForm } from '@tanstack/react-form';
 
 import { useCreateMaterial, useUpdateMaterial } from '@/query';
-import { materialSchema } from '@/lib/schemas/material.schema';
+import {
+  materialSchema,
+  MATERIAL_FILE_SIZE_ERROR_MESSAGE,
+  MATERIAL_FILE_TYPE_ERROR_MESSAGE,
+} from '@/lib/schemas/material.schema';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -631,10 +635,10 @@ const CreateMaterialDialog: React.FC<CreateMaterialDialogProps> = ({
                             'text/plain',
                           ];
                           if (!allowedTypes.includes(value.type)) {
-                            return 'ไฟล์ต้องเป็น PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX หรือ TXT เท่านั้น';
+                            return MATERIAL_FILE_TYPE_ERROR_MESSAGE;
                           }
                           if (value.size > 10 * 1024 * 1024) {
-                            return 'ไฟล์ใหญ่เกิน 10MB';
+                            return MATERIAL_FILE_SIZE_ERROR_MESSAGE;
                           }
                         }
                         return undefined;
@@ -1411,7 +1415,7 @@ const CreateMaterialDialog: React.FC<CreateMaterialDialogProps> = ({
                             return 'ไฟล์ต้องเป็น PDF เท่านั้น';
                           }
                           if (value.size > 10 * 1024 * 1024) {
-                            return 'ไฟล์ใหญ่เกิน 10MB';
+                            return MATERIAL_FILE_SIZE_ERROR_MESSAGE;
                           }
                           return undefined;
                         },
