@@ -4,6 +4,8 @@ import { z } from 'zod';
  * File validation constants for materials
  */
 export const MATERIAL_FILE_MAX_SIZE = 10 * 1024 * 1024; // 10MB
+export const MATERIAL_FILE_SIZE_ERROR_MESSAGE = 'ขนาดไฟล์เกิน 10MB';
+export const MATERIAL_FILE_TYPE_ERROR_MESSAGE = 'ชนิดไฟล์ไม่รองรับ';
 export const ALLOWED_DOCUMENT_MIME_TYPES = [
   'application/pdf',
   'application/msword',
@@ -49,13 +51,13 @@ const documentMaterialSchema = z.object({
       (file) => {
         return ALLOWED_DOCUMENT_MIME_TYPES.includes(file.type);
       },
-      { message: 'ไฟล์ต้องเป็น PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX หรือ TXT เท่านั้น' },
+      { message: MATERIAL_FILE_TYPE_ERROR_MESSAGE },
     )
     .refine(
       (file) => {
         return file.size <= MATERIAL_FILE_MAX_SIZE;
       },
-      { message: 'ไฟล์ใหญ่เกิน 10MB' },
+      { message: MATERIAL_FILE_SIZE_ERROR_MESSAGE },
     ),
 });
 
@@ -176,7 +178,7 @@ const pdfExerciseMaterialSchema = z.object({
       (file) => {
         return file.size <= MATERIAL_FILE_MAX_SIZE;
       },
-      { message: 'ไฟล์ใหญ่เกิน 10MB' },
+      { message: MATERIAL_FILE_SIZE_ERROR_MESSAGE },
     ),
 });
 
