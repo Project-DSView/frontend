@@ -19,6 +19,18 @@ export const ALLOWED_DOCUMENT_MIME_TYPES = [
 const ALLOWED_PDF_MIME_TYPES = ['application/pdf'];
 const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
+const isPdfFile = (file: File): boolean => {
+  const mimeType = file.type.toLowerCase();
+  const fileName = file.name.toLowerCase();
+
+  return (
+    ALLOWED_PDF_MIME_TYPES.includes(mimeType) ||
+    mimeType === 'application/x-pdf' ||
+    mimeType === 'application/octet-stream' ||
+    fileName.endsWith('.pdf')
+  );
+};
+
 /**
  * Base schema fields shared by all material types
  */
@@ -170,7 +182,7 @@ const pdfExerciseMaterialSchema = z.object({
     .instanceof(File, { message: 'ไฟล์ไม่ถูกต้อง' })
     .refine(
       (file) => {
-        return ALLOWED_PDF_MIME_TYPES.includes(file.type);
+        return isPdfFile(file);
       },
       { message: 'ไฟล์ต้องเป็น PDF เท่านั้น' },
     )
@@ -215,6 +227,7 @@ type PDFExerciseMaterialFormData = z.infer<typeof pdfExerciseMaterialSchema>;
 type AnnouncementMaterialFormData = z.infer<typeof announcementMaterialSchema>;
 
 export {
+  isPdfFile,
   materialSchema,
   baseMaterialSchema,
   documentMaterialSchema,

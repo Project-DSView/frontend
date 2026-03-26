@@ -859,6 +859,31 @@ const useUpdateCourse = () => {
   });
 };
 
+// Delete course mutation
+const useDeleteCourse = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ token, courseId }: { token: string; courseId: string }) =>
+      CourseService.deleteCourse(token, courseId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['courses'],
+      });
+      queryClient.removeQueries({
+        queryKey: ['course', variables.token, variables.courseId],
+      });
+
+      toast.success('ลบคอร์สสำเร็จ');
+    },
+    onError: (error: unknown) => {
+      console.error('Delete course error:', error);
+      const errorMessage = formatErrorForDisplay(error) || 'เกิดข้อผิดพลาดในการลบคอร์ส';
+      toast.error(errorMessage);
+    },
+  });
+};
+
 const useUploadCourseImage = () => {
   const queryClient = useQueryClient();
 
@@ -988,6 +1013,7 @@ export {
   useCompleteReview,
   useCreateCourse,
   useUpdateCourse,
+  useDeleteCourse,
   useUploadCourseImage,
   useCreateInvitation,
   useCourseInvitations,

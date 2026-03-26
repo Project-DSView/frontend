@@ -7,6 +7,7 @@ import { useForm } from '@tanstack/react-form';
 import { useCreateMaterial, useUpdateMaterial } from '@/query';
 import {
   materialSchema,
+  isPdfFile,
   MATERIAL_FILE_SIZE_ERROR_MESSAGE,
   MATERIAL_FILE_TYPE_ERROR_MESSAGE,
 } from '@/lib/schemas/material.schema';
@@ -1411,7 +1412,7 @@ const CreateMaterialDialog: React.FC<CreateMaterialDialogProps> = ({
                           if (!value) {
                             return 'กรุณาเลือกไฟล์ PDF';
                           }
-                          if (value.type !== 'application/pdf') {
+                          if (!isPdfFile(value)) {
                             return 'ไฟล์ต้องเป็น PDF เท่านั้น';
                           }
                           if (value.size > 10 * 1024 * 1024) {

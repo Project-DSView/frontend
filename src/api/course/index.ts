@@ -72,6 +72,13 @@ const updateCourse = async (
   return res.data;
 };
 
+// Delete course
+const deleteCourse = async (token: string, courseId: string): Promise<void> => {
+  await api.delete(`/api/courses/${courseId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
 // Upload course image
 const uploadCourseImage = async (
   token: string,
@@ -580,6 +587,7 @@ const enrollViaInvitation = async (
 export {
   getCourses,
   getCourse,
+  deleteCourse,
   getCourseMaterials,
   getCourseMaterial,
   createMaterial,
