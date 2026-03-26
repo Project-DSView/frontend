@@ -102,6 +102,7 @@ api.interceptors.response.use(
 export {
   getCourses,
   getCourse,
+  deleteCourse,
   getCourseMaterials,
   getCourseMaterial,
   createMaterial,

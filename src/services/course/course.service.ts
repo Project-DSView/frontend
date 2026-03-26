@@ -3,6 +3,7 @@ import axios from 'axios';
 import {
   getCourses,
   getCourse,
+  deleteCourse as apiDeleteCourse,
   getCourseMaterials,
   getCourseMaterial,
   getAnnouncements,
@@ -175,6 +176,21 @@ class CourseService {
         const newToken = await AuthService.refreshToken();
         if (newToken) {
           return await apiUpdateCourse(newToken, courseId, updates);
+        }
+      }
+      throw error;
+    }
+  }
+
+  // Delete course
+  static async deleteCourse(token: string, courseId: string): Promise<void> {
+    try {
+      return await apiDeleteCourse(token, courseId);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        const newToken = await AuthService.refreshToken();
+        if (newToken) {
+          return await apiDeleteCourse(newToken, courseId);
         }
       }
       throw error;

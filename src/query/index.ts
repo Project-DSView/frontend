@@ -32,6 +32,7 @@ export {
   useCompleteReview,
   useCreateCourse,
   useUpdateCourse,
+  useDeleteCourse,
   useUploadCourseImage,
   useCreateInvitation,
   useCourseInvitations,

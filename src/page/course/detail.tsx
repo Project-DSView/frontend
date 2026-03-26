@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useParams } from 'next/navigation';
-import { Loader2, AlertCircle, BookOpen, LogOut, RefreshCw, Plus } from 'lucide-react';
+import { Loader2, AlertCircle, BookOpen, LogOut, RefreshCw, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
@@ -13,6 +13,7 @@ import {
   useCourseMaterials,
   useMyEnrollment,
   useUnenrollFromCourse,
+  useDeleteCourse,
   useCourseEnrollments,
   useQueueJobs,
   useCoursePDFSubmissions,
@@ -156,6 +157,7 @@ const CourseDetailPage: React.FC = () => {
 
   // Unenroll mutation
   const unenrollMutation = useUnenrollFromCourse();
+  const deleteCourseMutation = useDeleteCourse();
 
   // Handle unenroll
   const handleUnenroll = async () => {
@@ -182,6 +184,26 @@ const CourseDetailPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to unenroll from course:', error);
       toast.error('เกิดข้อผิดพลาดในการออกจากคอร์ส');
+    }
+  };
+
+  const handleDeleteCourse = async () => {
+    if (!accessToken || !courseId) return;
+
+    if (course?.status !== 'archived') {
+      toast.error('ลบคอร์สได้เฉพาะคอร์สที่ถูกเก็บ (archived) เท่านั้น');
+      return;
+    }
+
+    try {
+      await deleteCourseMutation.mutateAsync({
+        token: accessToken,
+        courseId,
+      });
+
+      router.push('/course');
+    } catch (error) {
+      console.error('Failed to delete course:', error);
     }
   };
 
@@ -341,43 +363,88 @@ const CourseDetailPage: React.FC = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>ข้อมูลคอร์ส</CardTitle>
-                  {enrollmentData?.data?.enrollment && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          disabled={unenrollMutation.isPending}
-                          className="bg-error flex items-center gap-2 text-[16px] text-white"
-                        >
-                          {unenrollMutation.isPending ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <LogOut className="h-4 w-4" />
-                          )}
-                          ออกจากคอร์ส
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>ยืนยันการออกจากคอร์ส</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            คุณแน่ใจหรือไม่ว่าต้องการออกจากคอร์ส &quot;{course.name}&quot;?
-                            การกระทำนี้ไม่สามารถย้อนกลับได้
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="hover:bg-neutral">ยกเลิก</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={handleUnenroll}
-                            className="bg-error hover:bg-red-700"
+                  <div className="flex items-center gap-2">
+                    {isCreator && profile?.is_teacher && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            disabled={deleteCourseMutation.isPending || course.status !== 'archived'}
+                            className="bg-error flex items-center gap-2 text-[16px] text-white disabled:cursor-not-allowed"
+                            title={
+                              course.status === 'archived'
+                                ? 'ลบคอร์ส'
+                                : 'ลบได้เฉพาะคอร์สที่ archived'
+                            }
                           >
+                            {deleteCourseMutation.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                            ลบคอร์ส
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>ยืนยันการลบคอร์ส</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              การลบคอร์ส &quot;{course.name}&quot; จะลบเนื้อหาภายในทั้งหมดแบบถาวร
+                              และไม่สามารถย้อนกลับได้
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="hover:bg-neutral">ยกเลิก</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={handleDeleteCourse}
+                              className="bg-error hover:bg-red-700"
+                            >
+                              ลบคอร์ส
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+
+                    {enrollmentData?.data?.enrollment && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            disabled={unenrollMutation.isPending}
+                            className="bg-error flex items-center gap-2 text-[16px] text-white"
+                          >
+                            {unenrollMutation.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <LogOut className="h-4 w-4" />
+                            )}
                             ออกจากคอร์ส
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>ยืนยันการออกจากคอร์ส</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              คุณแน่ใจหรือไม่ว่าต้องการออกจากคอร์ส &quot;{course.name}&quot;?
+                              การกระทำนี้ไม่สามารถย้อนกลับได้
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="hover:bg-neutral">ยกเลิก</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={handleUnenroll}
+                              className="bg-error hover:bg-red-700"
+                            >
+                              ออกจากคอร์ส
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
