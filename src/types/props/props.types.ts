@@ -84,7 +84,9 @@ interface CourseCardProps {
   isEnrolled?: boolean;
   onEnterCourse?: (courseId: string) => void;
   onArchive?: (courseId: string) => void;
+  onDelete?: (courseId: string) => void;
   isArchiving?: boolean;
+  isDeleting?: boolean;
   onEdit?: (course: Course) => void;
   userProfile?: UserProfile | null;
 }
@@ -95,7 +97,9 @@ interface CourseCardWithEnrollmentProps {
   isEnrolling: boolean;
   onEnterCourse: (courseId: string) => void;
   onArchive?: (courseId: string) => void;
+  onDelete?: (courseId: string) => void;
   isArchiving?: boolean;
+  isDeleting?: boolean;
   onEdit?: (course: Course) => void;
   accessToken: string | null;
   userProfile?: UserProfile | null;

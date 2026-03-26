@@ -14,7 +14,9 @@ const CourseCardWithEnrollment: React.FC<CourseCardWithEnrollmentProps> = ({
   isEnrolling,
   onEnterCourse,
   onArchive,
+  onDelete,
   isArchiving,
+  isDeleting,
   onEdit,
   accessToken,
   userProfile,
@@ -45,7 +47,9 @@ const CourseCardWithEnrollment: React.FC<CourseCardWithEnrollmentProps> = ({
       isEnrolled={isEnrolled}
       onEnterCourse={onEnterCourse}
       onArchive={onArchive}
+      onDelete={onDelete}
       isArchiving={isArchiving}
+      isDeleting={isDeleting}
       onEdit={onEdit}
       userProfile={userProfile}
     />

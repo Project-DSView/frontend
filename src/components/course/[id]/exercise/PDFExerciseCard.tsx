@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { FilePen, Eye, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { MaterialCardProps } from '@/types';
 import { formatDate, isDeadlinePassed, formatFileSize, transformFileUrl } from '@/lib';
@@ -29,12 +30,22 @@ const PDFExerciseCard: React.FC<MaterialCardProps> = ({ material }) => {
 
     setLoading(true);
     try {
-      // Transform MinIO URLs to use HTTPS proxy
+      // Transform MinIO URLs to use HTTPS proxy and load as blob to bypass iframe blocking headers.
       const transformedUrl = transformFileUrl(material.file_url);
-      setViewerUrl(transformedUrl);
+      const response = await fetch(transformedUrl, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to load PDF: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      setViewerUrl(blobUrl);
       setViewerOpen(true);
     } catch (error) {
       console.error('Error loading file:', error);
+      toast.error('ไม่สามารถเปิดเอกสารได้ กรุณาลองดาวน์โหลดแทน');
     } finally {
       setLoading(false);
     }
