@@ -65,8 +65,24 @@ const CourseCard: React.FC<CourseCardProps> = React.memo(
 
     return (
       <Card
-        className={`h-full transition-all duration-200 hover:shadow-lg ${course.status === 'archived' ? 'opacity-50' : ''}`}
+        className={`relative h-full transition-all duration-200 hover:shadow-lg ${course.status === 'archived' ? 'opacity-50' : ''}`}
       >
+        {onDelete &&
+          userProfile?.is_teacher &&
+          course.created_by === userProfile.user_id &&
+          course.status === 'archived' && (
+          <Button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            variant="destructive"
+            size="sm"
+            className="absolute top-3 left-3 z-10 text-white"
+            title="ลบคอร์ส"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
+
         <CardHeader className="pb-3">
           {/* Course Image */}
           <div className="mb-4">
@@ -161,18 +177,6 @@ const CourseCard: React.FC<CourseCardProps> = React.memo(
                   >
                     <Archive className="mr-2 h-4 w-4" />
                     {course.status === 'archived' ? 'ยกเลิกการเก็บ' : 'เก็บ'}
-                  </Button>
-                )}
-                {onDelete && (
-                  <Button
-                    onClick={handleDelete}
-                    disabled={isDeleting || course.status !== 'archived'}
-                    variant="destructive"
-                    className="flex-1 text-white"
-                    title={course.status === 'archived' ? 'ลบคอร์ส' : 'ลบได้เฉพาะคอร์สที่ archived'}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    ลบคอร์ส
                   </Button>
                 )}
               </div>
