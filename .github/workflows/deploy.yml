@@ -1,8 +1,9 @@
 name: Frontend CI/CD
 
 on:
-  push:
+  pull_request:
     branches: ['main']
+    types: [opened, synchronize, reopened]
 
 jobs:
   deploy-frontend:
@@ -12,8 +13,22 @@ jobs:
         working-directory: /home/dsview/dsview/frontend
         run: git pull origin main
 
-      - name: Rebuild & restart frontend
+      - name: Rebuild frontend (performance gate)
+        env:
+          BUILD_TIME_BUDGET_SECONDS: 900
         working-directory: /home/dsview/dsview/frontend
         run: |
+          START=$(date +%s)
           docker compose --env-file .env.production build --no-cache
+          END=$(date +%s)
+          DURATION=$((END-START))
+          echo "Frontend build duration: ${DURATION}s"
+          if [ "$DURATION" -gt "$BUILD_TIME_BUDGET_SECONDS" ]; then
+            echo "Build duration exceeded budget (${BUILD_TIME_BUDGET_SECONDS}s)."
+            exit 1
+          fi
+
+      - name: Restart frontend
+        working-directory: /home/dsview/dsview/frontend
+        run: |
           docker compose --env-file .env.production up -d
