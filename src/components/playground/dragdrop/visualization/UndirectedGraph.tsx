@@ -300,6 +300,19 @@ const UndirectedGraphVisualization = forwardRef<
       [nodes, highlightedEdges, nodePositions],
     );
 
+    // Clear animation state when graph becomes empty (e.g., after clear operation)
+    useEffect(() => {
+      if (nodes.length === 0) {
+        setHighlightedNodes([]);
+        setHighlightedEdges([]);
+        setIsAnimating(false);
+        setIsTraversing(false);
+        setTraverseIndex(0);
+        setTraversalOrder([]);
+        setDraggedNode(null);
+      }
+    }, [nodes.length]);
+
     return (
       <div
         ref={ref}

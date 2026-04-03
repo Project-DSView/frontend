@@ -326,6 +326,17 @@ const BSTDragDropVisualization = forwardRef<HTMLDivElement, BSTVisualizationProp
       return <>{connections}</>;
     }, [root, positionedNodes]);
 
+    // Clear animation state when tree becomes empty (e.g., after clear operation)
+    useEffect(() => {
+      if (!root) {
+        setHighlightedNodes([]);
+        setIsAnimating(false);
+        setIsTraversing(false);
+        setTraverseIndex(0);
+        setTraversalOrder([]);
+      }
+    }, [root]);
+
     /* ============================================================
         RETURN
     ============================================================ */
