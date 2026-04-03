@@ -56,6 +56,14 @@ const QueueDragDropVisualization = forwardRef<HTMLDivElement, QueueVisualization
 
     }, [isRunning, currentOperation, previewElements.length]);
 
+    // Clear animation state when elements become empty (e.g., after clear operation)
+    useEffect(() => {
+      if (elements.length === 0) {
+        setHighlightedElementIndex(-1);
+        setIsAnimating(false);
+      }
+    }, [elements.length]);
+
     const renderQueueElement = (
       value: string,
       index: number,

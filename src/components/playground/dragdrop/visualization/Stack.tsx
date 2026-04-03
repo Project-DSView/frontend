@@ -79,6 +79,15 @@ const StackDragDropVisualization = forwardRef<HTMLDivElement, StackVisualization
       }
     }, [isRunning, isAnimating, previewElements.length]);
 
+    // Clear animation state when elements become empty (e.g., after clear operation)
+    useEffect(() => {
+      if (elements.length === 0 && mainStack && mainStack.length === 0 && 
+          (!stackS1 || stackS1.length === 0) && (!stackS2 || stackS2.length === 0)) {
+        setHighlightedElementIndex(-1);
+        setIsAnimating(false);
+      }
+    }, [elements.length, mainStack, stackS1, stackS2]);
+
     const renderStackElement = (value: string, index: number, stackLength: number) => {
 
       const isHighlighted = highlightedElementIndex === index;

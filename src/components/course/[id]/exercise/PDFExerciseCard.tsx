@@ -9,20 +9,11 @@ import { formatDate, isDeadlinePassed, formatFileSize, transformFileUrl } from '
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 
 const PDFExerciseCard: React.FC<MaterialCardProps> = ({ material }) => {
   const hasDeadline = material.deadline;
   const isExpired = hasDeadline && isDeadlinePassed(material.deadline!);
   const isGraded = material.is_graded ?? true;
-  const [viewerOpen, setViewerOpen] = React.useState(false);
-  const [viewerUrl, setViewerUrl] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
 
   const handleView = async () => {
@@ -41,8 +32,15 @@ const PDFExerciseCard: React.FC<MaterialCardProps> = ({ material }) => {
 
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
-      setViewerUrl(blobUrl);
-      setViewerOpen(true);
+
+      const opened = window.open(blobUrl, '_blank', 'noopener,noreferrer');
+      if (!opened) {
+        toast.error('เบราว์เซอร์บล็อกแท็บใหม่ กรุณาอนุญาต pop-up แล้วลองใหม่');
+      }
+
+      setTimeout(() => {
+        window.URL.revokeObjectURL(blobUrl);
+      }, 60_000);
     } catch (error) {
       console.error('Error loading file:', error);
       toast.error('ไม่สามารถเปิดเอกสารได้ กรุณาลองดาวน์โหลดแทน');
@@ -50,14 +48,6 @@ const PDFExerciseCard: React.FC<MaterialCardProps> = ({ material }) => {
       setLoading(false);
     }
   };
-
-  // Cleanup when modal closes
-  React.useEffect(() => {
-    if (!viewerOpen && viewerUrl && viewerUrl.startsWith('blob:')) {
-      window.URL.revokeObjectURL(viewerUrl);
-      setViewerUrl(null);
-    }
-  }, [viewerOpen, viewerUrl]);
 
   return (
     <Card>
@@ -137,19 +127,6 @@ const PDFExerciseCard: React.FC<MaterialCardProps> = ({ material }) => {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
               ดูเอกสาร
             </Button>
-            <Dialog open={viewerOpen} onOpenChange={setViewerOpen}>
-              <DialogContent className="max-h-[90vh] max-w-4xl">
-                <DialogHeader>
-                  <DialogTitle>โจทย์แบบฝึกหัด</DialogTitle>
-                  <DialogDescription>{material.title}</DialogDescription>
-                </DialogHeader>
-                <div className="mt-4 h-[70vh] w-full overflow-hidden rounded-lg border">
-                  {viewerUrl && (
-                    <iframe src={viewerUrl} className="h-full w-full" title="Exercise PDF" />
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
 
           {/* Instructions */}

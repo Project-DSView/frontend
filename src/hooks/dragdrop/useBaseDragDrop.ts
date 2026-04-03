@@ -14,7 +14,24 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
     state: BaseState<TData, TStats>,
   ) => BaseDataStructureService<TData, TStats, TOperation>,
 ): BaseHookReturn<TData, TStats, TOperation> => {
-  const [state, setState] = useState<BaseState<TData, TStats>>(initialState);
+  const cloneStatePart = <T,>(value: T): T => {
+    if (typeof globalThis.structuredClone === 'function') {
+      return globalThis.structuredClone(value);
+    }
+
+    return JSON.parse(JSON.stringify(value)) as T;
+  };
+
+  const buildFreshInitialState = useCallback(
+    (): BaseState<TData, TStats> => ({
+      data: cloneStatePart(initialState.data),
+      operations: [],
+      stats: cloneStatePart(initialState.stats),
+    }),
+    [initialState],
+  );
+
+  const [state, setState] = useState<BaseState<TData, TStats>>(() => buildFreshInitialState());
   const [hookState, setHookState] = useState<BaseHookState>({
     isRunning: false,
     currentLine: -1,
@@ -77,7 +94,7 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
   const rebuildStateFromOperations = useCallback(
     async (operations: TOperation[]): Promise<BaseState<TData, TStats>> => {
       const currentState: BaseState<TData, TStats> = {
-        ...initialState,
+        ...buildFreshInitialState(),
         operations,
       };
 
@@ -95,7 +112,7 @@ const useBaseDataStructure = <TData, TStats extends BaseStats, TOperation extend
         operations,
       };
     },
-    [ServiceClass, initialState, isOperationReadyForRealtimeExecution],
+    [ServiceClass, buildFreshInitialState, isOperationReadyForRealtimeExecution],
   );
 
   const addOperation = useCallback(
@@ -204,22 +221,25 @@ const newOperations = operationsRef.current.map((op) => {
     try {
       setError(null);
       operationsRef.current = [];
+      const freshInitialState = buildFreshInitialState();
       setState((prev) => ({
         ...initialState,
+        data: freshInitialState.data,
         operations: [],
+        stats: freshInitialState.stats,
       }));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to clear operations';
       setError(errorMessage);
       console.error('Error clearing operations:', error);
     }
-  }, [initialState]);
+  }, [buildFreshInitialState, initialState]);
 
   const clearAll = useCallback(() => {
     try {
       setError(null);
       operationsRef.current = [];
-      setState(initialState);
+      setState(buildFreshInitialState());
       setHookState({
         isRunning: false,
         currentLine: -1,
@@ -235,7 +255,7 @@ const newOperations = operationsRef.current.map((op) => {
       setError(errorMessage);
       console.error('Error clearing all:', error);
     }
-  }, [initialState]);
+  }, [buildFreshInitialState]);
 
   const reorderOperation = useCallback(
     async (fromIndex: number, toIndex: number) => {

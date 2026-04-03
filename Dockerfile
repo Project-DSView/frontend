@@ -1,5 +1,8 @@
-# Base image
-FROM oven/bun:1 AS base
+# Base image (use public ECR mirror to avoid Docker Hub rate/network issues)
+FROM public.ecr.aws/docker/library/node:lts-alpine AS base
+
+# Install bun once and reuse across build stages.
+RUN npm install -g bun@1
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -37,7 +40,7 @@ ENV NEXT_PUBLIC_DOMAIN_NAME=$NEXT_PUBLIC_DOMAIN_NAME
 RUN bun run build
 
 # Production image, copy all the files and run next
-FROM node:lts-alpine AS runner
+FROM public.ecr.aws/docker/library/node:lts-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
