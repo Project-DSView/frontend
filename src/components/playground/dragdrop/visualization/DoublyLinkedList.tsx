@@ -213,6 +213,16 @@ const previewNodes = useMemo(() => {
       }
     }, [selectedStep, currentOperation, nodes.length]);
 
+    // Clear animation state when nodes become empty (e.g., after clear operation)
+    useEffect(() => {
+      if (nodes.length === 0) {
+        setHighlightedNodeIndex(-1);
+        setIsAnimating(false);
+        setIsTraversing(false);
+        setTraverseIndex(0);
+      }
+    }, [nodes.length]);
+
     // Get current position for head/tail pointer animation
     const getCurrentPosition = () => {
       if (!isRunning || !currentStep) return { head: 0, tail: nodes.length - 1 };

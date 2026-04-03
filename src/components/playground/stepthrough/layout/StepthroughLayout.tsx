@@ -143,7 +143,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
       <main className="mb-2 grid grid-cols-1 gap-2 sm:mb-3 sm:gap-3 lg:mb-0 lg:flex-1 lg:grid-cols-[2fr_3fr] lg:overflow-hidden">
         {/* Left Side - Code Editor with Step Control */}
         <section
-          className="flex min-w-0 flex-col overflow-hidden rounded-lg bg-white p-2 shadow sm:p-3 lg:h-full lg:overflow-y-auto dark:bg-gray-800"
+          className="flex min-w-0 flex-col overflow-hidden rounded-lg bg-white p-2 shadow sm:p-3 lg:h-full dark:bg-gray-800"
           aria-label="Code Editor"
         >
           <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -181,13 +181,12 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
           <div
             id="tutorial-code-editor"
             ref={codeEditorRef}
-            className="mb-2 min-w-0 overflow-hidden"
-            style={{ height: '280px' }}
+            className="mb-2 min-w-0 flex-1 overflow-hidden lg:flex-1"
           >
             <CodeEditor
               code={code}
               onCodeChange={onCodeChange}
-              height="280px"
+              height="100%"
               currentStep={
                 steps.length > 0 && currentStepIndex < steps.length
                   ? {
@@ -206,7 +205,7 @@ const StepthroughLayout = <TData extends StepthroughData = StepthroughData>({
           <div
             id="tutorial-step-control"
             ref={stepControlRef}
-            className="mt-2 border-t border-gray-200 pt-2 dark:border-gray-700"
+            className="shrink-0 border-t border-gray-200 pt-2 dark:border-gray-700"
           >
             <StepControl
               steps={steps}
