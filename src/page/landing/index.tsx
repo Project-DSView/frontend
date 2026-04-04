@@ -76,7 +76,12 @@ const LandingPage = () => {
       if (result.timeComplexity === 'Error' || result.spaceComplexity === 'Error') {
         setComplexity(null);
         setAnalysisError(result.analysisDetails || null);
-        setError(result.timeExplanation || 'เกิดข้อผิดพลาดในการวิเคราะห์โค้ด โปรดตรวจสอบ Syntax หรือลองใหม่อีกครั้ง');
+        setError(
+          result.analysisDetails?.python_style_message ||
+            result.analysisDetails?.thai_message ||
+            result.timeExplanation ||
+            'เกิดข้อผิดพลาดในการวิเคราะห์โค้ด โปรดตรวจสอบ Syntax หรือลองใหม่อีกครั้ง',
+        );
         return;
       }
 
@@ -363,18 +368,12 @@ const LandingPage = () => {
                       </div>
                       <div className="space-y-2 text-sm leading-relaxed">
                         <p className="text-destructive font-semibold">Syntax Error</p>
-                        <p className="text-destructive">{analysisError?.thai_message || error}</p>
-                        {analysisError?.line_number ? (
-                          <p className="text-muted-foreground">
-                            บรรทัด {analysisError.line_number}
-                            {analysisError.code_line ? `: ${analysisError.code_line.trim()}` : ''}
-                          </p>
+                        {analysisError?.thai_message ? (
+                          <p className="text-destructive">{analysisError.thai_message}</p>
                         ) : null}
-                        {analysisError?.python_style_message ? (
-                          <pre className="bg-background/70 text-foreground overflow-x-auto rounded-md border border-border p-3 text-xs whitespace-pre-wrap">
-                            {analysisError.python_style_message}
-                          </pre>
-                        ) : null}
+                        <pre className="bg-background/70 text-foreground overflow-x-auto rounded-md border border-border p-3 text-xs whitespace-pre-wrap">
+                          {analysisError?.python_style_message || error}
+                        </pre>
                       </div>
                     </CardContent>
                   </Card>
