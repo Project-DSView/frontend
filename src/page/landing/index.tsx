@@ -70,6 +70,12 @@ const LandingPage = () => {
 
     try {
       const result = await analyzePerformance(code);
+      if (result.timeComplexity === 'Error' || result.spaceComplexity === 'Error') {
+        setComplexity(null);
+        setError(result.timeExplanation || 'เกิดข้อผิดพลาดในการวิเคราะห์โค้ด โปรดตรวจสอบ Syntax หรือลองใหม่อีกครั้ง');
+        return;
+      }
+
       setComplexity(result);
     } catch (err) {
       console.error('Analysis failed:', err);
