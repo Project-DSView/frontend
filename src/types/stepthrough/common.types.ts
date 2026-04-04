@@ -152,6 +152,13 @@ interface ComplexityAnalysis {
     recursion_type?: string | null;
     space_allocations?: string[];
     has_growing_structures?: boolean;
+    error_type?: string;
+    error_message?: string;
+    thai_message?: string;
+    python_style_message?: string;
+    line_number?: number;
+    code_line?: string;
+    offset?: number | null;
   };
   functionComplexities?: FunctionComplexity[];
 }

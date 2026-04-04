@@ -39,6 +39,7 @@ const LandingPage = () => {
   const [isExplaining, setIsExplaining] = useState(false);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [analysisError, setAnalysisError] = useState<ComplexityAnalysis['analysisDetails'] | null>(null);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
@@ -58,6 +59,7 @@ const LandingPage = () => {
     setComplexity(null);
     setAiExplanation(null);
     setError(null);
+    setAnalysisError(null);
   };
 
   const handleRun = async () => {
@@ -65,6 +67,7 @@ const LandingPage = () => {
 
     setIsAnalyzing(true);
     setError(null);
+    setAnalysisError(null);
     setComplexity(null);
     setAiExplanation(null);
 
@@ -72,13 +75,16 @@ const LandingPage = () => {
       const result = await analyzePerformance(code);
       if (result.timeComplexity === 'Error' || result.spaceComplexity === 'Error') {
         setComplexity(null);
+        setAnalysisError(result.analysisDetails || null);
         setError(result.timeExplanation || 'เกิดข้อผิดพลาดในการวิเคราะห์โค้ด โปรดตรวจสอบ Syntax หรือลองใหม่อีกครั้ง');
         return;
       }
 
+      setAnalysisError(null);
       setComplexity(result);
     } catch (err) {
       console.error('Analysis failed:', err);
+      setAnalysisError(null);
       setError('เกิดข้อผิดพลาดในการวิเคราะห์โค้ด โปรดตรวจสอบ Syntax หรือลองใหม่อีกครั้ง');
     } finally {
       setIsAnalyzing(false);
@@ -351,11 +357,25 @@ const LandingPage = () => {
               <div className="mx-auto w-full max-w-none space-y-4">
                 {error && (
                   <Card className="border-destructive/50 bg-destructive/10 shadow-sm">
-                    <CardContent className="p-4 flex items-start gap-3">
-                      <div className="bg-destructive/20 text-destructive rounded-full p-1 mt-0.5">
+                    <CardContent className="flex items-start gap-3 p-4">
+                      <div className="bg-destructive/20 text-destructive mt-0.5 rounded-full p-1">
                         <RotateCcw className="h-4 w-4" />
                       </div>
-                      <p className="text-destructive text-sm font-medium leading-relaxed">{error}</p>
+                      <div className="space-y-2 text-sm leading-relaxed">
+                        <p className="text-destructive font-semibold">Syntax Error</p>
+                        <p className="text-destructive">{analysisError?.thai_message || error}</p>
+                        {analysisError?.line_number ? (
+                          <p className="text-muted-foreground">
+                            บรรทัด {analysisError.line_number}
+                            {analysisError.code_line ? `: ${analysisError.code_line.trim()}` : ''}
+                          </p>
+                        ) : null}
+                        {analysisError?.python_style_message ? (
+                          <pre className="bg-background/70 text-foreground overflow-x-auto rounded-md border border-border p-3 text-xs whitespace-pre-wrap">
+                            {analysisError.python_style_message}
+                          </pre>
+                        ) : null}
+                      </div>
                     </CardContent>
                   </Card>
                 )}
