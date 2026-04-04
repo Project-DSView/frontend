@@ -54,12 +54,22 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
   const isFirstStep = currentStepIndex === 0;
   const isLastStep = currentStepIndex === steps.length - 1;
 
-  // Check if current step has an error
-  const hasError =
-    currentStep?.state?.error &&
-    typeof currentStep.state.error === 'string' &&
-    currentStep.state.error.trim() !== '';
-  const errorMessage = hasError ? currentStep.state.error : null;
+  const rawErrorMessage = React.useMemo(() => {
+    const errorValue = currentStep?.state?.error;
+    if (typeof errorValue === 'string' && errorValue.trim() !== '') {
+      return errorValue;
+    }
+
+    const messageValue = currentStep?.state?.message;
+    if (typeof messageValue === 'string' && /syntaxerror|invalid syntax/i.test(messageValue)) {
+      return messageValue;
+    }
+
+    return null;
+  }, [currentStep]);
+
+  const hasError = rawErrorMessage !== null;
+  const errorMessage = rawErrorMessage;
 
   const formattedErrorMessage = React.useMemo(() => {
     if (!hasError || !errorMessage) return null;
