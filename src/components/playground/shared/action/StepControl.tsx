@@ -61,6 +61,42 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
     currentStep.state.error.trim() !== '';
   const errorMessage = hasError ? currentStep.state.error : null;
 
+  const formattedErrorMessage = React.useMemo(() => {
+    if (!hasError || !errorMessage) return null;
+
+    let message = errorMessage;
+
+    // Remove File header to keep message concise in stepthrough panel.
+    message = message
+      .split('\n')
+      .filter((line) => !line.trim().startsWith('File "'))
+      .join('\n')
+      .trim();
+
+    // If backend already provides block format, keep it.
+    if (message.includes('\n') && message.toLowerCase().includes('syntaxerror:')) {
+      return message;
+    }
+
+    // Fallback: convert "invalid syntax (<string>, line 4)" style into block format.
+    const syntaxMatch = message.match(/invalid syntax\s*\([^)]*line\s*(\d+)\)/i);
+    if (syntaxMatch) {
+      const lineFromError = Number(syntaxMatch[1]);
+      const stateData = currentStep.state as Record<string, unknown>;
+      const codeLineFromState = typeof stateData.code_line === 'string' ? stateData.code_line : '';
+      const codeLine = (codeLineFromState || currentStep.code || '').toString();
+      const rawOffset = typeof stateData.offset === 'number' ? stateData.offset : null;
+
+      const pointer = rawOffset && rawOffset > 0 ? `${' '.repeat(rawOffset - 1)}^` : '^';
+      const normalizedCode = codeLine.trim() || `line ${lineFromError}`;
+
+      return `${normalizedCode}\n${pointer}\nSyntaxError: invalid syntax`;
+    }
+
+    // Clean remaining noisy source markers.
+    return message.replace(/\(<(?:string|unknown)>,\s*line\s*\d+\)/gi, '').trim();
+  }, [hasError, errorMessage, currentStep]);
+
   return (
     <main className="flex h-full flex-col" suppressHydrationWarning>
       <section className="min-h-0 flex-1">
@@ -317,7 +353,7 @@ const StepControl: React.FC<StepthroughStepControlProps> = ({
                       </div>
                     </div>
                     <div className="font-mono text-xs wrap-break-word whitespace-pre-wrap text-red-800 sm:text-sm dark:text-red-200">
-                      {errorMessage}
+                      {formattedErrorMessage || errorMessage}
                     </div>
                   </div>
                 )}
