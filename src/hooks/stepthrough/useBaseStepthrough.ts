@@ -35,6 +35,8 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
   const currentStepIndexRef = useRef<number>(0);
   const playbackSpeedRef = useRef<number>(playbackSpeed);
   const isLoopingRef = useRef<boolean>(isLooping);
+  const runLockRef = useRef<boolean>(false);
+  const lastRunAtRef = useRef<number>(0);
 
   // Sync refs with state
   useEffect(() => {
@@ -272,6 +274,18 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
   const executeCode = useCallback(async () => {
     if (!state.code.trim()) return;
 
+    if (runLockRef.current || hookState.isRunning || executeMutation.isPending) {
+      return;
+    }
+
+    runLockRef.current = true;
+
+    const minRunGapMs = 250;
+    const elapsed = Date.now() - lastRunAtRef.current;
+    if (elapsed < minRunGapMs) {
+      await new Promise((resolve) => setTimeout(resolve, minRunGapMs - elapsed));
+    }
+
     // Validate code security first
     const securityStatus = validatePythonCodeSecurity(state.code, 'stepthrough');
     if (!securityStatus.isSafe) {
@@ -295,6 +309,8 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
           error: errorMessage,
         }));
 
+        runLockRef.current = false;
+
         return;
       }
     }
@@ -317,8 +333,13 @@ const useBaseStepthrough = <TData, TStats, TService extends BaseStepthroughServi
     executeMutation.mutate({
       code: state.code,
       inputValues: [],
+    }, {
+      onSettled: () => {
+        runLockRef.current = false;
+        lastRunAtRef.current = Date.now();
+      },
     });
-  }, [state.code, executeMutation]);
+  }, [state.code, executeMutation, hookState.isRunning]);
 
   // Set current step
   const setCurrentStep = useCallback(
