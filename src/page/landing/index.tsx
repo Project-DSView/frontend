@@ -63,6 +63,11 @@ const LandingPage = () => {
   };
 
   const handleRun = async () => {
+    if (!isAuthenticated) {
+      handleLogin();
+      return;
+    }
+
     if (!code.trim()) return;
 
     setIsAnalyzing(true);
@@ -88,9 +93,9 @@ const LandingPage = () => {
       setAnalysisError(null);
       setComplexity(result);
     } catch (err) {
-      console.error('Analysis failed:', err);
+      const message = err instanceof Error ? err.message : null;
       setAnalysisError(null);
-      setError('เกิดข้อผิดพลาดในการวิเคราะห์โค้ด โปรดตรวจสอบ Syntax หรือลองใหม่อีกครั้ง');
+      setError(message || 'เกิดข้อผิดพลาดในการวิเคราะห์โค้ด โปรดตรวจสอบ Syntax หรือลองใหม่อีกครั้ง');
     } finally {
       setIsAnalyzing(false);
     }
