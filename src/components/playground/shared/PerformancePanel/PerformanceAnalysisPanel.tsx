@@ -58,8 +58,7 @@ const PerformanceAnalysisPanel: React.FC<PerformanceAnalysisPanelProps> = ({
   };
 
   const handleAIExplain = async () => {
-    // Check authentication if not in development
-    if (process.env.NODE_ENV !== 'development' && !accessToken) {
+    if (!accessToken) {
       handleLogin();
       return;
     }

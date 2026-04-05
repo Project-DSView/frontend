@@ -2,6 +2,22 @@ import { api } from '../index';
 import { StepthroughRequest, StepthroughResponse } from '@/types';
 import { ComplexityAnalysis } from '@/types/stepthrough/common.types';
 
+const mapComplexityError = (status: number, detail?: string): string => {
+  if (status === 401) {
+    return 'กรุณาเข้าสู่ระบบก่อนใช้งานการวิเคราะห์โค้ด';
+  }
+
+  if (status === 429) {
+    return 'มีการเรียกใช้งานบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่อีกครั้ง';
+  }
+
+  if (status >= 500) {
+    return 'บริการวิเคราะห์โค้ดขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง';
+  }
+
+  return detail || 'ไม่สามารถวิเคราะห์โค้ดได้ในขณะนี้';
+};
+
 const executeStepthrough = async (request: StepthroughRequest): Promise<StepthroughResponse> => {
   const response = await api.post<StepthroughResponse>('/api/playground/run', request);
   return response.data;
@@ -11,26 +27,41 @@ const executeStepthrough = async (request: StepthroughRequest): Promise<Stepthro
  * Analyze code complexity using AST (Performance/Fast) endpoint
  */
 const analyzePerformance = async (code: string): Promise<ComplexityAnalysis> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const response = await api.post<any>('/api/complexity/performance', { code });
-  const data = response.data;
-
-  return {
-    timeComplexity: data.time_complexity,
-    spaceComplexity: data.space_complexity,
-    timeExplanation: data.time_explanation,
-    spaceExplanation: data.space_explanation,
-    analysisDetails: data.analysis_details,
+  try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    functionComplexities: data.function_complexities?.map((fc: any) => ({
-      functionName: fc.function_name,
-      timeComplexity: fc.time_complexity,
-      spaceComplexity: fc.space_complexity,
-      lineStart: fc.line_start,
-      lineEnd: fc.line_end,
-      timeComplexityRank: fc.time_complexity_rank,
-    })),
-  };
+    const response = await api.post<any>('/api/complexity/performance', { code });
+    const data = response.data;
+
+    return {
+      timeComplexity: data.time_complexity,
+      spaceComplexity: data.space_complexity,
+      timeExplanation: data.time_explanation,
+      spaceExplanation: data.space_explanation,
+      analysisDetails: data.analysis_details,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      functionComplexities: data.function_complexities?.map((fc: any) => ({
+        functionName: fc.function_name,
+        timeComplexity: fc.time_complexity,
+        spaceComplexity: fc.space_complexity,
+        lineStart: fc.line_start,
+        lineEnd: fc.line_end,
+        timeComplexityRank: fc.time_complexity_rank,
+      })),
+    };
+  } catch (error: unknown) {
+    const maybeAxiosError = error as {
+      response?: {
+        status?: number;
+        data?: { detail?: string; error?: string };
+      };
+    };
+
+    const status = maybeAxiosError.response?.status ?? 0;
+    const detail =
+      maybeAxiosError.response?.data?.detail || maybeAxiosError.response?.data?.error || undefined;
+
+    throw new Error(mapComplexityError(status, detail));
+  }
 };
 
 /**
@@ -42,20 +73,14 @@ const analyzeWithLLM = async (
   model: string = 'qwen2.5-coder:1.5b',
   onChunk?: (chunk: string) => void,
 ): Promise<{ complexity: string; explanation: string }> => {
-  // Set a longer timeout for LLM requests (e.g., 5 minutes)
-  const isDev = process.env.NEXT_PUBLIC_NODE_ENV === 'development';
+  // Keep signature with token for backward compatibility with existing callers.
+  void token;
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     [process.env.NEXT_PUBLIC_API_KEY_NAME || 'dsview-api-key']:
       process.env.NEXT_PUBLIC_API_KEY || '',
   };
-
-  // Only add Bearer token if it's a real JWT, not the 'cookie-managed' placeholder
-  if (token && token !== 'cookie-managed') {
-    headers.Authorization = `Bearer ${token}`;
-  } else if (!isDev && !token) {
-    throw new Error('Authentication required in production');
-  }
 
   // Include safe headers if needed (for environment variables)
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
@@ -69,7 +94,15 @@ const analyzeWithLLM = async (
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      let detail: string | undefined;
+      try {
+        const errorBody = (await response.json()) as { detail?: string; error?: string };
+        detail = errorBody.detail || errorBody.error;
+      } catch {
+        // Ignore parse errors and use mapped fallback message.
+      }
+
+      throw new Error(mapComplexityError(response.status, detail));
     }
 
     if (!response.body) {
@@ -112,9 +145,12 @@ const analyzeWithLLM = async (
     }
 
     return { complexity: complexityLabel, explanation: fullExplanation };
-  } catch (error) {
-    console.error('Streaming LLM request failed:', error);
-    throw error;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    throw new Error('ไม่สามารถเชื่อมต่อบริการวิเคราะห์ด้วย AI ได้');
   }
 };
 
